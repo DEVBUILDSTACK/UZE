@@ -1,0 +1,28 @@
+[project]
+name = "uze-api"
+version = "0.1.0"
+description = "UZE monolithic backend — FastAPI + Prisma + Redis"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[all]~=0.115.12",
+    "uvicorn[standard]~=0.30.2",
+    "prisma~=0.15.0",
+    "pydantic-settings~=2.8.1",
+    "redis~=5.2.1",
+    "httpx~=0.28.1",
+    "PyJWT~=2.10.1",
+    "passlib[bcrypt]~=1.7.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest~=8.3.4",
+    "pytest-asyncio~=0.26.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

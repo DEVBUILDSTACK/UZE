@@ -1,0 +1,68 @@
+# UZE local/dev topology. Mirrors the Cloud Run service layout:
+# api (FastAPI) + web (Next.js standalone) + redis. Postgres here is for
+# LOCAL dev only — staging/prod use Neon via DATABASE_URL (see .env.example).
+services:
+  api:
+    build: ./services/api
+    ports:
+      - "8000:8000"
+    environment:
+      DEBUG: "true"
+      PORT: "8000"
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/uze_dev
+      DIRECT_URL: postgresql://postgres:postgres@db:5432/uze_dev
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: dev-only-change-me
+      BACKEND_CORS_ORIGINS: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web:
+    build:
+      context: ./apps/uze-web
+      args:
+        NEXT_PUBLIC_BASE_URL: http://localhost:3000
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    ports:
+      - "3000:8080"
+    environment:
+      PORT: "8080"
+    depends_on:
+      - api
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: uze_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - uze_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d uze_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  uze_pgdata:

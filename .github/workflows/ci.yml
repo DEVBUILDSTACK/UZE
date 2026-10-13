@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  scaffold-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify workspace structure
+        run: |
+          for d in apps/uze-web apps/uzed-web apps/siglayer apps/command-center \
+                   packages/girax packages/uzd-token packages/ui \
+                   services/voice services/api docs; do
+            test -d "$d" || (echo "missing: $d" && exit 1)
+          done
+          echo "workspace structure OK"
+      - name: Validate compose file
+        run: docker compose config --quiet && echo "compose OK"

@@ -1,0 +1,1 @@
+{"build":{"env":{"NEXT_TELEMETRY_DISABLED":"1"}},"buildCommand":"pnpm run build","framework":"nextjs","functions":{"app/**/*.js":{"maxDuration":30}},"outputDirectory":".next"}

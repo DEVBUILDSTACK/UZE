@@ -1,0 +1,1 @@
+{"description":"UZE ecosystem monorepo — UZE, UZED.si, SigLayer, Command & Control, GIRAx, UZD, voice","engines":{"node":">=20"},"name":"uze-monorepo","private":true,"scripts":{"build":"echo 'per-workspace builds land with team contributions'","lint":"echo 'lint config lands with team contributions'"},"version":"0.1.0","workspaces":["apps/*","packages/*","services/*"]}

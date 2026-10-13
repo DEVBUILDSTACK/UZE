@@ -1,0 +1,47 @@
+// UZE Prisma schema — Neon Postgres. Prisma is the migration authority
+// for the Python API. (Next.js apps use Drizzle against their own tables;
+// never let two ORMs migrate the same tables.)
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL") // pooled (Neon -pooler)
+  directUrl         = env("DIRECT_URL")   // direct (Neon, for migrations)
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  tickets   Ticket[]
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  title     String
+  venue     String?
+  city      String?
+  startsAt  DateTime
+  createdAt DateTime @default(now())
+  tickets   Ticket[]
+
+  @@index([startsAt])
+}
+
+model Ticket {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  ownerId   String?
+  owner     User?    @relation(fields: [ownerId], references: [id])
+  tier      String   @default("general")
+  status    String   @default("active") // active | listed | transferred | redeemed
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([ownerId])
+}
