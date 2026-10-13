@@ -30,11 +30,30 @@ api.interceptors.response.use(
   }
 );
 
+/** Backend envelope — mirrors the FastAPI APIResponse[T] contract:
+ *  { status_code, message, data, metadata }. Helpers unwrap `data`. */
+interface ApiEnvelope<T> {
+  status_code: number;
+  message: string;
+  data: T;
+  metadata?: Record<string, unknown>;
+}
+
 export const ApiGet = <T>(url: string, params?: object) =>
-  api.get<T>(url, { params }).then((r) => r.data);
+  api.get<ApiEnvelope<T>>(url, { params }).then((r) => r.data.data);
 export const ApiPost = <T>(url: string, body?: object) =>
-  api.post<T>(url, body).then((r) => r.data);
+  api.post<ApiEnvelope<T>>(url, body).then((r) => r.data.data);
 export const ApiPut = <T>(url: string, body?: object) =>
-  api.put<T>(url, body).then((r) => r.data);
+  api.put<ApiEnvelope<T>>(url, body).then((r) => r.data.data);
 export const ApiDelete = <T>(url: string) =>
-  api.delete<T>(url).then((r) => r.data);
+  api.delete<ApiEnvelope<T>>(url).then((r) => r.data.data);
+
+/** Operator login — POST /auth/login -> { access_token, token_type }. */
+export async function login(email: string, password: string) {
+  const { access_token } = await ApiPost<{ access_token: string; token_type: string }>(
+    "/auth/login",
+    { email, password }
+  );
+  setAuthToken(access_token);
+  return access_token;
+}

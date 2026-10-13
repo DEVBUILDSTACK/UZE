@@ -13,11 +13,12 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  tickets   Ticket[]
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?  // operator accounts only; end users auth via Privy
+  createdAt    DateTime @default(now())
+  tickets      Ticket[]
 }
 
 model Event {
