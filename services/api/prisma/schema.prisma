@@ -25,6 +25,8 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   tickets      Ticket[]
+  listings     Listing[] @relation("SellerListings")
+  bids         Bid[]     @relation("BidderBids")
 }
 
 model Event {
@@ -50,7 +52,56 @@ model Ticket {
   status    String   @default("active") // active | listed | transferred | redeemed
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  listings  Listing[]
 
   @@index([eventId])
   @@index([ownerId])
+}
+
+// UZED.si secondary market — private resale listings.
+model Listing {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ticketId    String   @db.Uuid
+  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+  sellerId    String   @db.Uuid
+  seller      User     @relation("SellerListings", fields: [sellerId], references: [id])
+  priceCents  Int
+  feeCents    Int      @default(0) // seller fee shown separately (brand spec)
+  status      String   @default("active") // active | sold | cancelled | flagged
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ticketId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+// Sealed-bid auctions (Arcium-style; bids hidden until close).
+model Auction {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+  eventId   String?  @db.Uuid
+  event     Event?   @relation(fields: [eventId], references: [id])
+  startsAt  DateTime
+  endsAt    DateTime
+  status    String   @default("scheduled") // scheduled | open | closed | settled
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bids      Bid[]
+
+  @@index([status])
+  @@index([endsAt])
+}
+
+model Bid {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  auctionId String   @db.Uuid
+  auction   Auction  @relation(fields: [auctionId], references: [id])
+  bidderId  String   @db.Uuid
+  bidder    User     @relation("BidderBids", fields: [bidderId], references: [id])
+  amountCents Int
+  // Sealed: amount hidden until auction closes; commitment hash optional.
+  createdAt DateTime @default(now())
+
+  @@index([auctionId])
 }
