@@ -51,6 +51,23 @@ voice-drives AI Studio, and the resulting tooling stays private to the team.
 - Play policies still apply to the private app.
 - Consumer blog copy follows UZE rules: no tokens/chains until built + approved.
 
+## Inference tiering (2026-10-13, per James)
+
+Two tiers, hard boundary between them:
+
+| Tier | What's included | Cost |
+|---|---|---|
+| **Practice / Testnet** | Google AI (free tier): practice builds, testnet builds, zip file creation, graphics via **Nano Banana** (Gemini image model) | Free — until Google moves to subscription, then re-evaluate |
+| **Production** | World-class video + music-video inference output | **Gated behind x402** — pay-per-inference micropayments; production assets are **non-downloadable** (stream/view only) |
+
+Rules:
+- Free Google AI is for iteration: drafts, testnets, zips, Nano Banana graphics.
+- Anything world-class that ships to production goes through the x402 gate.
+- Production video/music-video output is tightly gated and non-downloadable —
+  no raw file access, no redistribution outside the platform.
+- When Google's free tier ends / moves to subscription, revisit the practice-tier
+  cost model (subscription vs x402 passthrough).
+
 ## Open questions
 
 - Programmatic AI Studio API access for the voice-driven flow (vs manual build).
