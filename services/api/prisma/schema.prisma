@@ -76,6 +76,18 @@ model Listing {
   @@index([status])
 }
 
+// RAG — GIRA agentic guidance retrieval. Requires the pgvector extension:
+//   CREATE EXTENSION IF NOT EXISTS vector;
+// (Neon supports pgvector; prestart.sh ensures it.)
+model DocumentChunk {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  source    String   // e.g. "knowledge-base", "event:<id>", "listing:<id>"
+  content   String   @db.Text
+  embedding Unsupported("vector(1536)")?
+  createdAt DateTime @default(now())
+
+  @@index([source])
+}
 // Sealed-bid auctions (Arcium-style; bids hidden until close).
 model Auction {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

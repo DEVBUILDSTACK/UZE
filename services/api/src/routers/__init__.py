@@ -7,6 +7,7 @@ from src.routers import (  # noqa: F401
     events,
     health,
     listings,
+    rag,
     tickets,
     users,
 )

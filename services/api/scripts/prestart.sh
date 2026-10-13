@@ -20,6 +20,20 @@ else:
     raise SystemExit("Postgres not reachable after 120s")
 EOF
 
+echo "Ensuring pgvector extension..."
+python - <<'EOF'
+import os, urllib.parse, psycopg2
+url = os.environ["DIRECT_URL"] or os.environ["DATABASE_URL"]
+p = urllib.parse.urlparse(url)
+conn = psycopg2.connect(host=p.hostname, port=p.port or 5432,
+                        user=p.username, password=p.password,
+                        dbname=p.path.lstrip("/"), sslmode="require")
+conn.autocommit = True
+with conn.cursor() as cur:
+    cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+print("pgvector ready")
+EOF
+
 echo "Running Prisma migrations..."
 prisma db push --accept-data-loss=false
 

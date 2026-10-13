@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+    # RAG embeddings (OpenAI-compatible API; key stays in Secret Manager)
+    EMBEDDING_BASE_URL: str = ""
+    EMBEDDING_API_KEY: str = ""
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+
     BACKEND_CORS_ORIGINS: str = "http://localhost:3000"
 
     def validate_prod(self) -> None:
