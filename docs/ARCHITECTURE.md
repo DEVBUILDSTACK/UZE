@@ -35,3 +35,20 @@ The first affiliate business on the UZE backend, run by the **SoSim** agent,
 mirroring the global experimental-music / DJ agency model: opportunity mirroring,
 lead gen, gig bookings, revenue share. Backend surface: `/affiliates` (codes,
 leaderboard, UZD payouts). See `services/api/src/routers/affiliates.py`.
+
+## Multi-chain ticket commerce (Q4 direction)
+
+UZE advances the innovation backend toward Solana multi-chain + LightLink EVM
+NFT ticket commerce:
+
+| Layer | Choice | Rationale |
+|---|---|---|
+| Primary chain | Solana | USDC x402 micro-transactions, Phantom WaaS (white-label) |
+| EVM NFT tickets | **LightLink L2** | Gasless enterprise mode (10k+ TPS, <$0.01), fully EVM-equivalent (Geth); co-founder/CEO **Roy Hui** explicitly cites ticketing as the gasless use case |
+| Bridging | **Stargate** (LayerZero) | ETH, USDC, USDT, LL to/from LightLink in minutes |
+| Enterprise UX model | **Tickify** | Enterprise event ticketing platform; reference event: King of the Ring 2026, Melbourne Pavilion |
+| Distribution | LightLink enterprise partners | 30+ partnerships incl. Animoca Brands — millions of potential users |
+
+**Advisor link:** Roy Hui, co-founder/CEO of LightLink (Pellar, MMGN.com), based in
+**Melbourne AU** — same city as the 456iP Melbourne blockchain team. Chain config
+lives in `services/api/src/chains.py`; onchain ticket records in `/nfts`.
