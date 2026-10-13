@@ -44,10 +44,17 @@ NFT ticket commerce:
 | Layer | Choice | Rationale |
 |---|---|---|
 | Primary chain | Solana | USDC x402 micro-transactions, Phantom WaaS (white-label) |
-| EVM NFT tickets | **LightLink L2** | Gasless enterprise mode (10k+ TPS, <$0.01), fully EVM-equivalent (Geth); co-founder/CEO **Roy Hui** explicitly cites ticketing as the gasless use case |
+| EVM NFT tickets | **LightLink L2** | Optimism stack + Celestia data layer; gasless **Enterprise Mode**; co-founder/CEO **Roy Hui** explicitly cites ticketing as the gasless use case |
+| Enterprise ticketing model | LightLink Enterprise-mode dApps (e.g. **Tickify**) | Built on LightLink's Optimism + Celestia DA stack in Enterprise Mode |
+| Wallet | **Stella** (LightLink) | LightLink's chain-abstraction wallet — sign in instantly, move across networks (early-access beta, lightlink.io/wallet) |
 | Bridging | **Stargate** (LayerZero) | ETH, USDC, USDT, LL to/from LightLink in minutes |
-| Enterprise UX model | **Tickify** | Enterprise event ticketing platform; reference event: King of the Ring 2026, Melbourne Pavilion |
 | Distribution | LightLink enterprise partners | 30+ partnerships incl. Animoca Brands — millions of potential users |
+
+**Enterprise Mode mechanics (LightLink):** enterprises register on-chain in an
+Enterprise Smart Contract (name, main account, monthly quota units, wei per unit),
+pay fees upfront in stablecoins, and receive reserved block space; whitelisted
+enterprise accounts transact at **gas price 0** — users never hold ETH or pay fees.
+This is the UZE ticket-commerce model: the platform covers gas, fans just buy.
 
 **Advisor link:** Roy Hui, co-founder/CEO of LightLink (Pellar, MMGN.com), based in
 **Melbourne AU** — same city as the 456iP Melbourne blockchain team. Chain config

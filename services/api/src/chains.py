@@ -14,9 +14,11 @@ CHAINS = {
     "lightlink": {
         "name": "LightLink",
         "kind": "evm",
+        "stack": "optimism + celestia-da",
         "chain_id": 1890,  # mainnet
         "rpc": "https://replicator.pegasus.lightlink.io/rpc/v1",
         "role": "gasless NFT tickets (enterprise mode)",
+        "wallet": "stella",  # https://lightlink.io/wallet (early access)
         "bridge": "stargate/layerzero",
         "bridge_assets": ["ETH", "USDC", "USDT", "LL"],
     },
