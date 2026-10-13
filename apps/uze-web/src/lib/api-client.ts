@@ -49,10 +49,10 @@ export const ApiDelete = <T>(url: string) =>
   api.delete<ApiEnvelope<T>>(url).then((r) => r.data.data);
 
 /** Operator login — POST /auth/login -> { access_token, token_type }. */
-export async function login(email: string, password: string) {
+export async function login(email_address: string, password: string) {
   const { access_token } = await ApiPost<{ access_token: string; token_type: string }>(
     "/auth/login",
-    { email, password }
+    { email_address, password }
   );
   setAuthToken(access_token);
   return access_token;

@@ -12,13 +12,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 class LoginIn(BaseModel):
-    email: str
+    email_address: str
     password: str
 
 
 @router.post("/login", response_model=APIResponse[dict])
 async def login(body: LoginIn):
-    user = await prisma.user.find_unique(where={"email": body.email})
+    user = await prisma.user.find_unique(where={"email_address": body.email_address})
     pw_hash = getattr(user, "passwordHash", None) if user else None
     if not user or not pw_hash or not check_password(body.password, pw_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")

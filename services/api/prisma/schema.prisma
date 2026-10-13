@@ -1,6 +1,11 @@
 // UZE Prisma schema — Neon Postgres. Prisma is the migration authority
 // for the Python API. (Next.js apps use Drizzle against their own tables;
 // never let two ORMs migrate the same tables.)
+//
+// Conventions follow the Assurative-V2 backend approach:
+// - UUID primary keys (Postgres-native gen_random_uuid, cf. SQLModelTable)
+// - createdAt/updatedAt on every table
+// - email_address identity field (team convention)
 generator client {
   provider             = "prisma-client-py"
   recursive_type_depth = 5
@@ -13,35 +18,38 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email_address String   @unique
   name         String?
   passwordHash String?  // operator accounts only; end users auth via Privy
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   tickets      Ticket[]
 }
 
 model Event {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title     String
   venue     String?
   city      String?
   startsAt  DateTime
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   tickets   Ticket[]
 
   @@index([startsAt])
 }
 
 model Ticket {
-  id        String   @id @default(cuid())
-  eventId   String
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId   String   @db.Uuid
   event     Event    @relation(fields: [eventId], references: [id])
-  ownerId   String?
+  ownerId   String?  @db.Uuid
   owner     User?    @relation(fields: [ownerId], references: [id])
   tier      String   @default("general")
   status    String   @default("active") // active | listed | transferred | redeemed
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([eventId])
   @@index([ownerId])
