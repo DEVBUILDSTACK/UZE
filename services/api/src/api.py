@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.config import settings
 from src.db import close_db, init_db
-from src.routers import auctions, auth, events, health, listings, tickets, users
+from src.routers import (affiliates, analytics, auctions, auth, events, health,
+                         listings, tickets, users)
 
 
 @asynccontextmanager
@@ -35,6 +36,8 @@ def create_app() -> FastAPI:
     app.include_router(listings.router)
     app.include_router(auctions.router)
     app.include_router(users.router)
+    app.include_router(affiliates.router)
+    app.include_router(analytics.router)
 
     @app.get("/", include_in_schema=False)
     async def root():
