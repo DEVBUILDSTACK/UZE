@@ -50,6 +50,10 @@ Referenced in `deploy.yml` as `uze-database-url`, `uze-direct-url`,
 
 ## Triage log
 
+*Convention: this file is a living historic record. The status column above is
+always current; the log below is append-only — new rows go on top, history is
+never rewritten.*
+
 | Date | Event |
 |---|---|
 | 2026-10-14 | Triage doc created. All secrets missing — Deploy `preflight` failing on every push (by design). Secrets watch cron (`uze-deploy-secrets-watch`) active: auto re-runs Deploy when all 7 GitHub secrets land. |
