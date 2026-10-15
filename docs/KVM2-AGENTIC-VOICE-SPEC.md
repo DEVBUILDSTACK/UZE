@@ -77,6 +77,19 @@ South Florida triangle. Expansion beyond it opens after Q2 2027.
 
 ## Build prerequisites
 
+## Visibility: voice-only (per James, 2026-10-14)
+
+The Grok voice tri-level service (GIRA, GIRAx, SoSim, SoSim Sisters) is
+**not present anywhere on the website**. It is purely voice. There is no
+public transparency until James chooses to publish it as an app offering.
+
+- Build the full agentic capability now: knowledge base + inquiry handling
+  per desk, all working by voice.
+- No voice/concierge surfaces in uze-web, uzed-web, or public marketing —
+  not in copy, nav, or mockups — until the publish decision.
+- The knowledge base each desk answers from is the same source that will
+  power the web offering later; building it now is not throwaway work.
+
 - [ ] KVM2 SSH access (Phase 0 — James to provide)
 - [ ] Telnyx + LiveKit credentials in KVM2 env
 - [ ] Grok Voice / Hermes gateway on KVM2
