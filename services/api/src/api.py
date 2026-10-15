@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.config import settings
 from src.db import close_db, init_db
 from src.routers import (affiliates, analytics, auctions, auth, events, health,
-                         listings, nfts, rag, tickets, users)
+                         listings, nfts, profiles, rag, tickets, users)
 
 
 @asynccontextmanager
@@ -40,6 +40,7 @@ def create_app() -> FastAPI:
     app.include_router(analytics.router)
     app.include_router(rag.router)
     app.include_router(nfts.router)
+    app.include_router(profiles.router)
 
     @app.get("/", include_in_schema=False)
     async def root():

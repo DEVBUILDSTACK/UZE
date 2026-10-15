@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     EMBEDDING_API_KEY: str = ""
     EMBEDDING_MODEL: str = "text-embedding-3-small"
 
+    # Resend (transactional email: OTP login codes, UZEMARKET outreach)
+    RESEND_API_KEY: str = ""
+    RESEND_SENDER_EMAIL: str = ""
+    RESEND_SENDER_NAME: str = "UZEMARKET"
+
     BACKEND_CORS_ORIGINS: str = "http://localhost:3000"
 
     def validate_prod(self) -> None:

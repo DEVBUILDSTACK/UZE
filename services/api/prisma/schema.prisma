@@ -21,7 +21,14 @@ model User {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email_address String   @unique
   name         String?
-  passwordHash String?  // operator accounts only; end users auth via Privy
+  passwordHash String?  // operator accounts only; end users auth via email OTP
+  // SocialFi profile (20-second onboarding) — one profile per user
+  handle       String?  @unique
+  bio          String?
+  avatarUrl    String?
+  interests    String[]
+  referralCode String?  @unique // minted at profile creation (UZE-XXXXXX)
+  referredBy   String?  // referrer's referralCode (QR scan / link attribution)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   tickets      Ticket[]
