@@ -68,6 +68,13 @@ L3 never negotiates — it executes what L2 arranged and confirms.
 
 ---
 
+## Geographic scope (per James, 2026-10-14)
+
+**Physical markets services: Miami – Fort Lauderdale & Palm Beaches for MVP,
+through Q2 2027.** The SoSim Sisters local-metro desks (artists, performers,
+comedians, celebrities, security & secure transport) launch confined to the
+South Florida triangle. Expansion beyond it opens after Q2 2027.
+
 ## Build prerequisites
 
 - [ ] KVM2 SSH access (Phase 0 — James to provide)
@@ -80,4 +87,4 @@ L3 never negotiates — it executes what L2 arranged and confirms.
 
 1. L1 "Male-only level" — confirm the staffing rule as stated.
 2. ONE desk: does sealed-bid auction execution use Arcium (per scope) from day one?
-3. SoSim Sisters metro coverage at launch: which metros first?
+3. ~~SoSim Sisters metro coverage at launch: which metros first?~~ Answered 2026-10-14: Miami–Fort Lauderdale & Palm Beaches, MVP through Q2 2027.
