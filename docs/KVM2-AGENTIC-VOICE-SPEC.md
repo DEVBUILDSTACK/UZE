@@ -10,8 +10,12 @@ Telnyx / LiveKit, Hermes Native Gateway (per stack spec).
 
 ### L1 — Entry: Hospitality team pool
 
-- First voice of the concierge. Human-expert pool covering **all markets**
-  and **all languages** (per James: Male-only level).
+- First voice of the concierge. **Male-only team** (deliberate, per James).
+- The bar: **Four Seasons head concierge, anywhere in the world** — every
+  agent who initially engages a client operates at that level.
+- Core competencies: **discretion, security, and emergency handling** —
+  generating confidence with any client who has a problem or an emergency.
+- Coverage: all markets, all languages.
 - Triage: welcome, identify intent, route to the right specialist desk.
 - Owns the warm handoff — never a cold transfer; context travels with the call.
 
@@ -98,6 +102,6 @@ public transparency until James chooses to publish it as an app offering.
 
 ## Open questions for James
 
-1. L1 "Male-only level" — confirm the staffing rule as stated.
+1. ~~L1 "Male-only level" — confirm the staffing rule as stated.~~ Confirmed 2026-10-14: deliberate. Every male agent at L1 entry = Four Seasons head-concierge level worldwide; adept at discretion, security, emergencies.
 2. ONE desk: does sealed-bid auction execution use Arcium (per scope) from day one?
 3. ~~SoSim Sisters metro coverage at launch: which metros first?~~ Answered 2026-10-14: Miami–Fort Lauderdale & Palm Beaches, MVP through Q2 2027.
