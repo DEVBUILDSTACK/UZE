@@ -61,6 +61,29 @@ for the platform — vanity infrastructure sold to the affiliates who
 outgrow the subdomain — while the attribution and settlement rails stay
 underneath regardless of the domain on top.
 
+## The growth suite is the activation arm
+
+The multi-tenant offering is not just publishing — it is the full
+**content innovation offering**: the blog network *plus* the growth
+suite, tenant-scoped to each affiliate business. See
+`GROWTH-SUITE-OVERVIEW.md`.
+
+What the affiliate business gets, in one offering:
+
+- Their branded `{business}.uze.fi` (or masked custom domain)
+- Weekly/monthly vertical content in their voice
+- Client-configured services: site analysis, SEO + GEO, prospecting,
+  market scraping with list sequencing
+- Cold outreach (Resend) + warm sequences (WhatsApp) run under their
+  brand and offers
+- Autonomous voice prospecting and support, with AI-to-human transfer
+- Paid ads (Meta/FB/IG/Google) managed against the same offers
+- The gamified SocialFi registration flow converting their audience
+  into tracked referrals → UZD earnings
+
+One tenant, one brand, one funnel — content, outreach, and conversion
+under the same roof, settled through the same treasury.
+
 ## How it all connects
 
 1. **Learn2Launch** sources and funds creators (grants, Quotrons/Ink

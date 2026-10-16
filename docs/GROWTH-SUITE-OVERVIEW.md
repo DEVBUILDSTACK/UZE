@@ -2,6 +2,12 @@
 
 **Date:** 2026-10-16 · **Status:** strategy + build sequence
 
+This suite is delivered as part of the **multi-tenant content innovation
+offering** (see `AFFILIATE-CONTENT-NETWORK-OVERVIEW.md`): every capability
+below is tenant-scoped to the affiliate business — their brand, their
+market, their funnel. The content network is the publishing arm; this
+suite is the activation arm.
+
 The growth machine that sits alongside the Affiliate Content Network:
 client-configured services, paid acquisition, autonomous voice, and the
 conversion funnel — all feeding the UZE / UZED.si / Learn2Launch flywheel.
