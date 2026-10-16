@@ -1,24 +1,22 @@
 # 456iP Content Desk — Charter & Architecture Decision
 
-**Date:** 2026-10-16 · **Status:** DECIDED (per SoSeem recommendation, James to ratify)
+**Date:** 2026-10-16 · **Status:** DECIDED, REDIRECTED (per James 2026-10-16:
+extend DEVBUILDSTACK/LEAD_GEN instead of a new repo)
 **Mandate:** the two Grok stack articles (four-role autonomous content desk;
 AI Company-in-a-Box: manager front-door + bounded decision layer + approval
 levels + "prove one loop before automating").
 
-## The decision
+## The decision (updated)
 
-**1. Codebase lives in a new repo: `DEVBUILDSTACK/CONTENT-DESK`.**
-Not inside UZE, not inside LEAD_GEN. Rationale:
-
-- The Desk is a **456iP-owned for-profit brand extension**, not a UZE
-  marketplace module. It needs its own versioning, access control, and
-  commercial boundary — especially once it serves external affiliates.
-- It is a **portable package** in the Company-in-a-Box sense
-  (`/bots`, `/routines`, `/tests`, tenant configs) — that is repo-shaped.
-- Strategy and planning docs stay in UZE alongside
-  `AFFILIATE-CONTENT-NETWORK-OVERVIEW.md` and `GROWTH-SUITE-OVERVIEW.md`
-  (this charter lives there too); the engine code lives in CONTENT-DESK.
-  Docs reference the repo, never the reverse.
+**1. Codebase lives in `DEVBUILDSTACK/LEAD_GEN`, extended.**
+James redirected the 2026-10-16 CONTENT-DESK-repo decision: instead of a new
+repository, the existing LEAD_GEN repo grows into the Content Desk home —
+outreach engine (built), content desk roles, growth analytics, video
+pipeline, and skills. Rationale: the outreach engine already lives there,
+the team is one, and the commercial boundary is enforced by tenant
+scoping + access control rather than repo separation. The
+`/bots`-`/routines`-`/tests` portable package structure from the
+Company-in-a-Box pattern is implemented as directories inside LEAD_GEN.
 
 **2. It co-exists on KVM2 now — and is built to outgrow it.**
 KVM2 (Grok Voice / Telnyx / LiveKit / Hermes gateway / Buzz+Technocore
@@ -108,8 +106,9 @@ production consumer of the GIRAx Layer's trust primitives.
 
 ## Roadmap (plan of attack)
 
-1. **Charter + repo:** this doc (UZE); create `DEVBUILDSTACK/CONTENT-DESK`
-   with `/bots`, `/routines`, `/tests`, `/tenants` scaffold.
+1. **Charter + repo:** this doc (UZE); extend `DEVBUILDSTACK/LEAD_GEN`
+   with `/bots`, `/routines`, `/tests`, `/tenants` scaffold (see
+   CONTENT-DESK-TEAM-SKILLS-PLAN.md for the team + skills build-out).
 2. **KVM2 control plane:** orchestrator + four roles as scheduled
    routines, tenant `l2launch` first.
 3. **Prove one loop:** one vertical brief → claim-checked → drafted →
