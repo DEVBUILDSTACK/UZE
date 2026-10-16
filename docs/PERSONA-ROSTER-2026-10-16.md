@@ -14,6 +14,7 @@ share a name, and the four BizDev personas are never the same persona.
 | **Envoy** | Global Partnerships & BD Officer — UZE (human-mirrored) | Corporate UZE partnerships voice; mirrors the human UZE officer | configured now |
 | **Harbor** | Global Partnerships & BD Officer — UZED (human-mirrored) | Corporate UZED.si partnerships voice; mirrors the human UZED officer | configured now |
 | **Apex** | VC BizDev sector specialist — Fundio.vc | Highest-level VC voice; sector expertise, capital relationships | configured now |
+| **WavEngage** | Lead Commerce Conversion Officer — mirrors Bruno Salles (human) | Conversion expertise across in-app, web, email, WhatsApp; guiding 24/7/365 | configured now |
 
 Existing cast unchanged: **GIRA** (UZE in-app agent), **SoSim**
 (music/agency), **SoSeem** (this agent). No collisions.
