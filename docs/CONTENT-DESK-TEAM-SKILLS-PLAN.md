@@ -5,27 +5,21 @@
 **Constraint:** everything in **test/testnet mode** until **Tuesday, November 10, 2026** —
 no paid live accounts (WhatsApp, Meta Business, or otherwise) before that date.
 
-## 1. The hire — role spec
+## 1. The "hire" — agentic principal, not human (corrected per James 2026-10-16)
 
-**Title:** Technical Marketing & Growth Analytics Engineer
-**Shape:** T-shaped — marketing analytics spine, Web3 engineering depth,
-GenAI video craft.
+There is no human hire. The hire **is agentic**: one orchestrator agent
+(scaling to multiple cooperating agents) with principal-level technical
+Web3 + RAG + marketing expertise. Full résumé: `AGENTIC-HIRE-CV.md`.
 
-- **Growth analytics (core):** lead-gen funnel analysis, attribution
-  modeling, campaign analytics, experiment design (A/B), cohort analysis,
-  reporting the Desk actually acts on. Junior data-science training
-  required — statistics, not vibes.
-- **Agentic payments:** x402 payment flows — paywalls, per-request
-  pricing, settlement rails for the RCS engine.
-- **Solana:** Rust, Anchor, TypeScript — programs + client integration.
-- **Starknet:** Cairo — privacy primitives (Shadow Accounts lineage),
-  ZK-adjacent work.
-- **Full stack:** React, Next.js, Python, FastAPI, Postgres.
-- **DevOps:** GCP Cloud Run — the Desk's burst target.
-- **GenAI video (craft bar: technically superior):** motion video,
-  animation, **45s–3min short films**, **10–40s UGC CTAs** for Instagram
-  and TikTok. Owns the pipeline end to end, replacing the Yagnik/Surat +
-  Florida outsourced video path with an in-house operation.
+- **Learning loops:** voice (KVM2 concierge) → intent models; in-app
+  (SocialFi behavior) → feed/onboarding tuning; client feedback →
+  RAG + template updates; internal RAG + **Vertex AI notebooks** as the
+  working-memory/research bench, cooperating with **Cloud Run** workers.
+- **Commercial path:** perfect the service internally on 456iP brands +
+  @l2launch, then sell it as the **Content Desk & SI Generative Managed
+  Services Suite**.
+- The 7 Grok specialist agents below are its team; the 7 skills are its
+  hands.
 
 ## 2. Grok agent team additions (KVM2 core team)
 
