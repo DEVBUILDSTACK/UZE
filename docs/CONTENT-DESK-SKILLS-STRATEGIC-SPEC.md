@@ -255,7 +255,8 @@ partnership CTA with lane routing behind it?
 
 ### Weekly report to Bruno Salles — Dec 2026 through Dec 31, 2027
 
-- **To:** Bruno Salles (personal delivery; channel TBD).
+- **To:** Bruno Salles, brunocsalles@gmail.com (personal delivery).
+- **From:** dev.build@decensat.org.
 - **Cadence:** weekly. First report week of December 2026; final
   report week of December 31, 2027.
 - **Prepared by:** the Content Desk (Growth Analyst compiles).
