@@ -6,9 +6,9 @@
 
 | Business | Role |
 |---|---|
-| **Fundio.vc** | The capital engine — debt-venture (convertible debt → UZD fair launch → self-finance). Funds the build, underwrites the affiliate economy. |
+| **Fundio.vc** | The financial-infrastructure business — its key product is the **Command & Control Admin console** delivering **WaaS, payroll, contractor/1099 payouts, global payouts, and talent placement across UZE categories**. (Not initially a vendor/demand-side employer hiring product; co-marketing welcome, affiliate enterprises get benefits.) Later extends to business partners: self-directed Web3 Treasury, global payouts, payments, **email tag payments**, integrated auctions. |
 | **UZE / UZED.si** | The consumer brands — UZE (uze.fi): talent, tickets, touring; UZED.si: embedded secondary resale market ("UZED.si resale by UZE"). Where demand lives. |
-| **Learn2Launch (L2LAUNCH)** | The SocialFi accelerator — the creator/artist pipeline. Talent enters here, gets funded and published, graduates into the UZE lineup. |
+| **Learn2Launch (L2LAUNCH)** | The SocialFi accelerator — the creator/artist pipeline, and **the exclusive partner affiliation with Fundio.vc, highlighted in 2027**. Talent enters here, gets funded and published, graduates into the UZE lineup. |
 
 One multi-agent content engine serves all three: it produces the influence
 that fills the venues, the deal flow that feeds the venture, and the
