@@ -45,8 +45,20 @@ model Event {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   tickets   Ticket[]
+  // Sports taxonomy (see sports.prisma): variant + category + pathway level.
+  variantId  String?        @db.Uuid
+  variant    SportVariant?  @relation(fields: [variantId], references: [id])
+  categoryId String?        @db.Uuid
+  category   EventCategory? @relation(fields: [categoryId], references: [id])
+  levelId    String?        @db.Uuid
+  level      PathwayLevel?  @relation(fields: [levelId], references: [id])
+  feederFor  QualificationPath[] @relation("Feeder")
+  qualifies  QualificationPath[] @relation("Championship")
 
   @@index([startsAt])
+  @@index([variantId])
+  @@index([categoryId])
+  @@index([levelId])
 }
 
 model Ticket {
@@ -75,6 +87,11 @@ model Listing {
   priceCents  Int
   feeCents    Int      @default(0) // seller fee shown separately (brand spec)
   status      String   @default("active") // active | sold | cancelled | flagged
+  // Bi-directional UZED cart: the counterparty can sell TO the UZED
+  // proprietary acquisition system (reverse logistics), digital or physical.
+  direction    String  @default("SELL_TO_MARKET") // SELL_TO_MARKET | SELL_TO_UZED
+  assetKind    String  @default("DIGITAL")        // DIGITAL | PHYSICAL
+  intakeStatus String? // SELL_TO_UZED reverse logistics: RECEIVED | INSPECTED | GRADED | SETTLED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -1,0 +1,87 @@
+// UZE sports taxonomy — Event Category | Sport | Olympic Variation of Sport.
+// Lead sports: Surfing + Lacrosse (incl. Olympic sixes), per LA2028 focus.
+// Multi-file Prisma schema: all *.prisma files in this directory load as one schema.
+//
+// Sourced 2026-10-17:
+// - Surfing: ISA (IOC-recognized; est. 1964; 120 federations); LA28 at Lower
+//   Trestles, San Clemente; 48 athletes (24M/24W); qualification Sep 2026–Jun 2028
+//   via WSL Championship Tour (top 8/gender), ISA World Surfing Games
+//   (2026/2027 team slots + 2028 top 7/gender), continental games.
+// - Lacrosse sixes: World Lacrosse format (rules approved Nov 2020); 6v6
+//   (5 field + goalie); 70m x 36m outdoor; 4 x 8-min quarters, running time;
+//   30-sec shot clock; 12-player rosters; faceoffs only at quarter starts;
+//   no specialist positions, no long crosses, no offsides; Olympic debut LA28
+//   (first medal lacrosse since 1908); 6-team tournaments/gender; 2027 Sixes
+//   Worlds (Colorado Springs) is the primary qualifier.
+// - Traditional: men's field 10v10 (110x60 yd), women's field 12v12,
+//   box 6v6 indoor (4 x 15-min quarters).
+// - USA Lacrosse youth bands: 8U (1-2, 4v4/5v5) -> 10U (3-4, 7v7/8v8) ->
+//   12U (5-6, 10v10) -> 14U (7-8, 10v10) -> HS (Freshman/JV/Varsity) ->
+//   Club (year-round, parallel, highest youth skill) -> NCAA -> Worlds ->
+//   Olympic sixes. Age cutoff usually Aug 31 preceding (some leagues differ).
+
+model Sport {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String         @unique // "Surfing", "Lacrosse"
+  variants  SportVariant[]
+  levels    PathwayLevel[]
+  createdAt DateTime       @default(now())
+}
+
+model SportVariant {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sportId        String   @db.Uuid
+  sport          Sport    @relation(fields: [sportId], references: [id])
+  name           String // "Shortboard", "Sixes", "Men's Field", "Women's Field", "Box"
+  playersPerSide Int? // sixes 6, men's field 10, women's field 12; null for individual sports
+  olympic        Boolean  @default(false) // true for Shortboard + Sixes at LA28
+  fieldSpec      String? // sixes: "70m x 36m outdoor"; men's field: "110 x 60 yd"
+  notes          String?  @db.Text
+  events         Event[]
+  createdAt      DateTime @default(now())
+
+  @@unique([sportId, name])
+  @@index([sportId])
+}
+
+model EventCategory {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique // Olympic Games, World Championship, Qualifier, Continental Games, Pro Tour, Youth Club
+  tier      Int      @default(0) // Olympic apex = 100
+  events    Event[]
+  createdAt DateTime @default(now())
+}
+
+model PathwayLevel {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sportId    String?  @db.Uuid // null = cross-sport (e.g. Olympic apex)
+  sport      Sport?   @relation(fields: [sportId], references: [id])
+  code       String // 8U, 10U, 12U, 14U, HS_FRESHMAN, HS_JV, HS_VARSITY, CLUB, NCAA, WORLDS, OLYMPIC
+  name       String // "8U (grades 1-2)"
+  order      Int // ladder order, low = youngest
+  ageBand    String? // "8U"
+  cutoffRule String? // "Aug 31 preceding (USA Lacrosse; some leagues use Dec 31 / Apr 15)"
+  events     Event[]
+  createdAt  DateTime @default(now())
+
+  @@unique([sportId, code])
+  @@index([sportId])
+}
+
+// Qualification chains: feeder event -> championship (e.g. WSL CT -> LA28
+// surfing, 8 slots/gender; continental sixes -> 2027 Sixes Worlds ->
+// LA28 sixes). Drives Event Intelligence + terminal parameters.
+model QualificationPath {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fromEventId String   @db.Uuid
+  fromEvent   Event    @relation("Feeder", fields: [fromEventId], references: [id])
+  toEventId   String   @db.Uuid
+  toEvent     Event    @relation("Championship", fields: [toEventId], references: [id])
+  slots       Int? // slots allocated through this path
+  slotScope   String? // "per gender", "per NOC", ...
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([fromEventId])
+  @@index([toEventId])
+}
