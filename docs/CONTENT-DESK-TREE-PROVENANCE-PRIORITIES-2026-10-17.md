@@ -75,7 +75,18 @@ until one loop works end to end.
 - **Cadence** folds into James's minimums (weekly blog; LinkedIn Tue + Thu;
   X personal + corporate) on the shared persona calendar — no collisions.
 
-## 8. Account state (to fill)
+## 8. Account state (verified 2026-10-17, read-only)
 
-- @L2Launch / @DecensatDesign: bio, activity, follower baseline — profile check
-  in progress (2026-10-17).
+- **@L2Launch** — "Learn2Launch". Bio: "iMPACT DV funding of early si, pi, and
+  token open fi nft projects. Slowly at first. then all at once". 22 followers,
+  372 following, 40 posts, joined Oct 2025, links f4a.vercel.app. **Active** —
+  latest post Sep 14, 2026 (Crypto World's Fair Hackathon with Colosseum);
+  2026 posts trend AI/LLM advances, builder workflows, SOL. Small audience =
+  greenfield: the TREE pillar can define this account's voice from near-scratch.
+- **@DecensatDesign** — "Decensat Design & Development". Bio: "Design that Makes
+  an Impact Engineered end-to-end." 38 followers, 281 following, 58 posts,
+  joined Feb 2024, links decensatdesign.com. **Quiet since Mar 20, 2026**
+  (~7 months) — recent history is design-tool news, SEC tokenized-stocks note,
+  and a Q1 engineering promo. The TREE/provenance pillar is this account's
+  reactivation story: from general design commentary to the trust-substrate
+  craft voice.
