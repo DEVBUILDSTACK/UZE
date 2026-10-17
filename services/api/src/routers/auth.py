@@ -2,7 +2,7 @@
 Mirrors the analyzed backend's POST /admin/login contract.
 End users authenticate via email OTP (no passwords).
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from src.auth import check_password, create_token
@@ -33,7 +33,8 @@ async def login(body: LoginIn):
     pw_hash = getattr(user, "passwordHash", None) if user else None
     if not user or not pw_hash or not check_password(body.password, pw_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return ok({"access_token": create_token(user.id), "token_type": "bearer"})
+    role = getattr(user, "role", None) or "user"
+    return ok({"access_token": create_token(user.id, role), "token_type": "bearer"})
 
 
 @router.post("/otp/request", response_model=APIResponse[dict])
@@ -44,19 +45,23 @@ async def otp_request(body: OtpRequestIn):
 
 
 @router.post("/otp/verify", response_model=APIResponse[dict])
-async def otp_verify(body: OtpVerifyIn):
-    """Verify the code; auto-create the user; return a JWT."""
-    if not await verify_otp(body.email_address, body.code):
+async def otp_verify(body: OtpVerifyIn, request: Request):
+    """Verify the code; auto-create the user (role "user"); return a JWT."""
+    ip = request.client.host if request.client else None
+    if not await verify_otp(body.email_address, body.code, ip=ip):
         raise HTTPException(status_code=401, detail="Invalid or expired code")
     email = body.email_address.strip().lower()
     user = await prisma.user.find_unique(where={"email_address": email})
     new_user = False
     if user is None:
+        # role defaults to "user" at the DB level (schema default); never
+        # accepted from the caller.
         user = await prisma.user.create(data={"email_address": email})
         new_user = True
+    role = getattr(user, "role", None) or "user"
     return ok(
         {
-            "access_token": create_token(user.id),
+            "access_token": create_token(user.id, role),
             "token_type": "bearer",
             "new_user": new_user,
         }

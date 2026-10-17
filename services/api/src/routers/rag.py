@@ -4,7 +4,7 @@ Powers GIRA agentic guidance retrieval.
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from src.auth import require_auth
+from src.auth import require_role
 from src.db import prisma
 from src.rag import embed_texts, vector_search
 from src.schemas import APIResponse, ok
@@ -22,9 +22,13 @@ class QueryIn(BaseModel):
     top_k: int = 5
 
 
-@router.post("/ingest", response_model=APIResponse[dict],
-             dependencies=[Depends(require_auth)])
-async def ingest(body: IngestIn):
+@router.post("/ingest", response_model=APIResponse[dict])
+async def ingest(
+    body: IngestIn, user_id: str = Depends(require_role("operator"))
+):
+    """Ingest document chunks into the GIRA knowledge base. Operator-only:
+    this KB is what the voice desks answer callers from, so arbitrary users
+    must not be able to poison it (S2; §6.1)."""
     if not body.chunks:
         raise HTTPException(status_code=422, detail="chunks required")
     vectors = await embed_texts(body.chunks)

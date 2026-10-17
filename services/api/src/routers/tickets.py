@@ -1,5 +1,10 @@
-"""Tickets router — issuance, wallet, transfers."""
+"""Tickets router — issuance, wallet, transfers.
+
+Owner IDs come from the token, never the payload; transfers require current
+ownership (S3).
+"""
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from src.auth import require_auth
 from src.db import prisma
@@ -8,28 +13,56 @@ from src.schemas import APIResponse, ok
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
 
-@router.get("/mine", response_model=APIResponse[list],
-            dependencies=[Depends(require_auth)])
-async def my_tickets():
-    # Privy-authenticated lookup goes here; scaffold returns envelope shape.
-    return ok([])
+class TicketIssueIn(BaseModel):
+    eventId: str
+    tier: str = Field(default="general", max_length=50)
 
 
-@router.post("/", response_model=APIResponse[dict],
-             dependencies=[Depends(require_auth)])
-async def issue_ticket(payload: dict):
-    ticket = await prisma.ticket.create(data=payload)
+class TransferIn(BaseModel):
+    ownerId: str
+
+
+@router.get("/mine", response_model=APIResponse[list])
+async def my_tickets(user_id: str = Depends(require_auth)):
+    tickets = await prisma.ticket.find_many(
+        where={"ownerId": user_id}, order={"createdAt": "desc"}
+    )
+    return ok(tickets)
+
+
+@router.post("/", response_model=APIResponse[dict])
+async def issue_ticket(
+    body: TicketIssueIn, user_id: str = Depends(require_auth)
+):
+    """Issue a ticket to the caller. ownerId comes from the token."""
+    event = await prisma.event.find_unique(where={"id": body.eventId})
+    if event is None:
+        raise HTTPException(status_code=404, detail="Event not found")
+    ticket = await prisma.ticket.create(
+        data={
+            "eventId": body.eventId,
+            "ownerId": user_id,
+            "tier": body.tier,
+            "status": "active",
+        }
+    )
     return ok(ticket, message="Ticket issued")
 
 
-@router.post("/{ticket_id}/transfer", response_model=APIResponse[dict],
-             dependencies=[Depends(require_auth)])
-async def transfer_ticket(ticket_id: str, payload: dict):
-    new_owner = payload.get("ownerId")
-    if not new_owner:
-        raise HTTPException(status_code=422, detail="ownerId required")
+@router.post("/{ticket_id}/transfer", response_model=APIResponse[dict])
+async def transfer_ticket(
+    ticket_id: str, body: TransferIn, user_id: str = Depends(require_auth)
+):
+    """Transfer a ticket the caller owns."""
+    ticket = await prisma.ticket.find_unique(where={"id": ticket_id})
+    if ticket is None:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    if ticket.ownerId != user_id:
+        raise HTTPException(
+            status_code=403, detail="Only the ticket owner can transfer it"
+        )
     ticket = await prisma.ticket.update(
         where={"id": ticket_id},
-        data={"ownerId": new_owner, "status": "transferred"},
+        data={"ownerId": body.ownerId, "status": "transferred"},
     )
     return ok(ticket, message="Ticket transferred")

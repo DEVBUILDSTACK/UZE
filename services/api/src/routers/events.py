@@ -1,11 +1,24 @@
-"""Events router — UZE domain. All responses use the APIResponse envelope."""
-from fastapi import APIRouter, Depends, HTTPException
+"""Events router — UZE domain. All responses use the APIResponse envelope.
 
-from src.auth import require_auth
+Event creation is operator-only (S1; §6.1); inputs are typed (S3).
+"""
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+
+from src.auth import require_role
 from src.db import prisma
 from src.schemas import APIResponse, ok
 
 router = APIRouter(prefix="/events", tags=["events"])
+
+
+class EventCreateIn(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    venue: str | None = Field(default=None, max_length=200)
+    city: str | None = Field(default=None, max_length=100)
+    startsAt: datetime
 
 
 @router.get("/", response_model=APIResponse[list])
@@ -24,8 +37,16 @@ async def get_event(event_id: str):
     return ok(event)
 
 
-@router.post("/", response_model=APIResponse[dict],
-             dependencies=[Depends(require_auth)])
-async def create_event(payload: dict):
-    event = await prisma.event.create(data=payload)
+@router.post("/", response_model=APIResponse[dict])
+async def create_event(
+    body: EventCreateIn, user_id: str = Depends(require_role("operator"))
+):
+    event = await prisma.event.create(
+        data={
+            "title": body.title,
+            "venue": body.venue,
+            "city": body.city,
+            "startsAt": body.startsAt,
+        }
+    )
     return ok(event, message="Event created")
