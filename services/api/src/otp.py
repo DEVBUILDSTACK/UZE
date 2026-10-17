@@ -17,6 +17,8 @@ from src.db import redis_client
 
 OTP_TTL_SECONDS = 300
 OTP_REQUEST_LIMIT_PER_HOUR = 5
+OTP_MAX_FAILED_ATTEMPTS = 5  # per code: burn the code after this many failures
+OTP_IP_MAX_FAILED_PER_HOUR = 20  # per source IP across all emails
 
 
 def _otp_key(email: str) -> str:
@@ -25,6 +27,14 @@ def _otp_key(email: str) -> str:
 
 def _rate_key(email: str) -> str:
     return f"otp:rate:{email.strip().lower()}"
+
+
+def _attempt_key(email: str) -> str:
+    return f"otp:attempts:{email.strip().lower()}"
+
+
+def _ip_attempt_key(ip: str) -> str:
+    return f"otp:ip:{ip}"
 
 
 async def request_otp(email_address: str) -> None:
@@ -68,15 +78,38 @@ async def request_otp(email_address: str) -> None:
     )
 
 
-async def verify_otp(email_address: str, code: str) -> bool:
-    """Check a code. Single-use: deleted on success."""
+async def verify_otp(
+    email_address: str, code: str, ip: str | None = None
+) -> bool:
+    """Check a code. Single-use: deleted on success. After
+    OTP_MAX_FAILED_ATTEMPTS failures the code is burned; per-IP failures
+    are capped at OTP_IP_MAX_FAILED_PER_HOUR per hour (S5)."""
     if redis_client is None:
         raise HTTPException(status_code=503, detail="Auth service unavailable")
     email = email_address.strip().lower()
+
+    if ip:
+        ip_count = await redis_client.incr(_ip_attempt_key(ip))
+        if ip_count == 1:
+            await redis_client.expire(_ip_attempt_key(ip), 3600)
+        if ip_count > OTP_IP_MAX_FAILED_PER_HOUR:
+            raise HTTPException(
+                status_code=429,
+                detail="Too many verification attempts from this network",
+            )
+
     stored = await redis_client.get(_otp_key(email))
     if stored is None:
         return False
     if not secrets.compare_digest(stored, code.strip()):
+        attempts = await redis_client.incr(_attempt_key(email))
+        if attempts == 1:
+            await redis_client.expire(_attempt_key(email), OTP_TTL_SECONDS)
+        if attempts >= OTP_MAX_FAILED_ATTEMPTS:
+            # Burn the code: brute-forcing a 6-digit code stops here.
+            await redis_client.delete(_otp_key(email))
+            await redis_client.delete(_attempt_key(email))
         return False
     await redis_client.delete(_otp_key(email))
+    await redis_client.delete(_attempt_key(email))
     return True

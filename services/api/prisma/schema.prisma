@@ -22,6 +22,7 @@ model User {
   email_address String   @unique
   name         String?
   passwordHash String?  // operator accounts only; end users auth via email OTP
+  role         String   @default("user") // user | operator | agent | admin (spec §6.1)
   // SocialFi profile (20-second onboarding) — one profile per user
   handle       String?  @unique
   bio          String?
