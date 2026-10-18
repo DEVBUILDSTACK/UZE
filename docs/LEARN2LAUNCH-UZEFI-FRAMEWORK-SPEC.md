@@ -43,11 +43,6 @@ framework (Altitude provides the APIs; the integration depth is ours):
 - **Platform** — treasury operations: counterparties, Squads multisig as
   account connection. The agent manages money like an institution.
 
-### Risk — explicitly out of scope
-Learn2Launch has no risk-assessment capability and makes no risk decisions
-in this framework. Risk decisions belong to Fundio and the syndicate
-funders.
-
 ## 3. Why this incentivizes adoption
 
 No accelerator project wires five vendors on day one. The framework ships
@@ -74,7 +69,7 @@ not now.
 
 ```
 Join accelerator
-  → Build on the framework out of the box (UZE_KB + x402 + Altitude/Range)
+  → Build on the framework out of the box (UZE_KB + x402 + Altitude)
   → Operate UZE-native: earn, spend, treasury
   → Clear the gates → token pathway and capital access open in time
 ```
