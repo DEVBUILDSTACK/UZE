@@ -50,60 +50,34 @@ Each project that builds this way deepens the framework's usage data and
 integration depth, which makes the next project's decision easier —
 a flywheel: more projects → deeper integration → easier adoption.
 
-## 4. Project token pathway (gated)
+## 4. Project token pathway (gated) — cursory at this stage
 
-Network-effect projects earn the token pathway — it is never day-one.
-Three gates, all must pass:
+Network-effect projects can earn a token pathway — never day-one. Three
+gates: minimum business parameters, stage-gate acceptance, on-chain layer
+maturity. The shape is simple: prove the business, then the token. Detail
+comes later.
 
-1. **Minimum business parameters** — the project demonstrates real
-   operating metrics (to be defined as underwriting criteria).
-2. **Stage-gate acceptance** — formal phase review and sign-off.
-3. **On-chain layer maturity** — the project's on-chain footprint meets
-   the maturity bar (activity, security posture, history).
+## 5. Venture-debt micro-loans — cursory at this stage
 
-On passing, the affiliate unlocks its **project token** issuance within
-the framework.
-
-## 5. Venture-debt micro-loan facility
-
-Affiliates past the gates become eligible for **venture-debt micro-loans**:
-
-- **Syndicate assembly:** lenders assemble as LPs on the UZE launch
-  architecture — standardized, framework-native.
-- **Structure:** **Fundio.vc-led convertible LP syndicate.** Convertible
-  terms give lenders upside (conversion into token/equity), which is what
-  makes micro-loans to early-stage projects economically viable for the
-  syndicate.
-- **Terms:** standardized convertible note / token warrant templates
-  (to be drafted).
-
-This extends Fundio.vc's capital-engine role with Learn2Launch as its
-exclusive affiliation: acceleration in, capital out, all on UZE rails.
+Gated affiliates become eligible for micro-loans through a Fundio.vc-led
+convertible LP syndicate assembled on UZE's launch architecture.
+Mechanics, terms, and legal structuring get designed when we get there —
+not now.
 
 ## 6. The project journey
 
 ```
 Join accelerator
   → Build on the framework out of the box (UZE_KB + x402 + Altitude/Range)
-  → Operate: earn, spend, treasury, compliance — all UZE-native
-  → Hit the three gates (business params, stage-gate, on-chain maturity)
-  → Project token pathway opens
-  → Venture-debt micro-loan eligibility via the Fundio.vc syndicate
+  → Operate UZE-native: earn, spend, treasury, compliance
+  → Clear the gates → token pathway and capital access open in time
 ```
 
-## 7. Hard parts (named, not deferred)
+## 7. Notes for later (not now)
 
-1. **Regulatory.** Pooled lending plus project tokens is the
-   highest-touch piece of this design. Real legal structuring first:
-   accredited LPs, offering exemptions, jurisdictional review — before
-   anything is offered to anyone.
-2. **Underwriting.** "Minimum business parameters" must become actual
-   credit criteria, owned and operated as a function. Owner TBD.
-3. **Syndicate terms.** Convertible note / token warrant templates must
-   be drafted and reviewed before the first assembly.
-4. **Gate discipline.** The Nov 10 testnet boundary applies to every
-   layer: narrative and framework now, live value movement only after
-   the decision gate.
+- Regulatory structuring before any token or lending offer.
+- Underwriting criteria owner TBD.
+- Nov 10 testnet boundary applies to every layer.
 
 ## 8. Status
 
