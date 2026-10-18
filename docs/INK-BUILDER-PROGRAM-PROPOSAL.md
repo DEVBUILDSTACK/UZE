@@ -1,7 +1,8 @@
 # Proposal: Ink Ecosystem-Wide Permissionless Builder Program
 
-**Status:** DRAFT for co-author review (2026-10-15)
+**Status:** DRAFT v2 — updated 2026-10-17 for co-author review (supersedes 2026-10-15 draft)
 **Proposers:** James (456 Innovation Partners / UZE), Nithin Mengani, Jonathan Schmidt
+**Operating vehicle:** Learn2Launch (SocialFi accelerator)
 
 ## Context
 
@@ -23,6 +24,28 @@ without gatekeepers — entry is by building, funding is by demonstrated
 progress. The program serves the whole Ink ecosystem, with a dedicated
 track for **frontier NFT security paired with open finance**.
 
+## Momentum — shipping now
+
+This proposal is backed by live builds, not slides. The proposers are
+already shipping on Ink through Learn2Launch:
+
+- **PINKY** — lead creator NFT collection (#1 of 3 pre-Christmas) on Ink:
+  a character-driven drop with professional voice production and
+  provenance-first minting. The frontier-track thesis in miniature:
+  verifiable creator attribution on every asset.
+- **SURFSAFE.eth** — L2Launch OpenFi micro-project: athlete training &
+  nutrition resources plus a multi-lingual inclusivity social feed
+  following country athletes across five LA28 qualifying pathways
+  (USA, Mozambique, DR, Peru, Brazil). Open finance meets real-world
+  athlete funding — the program's indie-lane pattern, working.
+- **TREE (Trusted Reproducible Execution Environment)** — the provenance
+  infrastructure underneath it all: cryptographic proof of provenance,
+  attestation, and attribution for creators and builders, built to
+  anchor NFT birth certificates and royalty enforcement onchain.
+- **Quotrons track** — Nithin Mengani operates the L2Launch/L2Labs &
+  UZE presence on the Quotrons builder track, building the relationship
+  heft with the Ink ecosystem core.
+
 ## Why this focus
 
 NFTs on L2s face the same frontier problems as DeFi did in 2020:
@@ -33,7 +56,7 @@ converge. Frontier NFT security means:
 
 - **Provenance you can prove:** on-chain birth certificates for media
   (Numbers Protocol / ERC-7053 model), verifiable without exposing raw
-  assets.
+  assets. TREE is our working implementation of this layer.
 - **Secure minting and custody:** audited patterns for drops, soulbound
   credentials, and creator royalties that actually enforce onchain.
 - **Open-finance pairing:** NFT-collateralized lending, fractionalized
@@ -59,12 +82,16 @@ committee. Onboarding via the Quotrons builder registry pattern.
 1. **Teams** — milestone-based funding: prototype → testnet → audit →
    mainnet. Each gate unlocks the next tranche.
 2. **Indie devs** — micro-grants for shipped, working demos; fast review
-   cycles (weekly), small amounts, high trust.
+   cycles (weekly), small amounts, high trust. SURFSAFE.eth is the
+   reference pattern for this lane.
 
 **Frontier track (flagship):** NFT security × open finance builds get
 dedicated review, security-office hours, and audit co-funding. Example
-builds: provenance registries, royalty-enforcing marketplaces,
-NFT-backed lending, verifiable creator credentials.
+builds: provenance registries (TREE), royalty-enforcing marketplaces,
+NFT-backed lending, verifiable creator credentials (PINKY).
+
+**Operated by Learn2Launch:** the accelerator runs intake, review
+cadence, and builder support; the proposers staff the frontier track.
 
 **Funding sources (to be confirmed with Ink/Kraken):** ecosystem grants,
 Kraken-aligned sponsorship, and programmatic revenue share from
@@ -76,23 +103,33 @@ graduated projects. Terms negotiated, not assumed.
   provenance & IP protection) and the UZE ecosystem; frontier NFT
   security is the home turf — provenance, attestation, attribution, and
   programmatic revenue share are already the UZE architecture.
-- **Nithin Mengani:** co-author; program operations and builder relations.
-- **Jonathan Schmidt:** co-author; ecosystem partnerships.
+- **Nithin Mengani:** co-author; operates the L2Launch (L2Labs) & UZE
+  track — program operations and builder relations.
+- **Jonathan Schmidt:** co-author; ecosystem partnerships and the
+  OpenFi/NFT animation pipeline (PINKY).
 
 ## Alignment with Ink leadership
 
 - **@kurtg** — lead dev community principal; primary contact for program
-  coordination.
+  coordination. Outreach draft prepared; sending awaits proposer approval.
 - **@cruelhandeth** — ecosystem lead; engaged on strategic direction
   (noting his limited bandwidth for day-to-day dev interaction).
 
 ## Ask
 
 1. Ink/Kraken recognition of the program as an ecosystem-wide builder
-   track.
+   track — with the three live builds (PINKY, SURFSAFE.eth, TREE) acknowledged
+   as pilot entries.
 2. Coordination with KurtG on registry, promotion, and funding rails.
 3. A first funding pool to seed the Teams and Indie lanes, with the
    frontier NFT-security track as the flagship.
+
+## Immediate next steps
+
+1. Co-author review of this v2 draft (Nithin, Jonathan).
+2. Approval to send the prepared KurtG outreach.
+3. First funding-pool conversation with Ink/Kraken, anchored on the
+   live pilots — momentum first, paperwork second.
 
 ## References
 
