@@ -1,6 +1,6 @@
 # Proposal: Ink Ecosystem-Wide Permissionless Builder Program
 
-**Status:** DRAFT v2 — updated 2026-10-17 for co-author review (supersedes 2026-10-15 draft)
+**Status:** DRAFT v2.1 — updated 2026-10-17 (correction: SURFSAFE.eth removed — it is James's personal initiative, not a UZE/Learn2Launch program)
 **Proposers:** James (456 Innovation Partners / UZE), Nithin Mengani, Jonathan Schmidt
 **Operating vehicle:** Learn2Launch (SocialFi accelerator)
 
@@ -33,11 +33,6 @@ already shipping on Ink through Learn2Launch:
   a character-driven drop with professional voice production and
   provenance-first minting. The frontier-track thesis in miniature:
   verifiable creator attribution on every asset.
-- **SURFSAFE.eth** — L2Launch OpenFi micro-project: athlete training &
-  nutrition resources plus a multi-lingual inclusivity social feed
-  following country athletes across five LA28 qualifying pathways
-  (USA, Mozambique, DR, Peru, Brazil). Open finance meets real-world
-  athlete funding — the program's indie-lane pattern, working.
 - **TREE (Trusted Reproducible Execution Environment)** — the provenance
   infrastructure underneath it all: cryptographic proof of provenance,
   attestation, and attribution for creators and builders, built to
@@ -82,8 +77,8 @@ committee. Onboarding via the Quotrons builder registry pattern.
 1. **Teams** — milestone-based funding: prototype → testnet → audit →
    mainnet. Each gate unlocks the next tranche.
 2. **Indie devs** — micro-grants for shipped, working demos; fast review
-   cycles (weekly), small amounts, high trust. SURFSAFE.eth is the
-   reference pattern for this lane.
+   cycles (weekly), small amounts, high trust — funding follows working
+   code, not decks.
 
 **Frontier track (flagship):** NFT security × open finance builds get
 dedicated review, security-office hours, and audit co-funding. Example
@@ -118,7 +113,7 @@ graduated projects. Terms negotiated, not assumed.
 ## Ask
 
 1. Ink/Kraken recognition of the program as an ecosystem-wide builder
-   track — with the three live builds (PINKY, SURFSAFE.eth, TREE) acknowledged
+   track — with the two live builds (PINKY, TREE) acknowledged
    as pilot entries.
 2. Coordination with KurtG on registry, promotion, and funding rails.
 3. A first funding pool to seed the Teams and Indie lanes, with the
