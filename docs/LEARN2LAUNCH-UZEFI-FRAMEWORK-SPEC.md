@@ -1,4 +1,4 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.3
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.5
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
 
@@ -35,18 +35,19 @@ bundling: the path of least resistance runs through our services.
 - Testnet only until the 2026-11-10 decision gate. Every live charge needs
   per-action approval naming account, amount, asset, and timing.
 
-### Layer 3 — Altitude (treasury as a service)
-We operate Altitude's capabilities as a managed service inside the
-framework (Altitude provides the APIs; the integration depth is ours):
-- **Data** — financial memory: balances, transaction history across
-  Solana addresses. The agent knows what it holds.
-- **Platform** — treasury operations: counterparties, Squads multisig as
-  account connection. The agent manages money like an institution.
+### Layer 3 — Altitude + Range (wallet and treasury services)
+- **Altitude** — hierarchical wallet as a service and treasury as a
+  service, on Solana-based wallets: treasury and funding accounts, payment
+  accounts, with Squads multisig connected as an account connection for
+  unified monitoring.
+- **Range** — dashboarding from Altitude's treasury layer, plus EVM
+  account connectivity: where Altitude is Solana-based, Range connects
+  EVM accounts, including EVM wallet use with Safe multisig.
 
 ## 3. Why this incentivizes adoption
 
 No accelerator project wires five vendors on day one. The framework ships
-with all four layers already working, so the default choice is our stack.
+with the full stack already working, so the default choice is our stack.
 Each project that builds this way deepens the framework's usage data and
 integration depth, which makes the next project's decision easier —
 a flywheel: more projects → deeper integration → easier adoption.
