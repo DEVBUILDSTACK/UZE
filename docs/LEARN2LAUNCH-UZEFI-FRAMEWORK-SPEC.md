@@ -1,4 +1,4 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.5
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.6
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
 
@@ -37,12 +37,21 @@ bundling: the path of least resistance runs through our services.
 
 ### Layer 3 — Altitude + Range (wallet and treasury services)
 - **Altitude** — hierarchical wallet as a service and treasury as a
-  service, on Solana-based wallets: treasury and funding accounts, payment
-  accounts, with Squads multisig connected as an account connection for
-  unified monitoring.
-- **Range** — dashboarding from Altitude's treasury layer, plus EVM
-  account connectivity: where Altitude is Solana-based, Range connects
-  EVM accounts, including EVM wallet use with Safe multisig.
+  service, on Solana-based wallets: workspaces holding accounts and
+  balances, transaction activity with amounts, counterparties, and
+  statuses, Squads multisig connected as an account connection, document
+  exports for records. Sources: docs.altitude.xyz/mcp/overview; the UZE.fi
+  W3 Treasury Google Doc.
+- **Range** — dashboarding from the treasury layer, plus EVM account
+  connectivity. Per Range's own docs, the Platform API exists to keep
+  internal tools, ERPs, and dashboards in sync with the Range workspace
+  (their "single source of truth"); the Data API queries addresses across
+  EVM chains, Solana, Stellar, and Cosmos through one interface; account
+  management covers EOAs, multisigs (Squads, Realms, Safe), custodians,
+  and exchanges. Where Altitude is Solana-based, Range connects the EVM
+  accounts — including EVM wallet use with Safe multisig. Sources:
+  docs.range.org/platform-api/platform-introduction,
+  docs.range.org/data-api/data-introduction.
 
 ## 3. Why this incentivizes adoption
 
