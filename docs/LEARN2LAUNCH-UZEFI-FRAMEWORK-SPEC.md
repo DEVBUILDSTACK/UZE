@@ -1,4 +1,4 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.1
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.3
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
 
@@ -6,8 +6,8 @@
 
 The Learn2Launch UZE.fi framework is the out-of-the-box stack every
 Learn2Launch accelerator project builds on. A project that joins the
-accelerator gets knowledge infrastructure, agentic payments, treasury
-operations, and risk screening working on day one — which means it is
+accelerator gets knowledge infrastructure, agentic payments, and treasury
+operations working on day one — which means it is
 **truly building on UZE by default**, not by wiring five vendors together.
 
 The framework is the enticement. Adoption of each layer follows from
@@ -24,23 +24,29 @@ bundling: the path of least resistance runs through our services.
 
 ### Layer 2 — Agentic x402 (payment rail)
 - Agents pay per request in USDC, HTTP-native (HTTP 402), no accounts or
-  API keys. Metered per tenant, settled on-chain.
+  API keys.
+- Permissionless and non-custodial: the accelerated company owns and
+  controls its x402 accounts. Learn2Launch does not meter, hold, or
+  operate these accounts.
+- Cash-based, so no credit risk: a payment clears only if the account
+  holds the USDC; otherwise the request errors. The company keeps its
+  accounts funded and sets its own programmatic rules — spend limits,
+  allowlists — governing what its agents may buy.
 - Testnet only until the 2026-11-10 decision gate. Every live charge needs
   per-action approval naming account, amount, asset, and timing.
 
-### Layer 3 — Altitude hierarchy (treasury as a service)
+### Layer 3 — Altitude (treasury as a service)
 We operate Altitude's capabilities as a managed service inside the
 framework (Altitude provides the APIs; the integration depth is ours):
 - **Data** — financial memory: balances, transaction history across
   Solana addresses. The agent knows what it holds.
 - **Platform** — treasury operations: counterparties, Squads multisig as
   account connection. The agent manages money like an institution.
-- **Risk** — screening: every payment screens the counterparty before it
-  clears.
 
-### Layer 4 — Range (security intelligence)
-- Independent risk intelligence complementing Altitude Risk: address
-  screening and threat signals before funds move.
+### Risk — explicitly out of scope
+Learn2Launch has no risk-assessment capability and makes no risk decisions
+in this framework. Risk decisions belong to Fundio and the syndicate
+funders.
 
 ## 3. Why this incentivizes adoption
 
@@ -69,7 +75,7 @@ not now.
 ```
 Join accelerator
   → Build on the framework out of the box (UZE_KB + x402 + Altitude/Range)
-  → Operate UZE-native: earn, spend, treasury, compliance
+  → Operate UZE-native: earn, spend, treasury
   → Clear the gates → token pathway and capital access open in time
 ```
 
