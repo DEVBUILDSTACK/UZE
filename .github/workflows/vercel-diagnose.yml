@@ -1,0 +1,21 @@
+name: Vercel Diagnose (temporary)
+on:
+  workflow_dispatch:
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Inspect latest deployment
+        run: vercel inspect https://uze-297muydso-uze2.vercel.app --token=${{ secrets.VERCEL_TOKEN }} || true
+      - name: Inspect first deployment
+        run: vercel inspect https://uze-q98mbhao7-uze2.vercel.app --token=${{ secrets.VERCEL_TOKEN }} || true
+      - name: Project settings
+        run: vercel project inspect uze-web --token=${{ secrets.VERCEL_TOKEN }} || true
+      - name: Recent deployments
+        run: vercel ls uze-web --token=${{ secrets.VERCEL_TOKEN }} || true
