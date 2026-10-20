@@ -1,12 +1,12 @@
 /** Step 4: bio + interests -> create the profile (mints referral code). */
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createProfile, loadToken } from "@/lib/onboard";
 
 const SUGGESTED = ["F1", "VIP", "Concerts", "Festivals", "DJ sets", "Football"];
 
-export default function OnboardProfile() {
+function OnboardProfileForm() {
   const router = useRouter();
   const search = useSearchParams();
   const [bio, setBio] = useState("");
@@ -76,5 +76,13 @@ export default function OnboardProfile() {
       </form>
       {error && <p role="alert">{error}</p>}
     </main>
+  );
+}
+
+export default function OnboardProfile() {
+  return (
+    <Suspense fallback={null}>
+      <OnboardProfileForm />
+    </Suspense>
   );
 }
