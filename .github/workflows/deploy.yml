@@ -109,6 +109,11 @@ jobs:
       - name: Build (verify compile)
         working-directory: ./apps/uze-web
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Deploy (remote build, no-wait)
+      - name: Stage deploy copy outside git tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/uze-web-deploy"
+          tar --exclude=node_modules --exclude=.next -cf - . | (cd "$RUNNER_TEMP/uze-web-deploy" && tar xf -)
         working-directory: ./apps/uze-web
+      - name: Deploy (remote build, no-wait, no git metadata)
+        working-directory: ${{ runner.temp }}/uze-web-deploy
         run: vercel deploy --prod --no-wait --token=${{ secrets.VERCEL_TOKEN }}
