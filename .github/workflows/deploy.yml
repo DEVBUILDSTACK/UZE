@@ -17,29 +17,43 @@ env:
 
 jobs:
   # Fails fast with a readable checklist when deploy secrets aren't set,
-  # instead of two cryptic job failures. Add secrets at:
+  # instead of two cryptic job failures. GCP and Vercel targets are gated
+  # independently, so the web deploy is not blocked by the GCP project
+  # decision. Add secrets at:
   # GitHub repo -> Settings -> Secrets and variables -> Actions.
-  preflight:
+  preflight-gcp:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify deploy secrets
+      - name: Verify GCP deploy secrets
         run: |
           missing=""
           [ -n "${{ secrets.GCP_SA_KEY }}" ] || missing="$missing GCP_SA_KEY"
           [ -n "${{ secrets.GCP_PROJECT_ID }}" ] || missing="$missing GCP_PROJECT_ID"
           [ -n "${{ secrets.GCP_REGION }}" ] || missing="$missing GCP_REGION"
           [ -n "${{ secrets.ARTIFACT_REGISTRY_REPO }}" ] || missing="$missing ARTIFACT_REGISTRY_REPO"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing GCP secrets:$missing — add them under repo Settings -> Secrets and variables -> Actions (see docs/DEPLOY.md)."
+            exit 1
+          fi
+          echo "GCP deploy secrets present."
+
+  preflight-vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Vercel deploy secrets
+        run: |
+          missing=""
           [ -n "${{ secrets.VERCEL_TOKEN }}" ] || missing="$missing VERCEL_TOKEN"
           [ -n "${{ secrets.VERCEL_ORG_ID }}" ] || missing="$missing VERCEL_ORG_ID"
           [ -n "${{ secrets.VERCEL_PROJECT_ID }}" ] || missing="$missing VERCEL_PROJECT_ID"
           if [ -n "$missing" ]; then
-            echo "::error::Missing GitHub secrets:$missing — add them under repo Settings -> Secrets and variables -> Actions (see docs/DEPLOY.md)."
+            echo "::error::Missing Vercel secrets:$missing — add them under repo Settings -> Secrets and variables -> Actions."
             exit 1
           fi
-          echo "All deploy secrets present."
+          echo "Vercel deploy secrets present."
 
   api-cloudrun:
-    needs: [preflight]
+    needs: [preflight-gcp]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +87,7 @@ jobs:
             --memory 1Gi --cpu 1 --min-instances 0 --max-instances 10
 
   web-vercel:
-    needs: [preflight]
+    needs: [preflight-vercel]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
