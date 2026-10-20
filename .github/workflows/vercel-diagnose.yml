@@ -12,7 +12,7 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Inspect latest deployment
-        run: vercel inspect https://uze-297muydso-uze2.vercel.app --token=${{ secrets.VERCEL_TOKEN }} || true
+        run: vercel inspect https://uze-b6ekx2ds9-uze2.vercel.app --logs --token=${{ secrets.VERCEL_TOKEN }} || true
       - name: Inspect first deployment
         run: vercel inspect https://uze-q98mbhao7-uze2.vercel.app --token=${{ secrets.VERCEL_TOKEN }} || true
       - name: Project settings
