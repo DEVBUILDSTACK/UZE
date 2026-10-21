@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import SiteNav from "@/components/site-nav";
 import "./globals.css";
 
 export const metadata = {
@@ -11,15 +11,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <header className="site-header">
-          <nav>
-            <Link className="brand" href="/">
-              UZE
-            </Link>
-            <Link href="/guidance">GIRA Guidance</Link>
-            <Link href="/onboard">Create your profile</Link>
-          </nav>
-        </header>
+        <SiteNav />
         {children}
       </body>
     </html>

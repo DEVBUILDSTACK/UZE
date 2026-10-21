@@ -1,47 +1,210 @@
-/* Minimal base styling for the uze-web evaluation build.
-   Deliberately small: readable type, clear links, simple cards. */
+/* UZE design language, ported from the approved dynamic mockup:
+   black-glass surfaces, winter-white text, and the Solana
+   violet -> blue -> green ombre as the UZE/GIRA brand accent.
+   (The cream / black-glass / tangerine language belongs to UZED.si
+   surfaces and is deliberately not used here.) */
+
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+  --bg: #06060c;
+  --panel: rgba(255, 255, 255, 0.045);
+  --panel-strong: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #f5f4ef; /* winter white */
+  --muted: rgba(245, 244, 239, 0.62);
+  --ombre: linear-gradient(
+    92deg,
+    #9945ff 0%,
+    #8752f3 22%,
+    #5497d5 48%,
+    #43b4ca 68%,
+    #28e0b9 86%,
+    #19fb9b 100%
+  );
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.5;
-  color: #111;
-  background: #fff;
+  line-height: 1.55;
+  color: var(--text);
+  background:
+    radial-gradient(60rem 30rem at 85% -10%, rgba(153, 69, 255, 0.16), transparent 60%),
+    radial-gradient(50rem 26rem at -10% 20%, rgba(25, 251, 155, 0.08), transparent 55%),
+    var(--bg);
+  min-height: 100vh;
 }
 
 main {
-  max-width: 44rem;
+  max-width: 46rem;
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: 1.75rem 1rem 3.5rem;
 }
 
 a {
-  color: #0b5fff;
+  color: #8ab8ff;
 }
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+}
+
+/* ---- Header + hamburger drawer (mirrors the mockup's collapsible nav) ---- */
 
 .site-header {
-  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(6, 6, 12, 0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
 }
 
-.site-header nav {
-  max-width: 44rem;
+.site-header .bar {
+  max-width: 46rem;
   margin: 0 auto;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
   display: flex;
-  gap: 1.25rem;
-  align-items: baseline;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
 }
 
-.site-header .brand {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #111;
-  text-decoration: none;
+.menu-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 10px;
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
 }
+
+.brand {
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.brand .gira {
+  background: var(--ombre);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-left: 0.45rem;
+}
+
+.site-header .quick {
+  margin-left: auto;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 49;
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100dvh;
+  width: min(19rem, 86vw);
+  background: rgba(10, 10, 18, 0.97);
+  border-right: 1px solid var(--border);
+  transform: translateX(-102%);
+  transition: transform 0.22s ease;
+  z-index: 50;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.drawer.open {
+  transform: translateX(0);
+}
+
+.drawer .drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.drawer nav {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.drawer nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid transparent;
+}
+
+.drawer nav a:hover {
+  border-color: var(--border);
+}
+
+.drawer h3 {
+  margin: 1.4rem 0 0.5rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.drawer ul.markets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.drawer ul.markets a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  display: block;
+}
+
+.drawer .drawer-foot {
+  margin-top: 1.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---- Shared elements ---- */
 
 .chips {
   display: flex;
@@ -51,18 +214,20 @@ a {
 }
 
 .chip {
-  border: 1px solid #bbb;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
   border-radius: 999px;
-  padding: 0.3rem 0.9rem;
+  padding: 0.35rem 0.95rem;
   font-size: 0.95rem;
   cursor: pointer;
 }
 
 .chip[aria-pressed="true"] {
-  background: #111;
-  color: #fff;
-  border-color: #111;
+  background: var(--ombre);
+  color: #06060c;
+  font-weight: 700;
+  border-color: transparent;
 }
 
 .cards {
@@ -74,9 +239,11 @@ a {
 }
 
 .card {
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem;
+  backdrop-filter: blur(8px);
 }
 
 .card h3 {
@@ -84,7 +251,7 @@ a {
 }
 
 .card .meta {
-  color: #555;
+  color: var(--muted);
   font-size: 0.9rem;
   margin: 0 0 0.5rem;
 }
@@ -94,9 +261,10 @@ a {
 }
 
 .ask {
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem;
   margin-top: 2rem;
 }
 
@@ -106,26 +274,57 @@ a {
   flex-wrap: wrap;
 }
 
-.ask input {
+input[type="text"],
+input[type="email"] {
   flex: 1 1 16rem;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.8rem;
   font-size: 1rem;
-  border: 1px solid #bbb;
-  border-radius: 8px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
-.ask button,
-form button {
-  padding: 0.55rem 1.1rem;
+input::placeholder {
+  color: var(--muted);
+}
+
+form button,
+.ask button {
+  padding: 0.6rem 1.2rem;
   font-size: 1rem;
+  font-weight: 700;
   border: 0;
-  border-radius: 8px;
-  background: #2f6bff;
-  color: #fff;
+  border-radius: 10px;
+  background: var(--ombre);
+  color: #06060c;
   cursor: pointer;
 }
 
 .note {
-  color: #555;
+  color: var(--muted);
   font-size: 0.9rem;
+}
+
+.home-links {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.home-links a {
+  display: block;
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+
+.home-links a:hover {
+  background: var(--panel-strong);
 }

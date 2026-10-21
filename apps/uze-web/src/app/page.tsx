@@ -13,7 +13,7 @@ export default function Home() {
         happening, and how to be there.
       </p>
       <nav>
-        <ul>
+        <ul className="home-links">
           <li>
             <Link href="/guidance">See how GIRA guidance works</Link>
           </li>
