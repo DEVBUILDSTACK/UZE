@@ -1,6 +1,10 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.7
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.8
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
+
+**Revision v0.8 (2026-10-21):** §3 extended — provisioning runs through
+one intake process, Jev routing the flavor decision and scoring each
+stage gate, identically on both flavors.
 
 **Revision v0.7 (2026-10-21):** new §3 — the standard build, the go-to
 full-stack operation: Python as the core organization architecture, a
@@ -89,6 +93,16 @@ official `typesafe-sdk` (the worked first build in the Jev decision
 layer design); the NodeJS flavor runs the template. One design, two
 implementations.
 
+**Provisioning runs through one intake.** A project enters the
+framework through the provisioning intake — intake, scope, spec, team
+structure, build, test and monitor, deployment — with Jev routing the
+flavor decision at intake and scoring each stage gate from the
+evidence. Administrative and organization roles sit on Python/FastAPI
+by default; the project team runs its routed flavor. Because both
+flavors call the same decision endpoint on the same criteria, the
+intake behaves identically whichever runtime a team runs. Process
+detail: the Launchpad Provisioning — Intake Process (LEAD_GEN docs).
+
 Test mode until the 2026-11-10 decision gate applies to the standard
 build exactly as it applies to every layer: L3 for anything published
 or sent, L4 per-action for anything financial.
@@ -132,6 +146,6 @@ Join accelerator
 
 ## 9. Status
 
-DRAFT v0.7 — internal. Awaiting James's review and corrections. Open
+DRAFT v0.8 — internal. Awaiting James's review and corrections. Open
 inputs needed: underwriting criteria owner, legal structuring lead,
 syndicate term templates.
