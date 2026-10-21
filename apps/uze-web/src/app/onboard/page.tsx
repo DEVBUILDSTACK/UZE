@@ -2,6 +2,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { requestOtp } from "@/lib/onboard";
 
 export default function OnboardEmail() {
@@ -19,7 +20,7 @@ export default function OnboardEmail() {
       sessionStorage.setItem("uze_onboard_email", email.trim().toLowerCase());
       router.push("/onboard/verify");
     } catch {
-      setError("Couldn't send the code — check the email and try again.");
+      setError("Couldn't send the code right now. You don't need one to look around — browse the public site below.");
     } finally {
       setBusy(false);
     }
@@ -42,6 +43,11 @@ export default function OnboardEmail() {
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
+      <p>
+        Just evaluating with the team?{" "}
+        <Link href="/">Browse the public site first</Link> — no email
+        needed to look around.
+      </p>
     </main>
   );
 }

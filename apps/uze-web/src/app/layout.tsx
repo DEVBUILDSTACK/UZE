@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export const metadata = {
   title: "UZE",
-  description: "Create your UZE profile in 20 seconds.",
+  description: "Talent, tickets, touring and stay — one AI ecosystem.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
