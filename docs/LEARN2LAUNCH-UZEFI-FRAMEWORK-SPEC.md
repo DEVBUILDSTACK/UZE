@@ -1,6 +1,12 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.6
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.7
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
+
+**Revision v0.7 (2026-10-21):** new §3 — the standard build, the go-to
+full-stack operation: Python as the core organization architecture, a
+defined NodeJS flavor (Drizzle ORM instead of Prisma; Jev x AI SDK Form
+Router in native form), and the Jev Form Router shipping with both
+flavors. Later sections renumbered; their content is unchanged.
 
 ## 1. Purpose
 
@@ -53,7 +59,41 @@ bundling: the path of least resistance runs through our services.
   docs.range.org/platform-api/platform-introduction,
   docs.range.org/data-api/data-introduction.
 
-## 3. Why this incentivizes adoption
+## 3. The standard build — the go-to full-stack operation
+
+Every Learn2Launch project is built the same way UZE was built: the
+same repository shape, the same deploy path, the same gates. The
+framework layers in §2 plug into this standard build — a project does
+not choose how to build, it chooses which flavor of the one build.
+
+**Core organization architecture: Python.** The default and the
+reference implementation. FastAPI back end, Pydantic models, **Prisma
+ORM** as we have implemented it in the UZE build (schema in the API
+service), Neon Postgres, Resend for email, Next.js for the web front
+end. Deploys run through GitHub: Vercel for the web, Cloud Run for the
+API when the GCP project decision lands.
+
+**The NodeJS flavor.** A project may take the Node flavor of the same
+build instead: a Node.js back end (Next.js), **Drizzle ORM instead of
+Prisma**, and the **Jev x AI SDK Form Router in its native form** —
+the Vercel template (AI SDK `experimental_evaluate`, Jev reached via
+Vercel AI Gateway). Same layers, same deploy path, same gates, same
+behavior — a different runtime, not a different operation.
+
+**The Jev Form Router ships with both flavors.** Every project's
+intake — leads, contact, issue reports — is routed by content, not by
+hand: Jev decides the destination at the ≥0.95 confidence policy, a
+fallback model decides below it, and delivery goes out via Resend with
+the routing decision on record. The Python core runs the router on the
+official `typesafe-sdk` (the worked first build in the Jev decision
+layer design); the NodeJS flavor runs the template. One design, two
+implementations.
+
+Test mode until the 2026-11-10 decision gate applies to the standard
+build exactly as it applies to every layer: L3 for anything published
+or sent, L4 per-action for anything financial.
+
+## 4. Why this incentivizes adoption
 
 No accelerator project wires five vendors on day one. The framework ships
 with the full stack already working, so the default choice is our stack.
@@ -61,21 +101,21 @@ Each project that builds this way deepens the framework's usage data and
 integration depth, which makes the next project's decision easier —
 a flywheel: more projects → deeper integration → easier adoption.
 
-## 4. Project token pathway (gated) — cursory at this stage
+## 5. Project token pathway (gated) — cursory at this stage
 
 Network-effect projects can earn a token pathway — never day-one. Three
 gates: minimum business parameters, stage-gate acceptance, on-chain layer
 maturity. The shape is simple: prove the business, then the token. Detail
 comes later.
 
-## 5. Venture-debt micro-loans — cursory at this stage
+## 6. Venture-debt micro-loans — cursory at this stage
 
 Gated affiliates become eligible for micro-loans through a Fundio.vc-led
 convertible LP syndicate assembled on UZE's launch architecture.
 Mechanics, terms, and legal structuring get designed when we get there —
 not now.
 
-## 6. The project journey
+## 7. The project journey
 
 ```
 Join accelerator
@@ -84,14 +124,14 @@ Join accelerator
   → Clear the gates → token pathway and capital access open in time
 ```
 
-## 7. Notes for later (not now)
+## 8. Notes for later (not now)
 
 - Regulatory structuring before any token or lending offer.
 - Underwriting criteria owner TBD.
 - Nov 10 testnet boundary applies to every layer.
 
-## 8. Status
+## 9. Status
 
-DRAFT v0.1 — internal. Awaiting James's review and corrections. Open
+DRAFT v0.7 — internal. Awaiting James's review and corrections. Open
 inputs needed: underwriting criteria owner, legal structuring lead,
 syndicate term templates.
