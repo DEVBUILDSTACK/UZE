@@ -1,6 +1,6 @@
 # UZE — Knowledge Index
 
-_Auto-assembled 2026-10-19. Source of truth: this repo._
+_Auto-assembled 2026-10-26. Source of truth: this repo._
 
 - **[C3 Affiliate Blog Builder — voice-driven white-labeled blogs](docs/AFFILIATE-BLOG-BUILDER.md)** — Google Play now supports **private vibe-coded apps built in Google AI Studio**: describe the app, install it on your own Android via Play, invisible to everyone else. US-only, 18+ at launch; sharing with trusted circles coming; public publishing after safety review. ([TechCrunch]
 - **[Affiliate Content Network — Expanded Overview](docs/AFFILIATE-CONTENT-NETWORK-OVERVIEW.md)** — One multi-agent content engine serves all three: it produces the influence that fills the venues, the deal flow that feeds the venture, and the reputation that compounds the accelerator.
@@ -19,9 +19,9 @@ _Auto-assembled 2026-10-19. Source of truth: this repo._
 - **[KVM2 Tri-Level Agentic Voice — Specification](docs/KVM2-AGENTIC-VOICE-SPEC.md)** — Each desk is an agent persona with its own knowledge scope, but all share the caller context from L1 and the UZE backend (events, listings, user profile).
 - **[Learn2Launch Accelerator — Software Stack: Open Decisions & Needs](docs/LEARN2LAUNCH-ACCELERATOR-SOFTWARE-STACK-DECISIONS.md)**
 - **[Learn2Launch Accelerator — Program Software Stack (DRAFT v0.1)](docs/LEARN2LAUNCH-ACCELERATOR-SOFTWARE-STACK.md)** — The four software components plus entity affiliate categorization, pulled together as the accelerator program's software stack.
-- **[Learn2Launch Org — Program Software Stack (DRAFT v0.1)](docs/LEARN2LAUNCH-ORG-PROGRAM-SOFTWARE-STACK.md)** — The software features of the Learn2Launch Org program stack:
+- **[Learn2Launch Org — Program Software Stack (DRAFT v0.2)](docs/LEARN2LAUNCH-ORG-PROGRAM-SOFTWARE-STACK.md)** — The software features of the Learn2Launch Org program stack:
 - **[Learn2Launch Org — Program Stack Architecture (DRAFT v0.1)](docs/LEARN2LAUNCH-ORG-PROGRAM-STACK-ARCHITECTURE.md)** — Companion to `LEARN2LAUNCH-UZEFI-FRAMEWORK-SPEC.md` (the tech stack accelerator companies build on). This document is the Org's program stack: the programs, rails, and services Learn2Launch runs and offers.
-- **[Learn2Launch UZE.fi Framework Spec — DRAFT v0.6](docs/LEARN2LAUNCH-UZEFI-FRAMEWORK-SPEC.md)** — The Learn2Launch UZE.fi framework is the out-of-the-box stack every Learn2Launch accelerator project builds on. A project that joins the accelerator gets knowledge infrastructure, agentic payments, and treasury operations working on day one — which means it is **truly building on
+- **[Learn2Launch UZE.fi Framework Spec — DRAFT v0.8](docs/LEARN2LAUNCH-UZEFI-FRAMEWORK-SPEC.md)** — The Learn2Launch UZE.fi framework is the out-of-the-box stack every Learn2Launch accelerator project builds on. A project that joins the accelerator gets knowledge infrastructure, agentic payments, and treasury operations working on day one — which means it is **truly building on
 - **[Numbers Protocol × Arcium — Private AI Media Provenance (2026-10-15)](docs/NUMBERS-ARCIUM-PROVENANCE.md)** — GitHub-side architecture (per James). Vendor names stay in GitHub only — never in the public mockup. Sole public exception: Numbers Protocol.
 - **[Persona Roster & Cross-Scheduling Config](docs/PERSONA-ROSTER-2026-10-16.md)** — Existing cast unchanged: **GIRA** (UZE in-app agent), **SoSim** (music/agency), **SoSeem** (this agent). No collisions.
 - **[Secrets / Credentials Triage — UZE Deploy Pipeline](docs/SECRETS-TRIAGE.md)** — Referenced in `deploy.yml` as `uze-database-url`, `uze-direct-url`, `uze-redis-url`, `uze-secret-key` (`--set-secrets`).
