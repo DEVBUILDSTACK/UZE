@@ -1,4 +1,4 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.9
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.10
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
 
@@ -103,6 +103,8 @@ flavors call the same decision endpoint on the same criteria, the
 intake behaves identically whichever runtime a team runs. Process
 detail: the Launchpad Provisioning — Intake Process (LEAD_GEN docs).
 
+**Model access: Vercel AI Gateway.** Both flavors reach models through one layer: Vercel AI Gateway. The Node flavor uses the AI SDK; the Python core uses the AI SDK for Python (public beta), with the Gateway's OpenAI- and Anthropic-compatible surfaces as the path for existing clients. Authentication, model naming (provider/model slugs), routing, provider fallbacks, and BYOK are shared across surfaces, so switching surface is a client-side change only; billing, observability, and budgets consolidate in the Gateway. `AI_GATEWAY_API_KEY` stays server-side, and Vercel deployments may authenticate by OIDC instead. Jev decisions ride the same layer — the Gateway carries TypeSafe and Decisions surfaces — per the Jev design. Beta caveat, recorded plainly: the Python SDK is a public beta on its own version cycle, so the compatible-API surfaces are the stable path until it settles.
+
 **The development gate for agent work.** Every project here is hybrid — human, agent, and mostly multi-agent — so agent work is developed the way the rest of the build is tested. From the starting point, every agent workflow development, agentic swarm or team workflow, and agent-built project architecture in the standard build is developed and evaluated in **Vercel Sandbox** using **Scale AI's AgentEnv**: tasks defined in advance, results scored, the agent and its task environment running in separate Sandboxes. No agent workflow goes live without a passing eval baseline, and a change to an agent's rules re-runs its suite. The gate is necessary, never sufficient — the human approval gates stand unchanged above it. The worked implementation is **UZE_MATTY-P**, the Learn2Launch deep research team (spec in LEAD_GEN docs).
 
 Test mode until the 2026-11-10 decision gate applies to the standard
@@ -148,6 +150,6 @@ Join accelerator
 
 ## 9. Status
 
-DRAFT v0.9 — internal. Awaiting James's review and corrections. Open
+DRAFT v0.10 — internal. Awaiting James's review and corrections. Open
 inputs needed: underwriting criteria owner, legal structuring lead,
 syndicate term templates.
