@@ -109,8 +109,15 @@ Voice layer is voice-only; nothing on the website until James publishes it.
 
 ---
 
+## K. Verification (DetectifAI)
+
+| Name | Type | Owner | Vault | Last rotated | Status |
+|---|---|---|---|---|---|
+| DetectifAI (platform.detectif.ai) | API key (Bearer) — Aletheia / Eidos / Noesis + MCP | James | TBD — dashboard-issued, to vault on provisioning | — | ⬜ designated 2026-10-28 — not yet provisioned |
+
 ## Change log (append-only)
 
 | Date | Event |
 |---|---|
+| 2026-10-28 | DetectifAI designated as the framework's voice-verification provider (framework spec §8, DRAFT v0.11); account + API key provisioning pending James's go. |
 | 2026-10-14 | Registry created from SECRETS-TRIAGE.md pattern, per James. Covers deploy, comms, data, voice, treasury, payouts/payroll, WaaS, DeFi, x402, domains/hosting. Financial sections added per James 2026-10-14. Most entries ⬜ uncharted — team fills owners/vault placement as each is confirmed. |

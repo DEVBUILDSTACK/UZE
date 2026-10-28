@@ -1,6 +1,8 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.10
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.11
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
+
+**Revision v0.11 (2026-10-28):** new §8 — project and client verification: the DetectifAI voice verification layer (Aletheia, Eidos, Noesis) for information markets, data integrity, and AI-scraping / synthetic-media risk. Designated at James's direction; account and API key provisioning pending. Prior §§8–9 renumbered §§9–10.
 
 **Revision v0.8 (2026-10-21):** §3 extended — provisioning runs through
 one intake process, Jev routing the flavor decision and scoring each
@@ -142,14 +144,30 @@ Join accelerator
   → Clear the gates → token pathway and capital access open in time
 ```
 
-## 8. Notes for later (not now)
+## 8. Project and client verification — the voice verification layer (DetectifAI)
+
+Information markets run on data, and the data environment is adversarial: AI scraping and synthetic media can manufacture voices, attestations, and engagement. The framework therefore carries a verification layer for **projects and clients**, built on **DetectifAI** (platform.detectif.ai) — three voice products on one account, one set of API keys, and one credit balance, reachable by REST API or MCP server:
+
+- **Aletheia — is this a real voice?** Deepfake detection on a recording (4–120 s): verdict `real`, `fake`, or `not_sure`, with a score. Applied to voice material submitted by projects and clients, presenter audio, and any voice attestation a market or an engagement relies on.
+- **Eidos — is this the right person?** Speaker verification: a principal's voice is enrolled once, then new recordings verify as `match` or `no_match`. Applied at client onboarding (the principals who sign and speak for the client), to project presenters — including the human presenter of a sponsored pitch — and to recurring attestations by enrolled speakers.
+- **Noesis — who or what answered?** Call intelligence distinguishing a person, an IVR menu, voicemail, and a voice agent, live during a call or from a recording. Applied to verification calls inside intake and outreach flows, so a "confirmed" contact is a human, not a machine.
+
+Integration shape: REST at `platform.detectif.ai/v1` (Noesis at `api.noesis.detectif.ai`) with `Authorization: Bearer $DETECTIF_API_KEY` and an `Idempotency-Key` on every upload, so a retry returns the stored result instead of running a second check; or the MCP server (`platform.detectif.ai/mcp`) for agent-side checks inside the desks. Keys are dashboard-issued, scoped, and revocable; the key value never enters the repo, docs, or chat (registry: CREDENTIALS-REGISTRY §K).
+
+Data handling: uploaded audio is stored 30 days by default; the framework default is `store_audio=false` (Noesis: `record=false`) unless a specific check requires retention. Enrolled speaker profiles are deleted on offboarding (Eidos deletion is permanent).
+
+Epistemic rule (the vendor's own, adopted): **results are signals, not proof.** A verdict feeds a human decision; `not_sure` escalates to human review; no score is ever presented — internally or to a market — as certainty. Verification strengthens attribution; it does not replace judgment.
+
+Status: designated 2026-10-28 at James's direction. Account and API key provisioning pending; no checks run until provisioned.
+
+## 9. Notes for later (not now)
 
 - Regulatory structuring before any token or lending offer.
 - Underwriting criteria owner TBD.
 - Nov 10 testnet boundary applies to every layer.
 
-## 9. Status
+## 10. Status
 
-DRAFT v0.10 — internal. Awaiting James's review and corrections. Open
+DRAFT v0.11 — internal. Awaiting James's review and corrections. Open
 inputs needed: underwriting criteria owner, legal structuring lead,
 syndicate term templates.
