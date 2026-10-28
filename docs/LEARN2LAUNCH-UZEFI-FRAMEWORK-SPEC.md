@@ -1,6 +1,8 @@
-# Learn2Launch UZE.fi Framework Spec — DRAFT v0.11
+# Learn2Launch UZE.fi Framework Spec — DRAFT v0.12
 
 **INTERNAL — NOT FOR EXTERNAL SHARING.** Draft for James's review. Assembled 2026-10-18.
+
+**Revision v0.12 (2026-10-28):** §8 rationale sharpened with the creator-economy case (James): AI 'vampire attacks' — copycats cloning a creator's style, voice, and thumbnails and out-distributing the original; a healthy creator economy requires consumers to be able to tell an original from a copycat, which is the attestation the Assurative layer exists to provide.
 
 **Revision v0.11 (2026-10-28):** new §8 — project and client verification: the DetectifAI voice verification layer (Aletheia, Eidos, Noesis) for information markets, data integrity, and AI-scraping / synthetic-media risk. Designated at James's direction; account and API key provisioning pending. Prior §§8–9 renumbered §§9–10.
 
@@ -146,7 +148,7 @@ Join accelerator
 
 ## 8. Project and client verification — the voice verification layer (DetectifAI)
 
-Information markets run on data, and the data environment is adversarial: AI scraping and synthetic media can manufacture voices, attestations, and engagement. The framework therefore carries a verification layer for **projects and clients**, built on **DetectifAI** (platform.detectif.ai) — three voice products on one account, one set of API keys, and one credit balance, reachable by REST API or MCP server:
+Information markets run on data, and the data environment is adversarial: AI scraping and synthetic media can manufacture voices, attestations, and engagement. The creator-economy case is immediate and already visible: **AI 'vampire attacks' — copycats outright cloning a creator's video-essay style, voice, and even thumbnails, then far surpassing the original creator's views and subscribers.** A healthy creator economy is impossible unless consumers can know whether they are watching an **original or a copycat**; verification is what makes that distinction real, and it is the same attestation the Assurative layer exists to provide. Voice is the leg DetectifAI covers: the original creator enrolls (Eidos), synthetic copies fail the real-voice check (Aletheia). The framework therefore carries a verification layer for **projects and clients**, built on **DetectifAI** (platform.detectif.ai) — three voice products on one account, one set of API keys, and one credit balance, reachable by REST API or MCP server:
 
 - **Aletheia — is this a real voice?** Deepfake detection on a recording (4–120 s): verdict `real`, `fake`, or `not_sure`, with a score. Applied to voice material submitted by projects and clients, presenter audio, and any voice attestation a market or an engagement relies on.
 - **Eidos — is this the right person?** Speaker verification: a principal's voice is enrolled once, then new recordings verify as `match` or `no_match`. Applied at client onboarding (the principals who sign and speak for the client), to project presenters — including the human presenter of a sponsored pitch — and to recurring attestations by enrolled speakers.
@@ -168,6 +170,6 @@ Status: designated 2026-10-28 at James's direction. Account and API key provisio
 
 ## 10. Status
 
-DRAFT v0.11 — internal. Awaiting James's review and corrections. Open
+DRAFT v0.12 — internal. Awaiting James's review and corrections. Open
 inputs needed: underwriting criteria owner, legal structuring lead,
 syndicate term templates.
