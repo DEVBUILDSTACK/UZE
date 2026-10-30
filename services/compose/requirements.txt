@@ -1,0 +1,13 @@
+# Composition-layer toolchain — exact versions, matching the reviewed
+# codegen round-trip (docs/sprint-0/codegen-roundtrip/requirements.txt).
+sqlalchemy==2.0.40
+pydantic==2.14.2
+datamodel-code-generator==0.87.0
+# Migrations (Alembic, the ratified (C) pattern) + the Postgres driver used
+# by the Alembic environment and the Sprint 0 demonstration.
+alembic==1.20.1
+psycopg[binary]==3.3.6
+# TypeScript generation runs via npx (Node >= 18): json-schema-to-typescript.
+# TypeScript compiler (for `make check-ts`) is a pinned external install, NOT npx:
+#   npm install --prefix ~/workspace/tools/ts-tools typescript@5   (used: 5.9.3)
+# Toolchain venv: ~/workspace/tools/codegenvenv (see Makefile header).
