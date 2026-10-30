@@ -1,0 +1,124 @@
+{
+  "$defs": {
+    "CommitmentClass": {
+      "enum": [
+        "IRREVERSIBLE_ON_CHAIN",
+        "CANCELLABLE_UNTIL_WINDOW",
+        "CHANGEABLE_WITH_FEE",
+        "APPOINTMENT",
+        "MEDICAL_PACKAGE"
+      ],
+      "title": "CommitmentClass",
+      "type": "string"
+    },
+    "Price": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "title": "Amount",
+          "type": "number"
+        },
+        "currency": {
+          "title": "Currency",
+          "type": "string"
+        },
+        "taxesIncluded": {
+          "title": "Taxesincluded",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "taxesIncluded"
+      ],
+      "title": "Price",
+      "type": "object"
+    },
+    "Rail": {
+      "enum": [
+        "SOLANA_NFT",
+        "HOTEL_AGGREGATOR",
+        "FLIGHT_SEARCH",
+        "FACILITY",
+        "PARKING",
+        "TRANSFER",
+        "DINING_TASK"
+      ],
+      "title": "Rail",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "tripCandidateId": {
+      "title": "Tripcandidateid",
+      "type": "string"
+    },
+    "rail": {
+      "$ref": "#/$defs/Rail"
+    },
+    "sourceRef": {
+      "title": "Sourceref",
+      "type": "string"
+    },
+    "commitmentClass": {
+      "$ref": "#/$defs/CommitmentClass"
+    },
+    "price": {
+      "$ref": "#/$defs/Price"
+    },
+    "terms": {
+      "additionalProperties": true,
+      "title": "Terms",
+      "type": "object"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "expiresAt": {
+      "format": "date-time",
+      "title": "Expiresat",
+      "type": "string"
+    },
+    "createdAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdat"
+    }
+  },
+  "required": [
+    "tripCandidateId",
+    "rail",
+    "sourceRef",
+    "commitmentClass",
+    "price",
+    "terms",
+    "payload",
+    "expiresAt"
+  ],
+  "title": "OfferSnapshot",
+  "type": "object"
+}

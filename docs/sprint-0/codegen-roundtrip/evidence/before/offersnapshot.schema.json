@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OfferSnapshot",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "tripCandidateId": {
+      "type": "string"
+    },
+    "rail": {
+      "$ref": "#/$defs/Rail"
+    },
+    "sourceRef": {
+      "type": "string"
+    },
+    "commitmentClass": {
+      "$ref": "#/$defs/CommitmentClass"
+    },
+    "price": {
+      "$ref": "#/$defs/Price"
+    },
+    "terms": {
+      "type": "object"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "tripCandidateId",
+    "rail",
+    "sourceRef",
+    "commitmentClass",
+    "price",
+    "terms",
+    "payload",
+    "expiresAt"
+  ],
+  "$defs": {
+    "Rail": {
+      "title": "Rail",
+      "type": "string",
+      "enum": [
+        "SOLANA_NFT",
+        "HOTEL_AGGREGATOR",
+        "FLIGHT_SEARCH",
+        "FACILITY",
+        "PARKING",
+        "TRANSFER",
+        "DINING_TASK"
+      ]
+    },
+    "CommitmentClass": {
+      "title": "CommitmentClass",
+      "type": "string",
+      "enum": [
+        "IRREVERSIBLE_ON_CHAIN",
+        "CANCELLABLE_UNTIL_WINDOW",
+        "CHANGEABLE_WITH_FEE",
+        "APPOINTMENT",
+        "MEDICAL_PACKAGE"
+      ]
+    },
+    "Price": {
+      "title": "Price",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "taxesIncluded": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "taxesIncluded"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

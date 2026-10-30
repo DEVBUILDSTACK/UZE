@@ -1,0 +1,10 @@
+# Codegen gate toolchain — exact versions used for the demonstrated round-trip.
+# Matches the Assurative V2 pattern: SQLAlchemy 2.0.40, Pydantic v2, FastAPI-era stack.
+sqlalchemy==2.0.40
+pydantic==2.14.2
+datamodel-code-generator==0.87.0
+# TypeScript generation runs via npx (Node >= 18): json-schema-to-typescript.
+# TypeScript compiler (for `make check-ts`) is a pinned external install, NOT npx:
+#   npm install --prefix ~/workspace/tools/ts-tools typescript@5   (used: 5.9.3)
+# (`npx --package typescript tsc` does not resolve the tsc bin reliably from
+# inside this repo tree; the pinned install is deterministic.)
