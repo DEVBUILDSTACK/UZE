@@ -4,7 +4,7 @@ Owner IDs come from the token, never the payload; transfers require current
 ownership (S3). The by-id read is public, like the single-resource reads in
 the events and listings routers; R4's commit-time reconciliation reads a
 ticket's current state through it. Its response is narrowed to exactly the
-five fields reconciliation consumes (id, eventId, ownerId, tier, status) —
+four fields reconciliation consumes (id, eventId, tier, status) —
 a least-field response for a server-to-server read.
 """
 from fastapi import APIRouter, Depends, HTTPException
@@ -41,11 +41,13 @@ async def get_ticket(ticket_id: str):
         raise HTTPException(status_code=404, detail="Ticket not found")
     # Narrowed to the fields R4 reconciliation consumes — nothing else the
     # record carries (createdAt, updatedAt, ...) leaves this endpoint.
+    # ownerId is excluded deliberately: reconciliation compares state, not
+    # owner; owner verification, if a future flow needs it, belongs on an
+    # authenticated read, not this public one.
     return ok(
         {
             "id": ticket.id,
             "eventId": ticket.eventId,
-            "ownerId": ticket.ownerId,
             "tier": ticket.tier,
             "status": ticket.status,
         }

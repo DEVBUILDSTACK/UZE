@@ -55,12 +55,12 @@ def test_get_ticket_returns_record(client):
     body = res.json()
     assert body["status_code"] == 200
     data = body["data"]
-    # Exactly the five fields R4 reconciliation consumes — the stored
-    # record also carries createdAt/updatedAt, and they must not leak.
-    assert set(data.keys()) == {"id", "eventId", "ownerId", "tier", "status"}
+    # Exactly the four fields R4 reconciliation consumes — the stored
+    # record also carries ownerId, createdAt, and updatedAt, and none of
+    # them may leak.
+    assert set(data.keys()) == {"id", "eventId", "tier", "status"}
     assert data["id"] == "t-123"
     assert data["eventId"] == "evt-1"
-    assert data["ownerId"] == "user-9"
     assert data["tier"] == "vip"
     # "listed", not just "active": the read returns the *current* state,
     # which is what commit-time reconciliation compares against.
