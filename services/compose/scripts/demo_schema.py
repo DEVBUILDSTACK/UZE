@@ -9,7 +9,10 @@ nothing here is claimed for a substrate it did not run on):
   D3  OfferSnapshot immutability fires at DB level (raw SQL): price
       UPDATE refused, DELETE refused, ordinary UPDATE refused, the ONE
       permitted write — the divergence annotation — succeeds exactly
-      once, a second annotation is refused; the ORM guard fires too
+      once, a second annotation is refused; the ORM guard fires too.
+      The annotation's EventLog mirror is asserted: exactly one
+      SNAPSHOT_DIVERGED row (actor system:divergence-annotation,
+      matching code), written atomically by the mirror trigger
   D4  EventLog is append-only at DB level: UPDATE and DELETE refused
       (raw SQL), and the ORM guard refuses a delete
   D5  IdempotencyKey uniqueness is enforced by Postgres: a duplicate
@@ -212,9 +215,30 @@ def main() -> int:
                 'SELECT "divergenceCode" FROM offer_snapshot WHERE id = :i'),
                 {"i": sid}).scalar()
             assert got == "SEAT_TAKEN", f"annotation not recorded: {got}"
+            # TERM 1 (schema review): the annotation is a DERIVED
+            # projection of an EventLog entry. The mirror trigger must
+            # have written exactly one SNAPSHOT_DIVERGED row in the
+            # same transaction as the annotation above.
+            def mirror_rows():
+                return c.execute(text(
+                    'SELECT actor, payload FROM event_log '
+                    'WHERE "aggregateType" = :at AND "aggregateId" = :ai '
+                    'AND "eventType" = :et ORDER BY id'),
+                    {"at": "OfferSnapshot", "ai": sid,
+                     "et": "SNAPSHOT_DIVERGED"}).fetchall()
+            rows = mirror_rows()
+            assert len(rows) == 1, f"mirror EventLog rows: {len(rows)}"
+            assert rows[0][0] == "system:divergence-annotation", rows[0][0]
+            payload = rows[0][1]
+            if isinstance(payload, str):
+                import json
+                payload = json.loads(payload)
+            assert payload["divergenceCode"] == "SEAT_TAKEN", payload
             expect_refused(
                 c, 'UPDATE offer_snapshot SET "divergenceCode" = :dc WHERE id = :i',
                 {"dc": "PRICE_MOVED", "i": sid}, "immutable")
+            # The refused second annotation must not have mirrored.
+            assert len(mirror_rows()) == 1, "refused annotation mirrored"
         # ORM guard: mutate a mapped attribute and flush.
         with Session() as s:
             snap = s.get(models.OfferSnapshot, ids["snapshot"])
@@ -227,7 +251,10 @@ def main() -> int:
                 assert "immutable" in str(exc), f"ORM guard message: {exc}"
         return ("DB trigger refuses price/sourceRef/combined UPDATEs and "
                 f"DELETE ({msg1}); divergence annotation applies exactly "
-                "once; ORM guard fires on attribute mutation")
+                "once and the mirror trigger wrote exactly one "
+                "SNAPSHOT_DIVERGED EventLog row (actor "
+                "system:divergence-annotation, matching code); ORM guard "
+                "fires on attribute mutation")
 
     def d4() -> str:
         with Session() as s:
