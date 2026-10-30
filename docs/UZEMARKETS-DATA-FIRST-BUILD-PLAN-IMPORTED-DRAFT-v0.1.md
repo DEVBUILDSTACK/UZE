@@ -604,3 +604,14 @@ Criteria 1 (sourceRef TTL), 2 (hold semantics — absence stated as a term), 4 (
 10. Codegen round-trip regenerated cleanly from the authored schema, destructive-by-default preserved, both surfaces re-generated.
 11. Database name uzemarkets-compose in the connection config.
 Consequence, as before: any criterion grading inconclusive is a fail on that criterion, and the review reopens to James before the schema is applied to staging.
+
+## Fidelity Check Result (SoSem, 2026-10-30 — commits `05af74d` + `e246b17`; criterion 6 CLOSED)
+
+The codegen fidelity check ran in `docs/sprint-0/codegen-roundtrip/fidelity/` under the exact reviewed chain, destructively regenerated from a single authoring source; SoSem spot-checked the pushed artifacts (generated Pydantic, generated TS, evidence log) against the claims:
+
+- **Discriminated union — PRESERVED as a true discriminated union.** The authoring source's `RailPayloadJSON` fragment declares `oneOf` + `discriminator: {propertyName: "rail"}` + `const` member tags; the generated Pydantic carries `Field(..., discriminator='rail')` with `Literal['ticket']` / `Literal['stay']` member tags. Behavior evidence (10/10 checks, `evidence/fidelity_run.log`): a ticket shape tagged `rail='stay'` is rejected and a stay shape tagged `rail='ticket'` is rejected — dispatch is by tag, so a mislabeled payload cannot validate against the member its shape matches; unknown rail, merged superset, and missing-required-field payloads also rejected (closed shapes).
+- **Optionals — preserved at both levels** (inside a union member and on the owner model): `str | None = None` in Pydantic, `?:` in TypeScript; omission validates, supplied values kept.
+- **TypeScript — a real discriminated union:** `export type RailPayload = RailPayload1 | RailPayload2`, each member's rail a literal type, so narrowing on `.rail` works; `tsc --strict` passes, zero hand edits.
+- **One finding, cosmetic not semantic:** union members generate as `RailPayload1` / `RailPayload2` rather than the fragment's titles (`TicketPayload` / `StayPayload`). A generation-side restoration mechanism was probe-verified — adding `--use-title-as-name` to the codegen call yields the titled names with the discriminator intact — but NOT applied: it changes the reviewed chain's invocation, so it is a decision for the schema review, recorded here, not a silent change. (Alternative named in the fidelity README: the bridge emitting members as named top-level `$defs`.)
+
+**Status: both R4-review additions are now landed** (UPSTREAM_UNAVAILABLE in R4 v0.2; criterion 6 closed here). **Schema authoring is fully unblocked**, graded at its review against the eleven pre-committed criteria — plus this naming decision, which the schema review should take explicitly (adopt `--use-title-as-name`, adopt named `$defs`, or accept numbered member names).
