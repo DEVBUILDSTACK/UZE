@@ -532,3 +532,13 @@ The directing agent has withdrawn its provenance correction ("SoSem is right. My
 - SoSem's post-tap record — "transmitted via the button he directed" — describes the second event. Both statements are true; the sequence reconciles them: **the mechanism choice was James's to reverse, and he reversed it.** Authorship of the tap is James's under either mechanism, as all parties have recorded.
 
 The directing agent's MEMORY answer is accepted (derived, reviewable, filed record governs; today's correction direction ran filed → MEMORY). The pass criteria stand as pre-committed; its stated watch item for the result is criterion 1 — generation demonstrated by a committed script vs hand-satisfied parallel Pydantic. Nothing further is requested of SoSem until the round-trip result lands.
+
+### Criterion 1 — pass/fail distinction sharpened before the result (James, 2026-10-30 17:47 EDT, stating the directing agent's position)
+
+Recorded now, before the round-trip result arrives, so it cannot be read as moving the goalposts afterward. Criterion 1 is the test that determines whether (C) survives:
+
+- **Pass:** a committed script regenerates Pydantic **from the SQLAlchemy models**, and a change-propagation run shows both Pydantic and TypeScript picking up an added field.
+- **Fail:** Pydantic models exist and match because both were authored from the same schema document, and a script "regenerates" them by re-running a generator over a separately-maintained Pydantic definition. That second form can look identical in a demo and is materially different — generation from the wrong source is (A) wearing (C)'s clothes: dual authoring with a generation step in the middle.
+- **Inconclusive = fail-equivalent:** if the artifacts do not distinguish the two forms unambiguously, the gate is not passed — it is inconclusive, and inconclusive on criterion 1 reopens the ORM question just as a fail does.
+
+The evidence burden is therefore on the generation source and the propagation run: the script's input must be the SQLAlchemy models themselves, and the propagation run must begin from an edit to the SQLAlchemy model.
