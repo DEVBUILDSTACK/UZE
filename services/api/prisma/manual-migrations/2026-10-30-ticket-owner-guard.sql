@@ -51,10 +51,36 @@
 --   Local evidence: tests/test_ticket_owner_guard.py, run log at
 --   tests/ticket_owner_guard_evidence.log (real PostgreSQL 16.2).
 --
--- ROLLBACK (drops cleanly; the guard leaves no data behind):
+-- DDL LEDGER (added 2026-10-30, schema-review direction)
+--   services/api has no migration chain, so applied DDL needs a
+--   reconstructible history inside the database itself. This file
+--   therefore OPENS by creating public.ddl_ledger (id, applied_at,
+--   note) if absent, and CLOSES by recording its own application
+--   in it under id '2026-10-30-ticket-owner-guard' (INSERT ...
+--   ON CONFLICT DO NOTHING, so re-running this file stays a
+--   ledger no-op, matching the artifact's re-runnable posture).
+--
+-- PRESENCE CHECK (what the composition layer uses to confirm this
+--   guard is in place — e.g. before relying on R4's owner branch
+--   being unconditionally redundant):
+--     SELECT 1 FROM pg_trigger
+--      WHERE tgname = 'trg_ticket_owner_guard' AND NOT tgisinternal;
+--   corroborated by the ledger row:
+--     SELECT 1 FROM public.ddl_ledger
+--      WHERE id = '2026-10-30-ticket-owner-guard';
+--
+-- ROLLBACK (drops the guard; the ledger ROW intentionally STAYS —
+--   it is the application record, and a rollback is itself an
+--   event the application history should keep):
 --   DROP TRIGGER IF EXISTS trg_ticket_owner_guard ON "Ticket";
 --   DROP FUNCTION IF EXISTS ticket_owner_guard();
 -- =====================================================================
+
+CREATE TABLE IF NOT EXISTS public.ddl_ledger (
+    id text PRIMARY KEY,
+    applied_at timestamptz NOT NULL DEFAULT now(),
+    note text
+);
 
 CREATE OR REPLACE FUNCTION ticket_owner_guard() RETURNS trigger AS $$
 BEGIN
@@ -72,3 +98,8 @@ CREATE TRIGGER trg_ticket_owner_guard
     BEFORE UPDATE ON "Ticket"
     FOR EACH ROW
     EXECUTE FUNCTION ticket_owner_guard();
+
+INSERT INTO public.ddl_ledger (id, note)
+VALUES ('2026-10-30-ticket-owner-guard',
+        'Ticket ownerId guard trigger (trg_ticket_owner_guard)')
+ON CONFLICT (id) DO NOTHING;

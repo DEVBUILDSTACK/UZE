@@ -19,6 +19,11 @@ atomicity, regression):
   * REGRESSION — the other Ticket writers' shapes still work:
     status-only active->listed (listing creation), a tier-only
     update, and INSERT with an initial ownerId (guard is UPDATE-only).
+  * LEDGER    — the artifact records its own application in
+    public.ddl_ledger (id '2026-10-30-ticket-owner-guard'), and the
+    presence check the composition layer will use — pg_trigger
+    lookup for trg_ticket_owner_guard, corroborated by the ledger
+    row — finds the guard.
 
 Substrate (stated, not hidden): REAL PostgreSQL 16.2 — this VM's
 pgserver-bundled instance on 127.0.0.1:55433, the same substrate the
@@ -247,3 +252,23 @@ def test_regression_insert_with_initial_owner_succeeds(conn):
     assert _row(conn, tid)[2] == owner
     tid2 = _ticket(conn, None)
     assert _row(conn, tid2)[2] is None
+
+
+# ------------------------------------------------------------------ LEDGER
+
+def test_ledger_row_recorded_and_trigger_present(conn):
+    """DDL-ledger amendment: applying the artifact records itself in
+    public.ddl_ledger under its own id, and the composition layer's
+    presence check (pg_trigger lookup for trg_ticket_owner_guard,
+    corroborated by this ledger row) finds the guard."""
+    rows = conn.execute(
+        "SELECT note FROM public.ddl_ledger WHERE id = %s",
+        ("2026-10-30-ticket-owner-guard",),
+    ).fetchall()
+    assert len(rows) == 1, f"expected exactly one ledger row, got {rows}"
+    assert rows[0][0] == "Ticket ownerId guard trigger (trg_ticket_owner_guard)"
+    present = conn.execute(
+        "SELECT 1 FROM pg_trigger "
+        "WHERE tgname = 'trg_ticket_owner_guard' AND NOT tgisinternal"
+    ).fetchone()
+    assert present is not None, "pg_trigger presence check found no guard trigger"
