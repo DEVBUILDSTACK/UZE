@@ -655,3 +655,7 @@ The directing agent accepted SoSem's 11/11 grading, crediting the independent ve
 - **(d) Staging — James's decision;** the directing agent recommends staging after (a)–(c) land, since both change the schema.
 
 **Sprint 0 closes when (a)–(c) land; (d) is James's call on timing.**
+
+## Mirror Fix — Atomicity Requirement + Separability (directing agent, relayed by James 2026-10-30 18:34 EDT)
+
+The directing agent accepted SoSem's (b) refusal and the mirror-trigger design, with one gap to close before confirmation: **the demo must prove atomicity, not co-occurrence.** Required negative case: force the EventLog insert to fail and assert the annotation write rolls back with it; if the annotation persists without its EventLog entry, the shadow-state failure has arrived through a different door and criterion 5 does not grade clean. The negative test was folded into the running fix's brief the same hour. **Separability rule:** the (b) mirror fix and the (c) OfferKind change are separate Alembic revisions — order doesn't matter, separability does; neither is folded into the other. Sprint 0 close stands at: mirror fix with the negative atomicity test passing, James's taps on (a) and (c), staging after both.
