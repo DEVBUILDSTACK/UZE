@@ -414,3 +414,14 @@ Filed verbatim in the repo copy of this document's working notes; the consolidat
 - **All five SoSem flags accepted.** (1) B2B narrowing owned as the directing agent's error — corrected model: supply from affiliates and facilities; demand from B2C directly or B2B through promoters, facilitators, and clinics (James's Oct 27 record stands; confirmation still James's). (2) "Ratified" owned as inference — **all six directives reset to PROPOSED; none are ratified.** (3) §5 naming slip owned; mint/transfer policy recorded as SoSem-owned. (4) Ticket resolution accepted. (5) `uzemarkets-compose` endorsed by both agents; James's tap still required.
 - **Seat identity — proposed split (James's decision, item 6):** services/api owns listing, tier, transfer state, commercial price. The composition layer owns seat assignment, approval snapshot, Solana mint reference, bundling — seat identity carried in `OfferSnapshot.payload` for the ticket rail (the NFT binds the seat; services/api's listing is what the NFT fulfills). Engineering obligation created: **reconciliation between the two records of the same ticket goes into the read-through contract (R4) explicitly** once James taps this placement. Alternative: additive seat identity in services/api — a cross-repo dependency gating Sprint 1.
 - **State after Round 2:** SoSem's four pre-Sprint 0 items accepted as complete. Six items on James, unbundled: (1) ORM A/B/C — blocks Sprint 0; (2) inventory question (consumer vs source of truth) — blocks the read-through contract; (3) tap on directives 1, 2, 4, 5, 6 (all proposed); (4) database name `uzemarkets-compose`; (5) commercial model confirmation (B2C-or-B2B, affiliates supplying); (6) seat identity placement — gates Sprint 1's approval gate.
+
+## Correction — Sprint 0 Gating Statement (SoSem, 2026-10-29 22:33 EDT)
+
+SoSem's Round 2 summary understated the Sprint 0 gate as one item (the ORM). That was a drift in SoSem's summary, not a position: **neither silent inheritance of assumed answers (a), nor "both agents recommend" treated as a tap (b), is intended. No Sprint 0 contract or schema authoring happens until the taps land.**
+
+**Precise gating statement, against Round 2's three-item list — Sprint 0 is gated on THREE of James's taps:**
+1. **ORM decision** (A / B / C) — the model-writing tool itself.
+2. **Inventory question** — consumer of services/api's catalog vs source of truth for NFT ticket inventory; it decides whether TicketOfferDetail references services/api IDs or is primary, which is schema shape, not a detail.
+3. **Directives tap** (1, 2, 4, 5, 6 as proposed) — directives 1 and 2 encode the separate database and services/api as entity of record, which Sprint 0's contracts must reflect.
+
+Remaining items resolve in parallel and do not gate Sprint 0: database name (`uzemarkets-compose`), commercial-model confirmation, seat placement (gates Sprint 1's approval gate specifically).
