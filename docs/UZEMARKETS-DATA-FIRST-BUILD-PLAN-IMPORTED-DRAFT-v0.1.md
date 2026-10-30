@@ -579,3 +579,28 @@ Sprint 0's first authoring deliverable is filed: source inventory code-verified 
 1. **§1.3** — two proposed additive reads are unimplemented (`GET /tickets/{ticket_id}` — a single-ticket read does not exist today; `GET /events/{event_id}/inventory` carried over). §6 reconciliation depends on the single-ticket read.
 2. **§7.4** — affiliate↔User linkage is undefined in services/api (no affiliate entity or role; the `/affiliates` router is a stub). The pin therefore operates on role-in-transaction (affiliates = supply-side inventory holders; promoters/facilitators/clinics = demand-side channels), and the entity-model question is left open for James and the directing agent.
 3. **§7.5** — whether every ticket-rail quote binds payload seat identity per-Ticket at quote time, or primary non-minted quotes bind per-tier until commit, is unpinned in the ratified record; the contract states per-Ticket as its assumption and requires a contract revision to change it.
+
+## R4 Review (directing agent, relayed by James 2026-10-30 18:00 EDT): PASS 5 of 6 — verdict and additions
+
+Criteria 1 (sourceRef TTL), 2 (hold semantics — absence stated as a term), 4 (commit-time reconciliation mechanism; dependency flagged), 5 (affiliates pinning — consistent with the ratified language, not a reinterpretation): **PASS**. Criterion 3 (divergence codes): **PASS on shape, one gap** — all seven codes described state divergence; none described the source being unreachable. **Addition made (SoSem, this filing): `UPSTREAM_UNAVAILABLE` added to R4 §5 — the contract is now DRAFT v0.2** (transport failure: never force-fit into SOURCE_NOT_FOUND, never silent, blocks commit without killing the snapshot). Criterion 6 (codegen fidelity check — one discriminated union + one optional field through the full chain): **NOT ADDRESSED by SoSem in R4; now running** as a separate addition, required before OfferSnapshot.payload per-rail structure is authored in the schema.
+
+**Three tracked findings (none blocks schema authoring):**
+1. **Settlement unbuilt upstream (501) + the race it creates.** services/api's commerce core is a read-only catalog today; the composition layer's commit is the on-chain mint plus reconciliation reads, full stop. Without holds and without upstream settlement, two composition-layer transactions could both pass reconciliation and both mint — protections are a composition-layer distributed lock keyed on Ticket ID, or accepting the risk (defensible for MVP while buy is 501; fragile the moment services/api implements buy). **Tracked risk, named now — decision pending, Sprint 1 horizon.**
+2. **Single-ticket read is a cross-repo dependency** against services/api (not SoSem's to build). Needs an owner and a target sprint before Sprint 1's commit path; not a Sprint 0 blocker (schema authoring depends on contracts, not runtime endpoints).
+3. **Per-Ticket seat binding: consistent, not an assumption change** — the stronger form of the ratified statement; the revision-to-change clause is correct change control. Closed.
+
+**Schema authoring: UNBLOCKED**, pending the two additions above (one landed in this filing; the fidelity check running). 
+
+### Pre-committed criteria for the schema-authoring review (filed by the directing agent, 2026-10-30, before the schema lands)
+1. StayPhase[] array-typed; no trip-level checkIn/checkOut.
+2. Traveler as rows with roles; no partySize on TripProfile.
+3. Dormant tables present and unused (FacilityProfile, PackageTemplate, ProcedureClassBand, restricted namespace).
+4. Enums complete including dormant members — CommitmentClass, Rail, GeoAnchorType, StayPhaseKind with their full value sets.
+5. OfferSnapshot immutability demonstrated by mechanism (DB trigger, ORM event, or frozen Pydantic config) — not by convention.
+6. EventLog append-only — no update path, no delete path, enforced at DB level, demonstrated.
+7. IdempotencyKey enforcement at Postgres — uniqueness constraint plus in-flight handling, Redis as hot cache only.
+8. sourceRef typed as a reference, not a FK — no cross-database join is possible from the schema.
+9. Divergence codes typed as an enum on OfferSnapshot, not free-text.
+10. Codegen round-trip regenerated cleanly from the authored schema, destructive-by-default preserved, both surfaces re-generated.
+11. Database name uzemarkets-compose in the connection config.
+Consequence, as before: any criterion grading inconclusive is a fail on that criterion, and the review reopens to James before the schema is applied to staging.

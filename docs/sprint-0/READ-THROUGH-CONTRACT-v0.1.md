@@ -1,7 +1,8 @@
-# READ-THROUGH CONTRACT (R4) — DRAFT v0.1
+# READ-THROUGH CONTRACT (R4) — DRAFT v0.2
 
 **Product:** UZEMARKETS commerce platform.
 **Status:** Sprint 0's first authoring deliverable, written under the ratification of 2026-10-30 (James's tap, all six decisions; spec commits `03d9aec`, `e611aa4`). For review by James (reviewer of record) and the directing coding agent. This document supersedes the earlier partial R4 draft inside the Data-First build plan wherever the ratified terms are more specific.
+**Revision v0.2 (2026-10-30):** adds the eighth divergence code, `UPSTREAM_UNAVAILABLE` (§5), per the directing agent's R4 review — the one gap in an otherwise passing review (five of six criteria passed; the sixth, the codegen fidelity check, is a separate pending addition, not a contract term). No other terms changed. (File retained at its v0.1 path.)
 **Parties:** the **composition layer** (database `uzemarkets-compose`; the consumer) and **services/api** (the UZE monorepo's FastAPI + Prisma service over Neon Postgres; the entity of record for Event, Ticket, Listing, Auction, Bid).
 **Nature:** this is a contract, not code. It defines endpoints consumed, reads proposed as additive, semantics, failure codes, and boundary law. Nothing in this document implements anything.
 
@@ -74,7 +75,7 @@ Out of read scope but boundary-relevant (services/api operations the composition
 
 ## 5. Typed divergence failure codes
 
-Divergence is a difference, detected on a §2 read-through re-read, between the state frozen in an OfferSnapshot (and, for the ticket rail, its `payload` seat record) and services/api's current state. **Divergence never proceeds silently.** Every code below, when raised: (a) aborts the operation that detected it — no partial commit, no chain action; (b) kills the snapshot for commit purposes; (c) is returned identically on the agent API and the human UI; (d) is recorded in the composition layer's EventLog with the snapshot id, the referenced id, and the observed current state; and (e) permits continuation only through a fresh read-through and a **new** OfferSnapshot — never an edit to the failed one, never a silent substitution of a "nearest equivalent."
+Divergence is a difference, detected on a §2 read-through re-read, between the state frozen in an OfferSnapshot (and, for the ticket rail, its `payload` seat record) and services/api's current state. **Divergence never proceeds silently.** Every code below, when raised: (a) aborts the operation that detected it — no partial commit, no chain action; (b) kills the snapshot for commit purposes — except `UPSTREAM_UNAVAILABLE`, which blocks without killing (see the note after the table); (c) is returned identically on the agent API and the human UI; (d) is recorded in the composition layer's EventLog with the snapshot id, the referenced id, and the observed current state; and (e) permits continuation only through a fresh read-through and a **new** OfferSnapshot — never an edit to the failed one, never a silent substitution of a "nearest equivalent."
 
 | Code | Trigger (services/api state at re-read) | Surfaces | Client-visible behavior |
 |---|---|---|---|
@@ -85,8 +86,9 @@ Divergence is a difference, detected on a §2 read-through re-read, between the 
 | `TICKET_REDEEMED` | The referenced Ticket's status is `redeemed` at commit re-read. (Vocabulary state; no writer exists today.) | Commit (reconciliation) | Settlement aborted; the ticket is consumed. |
 | `SEAT_TAKEN` | The seat bound in `OfferSnapshot.payload` cannot be fulfilled by the referenced Ticket in its current state, for a reason not covered by `TICKET_TRANSFERRED` or `TICKET_REDEEMED`. Named triggers: (i) Ticket status is `listed` but no active Listing fulfills it — the fulfillment path is gone while the ticket persists (reachable today: moderation cancels a Listing without resetting Ticket status); (ii) the seat's Solana mint reference already carries a settlement — a `Commitment.chainTxRef` recorded against a different commitment (double-fulfillment guard). | Commit (reconciliation) | Settlement aborted; the specific seat is no longer fulfillable as bound. |
 | `PRICE_MOVED` | The referenced Listing is active at re-read but its `priceCents` or `feeCents` differ from the snapshot's frozen price/terms. **Unreachable under current writers** — no code path mutates a listing's price after creation — and named anyway: the frozen-price defense requires the boundary to name it, and if a price-edit path is ever added to services/api this code activates with no contract change. | Approval gate, commit | Refused; the frozen quote is defended, never repriced in place. |
+| `UPSTREAM_UNAVAILABLE` | The re-read itself fails at transport: services/api is unreachable, times out, or returns a server error (5xx) — no state could be observed at all. A transport condition, **not** a state: it is never reported as `SOURCE_NOT_FOUND` (which asserts the referenced inventory does not exist — a claim a transport failure cannot establish) and never treated as agreement with the snapshot. | Any re-read | Operation refused and retryable; no commit may proceed on an unobserved source. The snapshot is **not** killed — its truth is unknown, not falsified. Continuation is a fresh re-read once the source answers (a new snapshot only if the old one has meanwhile expired). |
 
-Two codes are deliberately **absent**: there is no `EVENT_CANCELLED` (no such state exists in services/api — §1.1) and no hold-expired code (§4: there are no holds to expire).
+Two codes are deliberately **absent**: there is no `EVENT_CANCELLED` (no such state exists in services/api — §1.1) and no hold-expired code (§4: there are no holds to expire). And one code is **not a state divergence**: `UPSTREAM_UNAVAILABLE` (added v0.2) covers transport failure, where the source could not be observed at all; it aborts and blocks like the state codes but does not kill the snapshot, for the reason stated in its row.
 
 ---
 
