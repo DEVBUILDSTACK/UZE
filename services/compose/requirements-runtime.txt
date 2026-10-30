@@ -1,0 +1,15 @@
+# Composition-layer RUNTIME (Sprint 1) — the FastAPI service + tests.
+# Separate from requirements.txt, which pins the codegen toolchain
+# (datamodel-codegen and friends) and is left exactly as reviewed.
+# Runtime venv: ~/workspace/tools/composevenv (outside the repo, per
+# the toolchain convention). FastAPI/uvicorn pins mirror the sibling
+# service (services/api pyproject: fastapi[all]~=0.115.12,
+# uvicorn[standard]~=0.30.2); the data pins match requirements.txt.
+sqlalchemy==2.0.40
+pydantic==2.14.2
+alembic==1.20.1
+psycopg[binary]==3.3.6
+fastapi~=0.115.12
+uvicorn[standard]~=0.30.2
+httpx
+pytest
