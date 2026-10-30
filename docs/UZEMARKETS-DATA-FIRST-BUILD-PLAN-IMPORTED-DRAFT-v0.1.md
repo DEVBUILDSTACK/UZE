@@ -450,7 +450,7 @@ Everything else stands as filed (database name, commercial model, inventory, sea
 
 **Suggested tap line (directing agent's text, filed verbatim for James to send as-is if it reads right to him):**
 
-"Tap all six. ORM (C), with SoSem's deliverable condition: codegen tool named and one SQLAlchemy → Pydantic → TypeScript round-trip demonstrated before schema authoring begins. Inventory as consumer, with read-through contract specifying sourceRef TTL, hold semantics or their explicit absence, and a typed divergence failure code. Directives 1, 2, 4, 5, 6 as proposed, with the directive-4 pair stated in this tap: deterministic classify(); LLM only via suggest_slots() under the classifier's validation. Database name uzemarkets-compose. Commercial model as corrected: supply from affiliates and facilities, demand B2C direct or B2B through promoters, facilitators, clinics. Seat placement in OfferSnapshot.payload, reconciliation commit-time only, divergence = typed failure, no continuous sync in MVP. Carries 03d9aec and e611aa4 by reference. Affiliates pinning is a Sprint 0 follow-on, not a gate."
+"Tap all six. ORM (C), with SoSem's prerequisite gate: codegen tool named and one SQLAlchemy → Pydantic → TypeScript round-trip demonstrated before schema authoring begins. Inventory as consumer of services/api's catalog — seat identity and approval snapshot are composition-layer records within the consumer model, not an exception to it — with read-through contract specifying sourceRef TTL, hold semantics or their explicit absence, and a typed divergence failure code. Directives 1, 2, 4, 5, 6 as proposed, with the directive-4 pair stated in this tap: deterministic classify(); LLM only via suggest_slots() under the classifier's validation. Database name uzemarkets-compose. Commercial model as corrected: supply from affiliates and facilities, demand B2C direct or B2B through promoters, facilitators, clinics. Seat placement in OfferSnapshot.payload, reconciliation commit-time only, divergence = typed failure, no continuous sync in MVP. Carries 03d9aec and e611aa4 by reference. Affiliates pinning is a named deliverable inside the read-through contract, not a separate gate."
 
 **Status:** still UNTAPPED. SoSem has nothing outstanding until the tap lands.
 
@@ -475,3 +475,13 @@ The directing agent verified the corrected record against the thread: the refere
 2. **"Affiliates" pinning:** the last undefined term in the ratified set. Already filed as a Sprint 0 follow-on; SoSem records it as a **named Sprint 0 deliverable inside the read-through contract** (reseller vs supply vs both — whether affiliates are inventory holders or intermediaries), so it is written there, not only in the tap line.
 
 **After the tap (directing agent's summary, concurred):** Sprint 0 opens with the codegen round-trip as its first activity, the read-through contract as its first authoring deliverable, and the rename sweep already complete. Nothing outstanding on SoSem before the tap. **Status: still UNTAPPED.**
+
+### Revision of the tap line (James's direction, 2026-10-30 17:00 EDT — adopted from the directing agent's advice; filed, NOT ratified)
+
+James directed SoSem to revise per the directing agent's advice. Three changes, all wording, no substance moved:
+
+1. **The optional clause is INCLUDED.** The consumer-vs-seat-identity clause now sits in the tap line itself (inventory clause, above), closing the tension in the tap rather than leaving the resolution to `e611aa4`. The clause's status changes from PROPOSED-OPTIONAL to INCLUDED, by James's adoption of the recommendation.
+2. **"Deliverable condition" → "prerequisite gate."** The tap line's label for the codegen round-trip now matches SoSem's re-filing (the round-trip is carried in Sprint 0 tracking as the opening prerequisite gate); the two labels no longer conflict in the same record.
+3. **Affiliates pinning wording:** "Sprint 0 follow-on, not a gate" → "a named deliverable inside the read-through contract, not a separate gate." Same substance (the read-through contract is itself not a gate); "follow-on" understated it.
+
+The tap line as it now stands in the minor-precision section above is the final, internally consistent version. **Status: still UNTAPPED — James sends it in his own words; on his send, Sprint 0 opens.**
