@@ -1,0 +1,85 @@
+{
+  "$defs": {
+    "StayPhaseKind": {
+      "enum": [
+        "PRE_EVENT",
+        "EVENT",
+        "POST_EVENT",
+        "PRE_OP",
+        "INPATIENT",
+        "RECOVERY"
+      ],
+      "title": "StayPhaseKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "tripProfileId": {
+      "title": "Tripprofileid",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/StayPhaseKind"
+    },
+    "propertyRef": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Propertyref"
+    },
+    "checkIn": {
+      "format": "date-time",
+      "title": "Checkin",
+      "type": "string"
+    },
+    "checkOut": {
+      "format": "date-time",
+      "title": "Checkout",
+      "type": "string"
+    },
+    "occupants": {
+      "additionalProperties": true,
+      "title": "Occupants",
+      "type": "object"
+    },
+    "criteria": {
+      "additionalProperties": true,
+      "title": "Criteria",
+      "type": "object"
+    },
+    "seq": {
+      "title": "Seq",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "kind",
+    "checkIn",
+    "checkOut",
+    "occupants",
+    "criteria",
+    "seq"
+  ],
+  "title": "StayPhase",
+  "type": "object"
+}

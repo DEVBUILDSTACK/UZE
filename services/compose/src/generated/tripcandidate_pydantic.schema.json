@@ -1,0 +1,572 @@
+{
+  "$defs": {
+    "CommitmentClass": {
+      "enum": [
+        "IRREVERSIBLE_ON_CHAIN",
+        "CANCELLABLE_UNTIL_WINDOW",
+        "CHANGEABLE_WITH_FEE",
+        "APPOINTMENT",
+        "MEDICAL_PACKAGE"
+      ],
+      "title": "CommitmentClass",
+      "type": "string"
+    },
+    "DivergenceCode": {
+      "enum": [
+        "SNAPSHOT_EXPIRED",
+        "SOURCE_NOT_FOUND",
+        "LISTING_GONE",
+        "TICKET_TRANSFERRED",
+        "TICKET_REDEEMED",
+        "SEAT_TAKEN",
+        "PRICE_MOVED",
+        "UPSTREAM_UNAVAILABLE"
+      ],
+      "title": "DivergenceCode",
+      "type": "string"
+    },
+    "OfferSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "tripCandidateId": {
+          "title": "Tripcandidateid",
+          "type": "string"
+        },
+        "rail": {
+          "$ref": "#/$defs/Rail"
+        },
+        "sourceRef": {
+          "title": "Sourceref",
+          "type": "string"
+        },
+        "commitmentClass": {
+          "$ref": "#/$defs/CommitmentClass"
+        },
+        "price": {
+          "$ref": "#/$defs/Price"
+        },
+        "terms": {
+          "additionalProperties": true,
+          "title": "Terms",
+          "type": "object"
+        },
+        "payload": {
+          "$ref": "#/$defs/RailPayload"
+        },
+        "divergenceCode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DivergenceCode"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "divergenceAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Divergenceat"
+        },
+        "expiresAt": {
+          "format": "date-time",
+          "title": "Expiresat",
+          "type": "string"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "retentionUntil": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Retentionuntil"
+        }
+      },
+      "required": [
+        "tripCandidateId",
+        "rail",
+        "sourceRef",
+        "commitmentClass",
+        "price",
+        "terms",
+        "payload",
+        "expiresAt"
+      ],
+      "title": "OfferSnapshot",
+      "type": "object"
+    },
+    "Price": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "title": "Amount",
+          "type": "number"
+        },
+        "currency": {
+          "title": "Currency",
+          "type": "string"
+        },
+        "taxesIncluded": {
+          "title": "Taxesincluded",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "taxesIncluded"
+      ],
+      "title": "Price",
+      "type": "object"
+    },
+    "Rail": {
+      "enum": [
+        "SOLANA_NFT",
+        "HOTEL_AGGREGATOR",
+        "FLIGHT_SEARCH",
+        "FACILITY",
+        "PARKING",
+        "TRANSFER",
+        "DINING_TASK"
+      ],
+      "title": "Rail",
+      "type": "string"
+    },
+    "RailPayload": {
+      "discriminator": {
+        "mapping": {
+          "dining": "#/$defs/RailPayload7",
+          "facility": "#/$defs/RailPayload4",
+          "flight": "#/$defs/RailPayload3",
+          "parking": "#/$defs/RailPayload5",
+          "stay": "#/$defs/RailPayload2",
+          "ticket": "#/$defs/RailPayload1",
+          "transfer": "#/$defs/RailPayload6"
+        },
+        "propertyName": "rail"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/RailPayload1"
+        },
+        {
+          "$ref": "#/$defs/RailPayload2"
+        },
+        {
+          "$ref": "#/$defs/RailPayload3"
+        },
+        {
+          "$ref": "#/$defs/RailPayload4"
+        },
+        {
+          "$ref": "#/$defs/RailPayload5"
+        },
+        {
+          "$ref": "#/$defs/RailPayload6"
+        },
+        {
+          "$ref": "#/$defs/RailPayload7"
+        }
+      ],
+      "title": "RailPayload"
+    },
+    "RailPayload1": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "ticket",
+          "title": "Rail",
+          "type": "string"
+        },
+        "seat": {
+          "title": "Seat",
+          "type": "string"
+        },
+        "tier": {
+          "title": "Tier",
+          "type": "string"
+        },
+        "gate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate"
+        },
+        "mintRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mintref"
+        },
+        "ticketRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ticketref"
+        },
+        "listingRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Listingref"
+        }
+      },
+      "required": [
+        "rail",
+        "seat",
+        "tier"
+      ],
+      "title": "RailPayload1",
+      "type": "object"
+    },
+    "RailPayload2": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "stay",
+          "title": "Rail",
+          "type": "string"
+        },
+        "phaseKind": {
+          "title": "Phasekind",
+          "type": "string"
+        },
+        "nights": {
+          "title": "Nights",
+          "type": "integer"
+        },
+        "propertyRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Propertyref"
+        }
+      },
+      "required": [
+        "rail",
+        "phaseKind",
+        "nights"
+      ],
+      "title": "RailPayload2",
+      "type": "object"
+    },
+    "RailPayload3": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "flight",
+          "title": "Rail",
+          "type": "string"
+        },
+        "itineraryRef": {
+          "title": "Itineraryref",
+          "type": "string"
+        },
+        "carrier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Carrier"
+        },
+        "departAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Departat"
+        }
+      },
+      "required": [
+        "rail",
+        "itineraryRef"
+      ],
+      "title": "RailPayload3",
+      "type": "object"
+    },
+    "RailPayload4": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "facility",
+          "title": "Rail",
+          "type": "string"
+        },
+        "facilityRef": {
+          "title": "Facilityref",
+          "type": "string"
+        },
+        "packageRef": {
+          "title": "Packageref",
+          "type": "string"
+        },
+        "procedureClassBand": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Procedureclassband"
+        }
+      },
+      "required": [
+        "rail",
+        "facilityRef",
+        "packageRef"
+      ],
+      "title": "RailPayload4",
+      "type": "object"
+    },
+    "RailPayload5": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "parking",
+          "title": "Rail",
+          "type": "string"
+        },
+        "anchorRef": {
+          "title": "Anchorref",
+          "type": "string"
+        },
+        "spotRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spotref"
+        }
+      },
+      "required": [
+        "rail",
+        "anchorRef"
+      ],
+      "title": "RailPayload5",
+      "type": "object"
+    },
+    "RailPayload6": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "transfer",
+          "title": "Rail",
+          "type": "string"
+        },
+        "taskRef": {
+          "title": "Taskref",
+          "type": "string"
+        },
+        "pickupAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pickupat"
+        }
+      },
+      "required": [
+        "rail",
+        "taskRef"
+      ],
+      "title": "RailPayload6",
+      "type": "object"
+    },
+    "RailPayload7": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "dining",
+          "title": "Rail",
+          "type": "string"
+        },
+        "taskRef": {
+          "title": "Taskref",
+          "type": "string"
+        },
+        "reservationAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reservationat"
+        }
+      },
+      "required": [
+        "rail",
+        "taskRef"
+      ],
+      "title": "RailPayload7",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "searchSessionId": {
+      "title": "Searchsessionid",
+      "type": "string"
+    },
+    "status": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Status"
+    },
+    "rankingScore": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rankingscore"
+    },
+    "constraints": {
+      "additionalProperties": true,
+      "title": "Constraints",
+      "type": "object"
+    },
+    "offerSnapshots": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/OfferSnapshot"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Offersnapshots"
+    }
+  },
+  "required": [
+    "searchSessionId",
+    "constraints"
+  ],
+  "title": "TripCandidate",
+  "type": "object"
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SearchSession",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "tripProfileId": {
+      "type": "string"
+    },
+    "query": {
+      "type": "object"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TripCandidate"
+      }
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "query"
+  ],
+  "$defs": {
+    "TripCandidate": {
+      "title": "TripCandidate",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "searchSessionId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "rankingScore": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "constraints": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "searchSessionId",
+        "constraints"
+      ]
+    }
+  }
+}

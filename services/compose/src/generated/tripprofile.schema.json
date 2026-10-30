@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TripProfile",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "buyerId": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ModuleType"
+      }
+    },
+    "tier": {
+      "type": "string"
+    },
+    "authorization": {
+      "type": "object"
+    },
+    "confirmedAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "supersededBy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "travelers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Traveler"
+      }
+    },
+    "stayPhases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/StayPhase"
+      }
+    }
+  },
+  "required": [
+    "buyerId",
+    "modules",
+    "authorization"
+  ],
+  "$defs": {
+    "ModuleType": {
+      "title": "ModuleType",
+      "type": "string",
+      "enum": [
+        "TICKETS",
+        "STAY",
+        "FLIGHT",
+        "PARKING",
+        "TRANSIT",
+        "DINING",
+        "TRANSFER",
+        "VIP_CONCIERGE",
+        "FACILITY"
+      ]
+    },
+    "TravelerRole": {
+      "title": "TravelerRole",
+      "type": "string",
+      "enum": [
+        "PATIENT",
+        "COMPANION",
+        "PRIMARY",
+        "GUEST"
+      ]
+    },
+    "Traveler": {
+      "title": "Traveler",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tripProfileId": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/TravelerRole"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nationality": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "utilityWeights": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "tripProfileId",
+        "role",
+        "utilityWeights"
+      ]
+    },
+    "StayPhaseKind": {
+      "title": "StayPhaseKind",
+      "type": "string",
+      "enum": [
+        "PRE_EVENT",
+        "EVENT",
+        "POST_EVENT",
+        "PRE_OP",
+        "INPATIENT",
+        "RECOVERY"
+      ]
+    },
+    "StayPhase": {
+      "title": "StayPhase",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tripProfileId": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/StayPhaseKind"
+        },
+        "propertyRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checkIn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "checkOut": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "occupants": {
+          "type": "object"
+        },
+        "criteria": {
+          "type": "object"
+        },
+        "seq": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "tripProfileId",
+        "kind",
+        "checkIn",
+        "checkOut",
+        "occupants",
+        "criteria",
+        "seq"
+      ]
+    }
+  }
+}

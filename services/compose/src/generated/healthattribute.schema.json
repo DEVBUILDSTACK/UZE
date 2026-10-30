@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HealthAttribute",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "subjectId": {
+      "type": "string"
+    },
+    "consentId": {
+      "type": "string"
+    },
+    "attrKey": {
+      "type": "string"
+    },
+    "attrValue": {
+      "type": "object"
+    },
+    "retentionUntil": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "subjectId",
+    "consentId",
+    "attrKey",
+    "attrValue",
+    "retentionUntil"
+  ],
+  "$defs": {}
+}

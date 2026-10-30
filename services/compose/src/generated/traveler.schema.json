@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Traveler",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "tripProfileId": {
+      "type": "string"
+    },
+    "role": {
+      "$ref": "#/$defs/TravelerRole"
+    },
+    "origin": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nationality": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "utilityWeights": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "role",
+    "utilityWeights"
+  ],
+  "$defs": {
+    "TravelerRole": {
+      "title": "TravelerRole",
+      "type": "string",
+      "enum": [
+        "PATIENT",
+        "COMPANION",
+        "PRIMARY",
+        "GUEST"
+      ]
+    }
+  }
+}

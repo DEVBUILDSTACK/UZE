@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DiningTask",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "tripProfileId": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/TaskState"
+    },
+    "details": {
+      "type": "object"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "geoAnchorRef": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "requestedFor": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "partyTravelerRefs": {
+      "anyOf": [
+        {
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "kind",
+    "state",
+    "details",
+    "id"
+  ],
+  "$defs": {
+    "TaskState": {
+      "title": "TaskState",
+      "type": "string",
+      "enum": [
+        "REQUESTED",
+        "QUOTED",
+        "DEPOSIT_PENDING",
+        "CONFIRMED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    }
+  }
+}

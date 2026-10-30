@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "GeoAnchorType": {
+      "enum": [
+        "VENUE",
+        "FACILITY",
+        "ADDRESS",
+        "METRO"
+      ],
+      "title": "GeoAnchorType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "type": {
+      "$ref": "#/$defs/GeoAnchorType"
+    },
+    "refId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Refid"
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "lat": {
+      "title": "Lat",
+      "type": "number"
+    },
+    "lng": {
+      "title": "Lng",
+      "type": "number"
+    },
+    "radiusKm": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Radiuskm"
+    },
+    "metroId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Metroid"
+    }
+  },
+  "required": [
+    "type",
+    "label",
+    "lat",
+    "lng"
+  ],
+  "title": "GeoAnchor",
+  "type": "object"
+}

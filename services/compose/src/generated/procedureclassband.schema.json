@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProcedureClassBand",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "band": {
+      "type": "string"
+    },
+    "minDaysPostOpBeforeReturn": {
+      "type": "integer"
+    },
+    "cabinComfortMin": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "band",
+    "minDaysPostOpBeforeReturn"
+  ],
+  "$defs": {}
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FacilityProfile",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "geoAnchorId": {
+      "type": "string"
+    },
+    "accreditation": {
+      "type": "object"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metroId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "geoAnchorId",
+    "accreditation",
+    "languages"
+  ],
+  "$defs": {}
+}

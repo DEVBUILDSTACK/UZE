@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "integer"
+    },
+    "aggregateType": {
+      "title": "Aggregatetype",
+      "type": "string"
+    },
+    "aggregateId": {
+      "title": "Aggregateid",
+      "type": "string"
+    },
+    "eventType": {
+      "title": "Eventtype",
+      "type": "string"
+    },
+    "actor": {
+      "title": "Actor",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "ts": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ts"
+    }
+  },
+  "required": [
+    "id",
+    "aggregateType",
+    "aggregateId",
+    "eventType",
+    "actor",
+    "payload"
+  ],
+  "title": "EventLog",
+  "type": "object"
+}

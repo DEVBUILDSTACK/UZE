@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StayPhase",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "tripProfileId": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/StayPhaseKind"
+    },
+    "propertyRef": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "checkIn": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checkOut": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "occupants": {
+      "type": "object"
+    },
+    "criteria": {
+      "type": "object"
+    },
+    "seq": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "kind",
+    "checkIn",
+    "checkOut",
+    "occupants",
+    "criteria",
+    "seq"
+  ],
+  "$defs": {
+    "StayPhaseKind": {
+      "title": "StayPhaseKind",
+      "type": "string",
+      "enum": [
+        "PRE_EVENT",
+        "EVENT",
+        "POST_EVENT",
+        "PRE_OP",
+        "INPATIENT",
+        "RECOVERY"
+      ]
+    }
+  }
+}

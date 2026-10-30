@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GeoAnchor",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/GeoAnchorType"
+    },
+    "refId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "label": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "radiusKm": {
+      "type": "number"
+    },
+    "metroId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "label",
+    "lat",
+    "lng"
+  ],
+  "$defs": {
+    "GeoAnchorType": {
+      "title": "GeoAnchorType",
+      "type": "string",
+      "enum": [
+        "VENUE",
+        "FACILITY",
+        "ADDRESS",
+        "METRO"
+      ]
+    }
+  }
+}

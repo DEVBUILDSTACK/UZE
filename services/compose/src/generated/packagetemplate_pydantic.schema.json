@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "facilityId": {
+      "title": "Facilityid",
+      "type": "string"
+    },
+    "procedureClassBand": {
+      "title": "Procedureclassband",
+      "type": "string"
+    },
+    "phaseTemplate": {
+      "additionalProperties": true,
+      "title": "Phasetemplate",
+      "type": "object"
+    },
+    "inclusions": {
+      "additionalProperties": true,
+      "title": "Inclusions",
+      "type": "object"
+    },
+    "depositTerms": {
+      "additionalProperties": true,
+      "title": "Depositterms",
+      "type": "object"
+    }
+  },
+  "required": [
+    "facilityId",
+    "procedureClassBand",
+    "phaseTemplate",
+    "inclusions",
+    "depositTerms"
+  ],
+  "title": "PackageTemplate",
+  "type": "object"
+}

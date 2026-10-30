@@ -1,0 +1,56 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "metroCode": {
+      "title": "Metrocode",
+      "type": "string"
+    },
+    "facilityClusters": {
+      "additionalProperties": true,
+      "title": "Facilityclusters",
+      "type": "object"
+    },
+    "resortClusters": {
+      "additionalProperties": true,
+      "title": "Resortclusters",
+      "type": "object"
+    },
+    "splitStayDefault": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Splitstaydefault"
+    },
+    "safetyWeights": {
+      "additionalProperties": true,
+      "title": "Safetyweights",
+      "type": "object"
+    }
+  },
+  "required": [
+    "metroCode",
+    "facilityClusters",
+    "resortClusters",
+    "safetyWeights"
+  ],
+  "title": "MetroProfile",
+  "type": "object"
+}

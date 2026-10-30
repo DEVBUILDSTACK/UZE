@@ -1,0 +1,52 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "geoAnchorId": {
+      "title": "Geoanchorid",
+      "type": "string"
+    },
+    "accreditation": {
+      "additionalProperties": true,
+      "title": "Accreditation",
+      "type": "object"
+    },
+    "languages": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Languages",
+      "type": "array"
+    },
+    "metroId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Metroid"
+    }
+  },
+  "required": [
+    "geoAnchorId",
+    "accreditation",
+    "languages"
+  ],
+  "title": "FacilityProfile",
+  "type": "object"
+}

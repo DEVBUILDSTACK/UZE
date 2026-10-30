@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "band": {
+      "title": "Band",
+      "type": "string"
+    },
+    "minDaysPostOpBeforeReturn": {
+      "title": "Mindayspostopbeforereturn",
+      "type": "integer"
+    },
+    "cabinComfortMin": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cabincomfortmin"
+    }
+  },
+  "required": [
+    "band",
+    "minDaysPostOpBeforeReturn"
+  ],
+  "title": "ProcedureClassBand",
+  "type": "object"
+}

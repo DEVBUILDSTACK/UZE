@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "TravelerRole": {
+      "enum": [
+        "PATIENT",
+        "COMPANION",
+        "PRIMARY",
+        "GUEST"
+      ],
+      "title": "TravelerRole",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "tripProfileId": {
+      "title": "Tripprofileid",
+      "type": "string"
+    },
+    "role": {
+      "$ref": "#/$defs/TravelerRole"
+    },
+    "origin": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Origin"
+    },
+    "nationality": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nationality"
+    },
+    "utilityWeights": {
+      "additionalProperties": true,
+      "title": "Utilityweights",
+      "type": "object"
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "role",
+    "utilityWeights"
+  ],
+  "title": "Traveler",
+  "type": "object"
+}

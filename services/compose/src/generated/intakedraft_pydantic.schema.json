@@ -1,0 +1,65 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "token": {
+      "title": "Token",
+      "type": "string"
+    },
+    "answers": {
+      "additionalProperties": true,
+      "title": "Answers",
+      "type": "object"
+    },
+    "missingSlots": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missingslots",
+      "type": "array"
+    },
+    "invalidSlots": {
+      "additionalProperties": true,
+      "title": "Invalidslots",
+      "type": "object"
+    },
+    "expiresAt": {
+      "format": "date-time",
+      "title": "Expiresat",
+      "type": "string"
+    },
+    "createdAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdat"
+    }
+  },
+  "required": [
+    "token",
+    "answers",
+    "missingSlots",
+    "invalidSlots",
+    "expiresAt"
+  ],
+  "title": "IntakeDraft",
+  "type": "object"
+}

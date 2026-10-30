@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConsentRecord",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "subjectId": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "grantedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revokedAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "healthAttributes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/HealthAttribute"
+      }
+    }
+  },
+  "required": [
+    "subjectId",
+    "purpose",
+    "version",
+    "grantedAt"
+  ],
+  "$defs": {
+    "HealthAttribute": {
+      "title": "HealthAttribute",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "subjectId": {
+          "type": "string"
+        },
+        "consentId": {
+          "type": "string"
+        },
+        "attrKey": {
+          "type": "string"
+        },
+        "attrValue": {
+          "type": "object"
+        },
+        "retentionUntil": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "subjectId",
+        "consentId",
+        "attrKey",
+        "attrValue",
+        "retentionUntil"
+      ]
+    }
+  }
+}

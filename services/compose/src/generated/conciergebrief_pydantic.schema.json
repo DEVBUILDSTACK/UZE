@@ -1,0 +1,105 @@
+{
+  "$defs": {
+    "TaskState": {
+      "enum": [
+        "REQUESTED",
+        "QUOTED",
+        "DEPOSIT_PENDING",
+        "CONFIRMED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "title": "TaskState",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "tripProfileId": {
+      "title": "Tripprofileid",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/TaskState"
+    },
+    "trigger": {
+      "title": "Trigger",
+      "type": "string"
+    },
+    "brief": {
+      "additionalProperties": true,
+      "title": "Brief",
+      "type": "object"
+    },
+    "meteringRateCents": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Meteringratecents"
+    },
+    "meteringCapCents": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Meteringcapcents"
+    },
+    "meteringExpiresAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Meteringexpiresat"
+    },
+    "createdAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdat"
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "state",
+    "trigger",
+    "brief"
+  ],
+  "title": "ConciergeBrief",
+  "type": "object"
+}

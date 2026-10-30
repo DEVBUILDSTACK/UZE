@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConciergeBrief",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "tripProfileId": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/TaskState"
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "brief": {
+      "type": "object"
+    },
+    "meteringRateCents": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "meteringCapCents": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "meteringExpiresAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "state",
+    "trigger",
+    "brief"
+  ],
+  "$defs": {
+    "TaskState": {
+      "title": "TaskState",
+      "type": "string",
+      "enum": [
+        "REQUESTED",
+        "QUOTED",
+        "DEPOSIT_PENDING",
+        "CONFIRMED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    }
+  }
+}

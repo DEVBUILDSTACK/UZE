@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MetroProfile",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "metroCode": {
+      "type": "string"
+    },
+    "facilityClusters": {
+      "type": "object"
+    },
+    "resortClusters": {
+      "type": "object"
+    },
+    "splitStayDefault": {
+      "type": "boolean"
+    },
+    "safetyWeights": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "metroCode",
+    "facilityClusters",
+    "resortClusters",
+    "safetyWeights"
+  ],
+  "$defs": {}
+}

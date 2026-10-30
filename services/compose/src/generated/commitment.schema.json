@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Commitment",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "approvalRequestId": {
+      "type": "string"
+    },
+    "offerSnapshotId": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "settledAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "chainTxRef": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "approvalRequestId",
+    "offerSnapshotId",
+    "state"
+  ],
+  "$defs": {}
+}

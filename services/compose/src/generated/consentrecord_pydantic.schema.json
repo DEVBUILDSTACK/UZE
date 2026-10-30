@@ -1,0 +1,120 @@
+{
+  "$defs": {
+    "HealthAttribute": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "subjectId": {
+          "title": "Subjectid",
+          "type": "string"
+        },
+        "consentId": {
+          "title": "Consentid",
+          "type": "string"
+        },
+        "attrKey": {
+          "title": "Attrkey",
+          "type": "string"
+        },
+        "attrValue": {
+          "additionalProperties": true,
+          "title": "Attrvalue",
+          "type": "object"
+        },
+        "retentionUntil": {
+          "format": "date-time",
+          "title": "Retentionuntil",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subjectId",
+        "consentId",
+        "attrKey",
+        "attrValue",
+        "retentionUntil"
+      ],
+      "title": "HealthAttribute",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "subjectId": {
+      "title": "Subjectid",
+      "type": "string"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    },
+    "grantedAt": {
+      "format": "date-time",
+      "title": "Grantedat",
+      "type": "string"
+    },
+    "revokedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Revokedat"
+    },
+    "healthAttributes": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/HealthAttribute"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Healthattributes"
+    }
+  },
+  "required": [
+    "subjectId",
+    "purpose",
+    "version",
+    "grantedAt"
+  ],
+  "title": "ConsentRecord",
+  "type": "object"
+}

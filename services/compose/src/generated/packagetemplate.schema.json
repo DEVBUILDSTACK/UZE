@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PackageTemplate",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "facilityId": {
+      "type": "string"
+    },
+    "procedureClassBand": {
+      "type": "string"
+    },
+    "phaseTemplate": {
+      "type": "object"
+    },
+    "inclusions": {
+      "type": "object"
+    },
+    "depositTerms": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "facilityId",
+    "procedureClassBand",
+    "phaseTemplate",
+    "inclusions",
+    "depositTerms"
+  ],
+  "$defs": {}
+}

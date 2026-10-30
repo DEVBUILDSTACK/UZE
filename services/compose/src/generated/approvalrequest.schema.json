@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApprovalRequest",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "tripProfileId": {
+      "type": "string"
+    },
+    "commitmentClass": {
+      "$ref": "#/$defs/CommitmentClass"
+    },
+    "summary": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string"
+    },
+    "signedBy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "resolvedAt": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "commitments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Commitment"
+      }
+    }
+  },
+  "required": [
+    "tripProfileId",
+    "commitmentClass",
+    "summary"
+  ],
+  "$defs": {
+    "CommitmentClass": {
+      "title": "CommitmentClass",
+      "type": "string",
+      "enum": [
+        "IRREVERSIBLE_ON_CHAIN",
+        "CANCELLABLE_UNTIL_WINDOW",
+        "CHANGEABLE_WITH_FEE",
+        "APPOINTMENT",
+        "MEDICAL_PACKAGE"
+      ]
+    },
+    "Commitment": {
+      "title": "Commitment",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "approvalRequestId": {
+          "type": "string"
+        },
+        "offerSnapshotId": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "settledAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chainTxRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "approvalRequestId",
+        "offerSnapshotId",
+        "state"
+      ]
+    }
+  }
+}

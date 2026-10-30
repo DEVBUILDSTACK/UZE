@@ -1,0 +1,61 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "approvalRequestId": {
+      "title": "Approvalrequestid",
+      "type": "string"
+    },
+    "offerSnapshotId": {
+      "title": "Offersnapshotid",
+      "type": "string"
+    },
+    "state": {
+      "title": "State",
+      "type": "string"
+    },
+    "settledAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Settledat"
+    },
+    "chainTxRef": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Chaintxref"
+    }
+  },
+  "required": [
+    "approvalRequestId",
+    "offerSnapshotId",
+    "state"
+  ],
+  "title": "Commitment",
+  "type": "object"
+}
