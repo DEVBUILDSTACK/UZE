@@ -367,15 +367,6 @@ class OfferPayloadJSON(TypeDecorator):
     }
 
 
-# Historical name, retained ONLY because the initial migration
-# (revision cd548e517e5e) instantiates models.RailPayloadJSON() for the
-# payload column's DDL — a plain JSON column; the fragment is not part
-# of the DDL. Removing the alias would break from-empty replay of the
-# migration chain (the demo caught exactly this). New code uses
-# OfferPayloadJSON; nothing else may reference the old name.
-RailPayloadJSON = OfferPayloadJSON
-
-
 def _question_slot(*, enum_member: bool) -> dict:
     """One member of the QuestionSlot union (see QuestionSlotListJSON).
 

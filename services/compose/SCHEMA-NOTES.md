@@ -174,6 +174,10 @@ migration instantiates `models.RailPayloadJSON()` for the payload
 column's DDL; `models.py` therefore carries a one-line historical
 alias (`RailPayloadJSON = OfferPayloadJSON`, commented; new code uses
 OfferPayloadJSON only) rather than editing a filed migration.
+**That alias is itself now RESOLVED — removed 2026-10-30 by the
+frozen-artifact inline (final section of these notes): the migration
+inlines the two types it needs, so the alias had nothing left to
+serve, and schema-dump equality proved the inline changed nothing.**
 Evidence: demo **11/11 from empty** at the new head — D11 proves the
 split on the generated surfaces, the mapping, and the CHECK; D1–D10
 pass unchanged in substance.
@@ -336,3 +340,49 @@ The spec describes the restricted namespace as "RLS-gated." As built in Sprint 0
 ## Standing standard — from-empty replay (adopted 2026-10-30, schema review)
 
 Every future revision gets a **from-empty replay at its head before filing**: the demo harness drops and recreates the database and applies the full chain in a single `alembic upgrade head` pass, and the revision is not filed until that replay passes. This discipline caught the RailPayloadJSON rename break during the Sprint 0 close-out; it is the standard, not a one-off.
+
+## Frozen-artifact inline — the alias fragility RESOLVED (2026-10-30, Sprint 1 first-week follow-on)
+
+The schema review named the deeper coupling in the close-out's
+historical alias: as filed, the initial migration
+(`cd548e517e5e`) did `import models` and instantiated
+`models.PriceJSON()` / `models.RailPayloadJSON()`. The migration ran
+standalone, but its behavior was a function of live application
+source — any future refactor of `models.py` (rename, split, package
+move) would break the filed chain at replay time. That inverts the
+Alembic principle: **migrations are frozen artifacts — point-in-time
+schema state, independent of current models.** At James's direction
+(on the review's recommendation), the coupling is removed, not
+worked around:
+
+- **Inlined.** The initial migration now defines the two types
+  locally (`PriceJSON`, `OfferPayloadJSON` — TypeDecorators with
+  `impl = sa.JSON`, `cache_ok = True`, exactly their DDL-relevant
+  content; the `json_schema` fragments are a codegen-bridge concern,
+  not DDL, and are not copied). The `import models` is gone from the
+  migration; no version file references application source.
+- **env.py guarded.** The application-source import in
+  `alembic/env.py` (autogenerate's `target_metadata` + the
+  config-managed URL) is wrapped so an upgrade run proceeds without
+  it — `target_metadata = None`, URL from `COMPOSE_DATABASE_URL` /
+  the .ini — while autogenerate from the repo still gets the
+  authoring source's metadata.
+- **Alias removed.** `RailPayloadJSON = OfferPayloadJSON` and its
+  comment block are deleted from `src/models.py`; zero code
+  references to the old name remain anywhere.
+
+**Proofs (all against the unchanged head `d52f8b1a904c` — this is a
+source fix to a filed migration, not a schema change, so no new
+revision):** (1) from-empty demo **12/12 PASS** post-fix; (2)
+`pg_dump --schema-only` of the post-fix from-empty build is
+**byte-identical** to the pre-fix baseline dump — the inline produces
+exactly the filed schema; (3) **standalone run**: the `alembic/`
+tree + `alembic.ini` copied alone (no `src/` present or importable,
+PYTHONPATH unset, URL via `COMPOSE_DATABASE_URL`) applied the full
+chain cleanly to a fresh database — head `d52f8b1a904c`, all three
+enforcement triggers present, and its schema dump likewise
+byte-identical to the baseline; (4) regeneration (`make all`) after
+the alias removal: **0 non-timestamp diff lines**, so the committed
+generated artifacts stand unchanged. The "commented alias" pattern
+is closed: if a future replay ever seems to need one, that is the
+signal to inline, not to alias.
