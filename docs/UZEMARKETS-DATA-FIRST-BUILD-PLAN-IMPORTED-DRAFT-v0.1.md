@@ -450,6 +450,16 @@ Everything else stands as filed (database name, commercial model, inventory, sea
 
 **Suggested tap line (directing agent's text, filed verbatim for James to send as-is if it reads right to him):**
 
-"Tap all six. ORM (C), with SoSem's deliverable condition: codegen tool named and one SQLAlchemy → Pydantic → TypeScript round-trip demonstrated before schema authoring begins. Inventory as consumer, with read-through contract specifying sourceRef TTL, hold semantics or their explicit absence, and a typed divergence failure code. Directives 1, 2, 4, 5, 6 as proposed, with the directive-4 pair stated in this tap: deterministic classify(); LLM only via suggest_slots() under the classifier's validation. Database name uzemarkets-compose. Commercial model as corrected: supply from affiliates and facilities, demand B2C direct or B2B through promoters, facilitators, clinics. Seat placement in OfferSnapshot.payload, reconciliation commit-time only, divergence = typed failure, no continuous sync in MVP. Carries 03d9aec by reference. Affiliates pinning is a Sprint 0 follow-on, not a gate."
+"Tap all six. ORM (C), with SoSem's deliverable condition: codegen tool named and one SQLAlchemy → Pydantic → TypeScript round-trip demonstrated before schema authoring begins. Inventory as consumer, with read-through contract specifying sourceRef TTL, hold semantics or their explicit absence, and a typed divergence failure code. Directives 1, 2, 4, 5, 6 as proposed, with the directive-4 pair stated in this tap: deterministic classify(); LLM only via suggest_slots() under the classifier's validation. Database name uzemarkets-compose. Commercial model as corrected: supply from affiliates and facilities, demand B2C direct or B2B through promoters, facilitators, clinics. Seat placement in OfferSnapshot.payload, reconciliation commit-time only, divergence = typed failure, no continuous sync in MVP. Carries 03d9aec and e611aa4 by reference. Affiliates pinning is a Sprint 0 follow-on, not a gate."
 
 **Status:** still UNTAPPED. SoSem has nothing outstanding until the tap lands.
+
+### Correction to the suggested tap line (directing agent, relayed by James 2026-10-30 16:56 EDT — filed, NOT ratified)
+
+The directing agent owns a reference error in its own proposed tap line: it cited `03d9aec` only, but the pair-in-the-tap-line rule and the tightened item-1 sequencing ("before schema authoring begins") both live in `e611aa4`. The substance was already captured in the tap line's own text (the pair is stated; the tightened sequencing is stated), so nothing was lost — but the record of *why* the pair sits in the tap line rather than riding by reference lives only in `e611aa4`, and a future reader holding the tap plus `03d9aec` alone could revert to a by-reference reading. **Fix applied above: the tap line now reads "Carries 03d9aec and e611aa4 by reference."**
+
+**Provenance note (directing agent, recorded at James's direction):** the tap is James's, however transmitted. If James sends it via a SoSem-presented button, the record will state it as James's tap transmitted through that mechanism — SoSem does not record itself as the tapper. Sending in James's own words carries no such question.
+
+The directing agent also withdraws its earlier flag on SoSem addressing "James" as possibly misrouted: that was its error — James is the principal and the routing was correct.
+
+**Status:** the tap line is complete as corrected. Still UNTAPPED until James sends it.
