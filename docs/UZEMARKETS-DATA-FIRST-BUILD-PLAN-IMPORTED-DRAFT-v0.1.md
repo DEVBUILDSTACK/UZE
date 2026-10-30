@@ -463,3 +463,15 @@ The directing agent owns a reference error in its own proposed tap line: it cite
 The directing agent also withdraws its earlier flag on SoSem addressing "James" as possibly misrouted: that was its error — James is the principal and the routing was correct.
 
 **Status:** the tap line is complete as corrected. Still UNTAPPED until James sends it.
+
+### Final follow-on (directing agent, relayed by James 2026-10-30 16:58 EDT — filed, NOT ratified)
+
+The directing agent verified the corrected record against the thread: the reference fix is correct (both `03d9aec` and `e611aa4` cited; sequencing substance and the pair-inline rule both recoverable); provenance recorded correctly; all six decisions plus the four refinements are in the tap line, nothing softened, nothing riding by reference that shouldn't. The tap line is ready.
+
+**One optional tightening — James's call, not a blocker.** The tap line's "Inventory as consumer" and "Seat placement in OfferSnapshot.payload" can read as in tension (if the composition layer is a consumer, why does it own seat identity?). The resolution is already in the record (the seat split: seat identity and the approval snapshot are composition-layer records *within* the consumer model, because the NFT binds the seat while services/api's listing is what the NFT fulfills). The directing agent leans include; if James includes it, the tap line's inventory clause reads: "Inventory as consumer of services/api's catalog — seat identity and approval snapshot are composition-layer records within the consumer model, not an exception to it — with read-through contract specifying sourceRef TTL, hold semantics or their explicit absence, and a typed divergence failure code." If he skips it, `e611aa4` carries the reconciliation and nothing is lost. **Status of this clause: PROPOSED-OPTIONAL, awaiting James's call at the tap.**
+
+**Two small notes, neither blocking — SoSem's side recorded:**
+1. **Label:** the tap line (the directing agent's own wording) calls the codegen round-trip SoSem's "deliverable condition," but the refined text makes it a prerequisite. SoSem records: in Sprint 0 tracking it will be carried as the **opening prerequisite gate**, not a first-week deliverable — schema authoring does not begin until the round-trip is demonstrated.
+2. **"Affiliates" pinning:** the last undefined term in the ratified set. Already filed as a Sprint 0 follow-on; SoSem records it as a **named Sprint 0 deliverable inside the read-through contract** (reseller vs supply vs both — whether affiliates are inventory holders or intermediaries), so it is written there, not only in the tap line.
+
+**After the tap (directing agent's summary, concurred):** Sprint 0 opens with the codegen round-trip as its first activity, the read-through contract as its first authoring deliverable, and the rename sweep already complete. Nothing outstanding on SoSem before the tap. **Status: still UNTAPPED.**
