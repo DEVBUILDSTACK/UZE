@@ -21,9 +21,13 @@
 #   artifact and `make all` rebuilds the entire chain from models.py.
 #   src/base.py is a generation INPUT (the frozen base class named by
 #   --base-class), not a model. bridge.py is a tool, not a model.
-#   The codegen invocation is EXACTLY the reviewed chain's — no added
-#   flags (the union member-naming question, e.g. --use-title-as-name,
-#   is a schema-review decision, not a silent change).
+#   The codegen invocation is the reviewed chain's + ONE flag:
+#   --use-title-as-name, adopted 2026-10-30 when James's tap (c)
+#   resolved the union member-naming decision the schema review had
+#   left open (SCHEMA-NOTES Author's Choice 13): generated union
+#   members carry their titled names (TicketOfferDetail, ...) instead
+#   of positional ones (RailPayload1...7). No other flags were added,
+#   and no generated file is hand-edited.
 #
 # Usage:
 #   make all        # full regeneration of every model from src/models.py
@@ -69,7 +73,8 @@ pydantic:
 	    --output $(GEN)/$$stem\_pydantic.py \
 	    --output-model-type pydantic_v2.BaseModel \
 	    --base-class base.FrozenModel \
-	    --target-python-version 3.12; \
+	    --target-python-version 3.12 \
+	    --use-title-as-name; \
 	done
 
 typescript: pydantic

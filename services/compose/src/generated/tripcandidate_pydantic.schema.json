@@ -25,6 +25,122 @@
       "title": "DivergenceCode",
       "type": "string"
     },
+    "FacilityOfferDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "facility",
+          "title": "Kind",
+          "type": "string"
+        },
+        "facilityRef": {
+          "title": "Facilityref",
+          "type": "string"
+        },
+        "packageRef": {
+          "title": "Packageref",
+          "type": "string"
+        },
+        "procedureClassBand": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Procedureclassband"
+        }
+      },
+      "required": [
+        "kind",
+        "facilityRef",
+        "packageRef"
+      ],
+      "title": "FacilityOfferDetail",
+      "type": "object"
+    },
+    "FlightOfferDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "flight",
+          "title": "Kind",
+          "type": "string"
+        },
+        "itineraryRef": {
+          "title": "Itineraryref",
+          "type": "string"
+        },
+        "carrier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Carrier"
+        },
+        "departAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Departat"
+        }
+      },
+      "required": [
+        "kind",
+        "itineraryRef"
+      ],
+      "title": "FlightOfferDetail",
+      "type": "object"
+    },
+    "OfferPayload": {
+      "discriminator": {
+        "mapping": {
+          "facility": "#/$defs/FacilityOfferDetail",
+          "flight": "#/$defs/FlightOfferDetail",
+          "parking": "#/$defs/ParkingOfferDetail",
+          "stay": "#/$defs/StayOfferDetail",
+          "ticket": "#/$defs/TicketOfferDetail",
+          "transfer": "#/$defs/TransferOfferDetail"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/TicketOfferDetail"
+        },
+        {
+          "$ref": "#/$defs/StayOfferDetail"
+        },
+        {
+          "$ref": "#/$defs/FlightOfferDetail"
+        },
+        {
+          "$ref": "#/$defs/FacilityOfferDetail"
+        },
+        {
+          "$ref": "#/$defs/ParkingOfferDetail"
+        },
+        {
+          "$ref": "#/$defs/TransferOfferDetail"
+        }
+      ],
+      "title": "OfferPayload"
+    },
     "OfferSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -63,7 +179,7 @@
           "type": "object"
         },
         "payload": {
-          "$ref": "#/$defs/RailPayload"
+          "$ref": "#/$defs/OfferPayload"
         },
         "divergenceCode": {
           "anyOf": [
@@ -134,6 +250,38 @@
       "title": "OfferSnapshot",
       "type": "object"
     },
+    "ParkingOfferDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "parking",
+          "title": "Kind",
+          "type": "string"
+        },
+        "anchorRef": {
+          "title": "Anchorref",
+          "type": "string"
+        },
+        "spotRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spotref"
+        }
+      },
+      "required": [
+        "kind",
+        "anchorRef"
+      ],
+      "title": "ParkingOfferDetail",
+      "type": "object"
+    },
     "Price": {
       "additionalProperties": false,
       "properties": {
@@ -171,50 +319,49 @@
       "title": "Rail",
       "type": "string"
     },
-    "RailPayload": {
-      "discriminator": {
-        "mapping": {
-          "dining": "#/$defs/RailPayload7",
-          "facility": "#/$defs/RailPayload4",
-          "flight": "#/$defs/RailPayload3",
-          "parking": "#/$defs/RailPayload5",
-          "stay": "#/$defs/RailPayload2",
-          "ticket": "#/$defs/RailPayload1",
-          "transfer": "#/$defs/RailPayload6"
-        },
-        "propertyName": "rail"
-      },
-      "oneOf": [
-        {
-          "$ref": "#/$defs/RailPayload1"
-        },
-        {
-          "$ref": "#/$defs/RailPayload2"
-        },
-        {
-          "$ref": "#/$defs/RailPayload3"
-        },
-        {
-          "$ref": "#/$defs/RailPayload4"
-        },
-        {
-          "$ref": "#/$defs/RailPayload5"
-        },
-        {
-          "$ref": "#/$defs/RailPayload6"
-        },
-        {
-          "$ref": "#/$defs/RailPayload7"
-        }
-      ],
-      "title": "RailPayload"
-    },
-    "RailPayload1": {
+    "StayOfferDetail": {
       "additionalProperties": false,
       "properties": {
-        "rail": {
+        "kind": {
+          "const": "stay",
+          "title": "Kind",
+          "type": "string"
+        },
+        "phaseKind": {
+          "title": "Phasekind",
+          "type": "string"
+        },
+        "nights": {
+          "title": "Nights",
+          "type": "integer"
+        },
+        "propertyRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Propertyref"
+        }
+      },
+      "required": [
+        "kind",
+        "phaseKind",
+        "nights"
+      ],
+      "title": "StayOfferDetail",
+      "type": "object"
+    },
+    "TicketOfferDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
           "const": "ticket",
-          "title": "Rail",
+          "title": "Kind",
           "type": "string"
         },
         "seat": {
@@ -275,170 +422,19 @@
         }
       },
       "required": [
-        "rail",
+        "kind",
         "seat",
         "tier"
       ],
-      "title": "RailPayload1",
+      "title": "TicketOfferDetail",
       "type": "object"
     },
-    "RailPayload2": {
+    "TransferOfferDetail": {
       "additionalProperties": false,
       "properties": {
-        "rail": {
-          "const": "stay",
-          "title": "Rail",
-          "type": "string"
-        },
-        "phaseKind": {
-          "title": "Phasekind",
-          "type": "string"
-        },
-        "nights": {
-          "title": "Nights",
-          "type": "integer"
-        },
-        "propertyRef": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Propertyref"
-        }
-      },
-      "required": [
-        "rail",
-        "phaseKind",
-        "nights"
-      ],
-      "title": "RailPayload2",
-      "type": "object"
-    },
-    "RailPayload3": {
-      "additionalProperties": false,
-      "properties": {
-        "rail": {
-          "const": "flight",
-          "title": "Rail",
-          "type": "string"
-        },
-        "itineraryRef": {
-          "title": "Itineraryref",
-          "type": "string"
-        },
-        "carrier": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Carrier"
-        },
-        "departAt": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Departat"
-        }
-      },
-      "required": [
-        "rail",
-        "itineraryRef"
-      ],
-      "title": "RailPayload3",
-      "type": "object"
-    },
-    "RailPayload4": {
-      "additionalProperties": false,
-      "properties": {
-        "rail": {
-          "const": "facility",
-          "title": "Rail",
-          "type": "string"
-        },
-        "facilityRef": {
-          "title": "Facilityref",
-          "type": "string"
-        },
-        "packageRef": {
-          "title": "Packageref",
-          "type": "string"
-        },
-        "procedureClassBand": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Procedureclassband"
-        }
-      },
-      "required": [
-        "rail",
-        "facilityRef",
-        "packageRef"
-      ],
-      "title": "RailPayload4",
-      "type": "object"
-    },
-    "RailPayload5": {
-      "additionalProperties": false,
-      "properties": {
-        "rail": {
-          "const": "parking",
-          "title": "Rail",
-          "type": "string"
-        },
-        "anchorRef": {
-          "title": "Anchorref",
-          "type": "string"
-        },
-        "spotRef": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Spotref"
-        }
-      },
-      "required": [
-        "rail",
-        "anchorRef"
-      ],
-      "title": "RailPayload5",
-      "type": "object"
-    },
-    "RailPayload6": {
-      "additionalProperties": false,
-      "properties": {
-        "rail": {
+        "kind": {
           "const": "transfer",
-          "title": "Rail",
+          "title": "Kind",
           "type": "string"
         },
         "taskRef": {
@@ -460,43 +456,10 @@
         }
       },
       "required": [
-        "rail",
+        "kind",
         "taskRef"
       ],
-      "title": "RailPayload6",
-      "type": "object"
-    },
-    "RailPayload7": {
-      "additionalProperties": false,
-      "properties": {
-        "rail": {
-          "const": "dining",
-          "title": "Rail",
-          "type": "string"
-        },
-        "taskRef": {
-          "title": "Taskref",
-          "type": "string"
-        },
-        "reservationAt": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Reservationat"
-        }
-      },
-      "required": [
-        "rail",
-        "taskRef"
-      ],
-      "title": "RailPayload7",
+      "title": "TransferOfferDetail",
       "type": "object"
     }
   },

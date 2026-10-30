@@ -5,15 +5,16 @@ instance from the pgserver-bundled PostgreSQL 16.2 binaries,
 database reset fresh by this script, migrated by Alembic.
 This is a PostgreSQL demonstration, not a SQLite one.
 ========================================================================
-PASS D1 migration applies — alembic at head revision 9d4c1f7a2b58 on database uzemarkets-compose
+PASS D1 migration applies — alembic at head revision b3d91c7e5a02 on database uzemarkets-compose
 PASS D2 table inventory — 22 public tables (incl. alembic_version), 2 health_restricted tables — full 23-model inventory present
 PASS D3 OfferSnapshot immutability (DB trigger + ORM guard) — DB trigger refuses price/sourceRef/combined UPDATEs and DELETE ((psycopg.errors.RaiseException) offer_snapshot is immutable: UPDATE refused (only the divergence annotation is); divergence annotation applies exactly once and the mirror trigger wrote exactly one SNAPSHOT_DIVERGED EventLog row (actor system:divergence-annotation, matching code); ORM guard fires on attribute mutation
 PASS D4 EventLog append-only (DB trigger + ORM guard) — UPDATE/DELETE refused by DB trigger; ORM delete refused by guard
 PASS D5 IdempotencyKey uniqueness (Postgres) — duplicate insert raised IntegrityError; the IN_FLIGHT row stands alone
-PASS D6 generated Pydantic: payload union + typed divergence — ticket + stay payloads validate via the discriminator; mislabeled pair rejected; divergence enum typed in Pydantic (8 codes) and present in the TS artifact; frozen mutation refused
+PASS D6 generated Pydantic: payload union + typed divergence — ticket + stay payloads validate via the OfferKind discriminator under their member names; mislabeled pair rejected; divergence enum typed in Pydantic (8 codes) and present in the TS artifact; frozen mutation refused
 PASS D7 sourceRef is a reference, not a FK — sourceRef has no FK (mapper); offer_snapshot's only FK is the internal tripCandidateId; zero cross-schema FKs — no cross-database join is expressible
 PASS D8 TripProfile: travelers as rows, StayPhase[] structure — 2 traveler rows with roles (PRIMARY, COMPANION); 2 stay phases in seq order (EVENT, RECOVERY), each carrying its OWN checkIn/checkOut; modules is a Postgres ARRAY column; the TRIP carries no checkIn/checkOut/partySize columns
 PASS D9 dormant health set: present, unused, isolated — dormant tables present and empty {'facility_profile': 0, 'package_template': 0, 'procedure_class_band': 0, 'health_restricted.consent_record': 0, 'health_restricted.health_attribute': 0}; Traveler carries no health columns; health lives only in health_restricted behind ConsentRecord
 PASS D10 divergence mirror atomicity (negative case) — with the mirror's EventLog INSERT blocked, the annotation errored via the blocker and rolled back with it (divergenceCode still NULL, 0 mirror rows); blocker dropped, the same snapshot then annotated cleanly with exactly one mirror row — annotation and mirror are a single transaction
+PASS D11 OfferKind discriminator (names + mapping + DB CHECK) — all six kinds validate under their OfferDetail names (Pydantic dispatch + TS artifact); numbered RailPayload names gone; dining tag rejected by the union; offer_kind_for_rail maps all 7 rails with DINING_TASK -> None; DB CHECK refuses a raw-SQL out-of-set kind and admits an in-set one
 ========================================================================
-RESULT: 10/10 checks passed
+RESULT: 11/11 checks passed

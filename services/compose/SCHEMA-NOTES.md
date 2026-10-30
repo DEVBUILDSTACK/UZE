@@ -3,7 +3,8 @@
 **Deliverable:** the UZEMARKETS composition-layer schema, authored once in
 `src/models.py` (SQLAlchemy 2.0), migrated by Alembic into the database
 **`uzemarkets-compose`**, projected to Pydantic + TypeScript by the reviewed
-codegen chain, unchanged.
+codegen chain (plus the one naming flag adopted at James's tap (c) — see
+Author's Choice 13, resolved).
 
 **Sources of truth followed:** the Data-First spec
 (`docs/UZEMARKETS-DATA-FIRST-BUILD-PLAN-IMPORTED-DRAFT-v0.1.md`, incl. the
@@ -22,7 +23,7 @@ been applied anywhere else.
 
 ---
 
-## Model inventory (23 models, 8 enums)
+## Model inventory (23 models, 9 enums)
 
 Intake & trip: `IntakeDraft`, `TripProfile`, `Traveler`, `GeoAnchor`,
 `MetroProfile`, `StayPhase`.
@@ -43,7 +44,9 @@ FLIGHT, PARKING, TRANSIT, DINING, TRANSFER, VIP_CONCIERGE, FACILITY) ·
 CHANGEABLE_WITH_FEE, APPOINTMENT, MEDICAL_PACKAGE) · `Rail` (SOLANA_NFT,
 HOTEL_AGGREGATOR, FLIGHT_SEARCH, FACILITY, PARKING, TRANSFER, DINING_TASK) ·
 `TaskState` (REQUESTED, QUOTED, DEPOSIT_PENDING, CONFIRMED, FAILED,
-CANCELLED) · `DivergenceCode` (the 8 R4 codes).
+CANCELLED) · `DivergenceCode` (the 8 R4 codes) · `OfferKind` (ticket, stay,
+flight, facility, parking, transfer — the OfferSnapshot payload
+discriminator since revision A; James's tap (c)).
 
 Column names carry the contract's camelCase (`buyerId`, `sourceRef`,
 `divergenceCode`); Python attributes are snake_case.
@@ -129,19 +132,49 @@ validation (D6); the annotation write in D3 is typed by the column.
 both surfaces re-generated — PASS.**
 All 23 models regenerate from `src/models.py` through the reviewed chain
 (bridge → datamodel-code-generator → Pydantic → json-schema-to-typescript),
-committed `Makefile`, no added flags. Verified reproducibility: a scratch
+committed `Makefile`. Verified reproducibility: a scratch
 copy re-ran `make all` and reproduced every committed artifact
 **byte-for-byte except the generator's timestamp header line** (0
 non-timestamp diff lines across all 92 artifacts). `make check-ts` passes
 (`tsc --strict`). Destructive-by-default is stated on the Makefile and
 holds: every generator overwrites wholesale; `make clean` deletes all
-generated artifacts.
+generated artifacts. **Close-out amendment (revision A, 2026-10-30):**
+the invocation now carries ONE added flag, `--use-title-as-name`,
+adopted when James's tap (c) resolved the member-naming decision
+(Author's Choice 13); reproducibility was re-verified for the new
+artifacts in the same change (two from-clean generations, 0
+non-timestamp diff lines).
 
 **11. Database name uzemarkets-compose in the connection config — PASS.**
 `src/config.py`: `DATABASE_NAME = "uzemarkets-compose"`, `database_url()`
 with a `COMPOSE_DATABASE_URL` override; `.env.example` carries the same
 name; the Alembic env takes its URL from that config; the demo migrated a
 database of exactly that name (D1).
+
+---
+
+## Close-out revisions (James's taps (a) and (c), 2026-10-30)
+
+**Revision A — OfferKind (tap (c)) — Alembic `b3d91c7e5a02`.**
+OfferKind (ticket | stay | flight | facility | parking | transfer) is
+now the OfferSnapshot payload discriminator; the payload tag property
+is renamed `rail` → `kind`; union members are named
+TicketOfferDetail … TransferOfferDetail in BOTH generated surfaces;
+the Dining member is deleted (a task rail produces no offer); Rail is
+retained for routing and dispatch; the ONE mapping is
+`offer_kind_for_rail()` in `src/models.py` (DINING_TASK → None).
+DB-level presence: CHECK `ck_offer_snapshot_payload_kind` on
+offer_snapshot (downgrade verified symmetric). Member-naming route:
+the chain's `--use-title-as-name` flag — Author's Choice 13 is
+RESOLVED (below). One mechanical consequence, disclosed: the class
+rename would have broken from-empty replay, because the initial
+migration instantiates `models.RailPayloadJSON()` for the payload
+column's DDL; `models.py` therefore carries a one-line historical
+alias (`RailPayloadJSON = OfferPayloadJSON`, commented; new code uses
+OfferPayloadJSON only) rather than editing a filed migration.
+Evidence: demo **11/11 from empty** at the new head — D11 proves the
+split on the generated surfaces, the mapping, and the CHECK; D1–D10
+pass unchanged in substance.
 
 ---
 
@@ -152,14 +185,18 @@ database of exactly that name (D1).
    `questions` (JSON list of {slot, prompt, type, required, module?}),
    `active`, `createdAt`. **This one most needs an explicit tap** — it
    will harden fastest once intake work starts.
-2. **RailPayload members beyond the ticket core.** Only the ticket
+2. **Payload members beyond the ticket core.** Only the ticket
    member's core is ratified content (seat, tier + mintRef/ticketRef/
-   listingRef per R4 §6). The other six members carry minimal binding
+   listingRef per R4 §6). The other members carry minimal binding
    identifiers only: Stay {phaseKind, nights, propertyRef?}, Flight
    {itineraryRef, carrier?, departAt?}, Facility {facilityRef, packageRef,
    procedureClassBand?}, Parking {anchorRef, spotRef?}, Transfer
-   {taskRef, pickupAt?}, Dining {taskRef, reservationAt?}. Every field
-   here beyond the spec's words is a choice.
+   {taskRef, pickupAt?}. Every field here beyond the spec's words is a
+   choice. (As originally authored these were the RailPayload members;
+   at revision A they were re-homed unchanged under their OfferKind
+   member names, and the seventh member — Dining {taskRef,
+   reservationAt?} — was DELETED under James's tap (c): a task rail
+   is not an offer.)
 3. **The divergence annotation is a permitted UPDATE on an immutable
    table.** Criteria 5 + 9 and R4 §5 together require the kill to be
    recorded ON the snapshot (typed code + timestamp), so the trigger and
@@ -222,11 +259,15 @@ database of exactly that name (D1).
     (rate, cap, expiry) from the consolidation's "pre-authorized
     metering — rate, cap, expiry"; nullable because a brief can exist
     before metering terms are set.
-13. **Union member naming (RailPayload1…7) is NOT resolved here.** The
-    chain was used unchanged — no `--use-title-as-name` — per the
-    standing instruction. The schema review takes this decision
-    explicitly (adopt the flag, adopt bridge-emitted named $defs, or
-    accept numbered names), as filed at the fidelity check's close.
+13. **Union member naming — RESOLVED by James's tap (c), 2026-10-30.**
+    As filed at the fidelity check's close, this was left to the
+    schema review; the review's OfferKind finding decided it: member
+    names match OfferKind. Route adopted: the chain gains ONE flag,
+    `--use-title-as-name` (Makefile), so the generated members carry
+    their titled names (TicketOfferDetail … TransferOfferDetail) in
+    Pydantic and TypeScript; the positional names (RailPayload1…7)
+    are gone (demo D11 asserts their absence). The rest of the chain's
+    invocation is unchanged from the reviewed round-trip.
 14. **Migration downgrade leaves Postgres enum types behind** (Postgres
     does not drop enum types with their tables). Documented in the
     revision itself; a base downgrade is a development action, and

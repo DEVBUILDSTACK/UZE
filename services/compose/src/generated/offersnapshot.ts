@@ -10,36 +10,38 @@ export type CommitmentClass =
 export type Amount = number;
 export type Currency = string;
 export type Taxesincluded = boolean;
-export type RailPayload =
-  RailPayload1 | RailPayload2 | RailPayload3 | RailPayload4 | RailPayload5 | RailPayload6 | RailPayload7;
-export type Rail1 = "ticket";
+export type OfferPayload =
+  | TicketOfferDetail
+  | StayOfferDetail
+  | FlightOfferDetail
+  | FacilityOfferDetail
+  | ParkingOfferDetail
+  | TransferOfferDetail;
+export type Kind = "ticket";
 export type Seat = string;
 export type Tier = string;
 export type Gate = string | null;
 export type Mintref = string | null;
 export type Ticketref = string | null;
 export type Listingref = string | null;
-export type Rail2 = "stay";
+export type Kind1 = "stay";
 export type Phasekind = string;
 export type Nights = number;
 export type Propertyref = string | null;
-export type Rail3 = "flight";
+export type Kind2 = "flight";
 export type Itineraryref = string;
 export type Carrier = string | null;
 export type Departat = string | null;
-export type Rail4 = "facility";
+export type Kind3 = "facility";
 export type Facilityref = string;
 export type Packageref = string;
 export type Procedureclassband = string | null;
-export type Rail5 = "parking";
+export type Kind4 = "parking";
 export type Anchorref = string;
 export type Spotref = string | null;
-export type Rail6 = "transfer";
+export type Kind5 = "transfer";
 export type Taskref = string;
 export type Pickupat = string | null;
-export type Rail7 = "dining";
-export type Taskref1 = string;
-export type Reservationat = string | null;
 export type DivergenceCode =
   | "SNAPSHOT_EXPIRED"
   | "SOURCE_NOT_FOUND"
@@ -62,7 +64,7 @@ export interface OfferSnapshot {
   commitmentClass: CommitmentClass;
   price: Price;
   terms: Terms;
-  payload: RailPayload;
+  payload: OfferPayload;
   divergenceCode?: DivergenceCode | null;
   divergenceAt?: Divergenceat;
   expiresAt: Expiresat;
@@ -77,8 +79,8 @@ export interface Price {
 export interface Terms {
   [k: string]: unknown;
 }
-export interface RailPayload1 {
-  rail: Rail1;
+export interface TicketOfferDetail {
+  kind: Kind;
   seat: Seat;
   tier: Tier;
   gate?: Gate;
@@ -86,36 +88,31 @@ export interface RailPayload1 {
   ticketRef?: Ticketref;
   listingRef?: Listingref;
 }
-export interface RailPayload2 {
-  rail: Rail2;
+export interface StayOfferDetail {
+  kind: Kind1;
   phaseKind: Phasekind;
   nights: Nights;
   propertyRef?: Propertyref;
 }
-export interface RailPayload3 {
-  rail: Rail3;
+export interface FlightOfferDetail {
+  kind: Kind2;
   itineraryRef: Itineraryref;
   carrier?: Carrier;
   departAt?: Departat;
 }
-export interface RailPayload4 {
-  rail: Rail4;
+export interface FacilityOfferDetail {
+  kind: Kind3;
   facilityRef: Facilityref;
   packageRef: Packageref;
   procedureClassBand?: Procedureclassband;
 }
-export interface RailPayload5 {
-  rail: Rail5;
+export interface ParkingOfferDetail {
+  kind: Kind4;
   anchorRef: Anchorref;
   spotRef?: Spotref;
 }
-export interface RailPayload6 {
-  rail: Rail6;
+export interface TransferOfferDetail {
+  kind: Kind5;
   taskRef: Taskref;
   pickupAt?: Pickupat;
-}
-export interface RailPayload7 {
-  rail: Rail7;
-  taskRef: Taskref1;
-  reservationAt?: Reservationat;
 }

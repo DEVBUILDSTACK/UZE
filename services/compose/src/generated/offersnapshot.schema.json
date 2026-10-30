@@ -25,7 +25,7 @@
       "type": "object"
     },
     "payload": {
-      "$ref": "#/$defs/RailPayload"
+      "$ref": "#/$defs/OfferPayload"
     },
     "divergenceCode": {
       "anyOf": [
@@ -124,17 +124,17 @@
       ],
       "additionalProperties": false
     },
-    "RailPayload": {
-      "title": "RailPayload",
+    "OfferPayload": {
+      "title": "OfferPayload",
       "discriminator": {
-        "propertyName": "rail"
+        "propertyName": "kind"
       },
       "oneOf": [
         {
-          "title": "TicketPayload",
+          "title": "TicketOfferDetail",
           "type": "object",
           "properties": {
-            "rail": {
+            "kind": {
               "const": "ticket"
             },
             "seat": {
@@ -157,17 +157,17 @@
             }
           },
           "required": [
-            "rail",
+            "kind",
             "seat",
             "tier"
           ],
           "additionalProperties": false
         },
         {
-          "title": "StayPayload",
+          "title": "StayOfferDetail",
           "type": "object",
           "properties": {
-            "rail": {
+            "kind": {
               "const": "stay"
             },
             "phaseKind": {
@@ -181,17 +181,17 @@
             }
           },
           "required": [
-            "rail",
+            "kind",
             "phaseKind",
             "nights"
           ],
           "additionalProperties": false
         },
         {
-          "title": "FlightPayload",
+          "title": "FlightOfferDetail",
           "type": "object",
           "properties": {
-            "rail": {
+            "kind": {
               "const": "flight"
             },
             "itineraryRef": {
@@ -206,16 +206,16 @@
             }
           },
           "required": [
-            "rail",
+            "kind",
             "itineraryRef"
           ],
           "additionalProperties": false
         },
         {
-          "title": "FacilityPayload",
+          "title": "FacilityOfferDetail",
           "type": "object",
           "properties": {
-            "rail": {
+            "kind": {
               "const": "facility"
             },
             "facilityRef": {
@@ -229,17 +229,17 @@
             }
           },
           "required": [
-            "rail",
+            "kind",
             "facilityRef",
             "packageRef"
           ],
           "additionalProperties": false
         },
         {
-          "title": "ParkingPayload",
+          "title": "ParkingOfferDetail",
           "type": "object",
           "properties": {
-            "rail": {
+            "kind": {
               "const": "parking"
             },
             "anchorRef": {
@@ -250,16 +250,16 @@
             }
           },
           "required": [
-            "rail",
+            "kind",
             "anchorRef"
           ],
           "additionalProperties": false
         },
         {
-          "title": "TransferPayload",
+          "title": "TransferOfferDetail",
           "type": "object",
           "properties": {
-            "rail": {
+            "kind": {
               "const": "transfer"
             },
             "taskRef": {
@@ -271,28 +271,7 @@
             }
           },
           "required": [
-            "rail",
-            "taskRef"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "title": "DiningPayload",
-          "type": "object",
-          "properties": {
-            "rail": {
-              "const": "dining"
-            },
-            "taskRef": {
-              "type": "string"
-            },
-            "reservationAt": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          "required": [
-            "rail",
+            "kind",
             "taskRef"
           ],
           "additionalProperties": false

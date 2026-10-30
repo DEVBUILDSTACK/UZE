@@ -18,7 +18,7 @@ Conventions (from the reviewed round-trip, docs/sprint-0/codegen-roundtrip):
   camelCase, set explicitly as the column names. The codegen bridge emits
   contract (camelCase) names into the JSON Schema.
 - Typed JSON columns carry their JSON Schema fragment on a TypeDecorator
-  in THIS file (PriceJSON, RailPayloadJSON), so the typed projection
+  in THIS file (PriceJSON, OfferPayloadJSON), so the typed projection
   survives every regeneration. Free-form JSON columns stay plain JSON by
   design (terms, criteria, summaries, briefs).
 - Internal ownership FKs (Traveler -> TripProfile, etc.) are real foreign
@@ -126,6 +126,51 @@ class Rail(enum.Enum):
     DINING_TASK = "DINING_TASK"
 
 
+class OfferKind(enum.Enum):
+    """The OfferSnapshot payload DISCRIMINATOR (James's tap (c),
+    2026-10-30, resolving the schema review's substantive finding).
+
+    Rail is the routing/dispatch vocabulary — it includes DINING_TASK,
+    a task rail that produces no offer. While the payload union was
+    keyed on Rail, DINING_TASK sat in the offer union as a dead
+    branch. The split: OfferKind names exactly the rails that can
+    produce an OfferSnapshot, the payload's tag property is `kind`,
+    and its values are THIS enum's values. Rail is retained for
+    routing and dispatch (the snapshot's `rail` column, EventLog
+    routing, the task family) and is no longer the offer
+    discriminator. Not a column enum: OfferKind lives in the payload
+    tag, in the generated union, and in the DB CHECK that revision
+    b3d91c7e5a02 puts on offer_snapshot.
+    """
+
+    TICKET = "ticket"
+    STAY = "stay"
+    FLIGHT = "flight"
+    FACILITY = "facility"  # dormant until the health vertical
+    PARKING = "parking"
+    TRANSFER = "transfer"
+
+
+_RAIL_TO_OFFER_KIND: dict[Rail, "OfferKind | None"] = {
+    Rail.SOLANA_NFT: OfferKind.TICKET,
+    Rail.HOTEL_AGGREGATOR: OfferKind.STAY,
+    Rail.FLIGHT_SEARCH: OfferKind.FLIGHT,
+    Rail.FACILITY: OfferKind.FACILITY,
+    Rail.PARKING: OfferKind.PARKING,
+    Rail.TRANSFER: OfferKind.TRANSFER,
+    Rail.DINING_TASK: None,  # a task rail produces no offer — the point of the split
+}
+
+
+def offer_kind_for_rail(rail: Rail) -> "OfferKind | None":
+    """The ONE mapping between Rail (routing/dispatch) and OfferKind
+    (the offer discriminator). Every Rail member is present in the
+    table — a missing member is a loud KeyError, not a silent None.
+    DINING_TASK maps to None by design: it dispatches tasks and can
+    never produce an OfferSnapshot."""
+    return _RAIL_TO_OFFER_KIND[rail]
+
+
 class TaskState(enum.Enum):
     """ServiceTask family state machine (spec §4.1; consolidation):
     REQUESTED -> QUOTED -> DEPOSIT_PENDING -> CONFIRMED, with FAILED and
@@ -186,9 +231,30 @@ class PriceJSON(TypeDecorator):
     }
 
 
-class RailPayloadJSON(TypeDecorator):
-    """OfferSnapshot.payload — the per-rail normalized body, as a
-    DISCRIMINATED UNION keyed on the payload's own `rail` tag.
+def _offer_member(
+    kind: OfferKind, properties: dict, required: list[str]
+) -> dict:
+    """One OfferPayload union member for `kind`, titled <Kind>OfferDetail.
+
+    The tag is the payload-local `kind` property, const-bound to the
+    OfferKind value; the member title is what the generated Pydantic +
+    TypeScript classes are named (James's tap (c): union member names
+    match OfferKind — the chain's --use-title-as-name flag, adopted
+    with this change, is what carries the titles into the artifacts).
+    """
+    return {
+        "title": f"{kind.name.title()}OfferDetail",
+        "type": "object",
+        "properties": {"kind": {"const": kind.value}, **properties},
+        "required": ["kind", *required],
+        "additionalProperties": False,
+    }
+
+
+class OfferPayloadJSON(TypeDecorator):
+    """OfferSnapshot.payload — the per-kind normalized body, as a
+    DISCRIMINATED UNION keyed on the payload's own `kind` tag, whose
+    values are the OfferKind enum (James's tap (c), 2026-10-30).
 
     Mechanism proven by the criterion-6 fidelity check
     (docs/sprint-0/codegen-roundtrip/fidelity/): the fragment declares
@@ -196,33 +262,38 @@ class RailPayloadJSON(TypeDecorator):
     the generated Pydantic dispatches on the tag, so a payload whose
     shape matches one member but whose tag names another is rejected.
 
-    Tag vocabulary is payload-local (fidelity precedent: "ticket"/"stay")
-    and maps from the Rail enum at the contract boundary:
-      SOLANA_NFT -> ticket, HOTEL_AGGREGATOR -> stay,
-      FLIGHT_SEARCH -> flight, FACILITY -> facility, PARKING -> parking,
-      TRANSFER -> transfer, DINING_TASK -> dining.
+    HISTORY OF THE SPLIT: this union was previously keyed on Rail
+    (tag property `rail`, members TicketPayload…DiningPayload). The
+    schema review found the flaw: DINING_TASK is a task rail, not an
+    offer, and sat in the offer union as a dead branch. As tapped:
+    OfferKind is the discriminator; Rail is retained for routing and
+    dispatch only; the ONE mapping between them is
+    offer_kind_for_rail() (DINING_TASK -> None); the Dining member is
+    deleted — a dining task produces no offer. At the DB level,
+    revision b3d91c7e5a02 adds CHECK ck_offer_snapshot_payload_kind,
+    so a raw-SQL writer cannot store an out-of-set kind tag either.
 
     Member shapes are NARROW and closed (additionalProperties: false).
     Only the ticket member's core is ratified content (seat identity +
     Solana mint reference in payload — James's tap; R4 §6 compares seat
     assignment, approval snapshot, and mint reference out of payload).
     The remaining members carry the minimum binding identifiers for
-    their rail; every field beyond the spec's own words is an AUTHOR'S
-    CHOICE, listed in SCHEMA-NOTES.md for the schema review.
+    their kind, re-homed unchanged from the former rail members;
+    every field beyond the spec's own words is an AUTHOR'S CHOICE,
+    listed in SCHEMA-NOTES.md. FacilityOfferDetail is dormant,
+    consistent with the dormant discipline.
     """
 
     impl = JSON
     cache_ok = True
 
     json_schema = {
-        "title": "RailPayload",
-        "discriminator": {"propertyName": "rail"},
+        "title": "OfferPayload",
+        "discriminator": {"propertyName": "kind"},
         "oneOf": [
-            {
-                "title": "TicketPayload",
-                "type": "object",
-                "properties": {
-                    "rail": {"const": "ticket"},
+            _offer_member(
+                OfferKind.TICKET,
+                {
                     "seat": {"type": "string"},
                     "tier": {"type": "string"},
                     "gate": {"type": "string"},
@@ -230,81 +301,62 @@ class RailPayloadJSON(TypeDecorator):
                     "ticketRef": {"type": "string"},
                     "listingRef": {"type": "string"},
                 },
-                "required": ["rail", "seat", "tier"],
-                "additionalProperties": False,
-            },
-            {
-                "title": "StayPayload",
-                "type": "object",
-                "properties": {
-                    "rail": {"const": "stay"},
+                ["seat", "tier"],
+            ),
+            _offer_member(
+                OfferKind.STAY,
+                {
                     "phaseKind": {"type": "string"},
                     "nights": {"type": "integer"},
                     "propertyRef": {"type": "string"},
                 },
-                "required": ["rail", "phaseKind", "nights"],
-                "additionalProperties": False,
-            },
-            {
-                "title": "FlightPayload",
-                "type": "object",
-                "properties": {
-                    "rail": {"const": "flight"},
+                ["phaseKind", "nights"],
+            ),
+            _offer_member(
+                OfferKind.FLIGHT,
+                {
                     "itineraryRef": {"type": "string"},
                     "carrier": {"type": "string"},
                     "departAt": {"type": "string", "format": "date-time"},
                 },
-                "required": ["rail", "itineraryRef"],
-                "additionalProperties": False,
-            },
-            {
-                "title": "FacilityPayload",
-                "type": "object",
-                "properties": {
-                    "rail": {"const": "facility"},
+                ["itineraryRef"],
+            ),
+            _offer_member(
+                OfferKind.FACILITY,
+                {
                     "facilityRef": {"type": "string"},
                     "packageRef": {"type": "string"},
                     "procedureClassBand": {"type": "string"},
                 },
-                "required": ["rail", "facilityRef", "packageRef"],
-                "additionalProperties": False,
-            },
-            {
-                "title": "ParkingPayload",
-                "type": "object",
-                "properties": {
-                    "rail": {"const": "parking"},
+                ["facilityRef", "packageRef"],
+            ),
+            _offer_member(
+                OfferKind.PARKING,
+                {
                     "anchorRef": {"type": "string"},
                     "spotRef": {"type": "string"},
                 },
-                "required": ["rail", "anchorRef"],
-                "additionalProperties": False,
-            },
-            {
-                "title": "TransferPayload",
-                "type": "object",
-                "properties": {
-                    "rail": {"const": "transfer"},
+                ["anchorRef"],
+            ),
+            _offer_member(
+                OfferKind.TRANSFER,
+                {
                     "taskRef": {"type": "string"},
                     "pickupAt": {"type": "string", "format": "date-time"},
                 },
-                "required": ["rail", "taskRef"],
-                "additionalProperties": False,
-            },
-            {
-                "title": "DiningPayload",
-                "type": "object",
-                "properties": {
-                    "rail": {"const": "dining"},
-                    "taskRef": {"type": "string"},
-                    "reservationAt": {"type": "string", "format": "date-time"},
-                },
-                "required": ["rail", "taskRef"],
-                "additionalProperties": False,
-            },
+                ["taskRef"],
+            ),
         ],
     }
 
+
+# Historical name, retained ONLY because the initial migration
+# (revision cd548e517e5e) instantiates models.RailPayloadJSON() for the
+# payload column's DDL — a plain JSON column; the fragment is not part
+# of the DDL. Removing the alias would break from-empty replay of the
+# migration chain (the demo caught exactly this). New code uses
+# OfferPayloadJSON; nothing else may reference the old name.
+RailPayloadJSON = OfferPayloadJSON
 
 # ---------------------------------------------------------------------------
 # Intake layer (spec §4.1)
@@ -541,9 +593,11 @@ class TripCandidate(Base):
 
 class OfferSnapshot(Base):
     """A quoted offer with price and terms frozen at quote time
-    (spec §3.5 — non-negotiable). Rail-specific detail lives in
-    `payload` (the discriminated union above), NOT in per-rail detail
-    tables — the normalized contract is the payload.
+    (spec §3.5 — non-negotiable). Kind-specific detail lives in
+    `payload` (the OfferKind-discriminated union above), NOT in
+    per-kind detail tables — the normalized contract is the payload.
+    The `rail` column below remains the routing/dispatch rail; it is
+    no longer the payload's discriminator (James's tap (c)).
 
     `sourceRef` is the supplier-side id in services/api (a Listing id,
     Ticket id, or Event id, per rail — R4 §3). It is a plain string
@@ -599,7 +653,7 @@ class OfferSnapshot(Base):
     )
     price: Mapped[dict] = mapped_column("price", PriceJSON, nullable=False)
     terms: Mapped[dict] = mapped_column("terms", JSON, nullable=False)
-    payload: Mapped[dict] = mapped_column("payload", RailPayloadJSON, nullable=False)
+    payload: Mapped[dict] = mapped_column("payload", OfferPayloadJSON, nullable=False)
     divergence_code: Mapped[DivergenceCode | None] = mapped_column(
         "divergenceCode",
         SAEnum(DivergenceCode, name="divergence_code"),

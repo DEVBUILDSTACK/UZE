@@ -3,8 +3,8 @@
 
 WHAT THIS PROVES (against a REAL PostgreSQL — see the substrate banner;
 nothing here is claimed for a substrate it did not run on):
-  D1  the Alembic initial revision applies cleanly to a fresh database
-      named uzemarkets-compose
+  D1  the Alembic migration chain applies cleanly, in order, to a
+      fresh database named uzemarkets-compose (from-empty replay)
   D2  all 23 tables exist (21 public + 2 in health_restricted)
   D3  OfferSnapshot immutability fires at DB level (raw SQL): price
       UPDATE refused, DELETE refused, ordinary UPDATE refused, the ONE
@@ -18,7 +18,7 @@ nothing here is claimed for a substrate it did not run on):
   D5  IdempotencyKey uniqueness is enforced by Postgres: a duplicate
       key insert raises IntegrityError (the IN_FLIGHT row stands)
   D6  the generated Pydantic validates one full OfferSnapshot with a
-      per-rail payload; mislabeled payloads and bogus divergence codes
+      per-kind payload; mislabeled payloads and bogus divergence codes
       are rejected; the divergence enum is typed end-to-end (Pydantic +
       TypeScript artifact)
   D7  sourceRef is a plain reference: no FK on the column (mapper
@@ -33,6 +33,13 @@ nothing here is claimed for a substrate it did not run on):
       rows) — co-occurrence is not enough; the pair is one
       transaction. The blocker is then dropped and the positive path
       on the same snapshot succeeds with exactly one mirror row
+  D11 OfferKind is the payload discriminator (James's tap (c)): all
+      six kinds validate through the generated union under their
+      OfferDetail member names (Pydantic + TypeScript), the numbered
+      RailPayload names are gone, a dining-tagged payload is NOT an
+      offer, offer_kind_for_rail() maps every rail (DINING_TASK ->
+      None), and the DB CHECK ck_offer_snapshot_payload_kind refuses
+      a raw-SQL insert whose payload kind is out of set
 
 The script RESETS the target database (drop + create) before migrating:
 the target must be a throwaway database named exactly
@@ -181,7 +188,7 @@ def main() -> int:
                 commitment_class=models.CommitmentClass.IRREVERSIBLE_ON_CHAIN,
                 price={"amount": 120.50, "currency": "USD", "taxesIncluded": True},
                 terms={"cancellation": "none"},
-                payload={"rail": "ticket", "seat": "GA-114", "tier": "general",
+                payload={"kind": "ticket", "seat": "GA-114", "tier": "general",
                          "gate": "Gate B", "mintRef": "MINT-XYZ",
                          "ticketRef": "T-1001", "listingRef": "L-77"},
                 expires_at=now + timedelta(hours=1),
@@ -328,18 +335,18 @@ def main() -> int:
             terms={"cancellation": "none"},
             expiresAt="2027-04-01T00:00:00Z")
         ok = OfferSnapshot(**base, payload={
-            "rail": "ticket", "seat": "GA-114", "tier": "general",
+            "kind": "ticket", "seat": "GA-114", "tier": "general",
             "mintRef": "MINT-XYZ", "ticketRef": "T-1001",
             "listingRef": "L-77"})
-        assert type(ok.payload.root).__name__ == "RailPayload1"
+        assert type(ok.payload.root).__name__ == "TicketOfferDetail"
         stay = OfferSnapshot(**{**base, "rail": "HOTEL_AGGREGATOR"},
-                             payload={"rail": "stay", "phaseKind": "EVENT",
+                             payload={"kind": "stay", "phaseKind": "EVENT",
                                       "nights": 2, "propertyRef": "H-9"})
-        assert type(stay.payload.root).__name__ == "RailPayload2"
+        assert type(stay.payload.root).__name__ == "StayOfferDetail"
         for bad, why in [
-            ({"rail": "ticket", "phaseKind": "EVENT", "nights": 2},
+            ({"kind": "ticket", "phaseKind": "EVENT", "nights": 2},
              "stay shape tagged ticket"),
-            ({"rail": "stay", "seat": "A1", "tier": "ga"},
+            ({"kind": "stay", "seat": "A1", "tier": "ga"},
              "ticket shape tagged stay"),
         ]:
             try:
@@ -349,12 +356,12 @@ def main() -> int:
                 pass
         try:
             OfferSnapshot(**base, divergenceCode="NOT_A_CODE", payload={
-                "rail": "ticket", "seat": "A", "tier": "g"})
+                "kind": "ticket", "seat": "A", "tier": "g"})
             raise AssertionError("bogus divergence code accepted")
         except ValidationError:
             pass
         typed = OfferSnapshot(**base, divergenceCode="SEAT_TAKEN", payload={
-            "rail": "ticket", "seat": "A", "tier": "g"})
+            "kind": "ticket", "seat": "A", "tier": "g"})
         assert typed.divergenceCode is DivergenceCode.SEAT_TAKEN
         assert len(DivergenceCode) == 8
         try:
@@ -366,10 +373,11 @@ def main() -> int:
                                "offersnapshot.ts")).read()
         for code in ("SNAPSHOT_EXPIRED", "UPSTREAM_UNAVAILABLE", "SEAT_TAKEN"):
             assert code in ts, f"{code} missing from the TypeScript artifact"
-        return ("ticket + stay payloads validate via the discriminator; "
-                "mislabeled pair rejected; divergence enum typed in "
-                "Pydantic (8 codes) and present in the TS artifact; "
-                "frozen mutation refused")
+        return ("ticket + stay payloads validate via the OfferKind "
+                "discriminator under their member names; mislabeled "
+                "pair rejected; divergence enum typed in Pydantic "
+                "(8 codes) and present in the TS artifact; frozen "
+                "mutation refused")
 
     def d7() -> str:
         col = models.OfferSnapshot.__table__.c.sourceRef
@@ -557,6 +565,140 @@ def main() -> int:
                 "cleanly with exactly one mirror row — annotation "
                 "and mirror are a single transaction")
 
+
+    def d11() -> str:
+        # OfferKind discriminator (James's tap (c), 2026-10-30): the
+        # schema review's finding was that keying the offer union on
+        # Rail left DINING_TASK — a task rail — as a dead branch in
+        # the offer union. This check proves the split on all three
+        # surfaces: generated Pydantic member names + dispatch, the
+        # ONE rail->kind mapping, and the DB CHECK for raw writers.
+        from pydantic import ValidationError
+
+        import offersnapshot_pydantic as osp
+        from offersnapshot_pydantic import OfferSnapshot as PySnapshot
+
+        member_names = (
+            "TicketOfferDetail", "StayOfferDetail", "FlightOfferDetail",
+            "FacilityOfferDetail", "ParkingOfferDetail",
+            "TransferOfferDetail",
+        )
+        for name in member_names:
+            assert hasattr(osp, name), f"generated member missing: {name}"
+        for n in range(1, 8):
+            assert not hasattr(osp, f"RailPayload{n}"), (
+                f"positional union name survived: RailPayload{n}")
+        assert not hasattr(osp, "RailPayload")
+        assert not hasattr(osp, "DiningOfferDetail")
+
+        base = dict(
+            tripCandidateId="tc-1", rail="SOLANA_NFT",
+            sourceRef="ticket:T-1001/listing:L-77",
+            commitmentClass="IRREVERSIBLE_ON_CHAIN",
+            price={"amount": 120.5, "currency": "USD",
+                   "taxesIncluded": True},
+            terms={"cancellation": "none"},
+            expiresAt="2027-04-01T00:00:00Z")
+        cases = [
+            ("ticket", "SOLANA_NFT",
+             {"kind": "ticket", "seat": "GA-114", "tier": "general",
+              "mintRef": "MINT-XYZ", "ticketRef": "T-1001",
+              "listingRef": "L-77"}, "TicketOfferDetail"),
+            ("stay", "HOTEL_AGGREGATOR",
+             {"kind": "stay", "phaseKind": "EVENT", "nights": 2,
+              "propertyRef": "H-9"}, "StayOfferDetail"),
+            ("flight", "FLIGHT_SEARCH",
+             {"kind": "flight", "itineraryRef": "ITN-1",
+              "carrier": "AA"}, "FlightOfferDetail"),
+            ("facility", "FACILITY",
+             {"kind": "facility", "facilityRef": "F-1",
+              "packageRef": "P-1"}, "FacilityOfferDetail"),
+            ("parking", "PARKING",
+             {"kind": "parking", "anchorRef": "A-1",
+              "spotRef": "S-3"}, "ParkingOfferDetail"),
+            ("transfer", "TRANSFER",
+             {"kind": "transfer", "taskRef": "TSK-1"},
+             "TransferOfferDetail"),
+        ]
+        for tag, rail, payload, member in cases:
+            ok = PySnapshot(**{**base, "rail": rail}, payload=payload)
+            got = type(ok.payload.root).__name__
+            assert got == member, f"kind {tag}: dispatched to {got}"
+        # A dining task is not an offer: the tag is out of the union.
+        try:
+            PySnapshot(**base, payload={"kind": "dining",
+                                         "taskRef": "TSK-9"})
+            raise AssertionError("dining-tagged payload accepted as an offer")
+        except ValidationError:
+            pass
+        # The ONE mapping between Rail and OfferKind.
+        expected_map = {
+            models.Rail.SOLANA_NFT: models.OfferKind.TICKET,
+            models.Rail.HOTEL_AGGREGATOR: models.OfferKind.STAY,
+            models.Rail.FLIGHT_SEARCH: models.OfferKind.FLIGHT,
+            models.Rail.FACILITY: models.OfferKind.FACILITY,
+            models.Rail.PARKING: models.OfferKind.PARKING,
+            models.Rail.TRANSFER: models.OfferKind.TRANSFER,
+            models.Rail.DINING_TASK: None,
+        }
+        for rail, kind in expected_map.items():
+            assert models.offer_kind_for_rail(rail) is kind, rail
+        # The TypeScript surface carries the same member names.
+        ts = open(os.path.join(COMPOSE_DIR, "src", "generated",
+                               "offersnapshot.ts")).read()
+        for name in member_names:
+            assert name in ts, f"{name} missing from the TS artifact"
+        assert "DiningOfferDetail" not in ts
+        # DB level: a parent candidate, then raw-SQL snapshot inserts.
+        with Session() as s:
+            trip = models.TripProfile(
+                buyer_id="buyer-1", tier="standard",
+                authorization={"method": "card_hold",
+                               "status": "AUTHORIZED"},
+                modules=[models.ModuleType.TICKETS])
+            s.add(trip)
+            s.flush()
+            sess = models.SearchSession(
+                trip_profile_id=trip.id, query={"q": "offerkind"})
+            s.add(sess)
+            s.flush()
+            cand = models.TripCandidate(
+                search_session_id=sess.id, status="OPEN",
+                constraints={"legs": ["parking"]})
+            s.add(cand)
+            s.commit()
+            cand_id = cand.id
+        insert_sql = (
+            "INSERT INTO offer_snapshot (id, \"tripCandidateId\", rail, "
+            "\"sourceRef\", \"commitmentClass\", price, terms, payload, "
+            "\"expiresAt\", \"createdAt\") VALUES (:id, :tc, "
+            "'SOLANA_NFT', 'ref:d11', 'IRREVERSIBLE_ON_CHAIN', "
+            "'{\"amount\": 1, \"currency\": \"USD\", "
+            "\"taxesIncluded\": true}', "
+            "'{}', :payload, :exp, :now)")
+        with engine.connect() as c:
+            expect_refused(
+                c, insert_sql,
+                {"id": "snap-d11-bad", "tc": cand_id,
+                 "payload": '{"kind": "dining", "taskRef": "TSK-9"}',
+                 "exp": now + timedelta(hours=1), "now": now},
+                "ck_offer_snapshot_payload_kind")
+            c.execute(text(insert_sql), {
+                "id": "snap-d11-ok", "tc": cand_id,
+                "payload": '{"kind": "parking", "anchorRef": "A-1"}',
+                "exp": now + timedelta(hours=1), "now": now})
+            c.commit()
+            stored = c.execute(text(
+                "SELECT payload ->> 'kind' FROM offer_snapshot "
+                "WHERE id = :i"), {"i": "snap-d11-ok"}).scalar()
+        assert stored == "parking", f"in-set kind not stored: {stored}"
+        return ("all six kinds validate under their OfferDetail names "
+                "(Pydantic dispatch + TS artifact); numbered RailPayload "
+                "names gone; dining tag rejected by the union; "
+                "offer_kind_for_rail maps all 7 rails with DINING_TASK "
+                "-> None; DB CHECK refuses a raw-SQL out-of-set kind "
+                "and admits an in-set one")
+
     check("D1 migration applies", d1)
     check("D2 table inventory", d2)
     check("D3 OfferSnapshot immutability (DB trigger + ORM guard)", d3)
@@ -567,6 +709,7 @@ def main() -> int:
     check("D8 TripProfile: travelers as rows, StayPhase[] structure", d8)
     check("D9 dormant health set: present, unused, isolated", d9)
     check("D10 divergence mirror atomicity (negative case)", d10)
+    check("D11 OfferKind discriminator (names + mapping + DB CHECK)", d11)
 
     failed = [r for r in RESULTS if not r[1]]
     print("=" * 72)
