@@ -680,3 +680,38 @@ Neither item is asserted by SoSem in advance; both are checks the staging review
 4. **Version pin (directing agent's recommendation for James's (d) decision, recorded not decided):** Neon currently offers Postgres 16 and 17 at provisioning. **Pin staging at 16** — it matches the verified local build (16.2) exactly; treat 17 as a separate upgrade decision after staging is stable. The mirror trigger is the newest, least battle-tested DDL in the chain; giving it an unread version during the staging window is risk without upside.
 
 Sprint 0 closes on James's taps on (a) and (c), then staging under the four-item checklist.
+
+## BATCH FILING — Sprint 0 Close-Out + Sprint 1 Open (SoSem, 2026-10-30; per James's taps (a)/(c)/(d) and pace directive)
+
+### The two revisions (separate migrations, as required)
+
+**Revision A — OfferKind (tap (c))** · Alembic `b3d91c7e5a02` on `9d4c1f7a2b58` · commit `6a77095`. OfferKind (ticket | stay | flight | facility | parking | transfer) is the payload discriminator; the tag property is renamed rail → kind; the Dining member is deleted from the offer union; Rail is retained for routing/dispatch; one mapping function `offer_kind_for_rail()` maps all seven rails with DINING_TASK → None. Member names match OfferKind in both generated surfaces (TicketOfferDetail … TransferOfferDetail) via the chain's `--use-title-as-name` flag, its adoption recorded in the Makefile header; the flag's substantive blast radius was exactly the two union-embedding files. DB presence: CHECK `ck_offer_snapshot_payload_kind` (payload kind tag ∈ the six), downgrade verified symmetric. **Demo: 11/11 from empty.** Author's Choice 13 RESOLVED by the tap.
+
+**Revision B — QuestionManifest slot shape (tap (a))** · Alembic `d52f8b1a904c` on `b3d91c7e5a02` · commit `1474779`. `QuestionManifest.questions` is a typed slot list carrying the tapped shape in full (key, type from QuestionSlotType, enumValues, required, deferrable, dependsOn {slot, op, value}, moduleGate from ModuleType, validation, promptHuman, promptAgent; vocabularies built from the enums, not hand-copied). DB presence: validation trigger `trg_question_manifest_validate_slots` enforcing the shape per slot, downgrade verified symmetric. **Demo: 12/12 from empty** (final head `d52f8b1a904c`). Author's Choice 1 RESOLVED by the tap. Traceability discipline recorded on the model: every slot gates a module or is deleted; moduleGate is the schema anchor.
+
+**Both runs:** regeneration reproducibility re-verified per revision (two from-clean generations, 0 non-timestamp diff lines); `tsc --strict` clean both times; chain linear, single head `cd548e517e5e → 9d4c1f7a2b58 → b3d91c7e5a02 → d52f8b1a904c`. SoSem spot-checked independently: chain order, generated member names, the D11/D12 evidence lines, both revisions' DDL, and the role-construct grep below.
+
+**Author's choices beyond the taps (labeled by the author, recorded here):** (1) historical alias `RailPayloadJSON = OfferPayloadJSON` retained — the initial migration references the old name for its DDL, and the from-empty replay caught the break a bare rename caused; the filed migration stays byte-identical and the alias carries the reason in its comment (the replay discipline paying for itself); (2) the enumValues-iff rule enforced structurally — a two-member slot union (EnumQuestionSlot requires enumValues; closed StandardQuestionSlot forbids it), since generated surfaces are never hand-edited; (3) the DB trigger mirrors the iff rule in both directions; (4) dependsOn's entry type is titled QuestionSlotDependency; validation stays a free-form object, as tapped.
+
+### Four-item staging checklist — evidence
+
+1. **Triggers vs target Postgres version:** target pinned at PG 16 (James's (d)); the verified build is PostgreSQL 16.2, and all five DB mechanisms — immutability, EventLog append-only, divergence mirror, OfferKind CHECK, slot validation trigger — are exercised on 16.2 in the 12/12 demo. The mirror SQL is standard plpgsql (AFTER UPDATE OF, OLD/NEW transition guard, INSERT), read against 16 — the target version — with no version-sensitive constructs found.
+2. **Restricted-namespace portability:** grep of all four revisions for role/grant/owner constructs returned **zero matches**; the namespace's only footprint is `CREATE SCHEMA IF NOT EXISTS "health_restricted"` plus schema-scoped table DDL. Enforcement is schema DDL, portable by construction; no local role configuration exists anywhere in the chain.
+3. **Single-pass from-empty apply:** locally satisfied as a pattern — the full chain replayed from empty in a single `alembic upgrade head` pass at each close-out head (10/10 → 11/11 → 12/12). The staging instance — the same single pass against the provisioned Neon instance, mirror trigger verified exactly once in the resulting schema — executes at staging, which is surfaced to James below.
+4. **Version pin:** PG 16 per (d); 17 is a post-staging upgrade decision.
+
+**Staging itself is NOT executed in this filing** — it is on James's surface list under the pace directive: Neon provisioning (PG 16) + the single-pass apply + the exactly-once verification, on his go.
+
+### SPRINT 0 — CLOSED
+
+Conditions: (a) tapped + landed (revision B); (b) confirmed by SoSem, accepted by the directing agent, criterion 5 clean; (c) tapped + landed (revision A); (d) approved in principle, execution surfaced. The ratified stack, the codegen gate, the read-through contract, the schema, both close-out revisions, and the staging checklist evidence are all filed. Nothing in Sprint 0 remains open except the staging execution itself, which waits on James's go by his own rule.
+
+### SPRINT 1 — OPEN
+
+**Objective:** the event-vertical slice working end-to-end against the ratified contracts — intake → snapshot → approval → commitment on the ticket kind, testnet only.
+
+**Build order:** (1) composition-service runtime on `services/compose` (agent API + human API surfaces per the plan) wired to the schema at head `d52f8b1a904c`; (2) deterministic `classify()` + `suggest_slots()` per directive 4, driven by the tapped QuestionManifest shape; (3) read-through integration per R4 — sourceRef, snapshot TTL, the eight divergence codes, commit-time reconciliation; (4) the approval gate — two-mode approval (standard + fast-track inside stated bounds) with the tracked staleness display (expiry countdown / last-verified-at) and the branded TS datetime type; (5) commitment + settlement recording against the ticket id (Solana testnet mint reference; mainnet remains gated on revenue proof).
+
+**First runtime dependency — SURFACED to James (touches services/api):** `GET /tickets/{ticket_id}`, the single-ticket read. It blocks Sprint 1's commit path rather than weakening it; it needs an owner and James's go before any services/api change.
+
+**Named decision riding its trigger:** the 501 race (Ticket-ID distributed lock vs accept-the-risk) — decision due before services/api implements buy; safe by construction until then.
