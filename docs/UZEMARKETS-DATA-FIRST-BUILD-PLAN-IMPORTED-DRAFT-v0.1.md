@@ -502,3 +502,23 @@ James tapped all six, in his own message, transmitted via the button he directed
 - **Read-through contract (R4)** is Sprint 0's first authoring deliverable, and must carry: sourceRef TTL; hold semantics on the services/api side or their explicit absence; a typed divergence failure code (SEAT_TAKEN / LISTING_GONE class); the commit-time reconciliation obligation; and **affiliates pinning** (reseller vs supply vs both) as a named deliverable inside it.
 
 **Sprint 0 is OPEN.** Opening activity: the codegen round-trip (prerequisite gate). First authoring deliverable after the gate: the read-through contract. The rename sweep was completed 2026-10-29 (commit 2dbbdfa). All prior "PROPOSED / UNTAPPED" markings in this document are superseded by this section.
+
+## Post-Tap Notes (directing agent via James, 2026-10-30 17:42 EDT)
+
+**Provenance clarification.** The directing agent reads the tap as James's own posted message and notes it advised against the button. SoSem's thread record adds one fact, filed here for accuracy rather than argument: at 17:39 EDT James directed SoSem to provide the button ("give me the tap button please to touch here"), SoSem provided it carrying the identical line, and James tapped it at 17:39:38 EDT, which delivered the line as his message. The ratification section above therefore records the mechanism as it occurred. **The substance is common ground on all sides: the tap is James's, its authorship is his alone, and the transmission mechanism carries no weight in the ratification.**
+
+**MEMORY relationship (asked by the directing agent; answered by SoSem and recorded here).** SoSem's MEMORY.md is a derived, reviewable working cache across James's projects — never authoritative. Where MEMORY and a filed record (this spec, the repos, the logs) differ, the filed record governs and MEMORY is corrected to match; that is the direction today's correction ran (the spec's ratification was filed first, MEMORY updated to match it). MEMORY is not a second source of truth and no decision rests on it alone.
+
+## Round-Trip Pass Criteria — PRE-COMMITTED (directing agent via James, 2026-10-30 17:42 EDT; fixed before the result is seen)
+
+OfferSnapshot is the demo model (JSON columns — price, terms, payload; enums — Rail, CommitmentClass; FKs; timestamps; immutability semantics). The prerequisite gate passes if, and only if:
+
+1. **Single authoring source.** The model is authored once — in SQLAlchemy — and Pydantic is generated from it. Hand-maintained parallel Pydantic = dual authoring = (C) has collapsed into (A); the ORM decision reopens before schema authoring begins.
+2. **Change propagation is demonstrable, not claimed.** Add one field to the SQLAlchemy model, run the regeneration, show Pydantic and TypeScript both picking it up. A static before/after of three artifacts is a snapshot, not propagation.
+3. **Hard cases exercised, not elided:** (a) at least one JSON column typed as a Pydantic model, not Any, not dict — OfferSnapshot.price { amount, currency, taxesIncluded } is the natural candidate; (b) enums preserved as enums end-to-end (SQLAlchemy Enum → Pydantic Enum → TS union), not stringly-typed; (c) timestamps preserved as typed datetime, not string; (d) immutability exposed — the generated TS must not hand the human UI a mutable-looking object without a stated immutability mechanism (DB triggers, ORM events, or at minimum a frozen Pydantic config).
+4. **Commands are in the repo, reproducible.** The exact sequence (Alembic revision, Pydantic generation, TS generation) committed as a script or Makefile target. Commands living only in SoSem's session = not reproducible = fail.
+5. **TypeScript is consumable by the Next.js + shadcn human UI without hand-editing.** Hand-written interfaces on top of generated ones = incomplete on the human-surface side.
+
+**What does not count as passing:** a demo where Pydantic and SQLAlchemy models happen to agree because both were written from the same schema doc; a round-trip that works only on a model with no JSON and no enums; a regeneration step described in prose but not committed as a script; SQLModel chosen with its model-shape constraints quietly resolved by loosening validation (e.g., Any for JSON).
+
+**On failure:** the ORM decision reopens — before schema authoring begins, not after. The demo is a real test, not a formality. SoSem reports the result pass or fail, with the artifacts and the committed commands, graded against these five criteria; the directing agent's review follows.
