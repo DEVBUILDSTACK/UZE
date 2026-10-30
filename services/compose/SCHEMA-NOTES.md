@@ -23,7 +23,7 @@ been applied anywhere else.
 
 ---
 
-## Model inventory (23 models, 9 enums)
+## Model inventory (23 models, 10 enums)
 
 Intake & trip: `IntakeDraft`, `TripProfile`, `Traveler`, `GeoAnchor`,
 `MetroProfile`, `StayPhase`.
@@ -46,7 +46,9 @@ HOTEL_AGGREGATOR, FLIGHT_SEARCH, FACILITY, PARKING, TRANSFER, DINING_TASK) ·
 `TaskState` (REQUESTED, QUOTED, DEPOSIT_PENDING, CONFIRMED, FAILED,
 CANCELLED) · `DivergenceCode` (the 8 R4 codes) · `OfferKind` (ticket, stay,
 flight, facility, parking, transfer — the OfferSnapshot payload
-discriminator since revision A; James's tap (c)).
+discriminator since revision A; James's tap (c)) · `QuestionSlotType`
+(STRING, INT, DATE, BOOL, ENUM, OBJECT, ARRAY — the QuestionSlot
+`type` vocabulary since revision B; James's tap (a)).
 
 Column names carry the contract's camelCase (`buyerId`, `sourceRef`,
 `divergenceCode`); Python attributes are snake_case.
@@ -176,15 +178,46 @@ Evidence: demo **11/11 from empty** at the new head — D11 proves the
 split on the generated surfaces, the mapping, and the CHECK; D1–D10
 pass unchanged in substance.
 
+**Revision B — QuestionManifest slot shape (tap (a)) — Alembic
+`d52f8b1a904c`.** `QuestionManifest.questions` is now a typed list of
+QuestionSlot, exactly as tapped: key, type (QuestionSlotType),
+enumValues (string[], iff type = ENUM), required, deferrable,
+dependsOn ({slot, op, value} entries), moduleGate (ModuleType),
+validation, promptHuman, promptAgent — camelCase keys, vocabularies
+built from the enums in the authoring source. The one conditional
+rule (enumValues iff ENUM) is enforced WITHOUT any hand-written
+validator in generated code: the slot is a two-member union split on
+that condition (EnumQuestionSlot requires enumValues;
+StandardQuestionSlot, closed, forbids it). DB-level presence:
+validation trigger `trg_question_manifest_validate_slots` enforcing
+the same shape for raw-SQL writers (downgrade verified symmetric).
+The traceability discipline is recorded on the model: every slot
+gates a module or is deleted — a data-authoring rule whose schema
+anchor is moduleGate (optional in the schema, as tapped). Author's
+Choice 1 is RESOLVED (below). Evidence: demo **12/12 from empty** at
+the final head (D12 proves dispatch, all four rejection cases, and
+the trigger's refusals); regeneration reproducibility re-verified
+(two from-clean generations, 0 non-timestamp diff lines);
+`make check-ts` clean.
+
 ---
 
 ## AUTHOR'S CHOICES — every under-specified point, for ratification or overturn
 
-1. **QuestionManifest field shape.** The spec names the model and files
-   no shape for it. Authored narrow: `key` (unique), `version`, `title`,
-   `questions` (JSON list of {slot, prompt, type, required, module?}),
-   `active`, `createdAt`. **This one most needs an explicit tap** — it
-   will harden fastest once intake work starts.
+1. **QuestionManifest field shape — RESOLVED by James's tap (a),
+   2026-10-30.** The spec named the model and filed no shape for it;
+   as authored in Sprint 0 it was narrow and flagged as most needing
+   a tap. The tap supplied the shape, and revision B (`d52f8b1a904c`)
+   replaced the placeholder: `questions` is a typed list of
+   QuestionSlot {key, type (QuestionSlotType), enumValues (string[],
+   iff type = ENUM), required, deferrable, dependsOn, moduleGate
+   (ModuleType), validation, promptHuman, promptAgent}; the manifest
+   row itself keeps `key` (unique), `version`, `title`, `active`,
+   `createdAt`. One implementation choice inside the tap, labeled:
+   the enumValues-iff rule is enforced structurally (a two-member
+   slot union) rather than by a validator, because generated files
+   are never hand-edited — see the QuestionSlotListJSON docstring and
+   the close-out section above.
 2. **Payload members beyond the ticket core.** Only the ticket
    member's core is ratified content (seat, tier + mintRef/ticketRef/
    listingRef per R4 §6). The other members carry minimal binding

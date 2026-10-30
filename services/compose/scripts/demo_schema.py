@@ -40,6 +40,12 @@ nothing here is claimed for a substrate it did not run on):
       offer, offer_kind_for_rail() maps every rail (DINING_TASK ->
       None), and the DB CHECK ck_offer_snapshot_payload_kind refuses
       a raw-SQL insert whose payload kind is out of set
+  D12 QuestionManifest slots are the tapped shape (James's tap (a)):
+      a typed list of QuestionSlot validating through the generated
+      surfaces — ENUM without enumValues rejected, non-ENUM with
+      enumValues rejected, unknown moduleGate rejected, malformed
+      dependsOn rejected — and revision d52f8b1a904c's validation
+      trigger enforces the same shape at the DB level
 
 The script RESETS the target database (drop + create) before migrating:
 the target must be a throwaway database named exactly
@@ -699,6 +705,113 @@ def main() -> int:
                 "-> None; DB CHECK refuses a raw-SQL out-of-set kind "
                 "and admits an in-set one")
 
+
+    def d12() -> str:
+        # QuestionManifest slot shape (James's tap (a), 2026-10-30):
+        # questions is a typed list of QuestionSlot. Proven here on
+        # the generated surface (dispatch + the enumValues-iff rule +
+        # moduleGate + dependsOn shape) and at the DB level (the
+        # validation trigger of revision d52f8b1a904c).
+        import json as _json
+
+        from pydantic import ValidationError
+
+        import questionmanifest_pydantic as qmp
+        from questionmanifest_pydantic import QuestionManifest as PyManifest
+
+        for name in ("QuestionSlot", "EnumQuestionSlot",
+                     "StandardQuestionSlot", "QuestionSlotDependency",
+                     "QuestionSlotType", "ModuleType"):
+            assert hasattr(qmp, name), f"generated name missing: {name}"
+
+        good_slots = [
+            {"key": "party.size", "type": "INT", "required": True,
+             "deferrable": False, "moduleGate": "TICKETS",
+             "validation": {"min": 1, "max": 40},
+             "promptHuman": "How many guests?",
+             "promptAgent": "Ask party size as an integer."},
+            {"key": "stay.tier", "type": "ENUM",
+             "enumValues": ["standard", "premium"],
+             "required": True, "deferrable": True, "moduleGate": "STAY",
+             "promptHuman": "Which stay tier?",
+             "promptAgent": "Offer the enumerated stay tiers."},
+            {"key": "stay.checkin", "type": "DATE", "required": False,
+             "deferrable": True,
+             "dependsOn": [{"slot": "stay.tier", "op": "answered",
+                            "value": True}],
+             "promptHuman": "Check-in date?",
+             "promptAgent": "Ask for the check-in date."},
+        ]
+        ok = PyManifest(key="intake.core", version=1,
+                        title="Core intake", questions=good_slots)
+        members = [type(s.root).__name__ for s in ok.questions.root]
+        assert members == ["StandardQuestionSlot", "EnumQuestionSlot",
+                           "StandardQuestionSlot"], members
+        enum_slot = ok.questions.root[1].root
+        assert enum_slot.enumValues == ["standard", "premium"]
+        assert enum_slot.moduleGate is qmp.ModuleType.STAY
+
+        def rejected(slots, why):
+            try:
+                PyManifest(key="x", version=1, title="t", questions=slots)
+                raise AssertionError(f"invalid manifest accepted: {why}")
+            except ValidationError:
+                pass
+
+        no_values = [dict(good_slots[1])]
+        del no_values[0]["enumValues"]
+        rejected(no_values, "ENUM slot without enumValues")
+        rejected([dict(good_slots[0], enumValues=["a"])],
+                 "non-ENUM slot carrying enumValues")
+        rejected([dict(good_slots[0], moduleGate="NOT_A_MODULE")],
+                 "unknown moduleGate")
+        rejected([dict(good_slots[2],
+                       dependsOn=[{"slot": "stay.tier", "value": True}])],
+                 "dependsOn entry missing op")
+
+        ts = open(os.path.join(COMPOSE_DIR, "src", "generated",
+                               "questionmanifest.ts")).read()
+        for name in ("QuestionSlot", "EnumQuestionSlot",
+                     "StandardQuestionSlot"):
+            assert name in ts, f"{name} missing from the TS artifact"
+
+        # DB level: the ORM insert of the well-formed manifest passes
+        # the validation trigger; raw-SQL inserts that break the
+        # tapped shape are refused by it.
+        with Session() as s:
+            s.add(models.QuestionManifest(
+                key="intake.core", version=1, title="Core intake",
+                questions=good_slots, active=True))
+            s.commit()
+        insert_sql = (
+            "INSERT INTO question_manifest "
+            "(id, key, version, title, questions, active, \"createdAt\") "
+            "VALUES (:id, :key, 1, :title, :questions, true, :now)")
+        with engine.connect() as c:
+            n = c.execute(text(
+                "SELECT count(*) FROM question_manifest "
+                "WHERE key = :k"), {"k": "intake.core"}).scalar()
+            assert n == 1, f"ORM manifest insert missing: {n}"
+            expect_refused(
+                c, insert_sql,
+                {"id": "qm-bad-1", "key": "bad.enum", "title": "Bad",
+                 "questions": _json.dumps(no_values), "now": now},
+                "enumValues")
+            expect_refused(
+                c, insert_sql,
+                {"id": "qm-bad-2", "key": "bad.gate", "title": "Bad",
+                 "questions": _json.dumps(
+                     [dict(good_slots[0], moduleGate="NOT_A_MODULE")]),
+                 "now": now},
+                "moduleGate")
+        return ("well-formed slots validate and dispatch to "
+                "EnumQuestionSlot / StandardQuestionSlot; ENUM without "
+                "enumValues rejected, non-ENUM with enumValues "
+                "rejected, unknown moduleGate rejected, malformed "
+                "dependsOn rejected (generated Pydantic); the DB "
+                "validation trigger admits the ORM insert and refuses "
+                "both raw-SQL violations")
+
     check("D1 migration applies", d1)
     check("D2 table inventory", d2)
     check("D3 OfferSnapshot immutability (DB trigger + ORM guard)", d3)
@@ -710,6 +823,7 @@ def main() -> int:
     check("D9 dormant health set: present, unused, isolated", d9)
     check("D10 divergence mirror atomicity (negative case)", d10)
     check("D11 OfferKind discriminator (names + mapping + DB CHECK)", d11)
+    check("D12 QuestionManifest slot shape (generated + DB trigger)", d12)
 
     failed = [r for r in RESULTS if not r[1]]
     print("=" * 72)

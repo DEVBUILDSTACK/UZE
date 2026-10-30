@@ -18,7 +18,7 @@ Conventions (from the reviewed round-trip, docs/sprint-0/codegen-roundtrip):
   camelCase, set explicitly as the column names. The codegen bridge emits
   contract (camelCase) names into the JSON Schema.
 - Typed JSON columns carry their JSON Schema fragment on a TypeDecorator
-  in THIS file (PriceJSON, OfferPayloadJSON), so the typed projection
+  in THIS file (PriceJSON, OfferPayloadJSON, QuestionSlotListJSON), so the typed projection
   survives every regeneration. Free-form JSON columns stay plain JSON by
   design (terms, criteria, summaries, briefs).
 - Internal ownership FKs (Traveler -> TripProfile, etc.) are real foreign
@@ -205,6 +205,23 @@ class DivergenceCode(enum.Enum):
     UPSTREAM_UNAVAILABLE = "UPSTREAM_UNAVAILABLE"
 
 
+class QuestionSlotType(enum.Enum):
+    """The QuestionSlot `type` vocabulary (James's tap (a), 2026-10-30).
+
+    Not a column enum: it lives in the QuestionSlot fragment (the
+    slot union's two members split on ENUM — see QuestionSlotListJSON)
+    and in revision d52f8b1a904c's validation trigger.
+    """
+
+    STRING = "STRING"
+    INT = "INT"
+    DATE = "DATE"
+    BOOL = "BOOL"
+    ENUM = "ENUM"
+    OBJECT = "OBJECT"
+    ARRAY = "ARRAY"
+
+
 # ---------------------------------------------------------------------------
 # Typed JSON columns. The schema fragment lives HERE, on the type; the
 # codegen bridge lifts it verbatim into $defs.
@@ -357,6 +374,111 @@ class OfferPayloadJSON(TypeDecorator):
 # migration chain (the demo caught exactly this). New code uses
 # OfferPayloadJSON; nothing else may reference the old name.
 RailPayloadJSON = OfferPayloadJSON
+
+
+def _question_slot(*, enum_member: bool) -> dict:
+    """One member of the QuestionSlot union (see QuestionSlotListJSON).
+
+    The two members share every field except the pair the tap's one
+    conditional rule turns on: `type` and `enumValues`.
+    """
+    properties: dict = {
+        "key": {"type": "string"},
+        "type": (
+            {"const": QuestionSlotType.ENUM.value}
+            if enum_member
+            else {
+                "title": "QuestionSlotType",
+                "type": "string",
+                "enum": [
+                    m.value
+                    for m in QuestionSlotType
+                    if m is not QuestionSlotType.ENUM
+                ],
+            }
+        ),
+        "required": {"type": "boolean"},
+        "deferrable": {"type": "boolean"},
+        "dependsOn": {
+            "type": "array",
+            "items": {
+                "title": "QuestionSlotDependency",
+                "type": "object",
+                "properties": {
+                    "slot": {"type": "string"},
+                    "op": {"type": "string"},
+                    "value": {},  # any JSON value — the branch operand
+                },
+                "required": ["slot", "op", "value"],
+                "additionalProperties": False,
+            },
+        },
+        "moduleGate": {
+            "title": "ModuleType",
+            "type": "string",
+            "enum": [m.value for m in ModuleType],
+        },
+        "validation": {"type": "object"},
+        "promptHuman": {"type": "string"},
+        "promptAgent": {"type": "string"},
+    }
+    required = ["key", "type", "required", "deferrable",
+                "promptHuman", "promptAgent"]
+    if enum_member:
+        properties["enumValues"] = {
+            "type": "array",
+            "items": {"type": "string"},
+        }
+        required.insert(2, "enumValues")
+    return {
+        "title": "EnumQuestionSlot" if enum_member else "StandardQuestionSlot",
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": False,
+    }
+
+
+class QuestionSlotListJSON(TypeDecorator):
+    """QuestionManifest.questions — a typed list of QuestionSlot
+    (James's tap (a), 2026-10-30; Author's Choice 1 RESOLVED).
+
+    A slot carries: key (canonical string), type (QuestionSlotType),
+    enumValues (string[] — iff type = ENUM), required, deferrable,
+    dependsOn (branching entries {slot, op, value}), moduleGate
+    (ModuleType), validation (free-form constraint JSON), promptHuman,
+    promptAgent. camelCase keys, as everywhere in this schema.
+
+    THE enumValues RULE, enforced structurally: the tap's one
+    conditional — enumValues present iff type = ENUM — cannot be a
+    generated validator (generated files are never hand-edited), so
+    the slot is a two-member union split on exactly that condition.
+    EnumQuestionSlot (type const ENUM) REQUIRES the enumValues field;
+    StandardQuestionSlot (type one of the other six) does not declare
+    it and, being closed (additionalProperties: false), forbids it.
+    A slot therefore validates iff it obeys the rule — at the
+    generated-Pydantic level, with no hand-written validator anywhere.
+    The same rule is enforced again at the DB level by revision
+    d52f8b1a904c's validation trigger, for raw-SQL writers.
+
+    The value vocabularies are built FROM the enums (QuestionSlotType,
+    ModuleType) at authoring time — they are not a second hand copy.
+    """
+
+    impl = JSON
+    cache_ok = True
+
+    json_schema = {
+        "title": "QuestionSlotList",
+        "type": "array",
+        "items": {
+            "title": "QuestionSlot",
+            "oneOf": [
+                _question_slot(enum_member=True),
+                _question_slot(enum_member=False),
+            ],
+        },
+    }
 
 # ---------------------------------------------------------------------------
 # Intake layer (spec §4.1)
@@ -878,13 +1000,23 @@ class QuestionManifest(Base):
     """The intake question set as data (consolidation: slot-typed
     intake flow; scope modules are declared/confirmed, never inferred).
 
-    AUTHOR'S CHOICE (flagged for the schema review): the filed record
-    names QuestionManifest in the consolidation's data model but files
-    no field shape for it anywhere. This shape is the narrowest one
-    that carries the named concept: a versioned, keyed set of
-    slot-typed question definitions (`questions` items:
-    {slot, prompt, type, required, module?}). Ratify or overturn in
-    review — do not let it harden silently.
+    SHAPE — AS TAPPED (James's tap (a), 2026-10-30; Author's Choice 1
+    RESOLVED): `questions` is a typed list of QuestionSlot (see
+    QuestionSlotListJSON): key (canonical string), type
+    (QuestionSlotType), enumValues (string[], iff type = ENUM),
+    required, deferrable, dependsOn (branching entries
+    {slot, op, value}), moduleGate (ModuleType), validation
+    (free-form constraint JSON), promptHuman, promptAgent. The
+    enumValues-iff rule is enforced at the generated-Pydantic level
+    by the slot union's structure and again at the DB level by
+    revision d52f8b1a904c's validation trigger.
+
+    TRACEABILITY DISCIPLINE (data-authoring rule, recorded with the
+    tap): every slot either gates a module (moduleGate) or is
+    deleted. moduleGate is the discipline's schema anchor; whether a
+    given manifest's slots all carry one is an authoring review of
+    the manifest data, not a schema constraint — moduleGate stays
+    optional in the schema, exactly as tapped.
     """
 
     __tablename__ = "question_manifest"
@@ -893,7 +1025,9 @@ class QuestionManifest(Base):
     key: Mapped[str] = mapped_column("key", String, nullable=False, unique=True)
     version: Mapped[int] = mapped_column("version", Integer, nullable=False)
     title: Mapped[str] = mapped_column("title", String, nullable=False)
-    questions: Mapped[dict] = mapped_column("questions", JSON, nullable=False)
+    questions: Mapped[list] = mapped_column(
+        "questions", QuestionSlotListJSON, nullable=False
+    )
     active: Mapped[bool] = mapped_column(
         "active", Boolean, nullable=False, default=True
     )

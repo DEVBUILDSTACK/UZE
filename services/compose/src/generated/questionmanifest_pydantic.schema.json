@@ -1,4 +1,240 @@
 {
+  "$defs": {
+    "EnumQuestionSlot": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "type": {
+          "const": "ENUM",
+          "title": "Type",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "deferrable": {
+          "title": "Deferrable",
+          "type": "boolean"
+        },
+        "dependsOn": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/QuestionSlotDependency"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dependson"
+        },
+        "moduleGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModuleType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "ModuleType"
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation"
+        },
+        "promptHuman": {
+          "title": "Prompthuman",
+          "type": "string"
+        },
+        "promptAgent": {
+          "title": "Promptagent",
+          "type": "string"
+        },
+        "enumValues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Enumvalues",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "type",
+        "required",
+        "deferrable",
+        "promptHuman",
+        "promptAgent",
+        "enumValues"
+      ],
+      "title": "EnumQuestionSlot",
+      "type": "object"
+    },
+    "ModuleType": {
+      "enum": [
+        "TICKETS",
+        "STAY",
+        "FLIGHT",
+        "PARKING",
+        "TRANSIT",
+        "DINING",
+        "TRANSFER",
+        "VIP_CONCIERGE",
+        "FACILITY"
+      ],
+      "title": "ModuleType",
+      "type": "string"
+    },
+    "QuestionSlot": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EnumQuestionSlot"
+        },
+        {
+          "$ref": "#/$defs/StandardQuestionSlot"
+        }
+      ],
+      "title": "QuestionSlot"
+    },
+    "QuestionSlotDependency": {
+      "additionalProperties": false,
+      "properties": {
+        "slot": {
+          "title": "Slot",
+          "type": "string"
+        },
+        "op": {
+          "title": "Op",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value"
+        }
+      },
+      "required": [
+        "slot",
+        "op",
+        "value"
+      ],
+      "title": "QuestionSlotDependency",
+      "type": "object"
+    },
+    "QuestionSlotList": {
+      "items": {
+        "$ref": "#/$defs/QuestionSlot"
+      },
+      "title": "QuestionSlotList",
+      "type": "array"
+    },
+    "QuestionSlotType": {
+      "enum": [
+        "STRING",
+        "INT",
+        "DATE",
+        "BOOL",
+        "OBJECT",
+        "ARRAY"
+      ],
+      "title": "QuestionSlotType",
+      "type": "string"
+    },
+    "StandardQuestionSlot": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/QuestionSlotType"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "deferrable": {
+          "title": "Deferrable",
+          "type": "boolean"
+        },
+        "dependsOn": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/QuestionSlotDependency"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dependson"
+        },
+        "moduleGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModuleType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "ModuleType"
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation"
+        },
+        "promptHuman": {
+          "title": "Prompthuman",
+          "type": "string"
+        },
+        "promptAgent": {
+          "title": "Promptagent",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "type",
+        "required",
+        "deferrable",
+        "promptHuman",
+        "promptAgent"
+      ],
+      "title": "StandardQuestionSlot",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -26,9 +262,7 @@
       "type": "string"
     },
     "questions": {
-      "additionalProperties": true,
-      "title": "Questions",
-      "type": "object"
+      "$ref": "#/$defs/QuestionSlotList"
     },
     "active": {
       "anyOf": [
