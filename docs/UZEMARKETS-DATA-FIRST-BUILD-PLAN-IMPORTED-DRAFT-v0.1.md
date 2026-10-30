@@ -485,3 +485,20 @@ James directed SoSem to revise per the directing agent's advice. Three changes, 
 3. **Affiliates pinning wording:** "Sprint 0 follow-on, not a gate" → "a named deliverable inside the read-through contract, not a separate gate." Same substance (the read-through contract is itself not a gate); "follow-on" understated it.
 
 The tap line as it now stands in the minor-precision section above is the final, internally consistent version. **Status: still UNTAPPED — James sends it in his own words; on his send, Sprint 0 opens.**
+
+## TAP — RATIFICATION (James, 2026-10-30 17:39 EDT) — SPRINT 0 OPEN
+
+James tapped all six, in his own message, transmitted via the button he directed SoSem to provide. The tap is James's; the button was its transmission mechanism only. The tap, verbatim:
+
+"Tap all six. ORM (C), with SoSem's prerequisite gate: codegen tool named and one SQLAlchemy → Pydantic → TypeScript round-trip demonstrated before schema authoring begins. Inventory as consumer of services/api's catalog — seat identity and approval snapshot are composition-layer records within the consumer model, not an exception to it — with read-through contract specifying sourceRef TTL, hold semantics or their explicit absence, and a typed divergence failure code. Directives 1, 2, 4, 5, 6 as proposed, with the directive-4 pair stated in this tap: deterministic classify(); LLM only via suggest_slots() under the classifier's validation. Database name uzemarkets-compose. Commercial model as corrected: supply from affiliates and facilities, demand B2C direct or B2B through promoters, facilitators, clinics. Seat placement in OfferSnapshot.payload, reconciliation commit-time only, divergence = typed failure, no continuous sync in MVP. Carries 03d9aec and e611aa4 by reference. Affiliates pinning is a named deliverable inside the read-through contract, not a separate gate."
+
+**Ratified, effective on the tap:**
+- **Directive 3 (ORM): (C)** — SQLAlchemy + Alembic end-to-end, the Assurative V2 pattern. **Prerequisite gate:** the codegen tool is named and one SQLAlchemy → Pydantic → TypeScript round-trip is demonstrated **before schema authoring begins**.
+- **Inventory:** the composition layer is a **consumer** of services/api's catalog. Seat identity and the approval snapshot are composition-layer records within the consumer model (the NFT binds the seat; services/api's listing is what the NFT fulfills). TicketOfferDetail references services/api IDs — a projection, not a primary.
+- **Directives 1, 2, 4, 5, 6 as proposed.** Directive 4 carries the pair as stated in the tap: deterministic classify(); LLM only via suggest_slots() under the classifier's validation.
+- **Database name: `uzemarkets-compose`.**
+- **Commercial model:** supply from affiliates and facilities; demand B2C direct or B2B through promoters, facilitators, clinics.
+- **Seat placement:** `OfferSnapshot.payload`; reconciliation at commit-time only (pre-settlement check), divergence = typed failure, never silent proceed, no continuous sync in MVP. (This also closes the placement question that gated Sprint 1's approval gate.)
+- **Read-through contract (R4)** is Sprint 0's first authoring deliverable, and must carry: sourceRef TTL; hold semantics on the services/api side or their explicit absence; a typed divergence failure code (SEAT_TAKEN / LISTING_GONE class); the commit-time reconciliation obligation; and **affiliates pinning** (reseller vs supply vs both) as a named deliverable inside it.
+
+**Sprint 0 is OPEN.** Opening activity: the codegen round-trip (prerequisite gate). First authoring deliverable after the gate: the read-through contract. The rename sweep was completed 2026-10-29 (commit 2dbbdfa). All prior "PROPOSED / UNTAPPED" markings in this document are superseded by this section.
