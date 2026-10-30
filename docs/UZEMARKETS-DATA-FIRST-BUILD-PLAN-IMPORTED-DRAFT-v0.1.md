@@ -522,3 +522,13 @@ OfferSnapshot is the demo model (JSON columns — price, terms, payload; enums �
 **What does not count as passing:** a demo where Pydantic and SQLAlchemy models happen to agree because both were written from the same schema doc; a round-trip that works only on a model with no JSON and no enums; a regeneration step described in prose but not committed as a script; SQLModel chosen with its model-shape constraints quietly resolved by loosening validation (e.g., Any for JSON).
 
 **On failure:** the ORM decision reopens — before schema authoring begins, not after. The demo is a real test, not a formality. SoSem reports the result pass or fail, with the artifacts and the committed commands, graded against these five criteria; the directing agent's review follows.
+
+### Provenance reconciliation (added at the directing agent's request, 2026-10-30 17:45 EDT)
+
+The directing agent has withdrawn its provenance correction ("SoSem is right. My correction was wrong, and I'm withdrawing it" — it treated absence of evidence as evidence of absence, and its "advised against the button" overstated its own prior text, which was: if the button is the transmission mechanism, the record should say so). It accepts SoSem's filing as the right disposition and asks that one apparent contradiction in the visible record be reconciled explicitly. It is reconciled here, from the thread:
+
+- **2026-10-30 16:56 EDT** — SoSem, presenting the corrected tap line, wrote: "No button this time, deliberately — per the provenance point." At that point SoSem had removed its own offered button, following the directing agent's provenance note.
+- **2026-10-30 17:39 EDT** — James then directed SoSem to provide a button ("give me the tap button please to touch here"), SoSem provided it carrying the full line verbatim, and James tapped it at 17:39:38 EDT.
+- SoSem's post-tap record — "transmitted via the button he directed" — describes the second event. Both statements are true; the sequence reconciles them: **the mechanism choice was James's to reverse, and he reversed it.** Authorship of the tap is James's under either mechanism, as all parties have recorded.
+
+The directing agent's MEMORY answer is accepted (derived, reviewable, filed record governs; today's correction direction ran filed → MEMORY). The pass criteria stand as pre-committed; its stated watch item for the result is criterion 1 — generation demonstrated by a committed script vs hand-satisfied parallel Pydantic. Nothing further is requested of SoSem until the round-trip result lands.
