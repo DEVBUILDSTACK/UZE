@@ -1,6 +1,6 @@
 Ticket owner guard — evidence run
-Date: 2026-10-30T23:51:09+00:00
-Substrate: PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit
+Date: 2026-10-30T23:58:00+00:00
+Substrate: PostgreSQL 16.2 (pgserver-bundled binaries, local instance on 127.0.0.1:55433, UTF8)
 Artifact: prisma/manual-migrations/2026-10-30-ticket-owner-guard.sql (applied verbatim by the test)
 Command: ~/workspace/tools/composevenv/bin/python -m pytest tests/test_ticket_owner_guard.py -v
 ----------------------------------------------------------------
@@ -10,18 +10,20 @@ cachedir: .pytest_cache
 rootdir: /home/hatch/workspace/uze-gira/monorepo/services/api
 configfile: pyproject.toml
 plugins: anyio-4.15.1
-collecting ... collected 10 items
+collecting ... collected 12 items
 
-tests/test_ticket_owner_guard.py::test_positive_transfer_shape_succeeds PASSED [ 10%]
-tests/test_ticket_owner_guard.py::test_negative_owner_change_status_untouched_refused PASSED [ 20%]
-tests/test_ticket_owner_guard.py::test_negative_owner_change_status_active_refused PASSED [ 30%]
-tests/test_ticket_owner_guard.py::test_negative_owner_change_status_listed_refused PASSED [ 40%]
-tests/test_ticket_owner_guard.py::test_negative_owner_change_is_transaction_atomic PASSED [ 50%]
-tests/test_ticket_owner_guard.py::test_negative_owner_null_transitions_refused PASSED [ 60%]
-tests/test_ticket_owner_guard.py::test_regression_status_only_listed_succeeds PASSED [ 70%]
-tests/test_ticket_owner_guard.py::test_regression_other_field_update_succeeds PASSED [ 80%]
-tests/test_ticket_owner_guard.py::test_regression_insert_with_initial_owner_succeeds PASSED [ 90%]
-tests/test_ticket_owner_guard.py::test_ledger_row_recorded_and_trigger_present PASSED [100%]
+tests/test_ticket_owner_guard.py::test_positive_transfer_shape_succeeds PASSED [  8%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_status_untouched_refused PASSED [ 16%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_status_active_refused PASSED [ 25%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_status_listed_refused PASSED [ 33%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_is_transaction_atomic PASSED [ 41%]
+tests/test_ticket_owner_guard.py::test_negative_owner_null_transitions_refused PASSED [ 50%]
+tests/test_ticket_owner_guard.py::test_regression_status_only_listed_succeeds PASSED [ 58%]
+tests/test_ticket_owner_guard.py::test_regression_other_field_update_succeeds PASSED [ 66%]
+tests/test_ticket_owner_guard.py::test_regression_insert_with_initial_owner_succeeds PASSED [ 75%]
+tests/test_ticket_owner_guard.py::test_ledger_row_recorded_and_trigger_present PASSED [ 83%]
+tests/test_ticket_owner_guard.py::test_ledger_double_apply_keeps_first_row PASSED [ 91%]
+tests/test_ticket_owner_guard.py::test_ledger_hash_covers_trigger_binding PASSED [100%]
 
 =============================== warnings summary ===============================
 ../../../../tools/composevenv/lib/python3.12/site-packages/_pytest/config/__init__.py:1636
@@ -30,5 +32,5 @@ tests/test_ticket_owner_guard.py::test_ledger_row_recorded_and_trigger_present P
     self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 10 passed, 1 warning in 0.24s =========================
+======================== 12 passed, 1 warning in 0.28s =========================
 pytest exit: 0

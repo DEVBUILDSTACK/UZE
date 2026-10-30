@@ -23,7 +23,14 @@ atomicity, regression):
     public.ddl_ledger (id '2026-10-30-ticket-owner-guard'), and the
     presence check the composition layer will use — pg_trigger
     lookup for trg_ticket_owner_guard, corroborated by the ledger
-    row — finds the guard.
+    row — finds the guard. The row's artifact_md5 is non-null and
+    equals a fresh combined-hash readback from the same database:
+    md5 of the guard function's prosrc combined with the trigger's
+    pg_get_triggerdef. Re-applying the artifact leaves exactly
+    that one row, hash unchanged; and re-binding the SAME function
+    body under a different trigger binding (AFTER UPDATE) changes
+    the combined hash — the audit covers the binding, not just
+    the body.
 
 Substrate (stated, not hidden): REAL PostgreSQL 16.2 — this VM's
 pgserver-bundled instance on 127.0.0.1:55433, the same substrate the
@@ -62,6 +69,20 @@ GUARD_SQL = (
     / "2026-10-30-ticket-owner-guard.sql"
 )
 MARKER = "TICKET_OWNER_GUARD"
+LEDGER_ID = "2026-10-30-ticket-owner-guard"
+
+COMBINED_HASH_SQL = (
+    "SELECT md5(p.prosrc || '|' || pg_get_triggerdef(t.oid)) "
+    "FROM pg_proc p JOIN pg_trigger t ON t.tgfoid = p.oid "
+    "WHERE p.proname = 'ticket_owner_guard' "
+    "AND t.tgname = 'trg_ticket_owner_guard' AND NOT t.tgisinternal"
+)
+
+
+def _combined_hash(conn):
+    """The artifact_md5 expression, recomputed from the live DB."""
+    row = conn.execute(COMBINED_HASH_SQL).fetchone()
+    return row[0] if row else None
 
 SCHEMA_DDL = """
 CREATE TABLE "User" (id UUID PRIMARY KEY DEFAULT gen_random_uuid());
@@ -260,15 +281,82 @@ def test_ledger_row_recorded_and_trigger_present(conn):
     """DDL-ledger amendment: applying the artifact records itself in
     public.ddl_ledger under its own id, and the composition layer's
     presence check (pg_trigger lookup for trg_ticket_owner_guard,
-    corroborated by this ledger row) finds the guard."""
+    corroborated by this ledger row) finds the guard. The row's
+    artifact_md5 — the combined hash of the guard function body
+    and the trigger binding as applied, computed at apply time —
+    is non-null and equals a fresh combined-hash readback from
+    the same database."""
     rows = conn.execute(
-        "SELECT note FROM public.ddl_ledger WHERE id = %s",
-        ("2026-10-30-ticket-owner-guard",),
+        "SELECT note, artifact_md5 FROM public.ddl_ledger WHERE id = %s",
+        (LEDGER_ID,),
     ).fetchall()
     assert len(rows) == 1, f"expected exactly one ledger row, got {rows}"
     assert rows[0][0] == "Ticket ownerId guard trigger (trg_ticket_owner_guard)"
+    recorded_md5 = rows[0][1]
+    assert recorded_md5 is not None, "ledger row carries no artifact_md5"
+    live_md5 = _combined_hash(conn)
+    assert recorded_md5 == live_md5, (
+        f"ledger artifact_md5 {recorded_md5} != live combined hash {live_md5}"
+    )
     present = conn.execute(
         "SELECT 1 FROM pg_trigger "
         "WHERE tgname = 'trg_ticket_owner_guard' AND NOT tgisinternal"
     ).fetchone()
     assert present is not None, "pg_trigger presence check found no guard trigger"
+
+
+def test_ledger_double_apply_keeps_first_row(conn):
+    """Re-running the artifact verbatim leaves exactly one ledger
+    row, and its artifact_md5 is still the first application's
+    (ON CONFLICT DO NOTHING — the first application is the audit
+    fact)."""
+    before = conn.execute(
+        "SELECT artifact_md5 FROM public.ddl_ledger WHERE id = %s",
+        (LEDGER_ID,),
+    ).fetchall()
+    assert len(before) == 1 and before[0][0] is not None
+    conn.execute(GUARD_SQL.read_text())
+    after = conn.execute(
+        "SELECT artifact_md5 FROM public.ddl_ledger WHERE id = %s",
+        (LEDGER_ID,),
+    ).fetchall()
+    assert len(after) == 1, f"double apply left {len(after)} ledger rows"
+    assert after[0][0] == before[0][0], "double apply changed the recorded hash"
+
+
+def test_ledger_hash_covers_trigger_binding(conn):
+    """Binding coverage: re-binding the SAME function body under a
+    different trigger binding (AFTER UPDATE instead of BEFORE)
+    changes the combined hash — a prosrc-only hash would not move.
+    The ledger row keeps the original hash throughout; restoring
+    the artifact's binding makes the recomputed hash match it
+    again."""
+    recorded = conn.execute(
+        "SELECT artifact_md5 FROM public.ddl_ledger WHERE id = %s",
+        (LEDGER_ID,),
+    ).fetchone()[0]
+    assert recorded is not None
+    try:
+        conn.execute('DROP TRIGGER trg_ticket_owner_guard ON "Ticket"')
+        conn.execute(
+            "CREATE TRIGGER trg_ticket_owner_guard "
+            'AFTER UPDATE ON "Ticket" FOR EACH ROW '
+            "EXECUTE FUNCTION ticket_owner_guard()"
+        )
+        rebound = _combined_hash(conn)
+        assert rebound is not None and rebound != recorded, (
+            "combined hash did not move under a different binding — "
+            "the audit is not covering the trigger definition"
+        )
+    finally:
+        conn.execute(
+            'DROP TRIGGER IF EXISTS trg_ticket_owner_guard ON "Ticket"'
+        )
+        conn.execute(
+            "CREATE TRIGGER trg_ticket_owner_guard "
+            'BEFORE UPDATE ON "Ticket" FOR EACH ROW '
+            "EXECUTE FUNCTION ticket_owner_guard()"
+        )
+    assert _combined_hash(conn) == recorded, (
+        "restoring the artifact's binding did not restore its hash"
+    )
