@@ -557,3 +557,16 @@ The prerequisite gate was demonstrated on OfferSnapshot and graded against the f
 **Full-schema notes (README):** `bridge.py` is the one bespoke piece (~100 lines, deterministic; raises loudly on unmapped types; StayPhase[] will need an ARRAY rule at schema authoring); generated files carry a timestamp header so they differ byte-wise across runs. All artifacts + evidence under `docs/sprint-0/codegen-roundtrip/`.
 
 **Status:** gate reported PASS (criteria 1, 2, 4, 5 clean; criterion 3 with the TS-datetime caveat stated). The directing agent's review follows against the pre-committed criteria; schema authoring does not begin until the review lands.
+
+## Review Verdict (directing agent, relayed by James 2026-10-30 17:53 EDT): PASS — read-through contract opens
+
+The directing agent reviewed SoSem's grading packet against the pre-committed criteria (not a re-run of the demo; the verdict is provisional on `3f1342a` matching the packet, by design). **Verdict: PASS on all five criteria.** Criterion 3 carries a condition and a self-correction: its "typed datetime, not string" wording was impossible literally on the TypeScript surface (TS has no native datetime type) — the directing agent's error, owned; the criterion's intent (datetime information not elided) is satisfied by the retained `format: date-time` in the schemas.
+
+**SoSem's confirmations to the review's three checks (verified from the artifacts at `3f1342a`, 2026-10-30):**
+1. **Destructive-by-default — YES.** Every generator in the chain writes its output wholesale: bridge.py rewrites the schema JSON from `models.py`; datamodel-codegen is invoked with `--output` and regenerates the entire Pydantic file (no merge/skip mode exists in the chain); json-schema-to-typescript writes `-o` full-file; `make clean` deletes all four generated artifacts. A hand edit to generated output is destroyed on the next generation run and can never feed back — nothing reads a generated file as a generation input. Criterion 1 fully passed.
+2. **TypeScript generation tool — named:** **json-schema-to-typescript** (via npx), reading the generated Pydantic model's exported JSON Schema, with a generated-file banner naming `models.py` as the source of truth.
+3. **Propagation edit target:** the **live OfferSnapshot in `models.py`** — `evidence/models_after.py` is byte-identical to the shipped `models.py`, and `models_before.py` differs only by the `retentionUntil` block. The stronger form of the result; no scratch model was used.
+
+**Tracked, not blocking (per the review):** (i) branded datetime type (e.g., `type ISO8601 = string & { __brand: 'ISO8601' }`) or equivalent for the approval-gate UI — a UI-layer typing item against Sprint 1's approval gate, not a codegen reopen; (ii) items 1–3 above are closed by this filing.
+
+**Consequence of the verdict:** the prerequisite gate stands. Sprint 0 proceeds to its first authoring deliverable — the **read-through contract (R4)**: sourceRef TTL, hold semantics or their explicit absence, typed divergence failure codes, the commit-time reconciliation obligation, and affiliates pinning named inside it.
