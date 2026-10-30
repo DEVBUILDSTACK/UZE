@@ -89,6 +89,16 @@ the divergence annotation (choice 3). Evidence: demo D3 (raw-SQL price
 UPDATE refused, DELETE refused, annotation applies exactly once, second
 annotation refused) and D6 (frozen mutation refused).
 
+**Post-review fix (2026-10-30):** the schema review ratified the
+exception on three terms (named in full under Author's Choice 3
+below). Term 1 — the annotation is a derived projection of the
+authoritative EventLog entry — is now a mechanism, not a convention:
+additive revision `9d4c1f7a2b58` adds the mirror trigger
+(`trg_offer_snapshot_divergence_mirror`), which inserts the
+SNAPSHOT_DIVERGED EventLog row in the same transaction as the
+annotation, for every writer, unbypassably. Demo D3 now also asserts
+exactly one mirrored EventLog row with the matching code.
+
 **6. EventLog append-only, enforced at DB level, demonstrated — PASS.**
 Trigger `trg_event_log_append_only` raises on UPDATE and DELETE
 unconditionally; an ORM guard mirrors it. Evidence: demo D4.
@@ -157,6 +167,22 @@ database of exactly that name (D1).
    NULL to a code, divergenceAt alongside, every other column
    byte-identical, exactly once. Any other reading (a separate annotation
    table; snapshots re-issued) is the review's to substitute.
+
+   **Ratified by the schema review on three terms** (also named in the
+   OfferSnapshot docstring in `src/models.py` — term 3):
+   (1) **Derived, not independent** — the EventLog entry is the
+   authoritative record of the divergence; the divergenceCode /
+   divergenceAt columns are its derived projection, materialized
+   atomically in the same transaction by the mirror trigger
+   (`trg_offer_snapshot_divergence_mirror`, Alembic revision
+   `9d4c1f7a2b58`). There is no annotation write that is not
+   simultaneously an EventLog write, and no writer can bypass the
+   mirror. (2) **No widening** — the exception is one column-pair, one
+   transition (NULL → code), exactly once; any future exception
+   request goes to a new review, never to a widening of these
+   triggers. (3) **Named in the record** — this text and the model
+   docstring name the exception and these terms, so the triggers'
+   reason is never archaeology.
 4. **Status vocabularies kept as strings where the spec's enum block
    declares no enum:** ApprovalRequest.status (PENDING | APPROVED |
    REJECTED | EXPIRED), TripCandidate.status (OPEN | PARTIAL | FAILED),

@@ -144,7 +144,10 @@ class DivergenceCode(enum.Enum):
 
     Recorded on the OfferSnapshot that a divergence kills for commit
     (the one permitted post-insert write — see the immutability guard)
-    and in EventLog. Never free-text (schema-review criterion 9).
+    and in EventLog. The EventLog entry is authoritative; the column
+    is its derived projection, written atomically by the mirror
+    trigger — the exception's three ratified terms are named in the
+    OfferSnapshot docstring. Never free-text (criterion 9).
     """
 
     SNAPSHOT_EXPIRED = "SNAPSHOT_EXPIRED"
@@ -555,6 +558,25 @@ class OfferSnapshot(Base):
       2. ORM — the guards below mirror the trigger for ORM writers.
       3. API types — the generated Pydantic model is frozen.
     A changed quote is always a NEW snapshot, never an edit (R4 §3.4).
+
+    THE DIVERGENCE-ANNOTATION EXCEPTION — the one permitted write
+    above — was ratified by the schema review on THREE TERMS:
+      1. DERIVED, NOT INDEPENDENT. The EventLog entry is the
+         authoritative record of a divergence; this row's
+         divergenceCode / divergenceAt are its derived projection,
+         materialized atomically in the same transaction by the
+         mirror trigger (trg_offer_snapshot_divergence_mirror,
+         Alembic revision 9d4c1f7a2b58). There is no annotation write
+         that is not simultaneously an EventLog write, and no writer
+         can bypass the mirror.
+      2. NO WIDENING. The exception is one column-pair, one
+         transition (NULL -> code), exactly once. Any future
+         exception request goes to a new review — never to a
+         widening of these triggers.
+      3. NAMED IN THE RECORD. This docstring and SCHEMA-NOTES.md
+         (criterion 5; Author's Choice 3) name the exception and
+         these three terms, so a future reader of the triggers
+         never needs archaeology to know why the exception exists.
     """
 
     __tablename__ = "offer_snapshot"
