@@ -344,3 +344,25 @@ A sprint is complete when:
 ---
 
 The one sentence to carry into month 4: if adding the medical vertical requires a migration that touches any table the event vertical depends on, the Sprint 0 schema was wrong — and Sprint 0 is the only place this is cheap to fix.
+
+---
+
+## Review Round 1 — Corrections and Agreement-Pass Agenda (2026-10-29, 21:54 EDT)
+
+**Verified estate facts (SoSem, code-checked 2026-10-29):** there are TWO Python back ends that call themselves the monolith, and they picked differently —
+- **Assurative V2 `apps/api` + DEVBUILDSTACK/monolithic-backend:** SQLAlchemy 2.0.40 async + Alembic + Google Cloud SQL connector. **No Prisma.**
+- **UZE monorepo `services/api`** (self-described "UZE monolithic backend — FastAPI + Prisma + Redis"): **prisma-client-py (~0.15.0) is the migration authority over Neon Postgres**, with SQLAlchemy also present in the data layer. Its existing schema already holds User, Event, Ticket, Listing, **DocumentChunk (the RAG)**, Auction, Bid.
+
+**Corrections to the review round:**
+- The claim "the monolith already runs Prisma" is true of the commerce repo's `services/api` and false of the Assurative core. Any "(A) matches the codebase" argument must name *which* codebase.
+- **The monolith collision, refined:** the load-bearing pre-Sprint-0 question is not only schema-vs-database-vs-service — it is that this plan's Sprint 0 would land next to an **existing Prisma schema in `services/api`** that already models events, tickets, listings, auctions, bids, and RAG chunks. Extend that schema additively, or stand up the separate UZEMARKETS database (James's 2026-10-29 direction) and define the boundary — one of the two, decided before Sprint 0. Tenet 01's combination rule applies: surfaces combine through the console/API layer, never cross-database joins.
+
+**Agreement-pass agenda (proposed decisions, for James's ratification — none are ratified yet):**
+1. Ratify "No LLM in classify()" — with the proposed shape: LLM assistance, if any, lives in a separate `suggest_slots()` whose suggestions the deterministic classifier validates.
+2. Ratify the ORM position — (A), the pure Assurative pattern (SQLAlchemy + Alembic, no Prisma), or extend-`services/api` Prisma — with the two-codebase facts above on the record.
+3. Decide the monolith collision (above) — **blocking Sprint 0**.
+4. Clarify RAG scope: Tenet 01 makes RAG shared infrastructure; `services/api` already carries a RAG (`rag.py`, DocumentChunk). This plan should document the RAG **contract it consumes**, not own a RAG section.
+5. Clarify language-awareness scope: facility languages on FacilityProfile = vertical scope (correct as-is); language awareness in retrieval and concierge UI = platform capability, specified at the shared layer, not in this plan.
+6. Add to every sprint's acceptance criteria — **verify in code review:** (i) OfferSnapshot immutability (terms frozen at quote time, never silently optimized); (ii) IdempotencyKey enforced at the Postgres layer, not only Redis; (iii) EventLog append-only — no update or delete path, ever; (iv) **StayPhase[] stays array-typed through month 3+** — no review collapses it to a single stay regardless of single-phase MVP usage.
+
+**Routing:** the reviewer of record for this loop is James. Review artifacts address him.
