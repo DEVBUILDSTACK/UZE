@@ -77,6 +77,11 @@
 --   it covers the function body and the trigger binding as the
 --   server deparses them — not this file's comments, and not
 --   the ledger DDL itself.
+--   Version note: this hash was computed against PG16
+--   pg_get_triggerdef output; cross-version recomputation may
+--   differ in formatting alone — if the ledger is ever queried
+--   from a different major version than the one that applied
+--   it, a hash difference may be the formatter, not the trigger.
 --
 -- PRESENCE CHECK (what the composition layer uses to confirm this
 --   guard is in place — e.g. before relying on R4's owner branch
