@@ -14,5 +14,6 @@ PASS D6 generated Pydantic: payload union + typed divergence — ticket + stay p
 PASS D7 sourceRef is a reference, not a FK — sourceRef has no FK (mapper); offer_snapshot's only FK is the internal tripCandidateId; zero cross-schema FKs — no cross-database join is expressible
 PASS D8 TripProfile: travelers as rows, StayPhase[] structure — 2 traveler rows with roles (PRIMARY, COMPANION); 2 stay phases in seq order (EVENT, RECOVERY), each carrying its OWN checkIn/checkOut; modules is a Postgres ARRAY column; the TRIP carries no checkIn/checkOut/partySize columns
 PASS D9 dormant health set: present, unused, isolated — dormant tables present and empty {'facility_profile': 0, 'package_template': 0, 'procedure_class_band': 0, 'health_restricted.consent_record': 0, 'health_restricted.health_attribute': 0}; Traveler carries no health columns; health lives only in health_restricted behind ConsentRecord
+PASS D10 divergence mirror atomicity (negative case) — with the mirror's EventLog INSERT blocked, the annotation errored via the blocker and rolled back with it (divergenceCode still NULL, 0 mirror rows); blocker dropped, the same snapshot then annotated cleanly with exactly one mirror row — annotation and mirror are a single transaction
 ========================================================================
-RESULT: 9/9 checks passed
+RESULT: 10/10 checks passed

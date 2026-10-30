@@ -26,6 +26,13 @@ nothing here is claimed for a substrate it did not run on):
   D8  TripProfile carries travelers as rows and stay phases as an
       array-structured relation — no checkIn/checkOut, no partySize
   D9  the dormant health set exists, is empty, and is namespace-isolated
+  D10 NEGATIVE atomicity of the divergence mirror: with a temporary
+      BEFORE INSERT blocker on event_log forcing the mirror's insert
+      to fail, the annotation on a fresh snapshot errors out and
+      rolls back WITH it (divergenceCode still NULL, zero mirror
+      rows) — co-occurrence is not enough; the pair is one
+      transaction. The blocker is then dropped and the positive path
+      on the same snapshot succeeds with exactly one mirror row
 
 The script RESETS the target database (drop + create) before migrating:
 the target must be a throwaway database named exactly
@@ -457,6 +464,99 @@ def main() -> int:
                 "carries no health columns; health lives only in "
                 "health_restricted behind ConsentRecord")
 
+    def d10() -> str:
+        # NEGATIVE atomicity case (schema review, term 1 follow-up).
+        # D3 proves the annotation and its EventLog mirror CO-OCCUR;
+        # that is satisfiable by two sequential writes. Term 1
+        # requires them to be ONE transaction: if the mirror's
+        # EventLog insert fails, the annotation must roll back too —
+        # an annotation present without its EventLog row is the
+        # shadow state the term exists to prevent, arriving through
+        # a different door. A temporary BEFORE INSERT blocker on
+        # event_log forces the mirror insert to fail; it is dropped
+        # in a finally, and the positive path is then re-proven on
+        # the SAME snapshot.
+        make_snapshot()
+        sid = ids["snapshot"]
+
+        def mirror_count(conn) -> int:
+            return conn.execute(text(
+                'SELECT count(*) FROM event_log '
+                'WHERE "aggregateType" = :at AND "aggregateId" = :ai '
+                'AND "eventType" = :et'),
+                {"at": "OfferSnapshot", "ai": sid,
+                 "et": "SNAPSHOT_DIVERGED"}).scalar()
+
+        def current_code(conn):
+            return conn.execute(text(
+                'SELECT "divergenceCode" FROM offer_snapshot '
+                'WHERE id = :i'), {"i": sid}).scalar()
+
+        with engine.connect() as c:
+            assert current_code(c) is None, "fresh snapshot already annotated"
+            assert mirror_count(c) == 0, "fresh snapshot already mirrored"
+
+        with engine.connect() as c:
+            c.execute(text(
+                "CREATE OR REPLACE FUNCTION demo_atomicity_blocker() "
+                "RETURNS trigger AS $$ BEGIN "
+                "RAISE EXCEPTION 'DEMO_ATOMICITY_BLOCKER: event_log "
+                "insert blocked (negative atomicity test)'; "
+                "END; $$ LANGUAGE plpgsql"))
+            c.execute(text(
+                "CREATE TRIGGER trg_demo_atomicity_blocker "
+                "BEFORE INSERT ON event_log FOR EACH ROW "
+                "EXECUTE FUNCTION demo_atomicity_blocker()"))
+            c.commit()
+        try:
+            err = ""
+            with engine.connect() as c:
+                try:
+                    c.execute(text(
+                        'UPDATE offer_snapshot SET "divergenceCode" = :dc, '
+                        '"divergenceAt" = :t WHERE id = :i'),
+                        {"dc": "SEAT_TAKEN", "t": now, "i": sid})
+                    c.commit()
+                except Exception as exc:  # noqa: BLE001
+                    c.rollback()
+                    err = str(exc)
+            assert err, (
+                "annotation was ACCEPTED while its EventLog mirror "
+                "insert was blocked — annotation and mirror are NOT "
+                "one transaction (criterion 5 failure)")
+            assert "DEMO_ATOMICITY_BLOCKER" in err, (
+                f"annotation failed, but not via the blocker: {err[:200]}")
+            with engine.connect() as c:
+                assert current_code(c) is None, (
+                    "annotation PERSISTED despite the failed mirror "
+                    "insert — shadow state (criterion 5 failure)")
+                assert mirror_count(c) == 0, (
+                    "mirror row exists for a rolled-back annotation")
+        finally:
+            with engine.connect() as c:
+                c.execute(text(
+                    "DROP TRIGGER IF EXISTS trg_demo_atomicity_blocker "
+                    "ON event_log"))
+                c.execute(text(
+                    "DROP FUNCTION IF EXISTS demo_atomicity_blocker()"))
+                c.commit()
+        # Blocker dropped: the positive path on the SAME snapshot
+        # must still work — annotation applies, exactly one mirror row.
+        with engine.connect() as c:
+            c.execute(text(
+                'UPDATE offer_snapshot SET "divergenceCode" = :dc, '
+                '"divergenceAt" = :t WHERE id = :i'),
+                {"dc": "SEAT_TAKEN", "t": now, "i": sid})
+            c.commit()
+            assert current_code(c) == "SEAT_TAKEN"
+            assert mirror_count(c) == 1, "positive path mirror missing"
+        return ("with the mirror's EventLog INSERT blocked, the "
+                "annotation errored via the blocker and rolled back "
+                "with it (divergenceCode still NULL, 0 mirror rows); "
+                "blocker dropped, the same snapshot then annotated "
+                "cleanly with exactly one mirror row — annotation "
+                "and mirror are a single transaction")
+
     check("D1 migration applies", d1)
     check("D2 table inventory", d2)
     check("D3 OfferSnapshot immutability (DB trigger + ORM guard)", d3)
@@ -466,6 +566,7 @@ def main() -> int:
     check("D7 sourceRef is a reference, not a FK", d7)
     check("D8 TripProfile: travelers as rows, StayPhase[] structure", d8)
     check("D9 dormant health set: present, unused, isolated", d9)
+    check("D10 divergence mirror atomicity (negative case)", d10)
 
     failed = [r for r in RESULTS if not r[1]]
     print("=" * 72)
