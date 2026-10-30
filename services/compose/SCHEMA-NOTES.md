@@ -328,3 +328,11 @@ the trigger's refusals); regeneration reproducibility re-verified
 - TypeScript renders datetimes as `string` (format retained in the JSON
   Schemas) — the standing caveat from the round-trip review; the branded
   datetime type stays tracked against Sprint 1's approval-gate UI.
+
+## RLS on health_restricted — DEFERRED, not dropped (recorded 2026-10-30, schema review)
+
+The spec describes the restricted namespace as "RLS-gated." As built in Sprint 0, `health_restricted` is enforced by **schema-namespace isolation only** — separate Postgres schema, no foreign keys into or out of it, consent-gated at the model layer — with **no row-level security policies and no role/grant constructs anywhere in the migration chain** (verified by grep across all revisions). That is the correct Sprint 0 posture: the tables are dormant, hold no data, and have no runtime touch until the health vertical activates. **RLS is deferred to the health sprint (sprints 10–12), not dropped and not decided-against.** When the health vertical is built, RLS policies + the role model for the restricted namespace are designed and migrated then, as part of that sprint's own review. No reader of this schema should inherit "namespace-only" as the settled design: the settled design is namespace isolation now, RLS at health activation.
+
+## Standing standard — from-empty replay (adopted 2026-10-30, schema review)
+
+Every future revision gets a **from-empty replay at its head before filing**: the demo harness drops and recreates the database and applies the full chain in a single `alembic upgrade head` pass, and the revision is not filed until that replay passes. This discipline caught the RailPayloadJSON rename break during the Sprint 0 close-out; it is the standard, not a one-off.
