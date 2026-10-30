@@ -1,0 +1,346 @@
+# UZEMARKETS — Data-First Build Plan (Imported Draft v0.1)
+
+**Source:** external frontier API (DeepSeek / Kimi class), supplied by James 2026-10-29 20:51 EDT as the scope to implement now for UZE.
+**Status:** IMPORTED DRAFT — in the specification phase of the delivery cadence (scope → specification mutually agreed → daily 24h all-in sprints). Not yet mutually agreed; no sprint starts until James agrees the specification.
+**Build-agent note (James):** a DeepSeek or Kimi frontier external API serves as a build-time coding agent. Its key is development-only, never a runtime dependency (spec §9) — provisioned by James, never committed.
+**Scope Tenet 01 check (SoSem, 2026-10-29):** CONFORMS — Python/FastAPI core; this schema is UZEMARKETS' own distinct Postgres (Neon), endpoints separate per front end; Redis shared as cache/state with Postgres authoritative; additive migrations only = backward compatibility; GeoAnchor/MetroProfile + concierge module align with the Tenet 01 Innovation & Scale extension (geo awareness, agentic concierge, VIP pay-as-you-go tier). Noted gaps for the mutual-agreement pass: (a) RAG knowledge-base access is not specified in this plan — it rides the shared layer per Tenet 01 and needs its section; (b) language awareness appears only on FacilityProfile — the extension calls for it across the RAG/concierge surfaces; (c) the "no LLM in classify()" rule arrives as the external source's assertion ("decided earlier") — it is a proposal until James confirms it; (d) the plan's Month 1–6 clock maps onto James's standing timeline (development from mid-November 2026; MVP April 1–15, 2027) if Month 1 = the first build month.
+
+---
+
+# SPEC: Muse Agent Platform — Data-First Build Plan
+
+Audience: the implementing coding agent.
+Purpose: define the schema, the sprint sequence from a data perspective, and the forward-compatibility rules that let the medical-travel vertical be added between month 4 and month 5 without a schema rewrite.
+
+---
+
+0. Briefing to the implementing agent
+
+You are building a dual-surface (agent API + human web UI) travel-and-venue marketplace. The first commercial vertical is event travel — music and sports — with NFT ticketing settled in USDC on Solana. The second vertical, health travel (surgery/dental + recovery hospitality), is funded conditionally and will be added later. Your primary obligation is that the schema you write in month 1 already accommodates month 4.
+
+Two rules govern everything:
+
+1. Contract-first. The Prisma schema is the source of truth. The agent tool manifest (MCP-style) and the human typed client are generated from it. Any field present on one surface and not the other is a defect.
+2. Additive migrations only. No destructive migrations against any environment with data. New columns are nullable or defaulted; new tables are introduced dormant.
+
+---
+
+1. Confirmed stack
+
+Layer Choice Notes for you
+API Python + FastAPI Async throughout; Pydantic v2 models generated/derived from schema
+Schema/ORM Prisma ORM See §2 — this is a decision point, not a settled fact
+Database Neon Postgres Use Neon branching for every migration preview
+Cache/state Redis Draft tokens, hot geo cache, rate limits, pub/sub for approval gates
+Human UI Next.js + shadcn/ui App Router, server components for read paths
+Client state Zustand Only for intake stepper + optimistic UI; server state lives in the API
+Settlement Solana + USDC Testnet for MVP; mainnet gated on revenue proof
+Build-time AI DeepSeek API key Development agent only. Never a runtime dependency — see §9
+
+⚠️ §2 — Prisma + FastAPI is the one stack risk
+
+Prisma's Python client (prisma-client-py) is community-maintained and lags the JS client. Pick one of these now, do not drift:
+
+· (A) Prisma for schema + migrations, SQLAlchemy 2.x async for runtime queries. Most robust. You keep Prisma's excellent migration ergonomics and Neon integration while using a mature Python runtime.
+· (B) prisma-client-py end-to-end. Faster to start, higher maintenance risk on advanced queries (partial indexes, RLS, CTEs).
+
+Recommendation: (A). Write schema.prisma as the authoring DSL; run prisma migrate to produce SQL; query via SQLAlchemy models that mirror it. Generate Pydantic and TypeScript types from the same Prisma schema so all three layers stay in sync.
+
+---
+
+2. Timeline and gating
+
+Window Vertical Gate to proceed
+Month 1 Event MVP — intake, tickets (NFT/USDC), local scope Walking skeleton demoable end-to-end
+Month 2 Event — stay + flight rails, travel scope Three-component bundle with per-rail failure codes
+Month 3 Event — task rail, map, hardening Market test launch
+Months 3–5 Event — iterate on real usage Revenue proven by end of month 5
+Month 4–5 (conditional) Health — facility rail, phases, fit-to-fly Funding allocated and revenue gate met
+Month 6+ Launch incl. health (if funded) —
+
+The schema obligation is this: the health vertical's build window is a 6–8 week sprint placed on top of a live revenue-generating system. There is no room for a schema migration that touches the event vertical. Therefore §4's forward-compatible structures ship in Sprint 0, dormant.
+
+---
+
+3. Data architecture principles
+
+1. Phase-shaped stays from day one. A trip has StayPhase[], never a single check-in/check-out pair. The event case is a one-element array.
+2. Travelers are objects, not counts. party: 2 is forbidden; two Traveler rows with roles.
+3. GeoAnchor is polymorphic from day one. type enum includes facility even though MVP only emits venue and metro.
+4. CommitmentClass is a closed enum containing the medical members from day one. APPOINTMENT and MEDICAL_PACKAGE exist in Sprint 0 and are unused until month 4.
+5. Offers are snapshots. Price and terms are frozen at quote time in OfferSnapshot. This is non-negotiable — it is your defense against "the rate changed" disputes on both verticals.
+6. Health attributes live in a separate table namespace with its own consent gate. They are never columns on Traveler or TripProfile.
+7. Everything is event-sourced at the aggregate level. EventLog is append-only and is the audit surface for agent transparency, disputes, and medical compliance.
+
+---
+
+4. Schema specification
+
+4.1 Sprint 0 — all of this ships in month 1
+
+Enums (complete, including dormant members):
+
+```prisma
+enum GeoAnchorType   { VENUE FACILITY ADDRESS METRO }
+enum TravelerRole    { PATIENT COMPANION PRIMARY GUEST }
+enum StayPhaseKind   { PRE_EVENT EVENT POST_EVENT PRE_OP INPATIENT RECOVERY }
+enum ModuleType      { TICKETS STAY FLIGHT PARKING TRANSIT DINING TRANSFER VIP_CONCIERGE FACILITY }
+enum CommitmentClass { IRREVERSIBLE_ON_CHAIN CANCELLABLE_UNTIL_WINDOW CHANGEABLE_WITH_FEE APPOINTMENT MEDICAL_PACKAGE }
+enum Rail            { SOLANA_NFT HOTEL_AGGREGATOR FLIGHT_SEARCH FACILITY PARKING TRANSFER DINING_TASK }
+enum TaskState       { REQUESTED QUOTED DEPOSIT_PENDING CONFIRMED FAILED CANCELLED }
+```
+
+Intake layer:
+
+```prisma
+model IntakeDraft {
+  id           String   @id @default(uuid())
+  token        String   @unique          // Redis-backed resume handle
+  answers      Json                      // slot-typed, partial allowed
+  missingSlots String[]
+  invalidSlots Json                      // { slot, error }
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  @@index([expiresAt])
+}
+
+model TripProfile {
+  id            String    @id @default(uuid())
+  buyerId       String
+  version       Int       @default(1)
+  modules       ModuleType[]
+  tier          String    @default("AGENTIC")   // AGENTIC | VIP_PAYG
+  authorization Json                            // per-module caps + commitment ceilings
+  confirmedAt   DateTime?
+  supersededBy  String?
+  @@index([buyerId, confirmedAt])
+}
+
+model Traveler {
+  id             String       @id @default(uuid())
+  tripProfileId  String
+  role           TravelerRole
+  origin         String?
+  nationality    String?                       // passport — matters for medical/visa later
+  utilityWeights Json                          // { proximity, amenity, quiet, safety, workspace, budget }
+  tripProfile    TripProfile @relation(fields: [tripProfileId], references: [id])
+  @@index([tripProfileId])
+}
+
+model GeoAnchor {
+  id       String        @id @default(uuid())
+  type     GeoAnchorType
+  refId    String?                             // venue id, facility id, metro code
+  label    String
+  lat      Float
+  lng      Float
+  radiusKm Float         @default(15)
+  metroId  String?
+  @@index([type, refId])
+}
+
+model MetroProfile {
+  id               String  @id @default(uuid())
+  metroCode        String  @unique             // MIA, BNA, ATL, NYC, GRU, GDL, TIJ
+  facilityClusters Json                        // populated month 4
+  resortClusters   Json
+  splitStayDefault Boolean @default(false)
+  safetyWeights    Json
+}
+```
+
+Phase-shaped stays (the critical forward-compat structure):
+
+```prisma
+model StayPhase {
+  id            String        @id @default(uuid())
+  tripProfileId String
+  kind          StayPhaseKind
+  propertyRef   String?
+  checkIn       DateTime
+  checkOut      DateTime
+  occupants     Json          // [{ travelerId, role }] — occupancy is per-phase
+  criteria      Json          // { maxMinutesToAnchor, amenityTier, recoverySuitable, quiet, elevator }
+  seq           Int
+  @@index([tripProfileId, seq])
+}
+```
+
+Offer layer (snapshot pattern):
+
+```prisma
+model SearchSession { id String @id @default(uuid())  tripProfileId String  query Json  createdAt DateTime @default(now()) }
+
+model TripCandidate {
+  id              String   @id @default(uuid())
+  searchSessionId String
+  status          String   @default("OPEN")     // OPEN | PARTIAL | FAILED
+  rankingScore    Float?
+  constraints     Json
+  @@index([searchSessionId])
+}
+
+model OfferSnapshot {
+  id              String          @id @default(uuid())
+  tripCandidateId String
+  rail            Rail
+  sourceRef       String                          // supplier-side id
+  commitmentClass CommitmentClass
+  price           Json                            // { amount, currency, taxesIncluded }
+  terms           Json                            // cancellation window, transfer policy, date-shift rights
+  payload         Json                            // rail-specific normalized body
+  expiresAt       DateTime
+  createdAt       DateTime        @default(now())
+  @@index([tripCandidateId, rail])
+  @@index([expiresAt])
+}
+```
+
+Rail-specific detail tables (TicketOfferDetail, StayOfferDetail, FlightOfferDetail) hang off OfferSnapshot by FK. Keep them narrow — the normalized contract is OfferSnapshot.payload.
+
+Commitment + approval:
+
+```prisma
+model ApprovalRequest {
+  id              String          @id @default(uuid())
+  tripProfileId   String
+  commitmentClass CommitmentClass
+  summary         Json
+  status          String          @default("PENDING")   // PENDING | APPROVED | REJECTED | EXPIRED
+  signedBy        String?
+  resolvedAt      DateTime?
+  @@index([tripProfileId, status])
+}
+
+model Commitment {
+  id                String          @id @default(uuid())
+  approvalRequestId String
+  offerSnapshotId   String
+  state             String
+  settledAt         DateTime?
+  chainTxRef        String?                            // Solana signature, null for off-chain
+}
+```
+
+Infrastructure:
+
+```prisma
+model EventLog {
+  id            BigInt   @id @default(autoincrement())
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  actor         String                        // "agent:{id}" | "human:{id}" | "system"
+  payload       Json
+  ts            DateTime @default(now())
+  @@index([aggregateType, aggregateId, ts])
+}
+
+model IdempotencyKey {
+  key          String   @id
+  scope        String
+  requestHash  String
+  responseJson Json?
+  status       String   @default("IN_FLIGHT")
+  createdAt    DateTime @default(now())
+  @@index([createdAt])
+}
+```
+
+Dormant health tables — create now, populate month 4:
+
+```prisma
+model FacilityProfile   { id String @id @default(uuid())  geoAnchorId String  accreditation Json  languages String[]  metroId String? }
+model PackageTemplate   { id String @id @default(uuid())  facilityId String  procedureClassBand String  phaseTemplate Json  inclusions Json  depositTerms Json }
+model ProcedureClassBand { id String @id @default(uuid())  band String @unique  minDaysPostOpBeforeReturn Int  cabinComfortMin String? }
+
+// Restricted namespace — separate schema, RLS-gated, consent-linked
+model ConsentRecord    { id String @id @default(uuid())  subjectId String  purpose String  version String  grantedAt DateTime  revokedAt DateTime? }
+model HealthAttribute  { id String @id @default(uuid())  subjectId String  consentId String  attrKey String  attrValue Json  retentionUntil DateTime }
+```
+
+Note the one-way dependency: Traveler never references HealthAttribute. Health data joins to the trip only through ConsentRecord and the facility rail's PackageTemplate. This is what keeps the event vertical out of scope for health-data regulation.
+
+---
+
+5. Sprint sequence — data perspective
+
+Each sprint's first PR is a migration. Schema merges before consumer code; the agent surface and human surface are generated from it.
+
+Sprint (month) Migration content Why it must be here
+0 (wk 1) All enums including dormant members; IntakeDraft, TripProfile, Traveler, GeoAnchor, MetroProfile, StayPhase, offer snapshot set, ApprovalRequest, Commitment, EventLog, IdempotencyKey, dormant health tables Everything downstream inherits these. Retrofitting any of them touches every layer.
+1–2 (mo 1) TicketOfferDetail with nftMint, sealedState, transferPolicy, settlementCurrency Proves the Solana rail end-to-end on testnet
+3–4 (mo 2) StayOfferDetail, FlightOfferDetail; OfferSnapshot.rail values exercised Three-component bundles; per-rail failure codes
+5 (mo 3) ServiceTask state machine tables (DiningTask, TransferTask); ConciergeBrief Task rail is a different state machine from offers — do not overload OfferSnapshot
+6 (mo 3–5) Additive only: indexes on hot geo/time queries, rankingScore tuning columns, OfferSnapshot retention columns Market-test iteration
+7 (mo 4–5, conditional) Populate FacilityProfile, PackageTemplate, ProcedureClassBand; enable RLS on the restricted schema; add StayPhase.kind medical members to seeded usage No new enums, no new core tables. If this sprint requires a schema change beyond the dormant tables, Sprint 0 failed.
+8+ VIP metering tables, group task orchestration Post-launch
+
+---
+
+6. Redis usage map
+
+Key pattern Purpose TTL
+intake:draft:{token} Resume handle → serialized IntakeAnswers 72h
+geo:{metroCode}:{type} Cached GeoAnchor resolution fan-out 1h
+idem:{scope}:{key} Hot cache only — Postgres IdempotencyKey is source of truth 24h
+rate:{actorType}:{actorId} Agent rate limiting sliding
+approval:{requestId} Pub/sub channel → human UI pushes gate ephemeral
+
+Rule: Redis is never the only copy of anything that affects money or commitment state. Postgres is authoritative; Redis accelerates.
+
+---
+
+7. Neon + Prisma operational rules
+
+· One Neon branch per feature branch; every migration is previewed on a branch before merge.
+· Use Neon's pooled connection string (-pooler) for the API; direct connection only for prisma migrate.
+· Pin Prisma and driver versions; do not auto-upgrade the SQLAlchemy/Prisma bridge mid-sprint.
+· No prisma db push outside local. Migrations only.
+· Backfill jobs run as separate, idempotent, resumable scripts — never inside a migration.
+
+---
+
+8. Next.js + Zustand boundary
+
+· Server components render all read paths (bundle review, offer detail, audit trace). No client state for server data.
+· Zustand holds exactly two things: the intake stepper's local form state (before submit) and optimistic UI for the approval gate. If you find yourself caching TripCandidate in Zustand, stop — that belongs in the server or a proper query cache.
+· shadcn/ui components are presentation only; no business logic in them.
+
+---
+
+9. DeepSeek API key — usage rules
+
+The key is for the implementing agent's development workflow: scaffolding, codegen, test generation, migration drafting, review. It is not a runtime dependency of the product.
+
+· Store as DEEPSEEK_API_KEY in the agent's local env only. Never commit, never bake into a build, never expose to the Next.js client.
+· The runtime intake classifier remains deterministic. No LLM call in classify(). This was decided earlier and is not negotiable — it is what makes the pipeline testable.
+· If a future feature needs LLM inference at runtime (concierge summarization, say), it gets its own credentials, its own budget, its own rate limits, and its own spec — not this key.
+
+---
+
+10. Definition of done (per sprint)
+
+A sprint is complete when:
+
+1. The migration is merged and applied to staging + one preview branch.
+2. Both projections are generated from the schema and demonstrably agree — a diff harness runs the agent tool call and the human UI action against the same TripProfile and compares resulting state.
+3. EventLog emits for every state transition introduced this sprint.
+4. Every new write path takes an idempotency key.
+5. Every new offer rail emits its own failure code set.
+
+---
+
+11. Do not do
+
+· Do not add a checkIn/checkOut column to a trip-level table. Stays are StayPhase[].
+· Do not add partySize to TripProfile. Travelers are rows.
+· Do not add health columns to Traveler or TripProfile.
+· Do not remove dormant enum members because they're "unused."
+· Do not let the agent surface and human surface diverge on any field.
+· Do not put price or terms on an offer without also writing an OfferSnapshot.
+· Do not put LLM calls in the classification path.
+
+---
+
+The one sentence to carry into month 4: if adding the medical vertical requires a migration that touches any table the event vertical depends on, the Sprint 0 schema was wrong — and Sprint 0 is the only place this is cheap to fix.
