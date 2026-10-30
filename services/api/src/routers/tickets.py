@@ -1,7 +1,9 @@
-"""Tickets router — issuance, wallet, transfers.
+"""Tickets router — issuance, wallet, transfers, by-id read.
 
 Owner IDs come from the token, never the payload; transfers require current
-ownership (S3).
+ownership (S3). The by-id read is public, like the single-resource reads in
+the events and listings routers; R4's commit-time reconciliation reads a
+ticket's current state through it.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -28,6 +30,14 @@ async def my_tickets(user_id: str = Depends(require_auth)):
         where={"ownerId": user_id}, order={"createdAt": "desc"}
     )
     return ok(tickets)
+
+
+@router.get("/{ticket_id}", response_model=APIResponse[dict])
+async def get_ticket(ticket_id: str):
+    ticket = await prisma.ticket.find_unique(where={"id": ticket_id})
+    if ticket is None:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    return ok(ticket)
 
 
 @router.post("/", response_model=APIResponse[dict])
