@@ -1,0 +1,33 @@
+Ticket owner guard — evidence run
+Date: 2026-10-30T23:49:06+00:00
+Substrate: PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit
+Artifact: prisma/manual-migrations/2026-10-30-ticket-owner-guard.sql (applied verbatim by the test)
+Command: ~/workspace/tools/composevenv/bin/python -m pytest tests/test_ticket_owner_guard.py -v
+----------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /home/hatch/workspace/tools/composevenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/hatch/workspace/uze-gira/monorepo/services/api
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 9 items
+
+tests/test_ticket_owner_guard.py::test_positive_transfer_shape_succeeds PASSED [ 11%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_status_untouched_refused PASSED [ 22%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_status_active_refused PASSED [ 33%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_status_listed_refused PASSED [ 44%]
+tests/test_ticket_owner_guard.py::test_negative_owner_change_is_transaction_atomic PASSED [ 55%]
+tests/test_ticket_owner_guard.py::test_negative_owner_null_transitions_refused PASSED [ 66%]
+tests/test_ticket_owner_guard.py::test_regression_status_only_listed_succeeds PASSED [ 77%]
+tests/test_ticket_owner_guard.py::test_regression_other_field_update_succeeds PASSED [ 88%]
+tests/test_ticket_owner_guard.py::test_regression_insert_with_initial_owner_succeeds PASSED [100%]
+
+=============================== warnings summary ===============================
+../../../../tools/composevenv/lib/python3.12/site-packages/_pytest/config/__init__.py:1636
+  /home/hatch/workspace/tools/composevenv/lib/python3.12/site-packages/_pytest/config/__init__.py:1636: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 9 passed, 1 warning in 0.52s =========================
+pytest exit: 0
