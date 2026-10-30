@@ -9,12 +9,38 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.types import TypeDecorator
 
-# HAND-ADDED import: the columns below reference the authoring source's
-# typed-JSON TypeDecorators (models.PriceJSON / models.RailPayloadJSON).
-# alembic/env.py puts ../src on sys.path and imports models itself, so
-# this import resolves in both online and offline migration runs.
-import models  # noqa: E402,F401
+
+# FROZEN-ARTIFACT INLINE (2026-10-30, Sprint 1 first-week follow-on,
+# at James's direction on the schema review's recommendation): as
+# filed, this migration instantiated the authoring source's typed-JSON
+# TypeDecorators (models.PriceJSON / models.RailPayloadJSON) through a
+# hand-added `import models`. That coupled a FILED migration to live
+# application source — the inverted dependency the frozen-artifact
+# principle forbids: a migration is a point-in-time artifact and must
+# apply with the migrations directory alone, independent of the current
+# models. The two types are therefore INLINED here, exactly as
+# DDL-relevant: in the authoring source both are TypeDecorators with
+# impl = JSON and cache_ok = True. Their json_schema fragments are a
+# codegen-bridge concern, NOT part of the DDL, and are deliberately
+# not copied. (The payload type has since been renamed in the
+# authoring source — RailPayloadJSON -> OfferPayloadJSON, by revision
+# b3d91c7e5a02's change; the schema produced is unchanged, proven by
+# schema-dump equality at the inline — see SCHEMA-NOTES.)
+class PriceJSON(TypeDecorator):
+    """Inlined copy of the authoring source's PriceJSON (DDL only)."""
+
+    impl = sa.JSON
+    cache_ok = True
+
+
+class OfferPayloadJSON(TypeDecorator):
+    """Inlined copy of the payload type, filed as RailPayloadJSON
+    (DDL only)."""
+
+    impl = sa.JSON
+    cache_ok = True
 
 
 # revision identifiers, used by Alembic.
@@ -257,9 +283,9 @@ def upgrade() -> None:
     sa.Column('rail', sa.Enum('SOLANA_NFT', 'HOTEL_AGGREGATOR', 'FLIGHT_SEARCH', 'FACILITY', 'PARKING', 'TRANSFER', 'DINING_TASK', name='rail'), nullable=False),
     sa.Column('sourceRef', sa.String(), nullable=False),
     sa.Column('commitmentClass', sa.Enum('IRREVERSIBLE_ON_CHAIN', 'CANCELLABLE_UNTIL_WINDOW', 'CHANGEABLE_WITH_FEE', 'APPOINTMENT', 'MEDICAL_PACKAGE', name='commitment_class'), nullable=False),
-    sa.Column('price', models.PriceJSON(), nullable=False),
+    sa.Column('price', PriceJSON(), nullable=False),
     sa.Column('terms', sa.JSON(), nullable=False),
-    sa.Column('payload', models.RailPayloadJSON(), nullable=False),
+    sa.Column('payload', OfferPayloadJSON(), nullable=False),
     sa.Column('divergenceCode', sa.Enum('SNAPSHOT_EXPIRED', 'SOURCE_NOT_FOUND', 'LISTING_GONE', 'TICKET_TRANSFERRED', 'TICKET_REDEEMED', 'SEAT_TAKEN', 'PRICE_MOVED', 'UPSTREAM_UNAVAILABLE', name='divergence_code'), nullable=True),
     sa.Column('divergenceAt', sa.DateTime(timezone=True), nullable=True),
     sa.Column('expiresAt', sa.DateTime(timezone=True), nullable=False),
