@@ -34,6 +34,8 @@
 #   ~/workspace/tools/codegenvenv (sqlalchemy / pydantic / datamodel-codegen
 #   / alembic / psycopg) and ~/workspace/tools/ts-tools (typescript).
 
+SHELL := /bin/bash
+
 PY      ?= $(HOME)/workspace/tools/codegenvenv/bin/python
 CODEGEN ?= $(HOME)/workspace/tools/codegenvenv/bin/datamodel-codegen
 NPX     ?= npx
