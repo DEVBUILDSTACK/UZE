@@ -3,7 +3,9 @@
 Owner IDs come from the token, never the payload; transfers require current
 ownership (S3). The by-id read is public, like the single-resource reads in
 the events and listings routers; R4's commit-time reconciliation reads a
-ticket's current state through it.
+ticket's current state through it. Its response is narrowed to exactly the
+five fields reconciliation consumes (id, eventId, ownerId, tier, status) —
+a least-field response for a server-to-server read.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -37,7 +39,17 @@ async def get_ticket(ticket_id: str):
     ticket = await prisma.ticket.find_unique(where={"id": ticket_id})
     if ticket is None:
         raise HTTPException(status_code=404, detail="Ticket not found")
-    return ok(ticket)
+    # Narrowed to the fields R4 reconciliation consumes — nothing else the
+    # record carries (createdAt, updatedAt, ...) leaves this endpoint.
+    return ok(
+        {
+            "id": ticket.id,
+            "eventId": ticket.eventId,
+            "ownerId": ticket.ownerId,
+            "tier": ticket.tier,
+            "status": ticket.status,
+        }
+    )
 
 
 @router.post("/", response_model=APIResponse[dict])

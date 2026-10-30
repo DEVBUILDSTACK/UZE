@@ -1,10 +1,12 @@
 """GET /tickets/{ticket_id} — the single-ticket read R4 reconciliation uses.
 
 Substrate: mocked Prisma. The router's `prisma` object is replaced with an
-in-memory fake (find_unique over a dict), so these tests exercise the
-route, its 404 style, and the APIResponse envelope without a database.
+in-memory fake (find_unique over a dict of attribute-access records, like
+the real client's), so these tests exercise the route, its 404 style, the
+APIResponse envelope, and the narrowed response shape without a database.
 """
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 from fastapi import FastAPI
@@ -38,8 +40,9 @@ class _FakePrisma:
 
 @pytest.fixture()
 def client(monkeypatch):
+    record = SimpleNamespace(**TICKET)
     monkeypatch.setattr(
-        tickets_router, "prisma", _FakePrisma({TICKET["id"]: dict(TICKET)})
+        tickets_router, "prisma", _FakePrisma({TICKET["id"]: record})
     )
     app = FastAPI()
     app.include_router(tickets_router.router)
@@ -52,6 +55,9 @@ def test_get_ticket_returns_record(client):
     body = res.json()
     assert body["status_code"] == 200
     data = body["data"]
+    # Exactly the five fields R4 reconciliation consumes — the stored
+    # record also carries createdAt/updatedAt, and they must not leak.
+    assert set(data.keys()) == {"id", "eventId", "ownerId", "tier", "status"}
     assert data["id"] == "t-123"
     assert data["eventId"] == "evt-1"
     assert data["ownerId"] == "user-9"
