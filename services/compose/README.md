@@ -26,12 +26,36 @@ approval gate, and records commitments. Database: **`uzemarkets-compose`**
 - `evidence/demo_run.log` — its committed output.
 - `SCHEMA-NOTES.md` — self-grade against the eleven pre-committed
   schema-review criteria + every AUTHOR'S CHOICE awaiting ratification.
+- `src/classify.py` — Sprint 1: the deterministic intake classifier
+  (directive 4 — no LLM, structurally; its docstring files the
+  dependsOn semantics, the honored validation subset, and the precise
+  module-readiness rule).
+- `src/suggest.py` — Sprint 1: suggest_slots(), the ONLY seam where
+  an LLM may be consulted (directive 4). Providers are deterministic
+  and local in this slice; every proposal is validated back through
+  classify() and never auto-applied.
+- `src/app.py` + `src/intakes.py` + `src/db.py` — Sprint 1: the
+  intake service (FastAPI): `GET /health` (DB connectivity + schema
+  head revision), `POST /intakes`, `GET /intakes/{id}`,
+  `POST /intakes/{id}/answers`. Slice 1 of Sprint 1 only — the R4
+  read-through, approval gate, and commitment recording are later
+  slices and are not mounted.
+- `src/seed.py` + `scripts/seed_manifest.py` — the Sprint 1 seed
+  QuestionManifest (six slots exercising every classifier path),
+  loaded idempotently by manifest key.
+- `tests/` — pytest for the runtime (substrate: the same real local
+  PostgreSQL as the demo — see `tests/conftest.py`).
+- `requirements-runtime.txt` — the runtime pins (FastAPI service +
+  tests), kept separate from the codegen toolchain's
+  `requirements.txt`.
 
 ## Commands
 
 Toolchain lives outside the repo (pinned in `requirements.txt`):
 `~/workspace/tools/codegenvenv` (Python) and `~/workspace/tools/ts-tools`
-(TypeScript). The Makefile defaults point there.
+(TypeScript). The Makefile defaults point there. The Sprint 1 runtime
+has its own venv — `~/workspace/tools/composevenv`, pinned in
+`requirements-runtime.txt`.
 
 - `make all` — regenerate every artifact from `src/models.py`
   (the chain invocation is exactly the reviewed round-trip's — no added
@@ -45,6 +69,13 @@ Toolchain lives outside the repo (pinned in `requirements.txt`):
   union + typed divergence validation, sourceRef-as-reference, dormant
   namespace isolation. Output is tee'd to `evidence/demo_run.log`.
   The substrate is a real local PostgreSQL (see SCHEMA-NOTES).
+- `make test` — the Sprint 1 runtime tests (pytest, composevenv):
+  classifier determinism + the directive-4 no-LLM import proof, the
+  intake flow end-to-end (readiness flips), and suggest_slots()
+  validation — against the same real PostgreSQL substrate.
+- Run the intake service:
+  `PYTHONPATH=src:src/generated ~/workspace/tools/composevenv/bin/uvicorn app:app --port 8100`
+  (seed first with `scripts/seed_manifest.py` under the same venv).
 
 ## Standing constraints
 

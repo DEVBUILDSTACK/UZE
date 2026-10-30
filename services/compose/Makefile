@@ -33,6 +33,7 @@
 #   make all        # full regeneration of every model from src/models.py
 #   make validate   # Sprint 0 demo: migration + mechanism demonstrations
 #   make check-ts   # generated TypeScript type-checks standalone (tsc)
+#   make test       # Sprint 1 runtime tests (composevenv, real Postgres)
 #
 # Toolchain lives OUTSIDE the repo (see requirements.txt):
 #   ~/workspace/tools/codegenvenv (sqlalchemy / pydantic / datamodel-codegen
@@ -86,6 +87,13 @@ typescript: pydantic
 
 validate:
 	@set -o pipefail; $(PY) scripts/demo_schema.py 2>&1 | tee evidence/demo_run.log
+
+# Sprint 1 runtime tests — the runtime venv (requirements-runtime.txt),
+# NOT the codegen toolchain venv above.
+RTPY ?= $(HOME)/workspace/tools/composevenv/bin/python
+
+test:
+	$(RTPY) -m pytest tests/ -q
 
 check-ts: typescript
 	$(TSC) --noEmit --strict --target es2022 --module esnext --moduleResolution bundler $(GEN)/*.ts
