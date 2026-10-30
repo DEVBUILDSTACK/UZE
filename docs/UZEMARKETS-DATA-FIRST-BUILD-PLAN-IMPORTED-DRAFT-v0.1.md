@@ -1,13 +1,14 @@
 # UZEMARKETS — Data-First Build Plan (Imported Draft v0.1)
 
 **Source:** external frontier API (DeepSeek / Kimi class), supplied by James 2026-10-29 20:51 EDT as the scope to implement now for UZE.
+**Naming (final, 2026-10-29):** Product = **UZEMARKETS commerce platform**. Implementing agent = **SoSem** (directed by James). Reviewing/directing coding agent = the external frontier-API agent. No surface of this plan is named for any agent.
 **Status:** IMPORTED DRAFT — in the specification phase of the delivery cadence (scope → specification mutually agreed → daily 24h all-in sprints). Not yet mutually agreed; no sprint starts until James agrees the specification.
 **Build-agent note (James):** a DeepSeek or Kimi frontier external API serves as a build-time coding agent. Its key is development-only, never a runtime dependency (spec §9) — provisioned by James, never committed.
 **Scope Tenet 01 check (SoSem, 2026-10-29):** CONFORMS — Python/FastAPI core; this schema is UZEMARKETS' own distinct Postgres (Neon), endpoints separate per front end; Redis shared as cache/state with Postgres authoritative; additive migrations only = backward compatibility; GeoAnchor/MetroProfile + concierge module align with the Tenet 01 Innovation & Scale extension (geo awareness, agentic concierge, VIP pay-as-you-go tier). Noted gaps for the mutual-agreement pass: (a) RAG knowledge-base access is not specified in this plan — it rides the shared layer per Tenet 01 and needs its section; (b) language awareness appears only on FacilityProfile — the extension calls for it across the RAG/concierge surfaces; (c) the "no LLM in classify()" rule arrives as the external source's assertion ("decided earlier") — it is a proposal until James confirms it; (d) the plan's Month 1–6 clock maps onto James's standing timeline (development from mid-November 2026; MVP April 1–15, 2027) if Month 1 = the first build month.
 
 ---
 
-# SPEC: Muse Agent Platform — Data-First Build Plan
+# SPEC: UZEMARKETS Commerce Platform — Data-First Build Plan
 
 Audience: the implementing coding agent.
 Purpose: define the schema, the sprint sequence from a data perspective, and the forward-compatibility rules that let the medical-travel vertical be added between month 4 and month 5 without a schema rewrite.
@@ -366,3 +367,29 @@ The one sentence to carry into month 4: if adding the medical vertical requires 
 6. Add to every sprint's acceptance criteria — **verify in code review:** (i) OfferSnapshot immutability (terms frozen at quote time, never silently optimized); (ii) IdempotencyKey enforced at the Postgres layer, not only Redis; (iii) EventLog append-only — no update or delete path, ever; (iv) **StayPhase[] stays array-typed through month 3+** — no review collapses it to a single stay regardless of single-phase MVP usage.
 
 **Routing:** the reviewer of record for this loop is James. Review artifacts address him.
+
+---
+
+## Return List — Pre-Sprint 0 (SoSem, 2026-10-29 22:23 EDT)
+
+### R1. Rename pass — DONE
+Product renamed to **UZEMARKETS commerce platform** throughout this document (title + header); roles separated (product / SoSem implementing / directing coding agent reviewing). Sweep verified: no branch names, no GitHub issue titles, and no labels in DEVBUILDSTACK/UZE reference the old agent-platform name (branches checked: main + 5 working branches; issues: #1 only, a SoSem review handoff; labels: GitHub defaults). Commit messages are archaeology and are not rewritten. One out-of-scope find, left untouched: `docs/ENTITY-TREASURY-TRADING-SPEC-v1.0.md` describes SoSem as "Main trusted Muse agent" — a platform-family description in James's own spec, not the product name.
+
+### R2. New database name — PROPOSAL (James's tap)
+**`uzemarkets_data`** — scoped to the UZEMARKETS business's **data layer**, deliberately not platform-scoped (no UZE/platform umbrella in the name), matching Tenet 01 clause 5 (one distinct database per business). Alternate if a layer marker is wanted explicitly: `uzemarkets_data_layer`.
+
+### R3. Event/Ticket ownership — against services/api's actual model semantics
+Source of truth: `services/api/prisma/schema.prisma` (verified 2026-10-29).
+- **Event** is the supply-side root, owned by services/api: `title, venue, city, startsAt`; it owns `Ticket[]` and optionally `Auction[]`. Nothing else creates events.
+- **Ticket** is the unit of ownership: exactly one Event (`eventId`, required FK); optional owner (`ownerId` → User; null = unissued inventory); `tier` (default `general`); status lifecycle **active → listed → transferred / redeemed**. A ticket is listed only through a Listing; ownership changes only through services/api operations (`POST /tickets/`, `POST /tickets/{id}/transfer`).
+- **Listing** is the UZED.si resale surface on a Ticket: seller (User), `priceCents`/`feeCents` in integer cents, status active / sold / cancelled / flagged.
+- **Boundary rule for this plan:** the Data-First layer (OfferSnapshot, TicketOfferDetail, Commitment) **references** Event/Ticket/Listing by id (`sourceRef`) and records settlement against a Ticket id (`Commitment.chainTxRef`) — it **never owns or mutates** Event/Ticket rows. Issuance, transfer, and redemption remain services/api operations.
+- **Vocabularies stay separate:** Ticket.status (active/listed/transferred/redeemed) is not TaskState and not OfferSnapshot status; any mapping happens at the contract boundary only, never a shared enum.
+- RAG already keys off the same ids (`DocumentChunk.source` = `event:<id>`, `listing:<id>`) — consistent with R4's read model.
+
+### R4. Read-through contract — projected ticket inventory
+**Definition:** projected inventory is a *derived read model*. In Sprint 0 it is **read-through**: computed at request time from the Postgres source of truth in services/api — no projection table, no cache. Commitment and approval decisions always read through; a cached projection may only ever serve display, and then only with its staleness printed on it.
+- **Existing endpoints (verified in services/api routers):** `GET /events/` (list, limit), `GET /events/{event_id}`, `GET /listings/` (active listings), `GET /listings/{listing_id}`, `GET /tickets/mine` (authenticated owner's tickets).
+- **Proposed projection endpoint (new, additive):** `GET /events/{event_id}/inventory` returning: `eventId, title, venue, city, startsAt`; `byTier[]` = { tier, total, active, listed, transferred, redeemed }; `listingsActive`; `minAskCents` (lowest active listing); `projectedAt` (server timestamp of the read); `source: "services-api-postgres-read-through"`.
+- **Freshness:** read-through reads are current at request time (read-committed; staleness = 0 for API-served counts). If a cached projection is introduced later, it must carry `projectedAt` and a stated max-staleness bound, and is forbidden on the commitment path (approval gate reads are always read-through).
+- **Parity:** the agent surface and the human surface project the identical field set — any field on one and not the other is a defect (contract-first rule, plan §0).
