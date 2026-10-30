@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PayloadOwner",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/RailPayload"
+    },
+    "note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "label",
+    "payload"
+  ],
+  "$defs": {
+    "RailPayload": {
+      "title": "RailPayload",
+      "discriminator": {
+        "propertyName": "rail"
+      },
+      "oneOf": [
+        {
+          "title": "TicketPayload",
+          "type": "object",
+          "properties": {
+            "rail": {
+              "const": "ticket"
+            },
+            "seat": {
+              "type": "string"
+            },
+            "tier": {
+              "type": "string"
+            },
+            "gate": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "rail",
+            "seat",
+            "tier"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "title": "StayPayload",
+          "type": "object",
+          "properties": {
+            "rail": {
+              "const": "stay"
+            },
+            "phaseKind": {
+              "type": "string"
+            },
+            "nights": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "rail",
+            "phaseKind",
+            "nights"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

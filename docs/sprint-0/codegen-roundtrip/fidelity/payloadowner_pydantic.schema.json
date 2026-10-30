@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "RailPayload": {
+      "discriminator": {
+        "mapping": {
+          "stay": "#/$defs/RailPayload2",
+          "ticket": "#/$defs/RailPayload1"
+        },
+        "propertyName": "rail"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/RailPayload1"
+        },
+        {
+          "$ref": "#/$defs/RailPayload2"
+        }
+      ],
+      "title": "RailPayload"
+    },
+    "RailPayload1": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "ticket",
+          "title": "Rail",
+          "type": "string"
+        },
+        "seat": {
+          "title": "Seat",
+          "type": "string"
+        },
+        "tier": {
+          "title": "Tier",
+          "type": "string"
+        },
+        "gate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate"
+        }
+      },
+      "required": [
+        "rail",
+        "seat",
+        "tier"
+      ],
+      "title": "RailPayload1",
+      "type": "object"
+    },
+    "RailPayload2": {
+      "additionalProperties": false,
+      "properties": {
+        "rail": {
+          "const": "stay",
+          "title": "Rail",
+          "type": "string"
+        },
+        "phaseKind": {
+          "title": "Phasekind",
+          "type": "string"
+        },
+        "nights": {
+          "title": "Nights",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "rail",
+        "phaseKind",
+        "nights"
+      ],
+      "title": "RailPayload2",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/RailPayload"
+    },
+    "note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Note"
+    },
+    "createdAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdat"
+    }
+  },
+  "required": [
+    "label",
+    "payload"
+  ],
+  "title": "PayloadOwner",
+  "type": "object"
+}
