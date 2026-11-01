@@ -25,6 +25,14 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+[tool.uv]
+# This service runs from src/ (loose modules, uvicorn src.api:create_app);
+# it is not installed as a library. package = false stops uv from trying to
+# build the project package during `uv sync --frozen --no-dev`.
+# Watch item (DeepSeek, 2026-11-01): if services/api ever needs to be
+# importable by other services/tests as a library, revisit this setting.
+package = false
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

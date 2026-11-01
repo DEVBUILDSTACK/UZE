@@ -38,5 +38,5 @@ echo "Running Prisma migrations..."
 prisma db push --accept-data-loss=false
 
 echo "Starting API..."
-exec uv run uvicorn src.api:create_app --factory \
+exec uvicorn src.api:create_app --factory \
   --host 0.0.0.0 --port "${PORT:-8000}"
