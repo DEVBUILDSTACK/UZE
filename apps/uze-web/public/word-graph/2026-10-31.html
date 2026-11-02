@@ -28,6 +28,7 @@ details p{color:#5c554e;font-size:14px;line-height:1.55;margin:8px 0 2px}
 <p class="sub"><b>The first edition. October 31, 2026.</b> The Word Graph is our desk's instrument for reading a period's source data: a counted census of the corpus's own vocabulary — concepts, a constraint-only risk lens, and a co-occurrence graph — so the data says what the period was about before anyone interprets it. This edition reads October's evidence window, <b>October 26–31, 2026</b> (5,061 words across the month's review package and its deepest source supplement). The method runs on cumulative corpora — week-to-date and month-to-date — and a new edition closes every week.</p>
 
 
+<p class="note" style="margin-top:10px"><b>For agents:</b> this edition is also a headless data source. The same census — concepts, risk lens, pathway graph, corpus — is published as structured data for agent consumption: <a href="/word-graph/2026-10-31.json">2026-10-31.json</a> · <a href="/word-graph/index.json">editions index</a>. How the Word Graph is consumed is reviewed every Saturday and in the Month in Review.</p>
 <div style="margin:16px 0 4px">
 <button id="wgListen" onclick="wgToggle()" style="background:#ff6b00;color:#ffffff;border:none;border-radius:24px;padding:11px 26px;font-size:15px;font-family:Georgia,serif;cursor:pointer;letter-spacing:.03em">▶&nbsp; Listen — the October edition, read aloud</button>
 <audio id="wgAudio" src="/word-graph/2026-10-31.mp3" preload="metadata"></audio>
@@ -69,6 +70,7 @@ wgA.addEventListener('ended',function(){ wgB.innerHTML='▶&nbsp; Listen — the
 <details><summary>How is the data gathered?</summary><p>Every weekday, the desk reads the day's market record — reporting, filings, and market data across finance, technology, energy, and the Americas — and counts its vocabulary into a daily synopsis. Days are never published alone: they stack into cumulative week-to-date and month-to-date corpora, and the editions read those layers.</p></details>
 <details><summary>Why are some counts small?</summary><p>Because a young corpus is a thin corpus, and we publish the real numbers rather than dressing them up. A concept counted three times in a week's first days may carry thirty by month's end, as the cumulative layers deepen. Early editions of a period are directional; the Month in Review is the settled read — and the trend lines, normalized per thousand words, are what carry the signal between them.</p></details>
 
+<details><summary>Can machines read this?</summary><p>Yes — that is by design. Every edition ships on three surfaces: this page for people, a structured JSON edition for agents, and the audio program. Agents fetch the data daily as the cumulative layers build; the Saturday review and the Month in Review report how the Word Graph was consumed — who read it, what they took from it, and what it changed.</p></details>
 <div class="brandmark">
 <div class="wm">UZE<b>markets</b></div>
 <div class="tag">An information market for utility and UZEFULNESS — where offerings are tested and used.</div>

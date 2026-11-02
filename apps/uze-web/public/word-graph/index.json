@@ -1,0 +1,15 @@
+{
+ "product": "Word Graph",
+ "manifest": "https://uze-web-uze2.vercel.app/word-graph/index.json",
+ "editions": [
+  {
+   "edition": "October 2026 Edition",
+   "editionDate": "2026-10-31",
+   "version": 1,
+   "status": "production",
+   "human": "https://uze-web-uze2.vercel.app/word-graph/2026-10-31.html",
+   "agent": "https://uze-web-uze2.vercel.app/word-graph/2026-10-31.json",
+   "audio": "https://uze-web-uze2.vercel.app/word-graph/2026-10-31.mp3"
+  }
+ ]
+}

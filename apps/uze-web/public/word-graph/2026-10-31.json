@@ -1,0 +1,392 @@
+{
+ "product": "Word Graph",
+ "publisher": "L2Launch \u2014 a UZEmarkets market analysis",
+ "edition": "October 2026 Edition",
+ "editionDate": "2026-10-31",
+ "version": 1,
+ "status": "production",
+ "method": "Counted census of the period's market-record vocabulary. Concepts merge multiword terms and synonyms. The risk lens counts constraint vocabulary only. The pathway graph links concepts that co-occur in the same section of the source synopses. Editions read cumulative corpora (week-to-date, month-to-date); days are inputs, never the published corpus.",
+ "corpus": {
+  "words": 5061,
+  "window": "2026-10-26/2026-10-31",
+  "layer": "October 2026 month layer (partial window)",
+  "sourcesNamed": false
+ },
+ "conceptCloud": [
+  {
+   "concept": "Anthropic",
+   "count": 31
+  },
+  {
+   "concept": "financing",
+   "count": 28
+  },
+  {
+   "concept": "IPO",
+   "count": 26
+  },
+  {
+   "concept": "AI",
+   "count": 23
+  },
+  {
+   "concept": "compute",
+   "count": 16
+  },
+  {
+   "concept": "security & hacks",
+   "count": 13
+  },
+  {
+   "concept": "Brazil",
+   "count": 9
+  },
+  {
+   "concept": "Ethereum",
+   "count": 8
+  },
+  {
+   "concept": "valuation",
+   "count": 8
+  },
+  {
+   "concept": "chips",
+   "count": 7
+  },
+  {
+   "concept": "Bitcoin",
+   "count": 6
+  },
+  {
+   "concept": "debt",
+   "count": 6
+  },
+  {
+   "concept": "custody",
+   "count": 6
+  },
+  {
+   "concept": "stay & hospitality",
+   "count": 5
+  },
+  {
+   "concept": "risk",
+   "count": 5
+  },
+  {
+   "concept": "Treasury",
+   "count": 4
+  },
+  {
+   "concept": "Miami & Florida",
+   "count": 4
+  },
+  {
+   "concept": "equity",
+   "count": 3
+  },
+  {
+   "concept": "Europe",
+   "count": 3
+  },
+  {
+   "concept": "tickets",
+   "count": 3
+  },
+  {
+   "concept": "credit",
+   "count": 2
+  },
+  {
+   "concept": "interest rates",
+   "count": 2
+  },
+  {
+   "concept": "constraint",
+   "count": 2
+  },
+  {
+   "concept": "data centers",
+   "count": 1
+  },
+  {
+   "concept": "private credit",
+   "count": 1
+  },
+  {
+   "concept": "deficit & issuance",
+   "count": 1
+  },
+  {
+   "concept": "OpenAI",
+   "count": 1
+  },
+  {
+   "concept": "talent",
+   "count": 1
+  }
+ ],
+ "riskLens": [
+  {
+   "concept": "hack & exploit",
+   "count": 13
+  },
+  {
+   "concept": "risk",
+   "count": 5
+  },
+  {
+   "concept": "decline",
+   "count": 3
+  },
+  {
+   "concept": "freeze",
+   "count": 2
+  },
+  {
+   "concept": "constraint",
+   "count": 1
+  },
+  {
+   "concept": "dispute",
+   "count": 1
+  },
+  {
+   "concept": "default risk",
+   "count": 1
+  }
+ ],
+ "pathwayGraph": {
+  "nodes": [
+   "AI",
+   "Anthropic",
+   "Bitcoin",
+   "Brazil",
+   "Ethereum",
+   "IPO",
+   "Treasury",
+   "chips",
+   "compute",
+   "custody",
+   "debt",
+   "financing",
+   "risk",
+   "security & hacks",
+   "stay & hospitality",
+   "valuation"
+  ],
+  "edges": [
+   {
+    "a": "Anthropic",
+    "b": "IPO",
+    "w": 6
+   },
+   {
+    "a": "AI",
+    "b": "Anthropic",
+    "w": 6
+   },
+   {
+    "a": "compute",
+    "b": "financing",
+    "w": 6
+   },
+   {
+    "a": "IPO",
+    "b": "financing",
+    "w": 6
+   },
+   {
+    "a": "Anthropic",
+    "b": "financing",
+    "w": 6
+   },
+   {
+    "a": "Anthropic",
+    "b": "compute",
+    "w": 6
+   },
+   {
+    "a": "IPO",
+    "b": "compute",
+    "w": 6
+   },
+   {
+    "a": "AI",
+    "b": "compute",
+    "w": 6
+   },
+   {
+    "a": "AI",
+    "b": "financing",
+    "w": 6
+   },
+   {
+    "a": "Anthropic",
+    "b": "security & hacks",
+    "w": 6
+   },
+   {
+    "a": "IPO",
+    "b": "valuation",
+    "w": 6
+   },
+   {
+    "a": "financing",
+    "b": "valuation",
+    "w": 6
+   },
+   {
+    "a": "AI",
+    "b": "IPO",
+    "w": 6
+   },
+   {
+    "a": "Anthropic",
+    "b": "risk",
+    "w": 6
+   },
+   {
+    "a": "Anthropic",
+    "b": "valuation",
+    "w": 5
+   },
+   {
+    "a": "IPO",
+    "b": "security & hacks",
+    "w": 5
+   },
+   {
+    "a": "Anthropic",
+    "b": "debt",
+    "w": 5
+   },
+   {
+    "a": "compute",
+    "b": "valuation",
+    "w": 5
+   },
+   {
+    "a": "debt",
+    "b": "financing",
+    "w": 5
+   },
+   {
+    "a": "IPO",
+    "b": "risk",
+    "w": 5
+   },
+   {
+    "a": "Anthropic",
+    "b": "Brazil",
+    "w": 4
+   },
+   {
+    "a": "Anthropic",
+    "b": "custody",
+    "w": 4
+   },
+   {
+    "a": "IPO",
+    "b": "custody",
+    "w": 4
+   },
+   {
+    "a": "custody",
+    "b": "security & hacks",
+    "w": 4
+   },
+   {
+    "a": "financing",
+    "b": "security & hacks",
+    "w": 4
+   },
+   {
+    "a": "Ethereum",
+    "b": "security & hacks",
+    "w": 4
+   },
+   {
+    "a": "IPO",
+    "b": "debt",
+    "w": 4
+   },
+   {
+    "a": "compute",
+    "b": "debt",
+    "w": 4
+   },
+   {
+    "a": "Anthropic",
+    "b": "Treasury",
+    "w": 4
+   },
+   {
+    "a": "AI",
+    "b": "risk",
+    "w": 4
+   },
+   {
+    "a": "compute",
+    "b": "risk",
+    "w": 4
+   },
+   {
+    "a": "financing",
+    "b": "risk",
+    "w": 4
+   },
+   {
+    "a": "Brazil",
+    "b": "IPO",
+    "w": 3
+   },
+   {
+    "a": "Brazil",
+    "b": "custody",
+    "w": 3
+   },
+   {
+    "a": "Brazil",
+    "b": "financing",
+    "w": 3
+   },
+   {
+    "a": "Brazil",
+    "b": "security & hacks",
+    "w": 3
+   },
+   {
+    "a": "Brazil",
+    "b": "valuation",
+    "w": 3
+   },
+   {
+    "a": "custody",
+    "b": "financing",
+    "w": 3
+   },
+   {
+    "a": "custody",
+    "b": "valuation",
+    "w": 3
+   },
+   {
+    "a": "security & hacks",
+    "b": "valuation",
+    "w": 3
+   }
+  ]
+ },
+ "trend": {
+  "status": "not available \u2014 first edition; this edition is the baseline layer",
+  "baseline": "this edition"
+ },
+ "surfaces": {
+  "human": "https://uze-web-uze2.vercel.app/word-graph/2026-10-31.html",
+  "agent": "https://uze-web-uze2.vercel.app/word-graph/2026-10-31.json",
+  "audio": "https://uze-web-uze2.vercel.app/word-graph/2026-10-31.mp3"
+ },
+ "consumption": "Agents may fetch this JSON freely. How the Word Graph is consumed is reviewed in the Saturday review and the Month in Review.",
+ "attribution": "UZEmarkets Word Graph \u2014 cite the edition and date."
+}
