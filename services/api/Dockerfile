@@ -9,6 +9,16 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
+# Generate the Prisma Python client at build time. The client is written
+# into the venv's site-packages, so it survives into the runner stage via
+# the .venv copy below. Dummy URLs: generate reads the schema only and
+# never connects. Requires engine-download network access at build time —
+# verify reachability in the build environment before the redeploy.
+COPY prisma ./prisma
+RUN DATABASE_URL=postgresql://build:build@localhost:5432/build \
+    DIRECT_URL=postgresql://build:build@localhost:5432/build \
+    .venv/bin/prisma generate
+
 FROM python:3.12-slim-bookworm AS runner
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
