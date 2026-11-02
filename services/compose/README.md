@@ -37,9 +37,23 @@ approval gate, and records commitments. Database: **`uzemarkets-compose`**
 - `src/app.py` + `src/intakes.py` + `src/db.py` — Sprint 1: the
   intake service (FastAPI): `GET /health` (DB connectivity + schema
   head revision), `POST /intakes`, `GET /intakes/{id}`,
-  `POST /intakes/{id}/answers`. Slice 1 of Sprint 1 only — the R4
-  read-through, approval gate, and commitment recording are later
-  slices and are not mounted.
+  `POST /intakes/{id}/answers`.
+- `src/upstream.py` — Sprint 1 slice 2: the reconciliation reader.
+  Exactly two reads (Ticket by id, Listing by id) behind one
+  interface: the direct HTTP reader (post-redeploy drop-in), the
+  interim listing-read proxy (pre-redeploy stand-in, tests/dev
+  only), and an honest unavailable reader when no upstream is
+  configured. Scoped to commit-path reconciliation only.
+- `src/readthrough.py` — Sprint 1 slice 2: the R4 §6 reconciliation
+  evaluator — TTL first (TTL dominance), the eight §5 codes wired
+  to the filed firing map, EventLog recording of every raised code,
+  the divergence annotation for killing codes, and the SEAT_TAKEN
+  `reason` (MODERATION | DOUBLE_SETTLEMENT) on the record and in
+  the result.
+- `src/snapshots.py` — Sprint 1 slice 2: `POST
+  /snapshots/{snapshot_id}/reconcile` (200 CLEAN / 409 DIVERGED /
+  503 BLOCKED). The approval gate and commitment recording are
+  later slices and are not mounted.
 - `src/seed.py` + `scripts/seed_manifest.py` — the Sprint 1 seed
   QuestionManifest (six slots exercising every classifier path),
   loaded idempotently by manifest key.
@@ -71,8 +85,12 @@ has its own venv — `~/workspace/tools/composevenv`, pinned in
   The substrate is a real local PostgreSQL (see SCHEMA-NOTES).
 - `make test` — the Sprint 1 runtime tests (pytest, composevenv):
   classifier determinism + the directive-4 no-LLM import proof, the
-  intake flow end-to-end (readiness flips), and suggest_slots()
-  validation — against the same real PostgreSQL substrate.
+  intake flow end-to-end (readiness flips), suggest_slots()
+  validation, and the slice-2 read-through reconciliation suite
+  (all eight divergence codes, the moderated-listing fixture,
+  TTL dominance, block-without-kill) — against the same real
+  PostgreSQL substrate, with the upstream source of record served
+  by the interim listing-read proxy.
 - Run the intake service:
   `PYTHONPATH=src:src/generated ~/workspace/tools/composevenv/bin/uvicorn app:app --port 8100`
   (seed first with `scripts/seed_manifest.py` under the same venv).

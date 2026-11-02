@@ -386,3 +386,118 @@ the alias removal: **0 non-timestamp diff lines**, so the committed
 generated artifacts stand unchanged. The "commented alias" pattern
 is closed: if a future replay ever seems to need one, that is the
 signal to inline, not to alias.
+
+## Sprint 1 Slice 2 — R4 read-through integration (filed 2026-11-01)
+
+**What was built** (no schema changes; Alembic head unchanged at
+`d52f8b1a904c`; `models.py` untouched by this slice):
+
+- `src/upstream.py` — the reconciliation reader. ONE interface
+  (`ReconciliationReader`) exposing exactly two reads — the
+  referenced Ticket by id and its fulfilling Listing by id — and
+  nothing else. Three implementations: `HttpReconciliationReader`
+  (the direct reads: `GET /tickets/{id}` narrowed shape +
+  `GET /listings/{id}`, envelope unwrapped; 404 ->
+  `UpstreamNotFound`, transport/timeout/5xx ->
+  `UpstreamUnavailable`, never collapsed into one another);
+  `ListingReadProxy` (the interim read the firing map names —
+  an in-process stand-in over a supplied dataset shaped like
+  services/api rows, with per-id transport-failure simulation and
+  an attempted-read log); `UnavailableReader` (selected when
+  `COMPOSE_UPSTREAM_BASE_URL` is unset: every read is honestly
+  unobservable). The factory (`build_reader`) is the ONE place the
+  choice is made; the proxy is never selected implicitly.
+- `src/readthrough.py` — the §6 reconciliation evaluator +
+  recording service (see the firing map as implemented, below).
+- `src/snapshots.py` — `POST /snapshots/{snapshot_id}/reconcile`:
+  200 CLEAN / 409 DIVERGED / 503 BLOCKED (UPSTREAM_UNAVAILABLE) /
+  404 unknown snapshot / 422 non-ticket kind. One field set for
+  every surface (R4 §2.3 parity): snapshotId, outcome, code,
+  reason, killsSnapshot, observed, evaluatedAt.
+
+**The firing map as implemented** (evaluation order is part of the
+implementation, and is the contract's): (1) already-annotated
+snapshot -> its recorded outcome, no new reads or records;
+(2) TTL — `now >= expiresAt` -> SNAPSHOT_EXPIRED, refused BEFORE
+any upstream read (the TTL test asserts the proxy recorded zero
+read attempts, with the proxy configured to fail every read:
+dominance over UPSTREAM_UNAVAILABLE, per R4 §5); (3) re-reads —
+404 on either reference -> SOURCE_NOT_FOUND; transport failure ->
+UPSTREAM_UNAVAILABLE (recorded, never annotated, retryable);
+(4) ticket `transferred` -> TICKET_TRANSFERRED (the status branch;
+the narrowed read returns no ownerId by design and the firing
+map's note 1 + the owner-guard trigger retire the owner branch);
+ticket `redeemed` -> TICKET_REDEEMED (no-writer stub branch —
+fires on observed state; revisit trigger: a redeem endpoint lands
+in services/api); (5) the seat's mintRef already carrying a
+settlement (a Commitment with a recorded chainTxRef) under a
+DIFFERENT snapshot -> SEAT_TAKEN / DOUBLE_SETTLEMENT;
+(6) listing `sold` -> LISTING_GONE; listing `cancelled`/`flagged`
+with the ticket still `listed` -> SEAT_TAKEN / MODERATION (seat
+trigger (i): moderation removed the fulfillment path without
+resetting the ticket); listing `cancelled`/`flagged` with the
+ticket NOT `listed` -> LISTING_GONE; listing active with
+priceCents/feeCents differing from the frozen price/terms ->
+PRICE_MOVED (no-writer stub branch; revisit triggers per Post-Map
+item 3: a price-update endpoint or moderation price-change path
+in services/api, or supplier-side price reads entering this
+layer); (7) otherwise CLEAN.
+
+**Recording.** Every raised code writes an EventLog record from
+this service (eventType `DIVERGENCE_DETECTED`, actor
+`system:read-through`, payload: divergenceCode, reason, surface,
+ticketRef, listingRef, sourceRef, observed current state) — the
+R4 §5(d) record. Killing codes then apply the divergence
+annotation in the same transaction; the mirror trigger writes the
+authoritative SNAPSHOT_DIVERGED row alongside it. The two records
+are distinct and both are named here so neither is mistaken for
+the other: the mirror's payload (fixed by the frozen migration)
+carries code/at/sourceRef/rail; the reason and the observed state
+live on this service's record — which is where filing item 3
+(SEAT_TAKEN reason populated on the EventLog divergence row) is
+discharged, the frozen trigger being unchangeable under this
+slice's no-schema-change constraint.
+
+**The moderated-listing fixture** (filing item 4) is implemented
+as an end-to-end test against the proxy
+(`test_moderated_listing_flagged_is_seat_taken_moderation`, plus
+its cancelled variant): ticket `listed`, listing `flagged` ->
+409 SEAT_TAKEN, reason MODERATION in the result AND on the
+EventLog record, snapshot annotated, exactly one mirror row. It
+runs without a live services/api because the proxy is the interim
+read by design; it does NOT discharge the post-redeploy live gate
+(the same fixture against the redeployed services/api remains the
+gate for "Sprint 1's commit path works end-to-end", per the
+redeploy filing).
+
+**Evidence (this filing's runs, real PostgreSQL 16.2 substrate):**
+`make test` — **44 passed** (29 pre-existing, unregressed; 15 new
+in tests/test_readthrough.py covering every branch above, the
+already-killed short-circuit, and the surface discipline cases).
+`make validate` — **12/12 from empty**, head `d52f8b1a904c`.
+`make check-ts` — clean. Zero DDL change: the slice adds no
+migration and touches no generated artifact (regeneration diff
+from the verification runs was timestamp-only and was reverted).
+
+**Author's choices in this slice** (for review; overturn by naming
+the alternative): (a) the response status mapping 200/409/503 —
+divergence is a typed refusal, transport blockage is retryable,
+and neither is a server fault; (b) reference resolution — payload
+ticketRef/listingRef first, sourceRef as fallback (R4 §3 names
+sourceRef as a Ticket id OR a Listing id per rail; the payload is
+the ratified seat record); (c) the already-annotated short-circuit
+returns the recorded outcome (including its reason, recovered from
+the service's EventLog record) rather than re-evaluating a dead
+snapshot; (d) the frozen fee comparison reads `terms.feeCents`
+(terms is the free-form JSON the quote flow records fees in);
+(e) deliberately NOT evaluated: tier mismatch and a listing whose
+ticketId names a different ticket — R4 §5 and the firing map name
+no code for either, and inventing codes is out of bounds.
+
+**Stated limits.** `HttpReconciliationReader` has NOT been run
+against a live services/api (the ticket read is not deployed; the
+Prisma engine blockage in this sandbox is separately on record).
+Its behavior is code-reviewed against the routers' source, and its
+error mapping mirrors the proxy's, which the suite exercises. The
+approval gate and commitment recording remain later Sprint 1
+slices; this slice's evaluator is the shared core both will call.
