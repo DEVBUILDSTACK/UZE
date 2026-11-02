@@ -1,12 +1,14 @@
-"""UZEMARKETS composition layer — runtime (Sprint 1, slices 1–3).
+"""UZEMARKETS composition layer — runtime (Sprint 1, slices 1–4).
 
 App factory in the sibling service's shape (services/api's create_app).
 Mounted: /health, the intakes router (slice 1), the snapshots
-router carrying the R4 read-through reconciliation (slice 2), and
-the approvals router — the human approval gate (slice 3), whose
-reads and decisions run slice 2's reconciliation at request time.
-Commitment recording is the remaining Sprint 1 slice and is NOT
-mounted here; an honest surface is part of the slice discipline.
+router carrying the R4 read-through reconciliation (slice 2), the
+approvals router — the human approval gate (slice 3), whose reads
+and decisions run slice 2's reconciliation at request time — and
+the commitments router (slice 4): commitment recording from an
+APPROVED approval, gated by one final commit-time reconciliation
+and carried by a Postgres idempotency key. That completes the
+Sprint 1 surface.
 
 Run (toolchain venv, from services/compose):
     PYTHONPATH=src:src/generated uvicorn app:app --port 8100
@@ -18,6 +20,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 import approvals
+import commitments
 import db
 import intakes
 import snapshots
@@ -29,7 +32,8 @@ def create_app() -> FastAPI:
         description=(
             "Sprint 1: intake drafts + deterministic classify(); "
             "R4 read-through reconciliation for ticket-kind snapshots; "
-            "the human approval gate over them."
+            "the human approval gate over them; commitment recording "
+            "from an approved approval, idempotency-keyed."
         ),
     )
 
@@ -53,6 +57,7 @@ def create_app() -> FastAPI:
     app.include_router(intakes.router)
     app.include_router(snapshots.router)
     app.include_router(approvals.router)
+    app.include_router(commitments.router)
     return app
 
 
