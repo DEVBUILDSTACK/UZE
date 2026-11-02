@@ -28,6 +28,17 @@
 #   members carry their titled names (TicketOfferDetail, ...) instead
 #   of positional ones (RailPayload1...7). No other flags were added,
 #   and no generated file is hand-edited.
+#   The TypeScript step's input carries ONE further chain-level
+#   annotation, adopted in Sprint 1 slice 3 (the approval gate;
+#   SCHEMA-NOTES, slice 3 filing): for the approval-facing modules
+#   named in src/export_pydantic_schema.py (approvalrequest,
+#   offersnapshot), that tool — a generation input, like bridge.py —
+#   rewrites date-time properties in the exported schema into
+#   references to a branded DateTime definition (a tsType override
+#   json-schema-to-typescript emits verbatim), so the generated TS
+#   declares datetimes as a branded string type instead of plain
+#   string. The tool fails the build if a branded module's schema
+#   carries no date-time properties.
 #
 # Usage:
 #   make all        # full regeneration of every model from src/models.py

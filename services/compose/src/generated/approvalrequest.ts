@@ -6,13 +6,12 @@ export type CommitmentClass =
   "IRREVERSIBLE_ON_CHAIN" | "CANCELLABLE_UNTIL_WINDOW" | "CHANGEABLE_WITH_FEE" | "APPOINTMENT" | "MEDICAL_PACKAGE";
 export type Status = string | null;
 export type Signedby = string | null;
-export type Resolvedat = string | null;
+export type DateTime = string & {readonly __brand: "DateTime"};
 export type Commitments = Commitment[] | null;
 export type Id1 = string | null;
 export type Approvalrequestid = string;
 export type Offersnapshotid = string;
 export type State = string;
-export type Settledat = string | null;
 export type Chaintxref = string | null;
 
 export interface ApprovalRequest {
@@ -22,7 +21,7 @@ export interface ApprovalRequest {
   summary: Summary;
   status?: Status;
   signedBy?: Signedby;
-  resolvedAt?: Resolvedat;
+  resolvedAt?: DateTime | null;
   commitments?: Commitments;
 }
 export interface Summary {
@@ -33,6 +32,6 @@ export interface Commitment {
   approvalRequestId: Approvalrequestid;
   offerSnapshotId: Offersnapshotid;
   state: State;
-  settledAt?: Settledat;
+  settledAt?: DateTime | null;
   chainTxRef?: Chaintxref;
 }

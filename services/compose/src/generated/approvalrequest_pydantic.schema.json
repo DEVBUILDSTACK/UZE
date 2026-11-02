@@ -30,15 +30,12 @@
         "settledAt": {
           "anyOf": [
             {
-              "format": "date-time",
-              "type": "string"
+              "$ref": "#/$defs/DateTime"
             },
             {
               "type": "null"
             }
-          ],
-          "default": null,
-          "title": "Settledat"
+          ]
         },
         "chainTxRef": {
           "anyOf": [
@@ -71,6 +68,11 @@
       ],
       "title": "CommitmentClass",
       "type": "string"
+    },
+    "DateTime": {
+      "title": "DateTime",
+      "type": "string",
+      "tsType": "string & { readonly __brand: \"DateTime\" }"
     }
   },
   "additionalProperties": false,
@@ -126,15 +128,12 @@
     "resolvedAt": {
       "anyOf": [
         {
-          "format": "date-time",
-          "type": "string"
+          "$ref": "#/$defs/DateTime"
         },
         {
           "type": "null"
         }
-      ],
-      "default": null,
-      "title": "Resolvedat"
+      ]
     },
     "commitments": {
       "anyOf": [

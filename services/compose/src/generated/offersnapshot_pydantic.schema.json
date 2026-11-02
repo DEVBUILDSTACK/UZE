@@ -96,15 +96,12 @@
         "departAt": {
           "anyOf": [
             {
-              "format": "date-time",
-              "type": "string"
+              "$ref": "#/$defs/DateTime"
             },
             {
               "type": "null"
             }
-          ],
-          "default": null,
-          "title": "Departat"
+          ]
         }
       },
       "required": [
@@ -341,15 +338,12 @@
         "pickupAt": {
           "anyOf": [
             {
-              "format": "date-time",
-              "type": "string"
+              "$ref": "#/$defs/DateTime"
             },
             {
               "type": "null"
             }
-          ],
-          "default": null,
-          "title": "Pickupat"
+          ]
         }
       },
       "required": [
@@ -358,6 +352,11 @@
       ],
       "title": "TransferOfferDetail",
       "type": "object"
+    },
+    "DateTime": {
+      "title": "DateTime",
+      "type": "string",
+      "tsType": "string & { readonly __brand: \"DateTime\" }"
     }
   },
   "additionalProperties": false,
@@ -413,46 +412,35 @@
     "divergenceAt": {
       "anyOf": [
         {
-          "format": "date-time",
-          "type": "string"
+          "$ref": "#/$defs/DateTime"
         },
         {
           "type": "null"
         }
-      ],
-      "default": null,
-      "title": "Divergenceat"
+      ]
     },
     "expiresAt": {
-      "format": "date-time",
-      "title": "Expiresat",
-      "type": "string"
+      "$ref": "#/$defs/DateTime"
     },
     "createdAt": {
       "anyOf": [
         {
-          "format": "date-time",
-          "type": "string"
+          "$ref": "#/$defs/DateTime"
         },
         {
           "type": "null"
         }
-      ],
-      "default": null,
-      "title": "Createdat"
+      ]
     },
     "retentionUntil": {
       "anyOf": [
         {
-          "format": "date-time",
-          "type": "string"
+          "$ref": "#/$defs/DateTime"
         },
         {
           "type": "null"
         }
-      ],
-      "default": null,
-      "title": "Retentionuntil"
+      ]
     }
   },
   "required": [

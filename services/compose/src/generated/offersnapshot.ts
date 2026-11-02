@@ -31,7 +31,7 @@ export type Propertyref = string | null;
 export type Kind2 = "flight";
 export type Itineraryref = string;
 export type Carrier = string | null;
-export type Departat = string | null;
+export type DateTime = string & {readonly __brand: "DateTime"};
 export type Kind3 = "facility";
 export type Facilityref = string;
 export type Packageref = string;
@@ -41,7 +41,6 @@ export type Anchorref = string;
 export type Spotref = string | null;
 export type Kind5 = "transfer";
 export type Taskref = string;
-export type Pickupat = string | null;
 export type DivergenceCode =
   | "SNAPSHOT_EXPIRED"
   | "SOURCE_NOT_FOUND"
@@ -51,10 +50,6 @@ export type DivergenceCode =
   | "SEAT_TAKEN"
   | "PRICE_MOVED"
   | "UPSTREAM_UNAVAILABLE";
-export type Divergenceat = string | null;
-export type Expiresat = string;
-export type Createdat = string | null;
-export type Retentionuntil = string | null;
 
 export interface OfferSnapshot {
   id?: Id;
@@ -66,10 +61,10 @@ export interface OfferSnapshot {
   terms: Terms;
   payload: OfferPayload;
   divergenceCode?: DivergenceCode | null;
-  divergenceAt?: Divergenceat;
-  expiresAt: Expiresat;
-  createdAt?: Createdat;
-  retentionUntil?: Retentionuntil;
+  divergenceAt?: DateTime | null;
+  expiresAt: DateTime;
+  createdAt?: DateTime | null;
+  retentionUntil?: DateTime | null;
 }
 export interface Price {
   amount: Amount;
@@ -98,7 +93,7 @@ export interface FlightOfferDetail {
   kind: Kind2;
   itineraryRef: Itineraryref;
   carrier?: Carrier;
-  departAt?: Departat;
+  departAt?: DateTime | null;
 }
 export interface FacilityOfferDetail {
   kind: Kind3;
@@ -114,5 +109,5 @@ export interface ParkingOfferDetail {
 export interface TransferOfferDetail {
   kind: Kind5;
   taskRef: Taskref;
-  pickupAt?: Pickupat;
+  pickupAt?: DateTime | null;
 }
