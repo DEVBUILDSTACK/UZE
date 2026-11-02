@@ -52,8 +52,17 @@ approval gate, and records commitments. Database: **`uzemarkets-compose`**
   the result.
 - `src/snapshots.py` — Sprint 1 slice 2: `POST
   /snapshots/{snapshot_id}/reconcile` (200 CLEAN / 409 DIVERGED /
-  503 BLOCKED). The approval gate and commitment recording are
-  later slices and are not mounted.
+  503 BLOCKED).
+- `src/approvals.py` — Sprint 1 slice 3: the human approval gate.
+  `POST /approvals` (a PENDING ApprovalRequest for one ticket-kind
+  snapshot; trip + commitment class derived from the snapshot),
+  `GET /approvals/{id}` (read-through: reconciles at request time
+  and carries the snapshot's freshness/staleness state), and
+  `POST /approvals/{id}/decision` (APPROVE | REJECT, gated by a
+  fresh reconciliation — a diverged snapshot cannot be approved,
+  expiry refuses as SNAPSHOT_EXPIRED, upstream failure blocks
+  without killing the request). Commitment recording is the
+  remaining Sprint 1 slice and is not mounted.
 - `src/seed.py` + `scripts/seed_manifest.py` — the Sprint 1 seed
   QuestionManifest (six slots exercising every classifier path),
   loaded idempotently by manifest key.

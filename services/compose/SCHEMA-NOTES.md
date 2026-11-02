@@ -501,3 +501,146 @@ Its behavior is code-reviewed against the routers' source, and its
 error mapping mirrors the proxy's, which the suite exercises. The
 approval gate and commitment recording remain later Sprint 1
 slices; this slice's evaluator is the shared core both will call.
+
+## Sprint 1 Slice 3 — the approval gate (filed 2026-11-01)
+
+**What was built** (no schema changes; Alembic head unchanged at
+`d52f8b1a904c`; `models.py` untouched by this slice):
+
+- `src/approvals.py` — the gate, mounted by `src/app.py`:
+  `POST /approvals` (201; creates a PENDING ApprovalRequest for
+  one ticket-kind OfferSnapshot), `GET /approvals/{id}`,
+  `POST /approvals/{id}/decision` (APPROVE | REJECT with the
+  decider's identity recorded as `signedBy`). Response discipline
+  mirrors slice 2: one field set on every surface (R4 §2.3 parity),
+  typed refusals as structured bodies rather than bare errors.
+- **Read-through at the gate (R4 §2.2).** The read and the decision
+  both run slice 2's `readthrough.reconcile()` for the approval's
+  snapshot at request time; no gate path acts on a cached or
+  previously fetched copy. Creation does not reconcile (it is
+  neither a read nor a decision) — its freshness block is the
+  clock/annotation projection and says so (`reconciled: false`).
+- **The decision rules, as implemented:** already-resolved ->
+  409 (a resolved approval takes no further decision).
+  UPSTREAM_UNAVAILABLE -> 503 BLOCKED; the approval stays PENDING
+  and unsigned (block without kill, mirroring slice 2 — the same
+  approval is decidable on recovery, proven by test).
+  SNAPSHOT_EXPIRED -> 409 REFUSED under TTL dominance (the
+  expired-snapshot test configures the proxy to fail every read
+  and asserts zero reads were attempted); no decision is recorded
+  in either direction and the approval resolves to EXPIRED with
+  `resolvedAt` set. Any other killing code + APPROVE -> 409
+  REFUSED carrying the code; for SEAT_TAKEN also the `reason`
+  (MODERATION | DOUBLE_SETTLEMENT) AND its plain-language
+  rendering (`reasonText`), per R4 §5's reason precision — this is
+  the approval-gate surfacing slice 2 prepared. Clean -> the
+  decision is recorded (APPROVED | REJECTED, signedBy, resolvedAt).
+- **The staleness display** (the read's freshness block, computed
+  at request time from the snapshot's own window plus the
+  reconciliation just run): snapshotCreatedAt, snapshotExpiresAt,
+  ageSeconds, ttlSeconds, remainingSeconds, `state` — FRESH
+  (inside the window, live state in agreement) | STALE (the frozen
+  state is known to disagree: a divergence is recorded) | EXPIRED
+  (at/after expiresAt; the clock governs first) | UNKNOWN (the
+  source could not be observed; the truth is unknown, not
+  falsified) — plus divergenceCode / divergenceReason /
+  evaluatedAt / reconciled. A display read never fails on
+  divergence or unavailability: it SHOWS the state (200 with
+  STALE/UNKNOWN), refusals belong to the decision path.
+- **The subject anchor (author's choice, forced by the frozen
+  schema and named here):** ApprovalRequest keys to TripProfile +
+  CommitmentClass; the formal approval<->snapshot link is the
+  Commitment table, which belongs to the NEXT slice. This slice
+  records the subject snapshot id server-side in the request's
+  `summary` JSON under `offerSnapshotId` (a caller value under
+  that key is overwritten), and derives trip + commitment class
+  from the snapshot itself — the approver approves a concrete
+  quote, never caller-asserted linkage. Approvals created outside
+  this gate (no anchor) stay readable (freshness: null) and cannot
+  be decided here (422) — the gate never decides blind. When
+  commitment recording lands, the anchor migrates to the
+  Commitment row; the summary key is the interim record.
+- **REJECT against a diverged snapshot (author's choice):** the
+  contract binds APPROVAL of a diverged snapshot, not rejection —
+  a rejection asserts nothing about the snapshot. REJECT therefore
+  still records against a diverged-but-unexpired snapshot (the
+  human closes the dead request); against an EXPIRED snapshot
+  both directions are refused (above). Pinned by test.
+
+**Branded DateTime — the criterion-3 caveat DISCHARGED.** The
+standing note ("TypeScript renders datetimes as `string`... the
+branded datetime type stays tracked against Sprint 1's
+approval-gate UI") is closed, for the approval-facing modules:
+`approvalrequest` (the gate's record; Commitment inlined) and
+`offersnapshot` (its subject — the createdAt/expiresAt the
+staleness display renders). **Mechanism (generation discipline
+preserved):** no generated file is hand-edited and no flag was
+added to any generator. The chain's export step
+(`src/export_pydantic_schema.py` — a generation INPUT, like
+bridge.py) rewrites, for the two named stems only, every
+date-time property in the exported schema (detected by the
+`date-time` format marker, directly or on an anyOf branch) into a
+reference to a `$defs/DateTime` entry carrying a `tsType`
+override — a keyword json-schema-to-typescript emits verbatim.
+The generated modules therefore declare
+`export type DateTime = string & {readonly __brand: "DateTime"};`
+and render 8 properties as DateTime (approval: resolvedAt,
+settledAt; snapshot: createdAt, expiresAt, divergenceAt,
+retentionUntil, departAt, pickupAt), nullability preserved
+(`DateTime | null`). The step fails the build if a branded
+module's schema carries no date-time properties, so the brand
+cannot silently disappear. The brand is structural (a literal-tag
+intersection — each branded module declares its own DateTime and
+the two are mutually assignable, which is what a multi-module
+generated surface wants); a plain string is NOT assignable to it,
+proven by a tsc probe (TS2322 on a raw-string assignment to
+ApprovalRequest["resolvedAt"], the branded assignment clean).
+Scope note: the remaining 21 modules still render datetimes as
+plain string — the caveat is discharged where it was tracked
+(the approval-gate surface), not globally; widening the stem set
+is a one-line change in the export tool if a future surface
+needs it.
+
+**Evidence (this filing's runs, real PostgreSQL 16.2 substrate):**
+`make test` — **62 passed** (44 pre-existing, unregressed; 18 new
+in tests/test_approvals.py covering every rule above: creation
+derivation + 404/422, freshness FRESH / STALE-with-reason /
+UNKNOWN-without-kill / EXPIRED, the moderated-listing APPROVE
+refusal with SEAT_TAKEN + MODERATION + reasonText asserted in the
+body, the double-settlement refusal, TTL dominance at the gate
+with zero upstream reads attempted, block-without-kill +
+recovery on the same approval, clean approve/reject,
+reject-closes-dead-request, second-decision 409, anchorless
+approvals). `make validate` — **12/12 from empty**, head
+`d52f8b1a904c`. `make check-ts` — clean after full regeneration
+(the branding reproduces through the chain; the regeneration
+diff outside the two branded modules' artifacts was
+timestamp-only and was reverted). Zero DDL change: no migration,
+and `models.py` untouched; the only generated artifacts changed
+are the two branded modules' `.ts` + `_pydantic.schema.json`.
+
+**Author's choices in this slice** (for review; overturn by naming
+the alternative): (a) the subject anchor in `summary` and the
+derivation of trip/class from the snapshot (above); (b) REJECT
+recordable against a diverged-but-unexpired snapshot (above);
+(c) an expired snapshot resolves its approval to EXPIRED at the
+first decision attempt rather than by a background sweep — this
+service has no background processes by design (R4 §6: no
+continuous sync, no watchers), so state transitions happen at
+request time or not at all; (d) the refusal/status mapping
+(409 REFUSED for divergence + expiry, 503 BLOCKED for transport)
+mirrors slice 2's reconcile mapping exactly; (e) freshness state
+vocabulary FRESH | STALE | EXPIRED | UNKNOWN as defined above.
+
+**Stated limits.** The gate runs against the interim proxy in
+tests, inheriting slice 2's limit: `HttpReconciliationReader`
+has not run against a live services/api (the moderated-listing
+fixture against the redeployed service remains the
+post-redeploy gate for the commit path end to end — the
+approval-level fixture here is its proxy-level counterpart).
+Decisions carry no authentication in this slice: `decidedBy` is
+recorded as the signer of record, and who may decide is a
+deployment concern the schema's `signedBy` anticipates but this
+slice does not enforce. Commitment recording — the settlement
+half of the commit path — remains the final Sprint 1 slice;
+an APPROVED approval here settles nothing by itself.
