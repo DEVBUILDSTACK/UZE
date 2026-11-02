@@ -644,3 +644,148 @@ deployment concern the schema's `signedBy` anticipates but this
 slice does not enforce. Commitment recording — the settlement
 half of the commit path — remains the final Sprint 1 slice;
 an APPROVED approval here settles nothing by itself.
+
+## Sprint 1 Slice 4 — commitment recording (filed 2026-11-01)
+
+**What was built** (no schema changes; Alembic head unchanged at
+`d52f8b1a904c`; `models.py` untouched by this slice):
+
+- `src/commitments.py` — the recording surface, mounted by
+  `src/app.py`: `POST /commitments` (201 on first record; 200 on
+  an idempotent replay) and `GET /commitments/{id}`. Request:
+  approvalId, idempotencyKey, recordedBy, optional chainTxRef.
+  Response discipline mirrors slices 2–3: frozen Pydantic views,
+  one field set on every surface, typed refusals as structured
+  bodies (outcome REFUSED | BLOCKED, code, reason + reasonText
+  for SEAT_TAKEN, approvalStatus, existingCommitmentId,
+  evaluatedAt).
+- **The formal link now exists.** Slice 3's filing recorded the
+  subject snapshot id in the approval's `summary` as an interim
+  anchor because "the formal approval<->snapshot link is the
+  Commitment table, which belongs to the NEXT slice." This slice
+  is that slice: a recorded Commitment row joins approval +
+  snapshot + trip (via the approval) + commitment class (via
+  approval and snapshot, which agree by construction — the gate
+  derives both from the snapshot). The summary anchor remains
+  the gate's pre-commitment working reference — an approval has
+  no snapshot link until it commits; that is the schema's design,
+  not a leftover.
+
+**The rules, as implemented:**
+
+- **Only APPROVED records.** Any other approval status (PENDING |
+  REJECTED | EXPIRED) is refused 409 with this surface's typed
+  code APPROVAL_NOT_APPROVED and the status carried in the body;
+  no commitment, EventLog record, or idempotency row is written.
+  An APPROVED approval settles nothing by itself (slice 3);
+  recording is the act that settles.
+- **One final reconciliation, at record time (R4 §6).** Recording
+  calls slice 2's `reconcile()` for the approval's snapshot
+  before writing anything. Divergence since approval is a typed
+  refusal — 409 carrying the code, and for SEAT_TAKEN the reason
+  and its plain-language rendering — with slice 2's EventLog
+  recording and divergence annotation applying unchanged; no
+  commitment is written. This includes expiry: an approval
+  granted inside the window whose snapshot has since expired
+  refuses as SNAPSHOT_EXPIRED (TTL at commit, not only at the
+  gate), and a second approval recorded after the first settles
+  the same mint refuses as SEAT_TAKEN / DOUBLE_SETTLEMENT at
+  RECORD time even though both were clean at the gate — the
+  pinned proof that reconciliation belongs at commit.
+  UPSTREAM_UNAVAILABLE blocks (503): nothing is written, the
+  snapshot is not annotated, the approval stays APPROVED, and
+  the same idempotency key records on recovery.
+- **Idempotency (IdempotencyKey, Postgres-backed).** The success
+  path writes the key row IN THE SAME TRANSACTION as the
+  Commitment row and its EventLog record (the marker passes
+  IN_FLIGHT -> COMPLETED inside the transaction; the stored
+  response is the commitment view), so commitment, event, and
+  idempotency record land atomically or not at all. Replaying
+  the same key against the same request returns the SAME
+  commitment (200, the stored response) — no duplicate row, no
+  second EventLog record. The key is bound to its request by
+  hash (approvalId + chainTxRef): the same key aimed at a
+  different request is refused 409 IDEMPOTENCY_KEY_REUSED, and
+  a key found IN_FLIGHT (a concurrent writer, or a marker left
+  by a crashed two-phase writer) is refused 409 REQUEST_IN_FLIGHT
+  — retryable, never a silent wait. A same-key race lost at
+  commit (IntegrityError on the key PK) resolves by re-reading
+  the winner's row, exactly as the pre-check would have.
+  Refusals and blocks persist NO key row, so a refused recording
+  may be retried under the same key once its cause is addressed.
+- **One transaction, one record.** The Commitment row and its
+  EventLog record (eventType COMMITMENT_RECORDED, aggregate the
+  commitment, actor the caller's recordedBy, payload carrying
+  the ids, class, state, chainTxRef, sourceRef, and the frozen
+  price) commit together. Price and currency in the view and
+  the record flow from the frozen snapshot — never from caller
+  input (USDC-only is enforced at the Price type; it is not
+  re-implemented here).
+
+**Author's choices in this slice** (for review; overturn by
+naming the alternative): (a) **a different key for an
+already-committed approval is REFUSED** (409 ALREADY_COMMITTED,
+carrying the existing commitment's id), not silently served the
+existing commitment — a fresh key asserts a new operation, and
+returning the old record would let a caller believe its new
+operation settled when it did nothing (R4 §5(e)'s
+no-silent-substitution discipline applied to this surface);
+(b) **state SETTLED, settledAt = record time** — recording IS
+the settlement of record in this layer (R4 §6.5): any chain
+action is the caller's, evidenced by the optional chainTxRef
+(null for off-chain settlement); the filed schema's state
+vocabulary has exactly one value in use anywhere in this
+codebase and no settling state machine was filed; (c) the
+**request hash covers {approvalId, chainTxRef}** only —
+recordedBy is metadata, and a replay by a different operator
+returns the original record rather than re-recording it;
+(d) the **single-transaction idempotency marker** (above)
+rather than a two-phase marker committed before reconciliation:
+there is no external execution inside this request, so atomicity
+is the stronger guarantee, and refusal paths leave nothing to
+clean up; (e) **recording never mutates the approval** — an
+APPROVED approval whose snapshot dies stays APPROVED (contrast
+the gate, which resolves an undecidable approval to EXPIRED);
+the refusal plus the snapshot's kill is the record; (f) the
+precondition refusals carry this surface's own codes
+(APPROVAL_NOT_APPROVED, ALREADY_COMMITTED, IDEMPOTENCY_KEY_REUSED,
+REQUEST_IN_FLIGHT) — they are not divergences and do not borrow
+the §5 vocabulary.
+
+**Evidence (this filing's runs, real PostgreSQL 16.2 substrate):**
+`make test` — **78 passed** (62 pre-existing, unregressed; 16
+new in tests/test_commitments.py: the happy path with linkage /
+frozen-price / single-EventLog / completed-key assertions, the
+off-chain null chainTxRef, the GET view, PENDING-refused with
+key-not-burned proven by a same-key success after approval,
+REJECTED-refused, EXPIRED-refused, diverged-after-approval
+refused with SEAT_TAKEN + MODERATION + reasonText and the
+annotation asserted, expired-after-approval refused at commit,
+blocked-then-recovered under the same key, double-settlement
+fired at record time, replay returning the identical commitment
+with exactly one row and one EventLog record, different-key
+refusal with the existing id, key-reuse refusal, 404, and the
+anchorless-APPROVED 422). `make validate` — **12/12 from
+empty**, head `d52f8b1a904c`. `make check-ts` — clean. Zero DDL
+change: no migration, `models.py` untouched, no generated
+artifact changed (regeneration churn from the verification runs
+was timestamp-only and was reverted).
+
+**Stated limits.** The suite runs against the interim proxy,
+inheriting slices 2–3's limit: `HttpReconciliationReader` has
+not run against a live services/api. **The standing limit is
+unchanged by this slice and is the remaining Sprint 1 gate: the
+post-redeploy live fixture — the moderated listing exercised
+against the redeployed services/api, end to end through gate
+and recording — is what proves "Sprint 1's commit path works
+end-to-end"; this slice proves the recording rules at proxy
+level, its designed counterpart.** Decisions and recordings
+carry no authentication: recordedBy is the actor of record, as
+decidedBy is at the gate; who may record is a deployment
+concern. The same-key concurrency path (IntegrityError
+resolution) is implemented and code-reviewed but not
+load-tested — the substrate is a single-writer test harness.
+With this slice, the Sprint 1 build order (intake, classify,
+read-through, approval gate, commitment recording) is complete
+as filed; what remains is the live-fixture gate above, which
+waits on the redeploy, not on code.

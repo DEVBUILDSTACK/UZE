@@ -61,8 +61,19 @@ approval gate, and records commitments. Database: **`uzemarkets-compose`**
   `POST /approvals/{id}/decision` (APPROVE | REJECT, gated by a
   fresh reconciliation — a diverged snapshot cannot be approved,
   expiry refuses as SNAPSHOT_EXPIRED, upstream failure blocks
-  without killing the request). Commitment recording is the
-  remaining Sprint 1 slice and is not mounted.
+  without killing the request).
+- `src/commitments.py` — Sprint 1 slice 4: commitment recording.
+  `POST /commitments` records a Commitment from an APPROVED
+  approval — the formal approval<->snapshot link (approval,
+  snapshot, trip, commitment class) — after ONE final commit-time
+  reconciliation (divergence since approval refuses as the typed
+  failure; expiry at commit refuses as SNAPSHOT_EXPIRED;
+  upstream failure blocks without killing), carried by a
+  Postgres idempotency key (same-key replay returns the SAME
+  commitment; a different key for a committed approval is
+  refused ALREADY_COMMITTED); the Commitment row and its
+  COMMITMENT_RECORDED EventLog record land in one transaction.
+  `GET /commitments/{id}` returns the recorded commitment.
 - `src/seed.py` + `scripts/seed_manifest.py` — the Sprint 1 seed
   QuestionManifest (six slots exercising every classifier path),
   loaded idempotently by manifest key.
@@ -97,7 +108,10 @@ has its own venv — `~/workspace/tools/composevenv`, pinned in
   intake flow end-to-end (readiness flips), suggest_slots()
   validation, and the slice-2 read-through reconciliation suite
   (all eight divergence codes, the moderated-listing fixture,
-  TTL dominance, block-without-kill) — against the same real
+  TTL dominance, block-without-kill), the slice-3 approval-gate
+  suite, and the slice-4 commitment-recording suite (only
+  APPROVED records, the final reconciliation at record time,
+  idempotent replay vs different-key refusal) — against the same real
   PostgreSQL substrate, with the upstream source of record served
   by the interim listing-read proxy.
 - Run the intake service:
