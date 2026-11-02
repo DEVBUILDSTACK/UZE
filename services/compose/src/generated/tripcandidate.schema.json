@@ -69,7 +69,10 @@
           "type": "number"
         },
         "currency": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "USDC"
+          ]
         },
         "taxesIncluded": {
           "type": "boolean"

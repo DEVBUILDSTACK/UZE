@@ -8,7 +8,7 @@ export type Sourceref = string;
 export type CommitmentClass =
   "IRREVERSIBLE_ON_CHAIN" | "CANCELLABLE_UNTIL_WINDOW" | "CHANGEABLE_WITH_FEE" | "APPOINTMENT" | "MEDICAL_PACKAGE";
 export type Amount = number;
-export type Currency = string;
+export type Currency = "USDC";
 export type Taxesincluded = boolean;
 export type OfferPayload =
   | TicketOfferDetail

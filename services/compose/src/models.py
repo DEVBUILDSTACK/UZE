@@ -230,7 +230,16 @@ class QuestionSlotType(enum.Enum):
 
 class PriceJSON(TypeDecorator):
     """OfferSnapshot.price — { amount, currency, taxesIncluded }, frozen
-    at quote time. (Mechanism as reviewed in the round-trip gate.)"""
+    at quote time. (Mechanism as reviewed in the round-trip gate.)
+
+    INVARIANT (2026-11-01, DeepSeek direction relayed by James):
+    currency is USDC and only USDC — USDC on Solana is the sole
+    commerce settlement rail. The enum below is the enforcement: the
+    generated Pydantic Price model rejects any other currency at
+    validation, on every write path through the compose layer. UZE is
+    a unit of measurement/attribution, never a settlement currency;
+    UZD is an incentive token, never a payment method. A non-USDC
+    value here is a defect, not a feature."""
 
     impl = JSON
     cache_ok = True
@@ -240,7 +249,7 @@ class PriceJSON(TypeDecorator):
         "type": "object",
         "properties": {
             "amount": {"type": "number"},
-            "currency": {"type": "string"},
+            "currency": {"type": "string", "enum": ["USDC"]},
             "taxesIncluded": {"type": "boolean"},
         },
         "required": ["amount", "currency", "taxesIncluded"],

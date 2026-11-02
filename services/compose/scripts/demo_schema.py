@@ -192,7 +192,7 @@ def main() -> int:
                 rail=models.Rail.SOLANA_NFT,
                 source_ref="ticket:T-1001/listing:L-77",
                 commitment_class=models.CommitmentClass.IRREVERSIBLE_ON_CHAIN,
-                price={"amount": 120.50, "currency": "USD", "taxesIncluded": True},
+                price={"amount": 120.50, "currency": "USDC", "taxesIncluded": True},
                 terms={"cancellation": "none"},
                 payload={"kind": "ticket", "seat": "GA-114", "tier": "general",
                          "gate": "Gate B", "mintRef": "MINT-XYZ",
@@ -211,7 +211,7 @@ def main() -> int:
         with engine.connect() as c:
             msg1 = expect_refused(
                 c, 'UPDATE offer_snapshot SET price = :p WHERE id = :i',
-                {"p": '{"amount": 1, "currency": "USD", "taxesIncluded": true}',
+                {"p": '{"amount": 1, "currency": "USDC", "taxesIncluded": true}',
                  "i": sid}, "immutable")
             expect_refused(
                 c, 'UPDATE offer_snapshot SET "sourceRef" = :v WHERE id = :i',
@@ -220,7 +220,7 @@ def main() -> int:
                 c, 'UPDATE offer_snapshot SET "divergenceCode" = :dc, '
                    'price = :p WHERE id = :i',
                 {"dc": "SEAT_TAKEN",
-                 "p": '{"amount": 1, "currency": "USD", "taxesIncluded": true}',
+                 "p": '{"amount": 1, "currency": "USDC", "taxesIncluded": true}',
                  "i": sid}, "immutable")
             expect_refused(
                 c, "DELETE FROM offer_snapshot WHERE id = :i",
@@ -337,7 +337,7 @@ def main() -> int:
             tripCandidateId="tc-1", rail="SOLANA_NFT",
             sourceRef="ticket:T-1001/listing:L-77",
             commitmentClass="IRREVERSIBLE_ON_CHAIN",
-            price={"amount": 120.5, "currency": "USD", "taxesIncluded": True},
+            price={"amount": 120.5, "currency": "USDC", "taxesIncluded": True},
             terms={"cancellation": "none"},
             expiresAt="2027-04-01T00:00:00Z")
         ok = OfferSnapshot(**base, payload={
@@ -601,7 +601,7 @@ def main() -> int:
             tripCandidateId="tc-1", rail="SOLANA_NFT",
             sourceRef="ticket:T-1001/listing:L-77",
             commitmentClass="IRREVERSIBLE_ON_CHAIN",
-            price={"amount": 120.5, "currency": "USD",
+            price={"amount": 120.5, "currency": "USDC",
                    "taxesIncluded": True},
             terms={"cancellation": "none"},
             expiresAt="2027-04-01T00:00:00Z")
@@ -679,7 +679,7 @@ def main() -> int:
             "\"sourceRef\", \"commitmentClass\", price, terms, payload, "
             "\"expiresAt\", \"createdAt\") VALUES (:id, :tc, "
             "'SOLANA_NFT', 'ref:d11', 'IRREVERSIBLE_ON_CHAIN', "
-            "'{\"amount\": 1, \"currency\": \"USD\", "
+            "'{\"amount\": 1, \"currency\": \"USDC\", "
             "\"taxesIncluded\": true}', "
             "'{}', :payload, :exp, :now)")
         with engine.connect() as c:

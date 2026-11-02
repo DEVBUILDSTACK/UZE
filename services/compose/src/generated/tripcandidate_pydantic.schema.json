@@ -11,6 +11,13 @@
       "title": "CommitmentClass",
       "type": "string"
     },
+    "Currency": {
+      "enum": [
+        "USDC"
+      ],
+      "title": "Currency",
+      "type": "string"
+    },
     "DivergenceCode": {
       "enum": [
         "SNAPSHOT_EXPIRED",
@@ -290,8 +297,7 @@
           "type": "number"
         },
         "currency": {
-          "title": "Currency",
-          "type": "string"
+          "$ref": "#/$defs/Currency"
         },
         "taxesIncluded": {
           "title": "Taxesincluded",
