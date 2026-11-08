@@ -30,6 +30,7 @@ call; see src/inference.py).
 """
 from __future__ import annotations
 
+import copy
 import time
 from typing import Any
 
@@ -39,6 +40,7 @@ from sqlalchemy.orm import Session
 
 import metering
 import models
+import partners as partners_module
 from db import get_session
 
 router = APIRouter(prefix="/api/v1/agents")
@@ -264,3 +266,109 @@ async def sura_underwrite(
             "assessment": assessment,
         }
     )
+
+
+# ---------------------------------------------------------------------
+# GIRA debug — the agentic debugging surface. A partner pastes a
+# payload that failed validation; GIRA returns the structured errors
+# and, where a deterministic fix exists, the corrected payload:
+# numeric values sent as strings are coerced, a top-level
+# zarc_risk_score is nested into crop_suitability, and keys the
+# schema does not define are dropped (each fix is reported).
+# Anything that cannot be fixed deterministically is returned in
+# remainingErrors with the field path — never guessed at.
+# ---------------------------------------------------------------------
+
+_NUMERIC_PATHS: dict[str, list[tuple[str, str]]] = {
+    "AGRO_DIGITAL": [
+        ("soil_profile", "ph_level"),
+        ("soil_profile", "nitrogen_ppm"),
+        ("soil_profile", "phosphorus_ppm"),
+        ("soil_profile", "potassium_ppm"),
+        ("soil_profile", "organic_matter_pct"),
+        ("crop_suitability", "yield_potential_tons_per_ha"),
+    ],
+    "BDCS": [
+        ("feedlot_context", "cattle_head_count"),
+        ("feedlot_context", "target_slaughter_weight_kg"),
+        ("feedlot_context", "current_avg_weight_kg"),
+        ("feedlot_context", "feed_optimization_index"),
+    ],
+    "EFFATHA": [
+        ("agrotechnical_context", "application_rate_liters_per_ha"),
+    ],
+}
+
+_TOP_LEVEL_KEYS: dict[str, set[str]] = {
+    "AGRO_DIGITAL": {
+        "partner_id", "polygon_id", "geojson_polygon",
+        "soil_profile", "crop_suitability", "attestation",
+    },
+    "BDCS": {
+        "partner_id", "polygon_id", "geojson_polygon",
+        "feedlot_context", "attestation",
+    },
+    "EFFATHA": {
+        "partner_id", "polygon_id", "geojson_polygon",
+        "agrotechnical_context", "attestation",
+    },
+}
+
+
+def debug_payload(partner_id: str, payload: dict) -> dict:
+    errors_before = partners_module.schema_errors(partner_id, payload)
+    corrected = copy.deepcopy(payload)
+    fixes: list[str] = []
+
+    for parent, field in _NUMERIC_PATHS.get(partner_id, []):
+        node = corrected.get(parent)
+        if isinstance(node, dict) and isinstance(node.get(field), str):
+            raw = node[field].strip()
+            try:
+                value = float(raw)
+            except ValueError:
+                continue
+            node[field] = int(value) if value.is_integer() else value
+            fixes.append(
+                f"{parent}.{field}: coerced string \"{raw}\" to number {node[field]}"
+            )
+
+    if partner_id == "AGRO_DIGITAL" and "zarc_risk_score" in corrected:
+        crop = corrected.setdefault("crop_suitability", {})
+        if isinstance(crop, dict) and "zarc_risk_score" not in crop:
+            crop["zarc_risk_score"] = corrected.pop("zarc_risk_score")
+            fixes.append(
+                "zarc_risk_score: moved from the top level into crop_suitability"
+            )
+
+    allowed = _TOP_LEVEL_KEYS.get(partner_id, set())
+    for key in sorted(set(corrected) - allowed - {"partner_id"}):
+        corrected.pop(key, None)
+        fixes.append(f"{key}: removed (not defined in the {partner_id} schema)")
+
+    remaining = partners_module.schema_errors(partner_id, corrected)
+    return {
+        "agent": "GIRA",
+        "partnerId": partner_id,
+        "validBefore": not errors_before,
+        "validAfter": not remaining,
+        "errors": errors_before,
+        "fixes": fixes,
+        "correctedPayload": corrected if fixes else None,
+        "remainingErrors": remaining,
+    }
+
+
+@router.post("/gira/debug")
+async def gira_debug(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    payload = (body or {}).get("payload")
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=422, detail="payload must be a JSON object")
+    partner_id = (body or {}).get("partnerId") or payload.get("partner_id")
+    if partner_id not in partners_module.SCHEMA_FILES:
+        raise HTTPException(status_code=400, detail=f"unknown partner: {partner_id}")
+    return JSONResponse(content=debug_payload(partner_id, payload))

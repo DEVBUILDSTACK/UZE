@@ -25,7 +25,7 @@ TOKENS = {
     "tok-effatha-test": "EFFATHA",
 }
 
-# The Agro Digital shape exactly as sent to the partner (Fabio) on
+# The Agro Digital shape exactly as agreed with the partner on
 # 2026-11-08 — the filed schema validates this shape.
 AGRO = {
     "partner_id": "AGRO_DIGITAL",
@@ -122,7 +122,11 @@ def test_schema_violation_is_422(market_client, configured):
     broken = {k: v for k, v in AGRO.items() if k != "soil_profile"}
     response = _post(market_client, broken, token="tok-agro-test")
     assert response.status_code == 422
-    assert "soil_profile" in response.json()["detail"]
+    errors = response.json()["detail"]["errors"]
+    assert any(
+        "soil_profile" in e["field"] or "soil_profile" in e["error"]
+        for e in errors
+    )
 
 
 @pytest.mark.parametrize(

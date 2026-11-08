@@ -135,3 +135,51 @@ def test_sura_assesses_demo_spec(market_client, agent_env, demo_fixture):
     assert assessment["microRegionId"] == spec["microRegionId"]
     assert assessment["budgetMinUsdc"] == spec["budgetMinUsdc"]
     assert assessment["entityId"] == spec["entityId"]
+
+
+def _debug(client, payload):
+    return client.post("/api/v1/agents/gira/debug", json={"payload": payload})
+
+
+def test_debug_coerces_numeric_strings(market_client):
+    broken = json.loads(json.dumps(AGRO))
+    broken["soil_profile"]["ph_level"] = "5.8"
+    response = _debug(market_client, broken)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["validBefore"] is False
+    assert body["validAfter"] is True
+    assert body["correctedPayload"]["soil_profile"]["ph_level"] == 5.8
+    assert any("ph_level" in fix for fix in body["fixes"])
+
+
+def test_debug_moves_top_level_zarc(market_client):
+    broken = json.loads(json.dumps(AGRO))
+    broken["zarc_risk_score"] = broken["crop_suitability"].pop("zarc_risk_score")
+    body = _debug(market_client, broken).json()
+    assert body["validAfter"] is True
+    assert body["correctedPayload"]["crop_suitability"]["zarc_risk_score"] == "LOW"
+    assert "zarc_risk_score" not in body["correctedPayload"]
+
+
+def test_debug_drops_undefined_keys(market_client):
+    broken = json.loads(json.dumps(AGRO))
+    broken["language"] = "pt-BR"
+    body = _debug(market_client, broken).json()
+    assert body["validAfter"] is True
+    assert "language" not in body["correctedPayload"]
+    assert any("language" in fix for fix in body["fixes"])
+
+
+def test_debug_valid_payload_unchanged(market_client):
+    body = _debug(market_client, json.loads(json.dumps(AGRO))).json()
+    assert body["validBefore"] is True
+    assert body["correctedPayload"] is None
+    assert body["remainingErrors"] == []
+
+
+def test_debug_reports_unfixable_errors(market_client):
+    broken = {k: v for k, v in AGRO.items() if k != "soil_profile"}
+    body = _debug(market_client, broken).json()
+    assert body["validAfter"] is False
+    assert any("soil_profile" in e["error"] for e in body["remainingErrors"])

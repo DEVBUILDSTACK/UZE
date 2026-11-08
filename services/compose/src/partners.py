@@ -82,6 +82,23 @@ def _validator(partner_id: str) -> Draft202012Validator:
     return Draft202012Validator(schema)
 
 
+def schema_errors(partner_id: str, payload: dict) -> list[dict]:
+    """Structured validation errors: [{field, error}] with dotted
+    field paths — the shape partners feed to the GIRA debug
+    endpoint and the portal's debug widget."""
+    found = sorted(
+        _validator(partner_id).iter_errors(payload),
+        key=lambda e: list(e.absolute_path),
+    )
+    return [
+        {
+            "field": ".".join(str(p) for p in e.absolute_path) or "(root)",
+            "error": e.message,
+        }
+        for e in found
+    ]
+
+
 @router.post("/ingest", status_code=202)
 async def partner_ingest(
     request: Request,
@@ -114,17 +131,9 @@ async def partner_ingest(
             detail="payload partner_id does not match the token's partner",
         )
 
-    errors = sorted(
-        _validator(partner_id).iter_errors(body),
-        key=lambda e: list(e.absolute_path),
-    )
+    errors = schema_errors(partner_id, body)
     if errors:
-        first = errors[0]
-        location = ".".join(str(p) for p in first.absolute_path) or "(root)"
-        raise HTTPException(
-            status_code=422,
-            detail=f"schema validation failed at {location}: {first.message}",
-        )
+        raise HTTPException(status_code=422, detail={"errors": errors})
 
     staged = models.StagingProviderSnapshot(
         partner_id=partner_id,
