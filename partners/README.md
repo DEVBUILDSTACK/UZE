@@ -27,9 +27,17 @@ A/D/R pipeline without constantly emailing the engineering team.
    approval_status PENDING. Engineering reviews the mapping; an
    admin approval (`POST /api/v1/admin/partners/approve/{staging_id}`)
    promotes the payload verbatim into the `ProviderSnapshot` table,
-   and a rejection records its reason. Lenders and AI agents query
+   and a rejection records its reason. Lenders, GIRA and SURA query
    the live table, never the partner's API — and never unreviewed
    staging data.
+
+**Who consumes the data:** Data ingested by partners feeds directly
+into GIRA, our NEAR AI agent for A N R & D. GIRA uses this data to
+provide guidance to human users and underwriting outputs to
+autonomous agents. On the HiCRE tracks (H/I), the same cached data
+serves SURA, the HiCRE agent surface. Lenders and both agent
+surfaces query the live `ProviderSnapshot` table — never the
+partner's API, and never unreviewed staging data.
 
 **Governance status (binding, per the Evidence-Gated Architecture,
 `docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md`):** every

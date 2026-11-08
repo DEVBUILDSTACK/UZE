@@ -79,7 +79,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       },
       {
         title: "3 · The Snapshot Pattern",
-        body: "Every accepted payload lands in a staging area for engineering review. Once approved, it is timestamped and permanently cached in our ProviderSnapshot store. Lenders and AI agents query our database — never the partner's API — so the market keeps working when a partner is offline.",
+        body: "Every accepted payload lands in a staging area for engineering review. Once approved, it is timestamped and permanently cached in our ProviderSnapshot store. Lenders and our AI agents — GIRA (A N R & D) and SURA (HiCRE) — query our database, never the partner's API — so the market keeps working when a partner is offline.",
       },
     ],
     governanceHeading: "Partner status",
@@ -158,7 +158,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       },
       {
         title: "3 · O padrão Snapshot",
-        body: "Cada payload aceito entra em uma área de staging para revisão da engenharia. Depois de aprovado, ele recebe um carimbo de tempo e é armazenado permanentemente no nosso repositório ProviderSnapshot. Credores e agentes de IA consultam o nosso banco de dados — nunca a API do parceiro — para que o mercado continue funcionando quando um parceiro estiver offline.",
+        body: "Cada payload aceito entra em uma área de staging para revisão da engenharia. Depois de aprovado, ele recebe um carimbo de tempo e é armazenado permanentemente no nosso repositório ProviderSnapshot. Credores e os nossos agentes de IA — GIRA (A N R & D) e SURA (HiCRE) — consultam o nosso banco de dados, nunca a API do parceiro — para que o mercado continue funcionando quando um parceiro estiver offline.",
       },
     ],
     governanceHeading: "Status do parceiro",
@@ -237,7 +237,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       },
       {
         title: "3 · El patrón Snapshot",
-        body: "Cada payload aceptado entra en un área de staging para revisión de ingeniería. Una vez aprobado, recibe una marca de tiempo y se almacena permanentemente en nuestro repositorio ProviderSnapshot. Los prestamistas y los agentes de IA consultan nuestra base de datos — nunca la API del socio — para que el mercado siga funcionando cuando un socio está fuera de línea.",
+        body: "Cada payload aceptado entra en un área de staging para revisión de ingeniería. Una vez aprobado, recibe una marca de tiempo y se almacena permanentemente en nuestro repositorio ProviderSnapshot. Los prestamistas y nuestros agentes de IA — GIRA (A N R & D) y SURA (HiCRE) — consultan nuestra base de datos, nunca la API del socio — para que el mercado siga funcionando cuando un socio está fuera de línea.",
       },
     ],
     governanceHeading: "Estado del socio",

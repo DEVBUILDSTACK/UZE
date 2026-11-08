@@ -5,7 +5,7 @@ sequenceDiagram
     participant P as Partner (Agro Digital / BDCS / Effatha)
     participant API as UZEmarkets Ingestion API
     participant DB as UZEmarkets Snapshot DB
-    participant L as Lenders / AI Agents
+    participant L as Lenders / GIRA (A N R & D) / SURA (HiCRE)
 
     Note over P,API: 1. Partner pushes secure JSON payload
     P->>API: POST /api/v1/partners/ingest
