@@ -1267,3 +1267,258 @@ class HealthAttribute(Base):
     consent_record: Mapped["ConsentRecord"] = relationship(
         back_populates="health_attributes"
     )
+
+
+# ---------------------------------------------------------------------------
+# Sprint 1.5 (NEAR Hackathon, Nov 2026) — the CRE intent marketplace.
+# Additive only: four new tables + their enums; no Sprint 0/1 table is
+# touched. Authored from docs/hackathon/nov-2026/intent-schema.md and
+# the ratified decisions D1–D3 (04-DECISIONS-LOG.md): income commercial
+# real estate, two service lines (advisory, then placement against the
+# advisory's spec), micro-region as the analytical unit. IntentStatus
+# carries Diagram 4's lifecycle states (docs/diagrams/
+# 04-intent-lifecycle.md); the NEAR contract enforces the same states.
+# ---------------------------------------------------------------------------
+
+
+class IntentKind(enum.Enum):
+    AVAILABILITY = "availability"
+    DEMAND = "demand"
+
+
+class PosterKind(enum.Enum):
+    HUMAN = "human"
+    AGENT = "agent"
+    INTERNAL_AGENT = "internal_agent"
+    PARTNER = "partner"
+
+
+class IntentDomain(enum.Enum):
+    CRE_EXPENSE_ANALYSIS = "cre_expense_analysis"
+    CRE_PROPERTY_MANAGEMENT = "cre_property_management"
+    CRE_MARKET_SURVEY = "cre_market_survey"
+    CRE_INCOME_ANALYSIS = "cre_income_analysis"
+
+
+class WorkProduct(enum.Enum):
+    OPERATING_BUDGET = "operating_budget"
+    PM_SPEC = "pm_spec"
+    COST_MODEL = "cost_model"
+    BENCHMARK_ANALYSIS = "benchmark_analysis"
+    PLACEMENT = "placement"
+
+
+class PropertyType(enum.Enum):
+    BRANDED_HOTEL = "branded_hotel"
+    RESIDENTIAL_RENTAL = "residential_rental"
+    RESIDENTIAL_CONDO = "residential_condo"
+    HOSPITALITY = "hospitality"
+    MEDICAL_RECOVERY = "medical_recovery"
+
+
+class AcquisitionStage(enum.Enum):
+    UNDERWRITING = "underwriting"
+    POST_CLOSE = "post_close"
+    OPERATING = "operating"
+
+
+class IntentTier(enum.Enum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    ANY = "ANY"
+
+
+class IntentStatus(enum.Enum):
+    POSTED = "POSTED"
+    BIDDING = "BIDDING"
+    SELECTED = "SELECTED"
+    SETTLING = "SETTLING"
+    SETTLED = "SETTLED"
+    SETTLE_FAILED = "SETTLE_FAILED"
+    DELIVERED = "DELIVERED"
+    EXPIRED = "EXPIRED"
+
+
+class BidStatus(enum.Enum):
+    SUBMITTED = "SUBMITTED"
+    SELECTED = "SELECTED"
+    NOT_SELECTED = "NOT_SELECTED"
+    WITHDRAWN = "WITHDRAWN"
+
+
+class MicroRegion(Base):
+    """Reference table: the analytical unit of the CRE marketplace
+    (D3). Ids are authored slugs (\"miami-brickell\", \"bethesda-cbd\",
+    \"baltimore-nw\"); every Intent benchmarks against exactly one."""
+
+    __tablename__ = "micro_region"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True)
+    label: Mapped[str] = mapped_column("label", String, nullable=False)
+    metro: Mapped[str] = mapped_column("metro", String, nullable=False)
+    region: Mapped[str] = mapped_column("region", String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+
+    intents: Mapped[list["Intent"]] = relationship(back_populates="micro_region")
+
+
+class Intent(Base):
+    """A posted specification (kind=demand) or availability offer
+    (kind=availability) on the CRE marketplace. The compose row is the
+    system of record; `chainIntentRef` records the NEAR contract's
+    reference for the same intent — a chain reference, never a FK
+    (the R4 rule: references out of this database are plain strings)."""
+
+    __tablename__ = "intent"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    kind: Mapped[IntentKind] = mapped_column(
+        "kind", SAEnum(IntentKind, name="intent_kind"), nullable=False
+    )
+    poster_kind: Mapped[PosterKind] = mapped_column(
+        "posterKind", SAEnum(PosterKind, name="poster_kind"), nullable=False
+    )
+    poster_account: Mapped[str] = mapped_column(
+        "posterAccount", String, nullable=False
+    )
+    domain: Mapped[IntentDomain] = mapped_column(
+        "domain", SAEnum(IntentDomain, name="intent_domain"), nullable=False
+    )
+    work_product: Mapped[WorkProduct] = mapped_column(
+        "workProduct", SAEnum(WorkProduct, name="work_product"), nullable=False
+    )
+    deliverable: Mapped[dict] = mapped_column("deliverable", JSON, nullable=False)
+    micro_region_id: Mapped[str] = mapped_column(
+        "microRegionId",
+        String,
+        ForeignKey("micro_region.id"),
+        nullable=False,
+    )
+    asset_context: Mapped[dict] = mapped_column(
+        "assetContext", JSON, nullable=False
+    )
+    on_site_days: Mapped[int | None] = mapped_column(
+        "onSiteDays", Integer, nullable=True
+    )
+    remote_days: Mapped[int | None] = mapped_column(
+        "remoteDays", Integer, nullable=True
+    )
+    budget_min_usdc: Mapped[int] = mapped_column(
+        "budgetMinUsdc", BigInteger, nullable=False
+    )
+    budget_max_usdc: Mapped[int] = mapped_column(
+        "budgetMaxUsdc", BigInteger, nullable=False
+    )
+    available_from: Mapped[int] = mapped_column(
+        "availableFrom", BigInteger, nullable=False
+    )
+    available_until: Mapped[int] = mapped_column(
+        "availableUntil", BigInteger, nullable=False
+    )
+    tier: Mapped[IntentTier] = mapped_column(
+        "tier", SAEnum(IntentTier, name="intent_tier"), nullable=False
+    )
+    referring_partner: Mapped[str | None] = mapped_column(
+        "referringPartner", String, nullable=True
+    )
+    status: Mapped[IntentStatus] = mapped_column(
+        "status",
+        SAEnum(IntentStatus, name="intent_status"),
+        nullable=False,
+        default=IntentStatus.POSTED,
+    )
+    chain_intent_ref: Mapped[str | None] = mapped_column(
+        "chainIntentRef", String, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+
+    micro_region: Mapped["MicroRegion"] = relationship(back_populates="intents")
+    bids: Mapped[list["Bid"]] = relationship(back_populates="intent")
+    matches: Mapped[list["Match"]] = relationship(back_populates="intent")
+
+
+class Bid(Base):
+    """One executor's bid against an Intent — human specialist or AI
+    agent, competing on the same specification (D2). `payload` is
+    free-form by design (narrative, terms; from Day 4, the NEAR AI
+    attestation receipt for agent bids)."""
+
+    __tablename__ = "bid"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    intent_id: Mapped[str] = mapped_column(
+        "intentId", String, ForeignKey("intent.id"), nullable=False
+    )
+    bidder_account: Mapped[str] = mapped_column(
+        "bidderAccount", String, nullable=False
+    )
+    bidder_kind: Mapped[PosterKind] = mapped_column(
+        "bidderKind", SAEnum(PosterKind, name="poster_kind"), nullable=False
+    )
+    amount_usdc: Mapped[int] = mapped_column(
+        "amountUsdc", BigInteger, nullable=False
+    )
+    eta_hours: Mapped[int | None] = mapped_column(
+        "etaHours", Integer, nullable=True
+    )
+    on_site_days: Mapped[int | None] = mapped_column(
+        "onSiteDays", Integer, nullable=True
+    )
+    remote_days: Mapped[int | None] = mapped_column(
+        "remoteDays", Integer, nullable=True
+    )
+    payload: Mapped[dict] = mapped_column("payload", JSON, nullable=False)
+    status: Mapped[BidStatus] = mapped_column(
+        "status",
+        SAEnum(BidStatus, name="bid_status"),
+        nullable=False,
+        default=BidStatus.SUBMITTED,
+    )
+    chain_bid_ref: Mapped[str | None] = mapped_column(
+        "chainBidRef", String, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+
+    intent: Mapped["Intent"] = relationship(back_populates="bids")
+    matches: Mapped[list["Match"]] = relationship(back_populates="bid")
+
+
+class Match(Base):
+    """The pairing record: one Intent, one selected Bid. Created at
+    selection (Day 3's settle flow); `state` follows the Commitment
+    precedent (plain string, values documented here): SELECTED ->
+    SETTLING -> SETTLED -> DELIVERED, SETTLE_FAILED on failure.
+    `settlementRef` records the settlement receipt reference (a chain
+    reference, never a FK)."""
+
+    __tablename__ = "match"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    intent_id: Mapped[str] = mapped_column(
+        "intentId", String, ForeignKey("intent.id"), nullable=False
+    )
+    bid_id: Mapped[str] = mapped_column(
+        "bidId", String, ForeignKey("bid.id"), nullable=False
+    )
+    matched_by: Mapped[str] = mapped_column("matchedBy", String, nullable=False)
+    state: Mapped[str] = mapped_column(
+        "state", String, nullable=False, default="SELECTED"
+    )
+    settlement_ref: Mapped[str | None] = mapped_column(
+        "settlementRef", String, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+
+    intent: Mapped["Intent"] = relationship(back_populates="matches")
+    bid: Mapped["Bid"] = relationship(back_populates="matches")

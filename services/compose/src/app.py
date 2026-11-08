@@ -23,6 +23,7 @@ import approvals
 import commitments
 import db
 import intakes
+import intents
 import snapshots
 
 
@@ -58,6 +59,7 @@ def create_app() -> FastAPI:
     app.include_router(snapshots.router)
     app.include_router(approvals.router)
     app.include_router(commitments.router)
+    app.include_router(intents.router)
     return app
 
 

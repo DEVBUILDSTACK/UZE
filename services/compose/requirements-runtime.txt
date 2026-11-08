@@ -13,3 +13,4 @@ fastapi~=0.115.12
 uvicorn[standard]~=0.30.2
 httpx
 pytest
+py-near==1.2.22

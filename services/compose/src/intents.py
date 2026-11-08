@@ -1,0 +1,254 @@
+"""Intents router — the Sprint 1.5 CRE marketplace surface (Day 2).
+
+POST /api/v1/specs            post a specification (an Intent) — the
+                              compose row is the system of record; the
+                              NEAR contract call rides along when the
+                              chain gate is open (see near_client.py)
+GET  /api/v1/specs/{id}       the spec, with its bid count
+GET  /api/v1/specs/{id}/bids  the bids competing on the spec
+POST /api/v1/bids             bid on a spec; the first bid moves the
+                              intent POSTED -> BIDDING (Diagram 4)
+
+Semantics, stated once here:
+  - Field names on the wire are the intent schema's camelCase names —
+    the agent surface and the (Day 6) human surface project the same
+    fields; a field on one and not the other is a defect (D4).
+  - A spec names its micro-region by slug; an unknown slug is a 422
+    (the benchmark unit must exist before work is priced against it).
+  - budgetMinUsdc must not exceed budgetMaxUsdc (422).
+  - Bidding on a missing spec is 404; on an EXPIRED spec, 410.
+  - Settlement is NOT here: selection + settle are Day 3. A Match row
+    is created only by the settle flow.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy.orm import Session
+
+import models
+import near_client
+from db import get_session
+
+router = APIRouter(prefix="/api/v1", tags=["intents"])
+
+
+class AssetContextIn(BaseModel):
+    propertyType: models.PropertyType
+    doorCount: int
+    brandAffiliation: str | None = None
+    acquisitionStage: models.AcquisitionStage
+
+
+class SpecIn(BaseModel):
+    kind: models.IntentKind = models.IntentKind.DEMAND
+    posterKind: models.PosterKind
+    posterAccount: str
+    domain: models.IntentDomain
+    workProduct: models.WorkProduct
+    deliverable: dict[str, Any]
+    microRegionId: str
+    assetContext: AssetContextIn
+    onSiteDays: int | None = None
+    remoteDays: int | None = None
+    budgetMinUsdc: int
+    budgetMaxUsdc: int
+    availableFrom: int
+    availableUntil: int
+    tier: models.IntentTier = models.IntentTier.ANY
+    referringPartner: str | None = None
+
+
+class BidIn(BaseModel):
+    intentId: str
+    bidderAccount: str
+    bidderKind: models.PosterKind
+    amountUsdc: int
+    etaHours: int | None = None
+    onSiteDays: int | None = None
+    remoteDays: int | None = None
+    payload: dict[str, Any] = {}
+
+
+class SpecView(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: str
+    kind: str
+    posterKind: str
+    posterAccount: str
+    domain: str
+    workProduct: str
+    deliverable: dict[str, Any]
+    microRegionId: str
+    assetContext: dict[str, Any]
+    onSiteDays: int | None
+    remoteDays: int | None
+    budgetMinUsdc: int
+    budgetMaxUsdc: int
+    availableFrom: int
+    availableUntil: int
+    tier: str
+    referringPartner: str | None
+    status: str
+    chainIntentRef: str | None
+    bidCount: int
+
+
+class BidView(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: str
+    intentId: str
+    bidderAccount: str
+    bidderKind: str
+    amountUsdc: int
+    etaHours: int | None
+    onSiteDays: int | None
+    remoteDays: int | None
+    payload: dict[str, Any]
+    status: str
+    chainBidRef: str | None
+
+
+def _spec_view(intent: models.Intent) -> SpecView:
+    return SpecView(
+        id=intent.id,
+        kind=intent.kind.value,
+        posterKind=intent.poster_kind.value,
+        posterAccount=intent.poster_account,
+        domain=intent.domain.value,
+        workProduct=intent.work_product.value,
+        deliverable=intent.deliverable,
+        microRegionId=intent.micro_region_id,
+        assetContext=intent.asset_context,
+        onSiteDays=intent.on_site_days,
+        remoteDays=intent.remote_days,
+        budgetMinUsdc=intent.budget_min_usdc,
+        budgetMaxUsdc=intent.budget_max_usdc,
+        availableFrom=intent.available_from,
+        availableUntil=intent.available_until,
+        tier=intent.tier.value,
+        referringPartner=intent.referring_partner,
+        status=intent.status.value,
+        chainIntentRef=intent.chain_intent_ref,
+        bidCount=len(intent.bids),
+    )
+
+
+def _bid_view(bid: models.Bid) -> BidView:
+    return BidView(
+        id=bid.id,
+        intentId=bid.intent_id,
+        bidderAccount=bid.bidder_account,
+        bidderKind=bid.bidder_kind.value,
+        amountUsdc=bid.amount_usdc,
+        etaHours=bid.eta_hours,
+        onSiteDays=bid.on_site_days,
+        remoteDays=bid.remote_days,
+        payload=bid.payload,
+        status=bid.status.value,
+        chainBidRef=bid.chain_bid_ref,
+    )
+
+
+@router.post("/specs", status_code=201)
+def post_spec(body: SpecIn, db: Session = Depends(get_session)):
+    if body.budgetMinUsdc > body.budgetMaxUsdc:
+        raise HTTPException(
+            status_code=422,
+            detail="budgetMinUsdc must not exceed budgetMaxUsdc",
+        )
+    if db.get(models.MicroRegion, body.microRegionId) is None:
+        raise HTTPException(
+            status_code=422,
+            detail=f"unknown microRegionId: {body.microRegionId}",
+        )
+    intent = models.Intent(
+        kind=body.kind,
+        poster_kind=body.posterKind,
+        poster_account=body.posterAccount,
+        domain=body.domain,
+        work_product=body.workProduct,
+        deliverable=body.deliverable,
+        micro_region_id=body.microRegionId,
+        asset_context=body.assetContext.model_dump(mode="json"),
+        on_site_days=body.onSiteDays,
+        remote_days=body.remoteDays,
+        budget_min_usdc=body.budgetMinUsdc,
+        budget_max_usdc=body.budgetMaxUsdc,
+        available_from=body.availableFrom,
+        available_until=body.availableUntil,
+        tier=body.tier,
+        referring_partner=body.referringPartner,
+    )
+    db.add(intent)
+    db.commit()
+    db.refresh(intent)
+
+    chain = near_client.post_intent(
+        {
+            "specId": intent.id,
+            "microRegionId": intent.micro_region_id,
+            "workProduct": intent.work_product.value,
+            "budgetMaxUsdc": intent.budget_max_usdc,
+        }
+    )
+    if chain.get("status") == "submitted":
+        intent.chain_intent_ref = chain.get("result") or chain.get("txHash")
+        db.commit()
+        db.refresh(intent)
+    return {**_spec_view(intent).model_dump(), "chain": chain}
+
+
+@router.get("/specs/{spec_id}")
+def get_spec(spec_id: str, db: Session = Depends(get_session)):
+    intent = db.get(models.Intent, spec_id)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="spec not found")
+    return _spec_view(intent)
+
+
+@router.get("/specs/{spec_id}/bids")
+def list_bids(spec_id: str, db: Session = Depends(get_session)):
+    intent = db.get(models.Intent, spec_id)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="spec not found")
+    return [_bid_view(bid) for bid in intent.bids]
+
+
+@router.post("/bids", status_code=201)
+def post_bid(body: BidIn, db: Session = Depends(get_session)):
+    intent = db.get(models.Intent, body.intentId)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="spec not found")
+    if intent.status is models.IntentStatus.EXPIRED:
+        raise HTTPException(status_code=410, detail="spec is EXPIRED")
+    bid = models.Bid(
+        intent_id=intent.id,
+        bidder_account=body.bidderAccount,
+        bidder_kind=body.bidderKind,
+        amount_usdc=body.amountUsdc,
+        eta_hours=body.etaHours,
+        on_site_days=body.onSiteDays,
+        remote_days=body.remoteDays,
+        payload=body.payload,
+    )
+    db.add(bid)
+    if intent.status is models.IntentStatus.POSTED:
+        intent.status = models.IntentStatus.BIDDING
+    db.commit()
+    db.refresh(bid)
+
+    chain = near_client.submit_bid(
+        intent.chain_intent_ref or intent.id,
+        {"bidId": bid.id, "amountUsdc": bid.amount_usdc},
+    )
+    if chain.get("status") == "submitted":
+        bid.chain_bid_ref = chain.get("result") or chain.get("txHash")
+        db.commit()
+        db.refresh(bid)
+    return {**_bid_view(bid).model_dump(), "chain": chain}
