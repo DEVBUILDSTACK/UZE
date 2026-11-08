@@ -30,6 +30,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 import models
+import inference
 import near_client
 from db import get_session
 
@@ -249,6 +250,16 @@ def post_bid(body: BidIn, db: Session = Depends(get_session)):
     )
     if chain.get("status") == "submitted":
         bid.chain_bid_ref = chain.get("result") or chain.get("txHash")
+        db.commit()
+        db.refresh(bid)
+
+    # Day 4 (built Day 3 evening): an agent's bid is backed by
+    # executed inference — the analysis (or its honest unavailable /
+    # error state) attaches to the bid payload. Inference never
+    # fails a bid.
+    if body.bidderKind is models.PosterKind.AGENT:
+        analysis = inference.analyze_property(_spec_view(intent).model_dump())
+        bid.payload = {**bid.payload, "inference": analysis}
         db.commit()
         db.refresh(bid)
     return {**_bid_view(bid).model_dump(), "chain": chain}

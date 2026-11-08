@@ -122,3 +122,7 @@ def submit_bid(intent_ref: str, bid_payload: dict) -> dict:
 
 def get_matches(intent_ref: str) -> dict:
     return _run("get_matches", {"intent_id": intent_ref}, view=True)
+
+
+def settle(intent_ref: str, bid_ref: str) -> dict:
+    return _run("settle", {"intent_id": intent_ref, "bid_id": bid_ref})

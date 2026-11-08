@@ -10,53 +10,6 @@ scripts/near_roundtrip.py — tests never fake it.
 
 from __future__ import annotations
 
-import json
-import os
-
-import pytest
-from fastapi.testclient import TestClient
-
-HERE = os.path.dirname(os.path.abspath(__file__))
-FIXTURE_PATH = os.path.join(
-    os.path.dirname(HERE), "scripts", "fixtures", "sprint15_demo.json"
-)
-
-
-@pytest.fixture()
-def market_client(migrated_db):
-    import db
-    import models
-    from app import create_app
-
-    session = db.session()
-    try:
-        session.query(models.Match).delete()
-        session.query(models.Bid).delete()
-        session.query(models.Intent).delete()
-        session.query(models.MicroRegion).delete()
-        session.commit()
-        with open(FIXTURE_PATH) as fh:
-            fixture = json.load(fh)
-        for row in fixture["microRegions"]:
-            session.add(
-                models.MicroRegion(
-                    id=row["id"],
-                    label=row["label"],
-                    metro=row["metro"],
-                    region=row["region"],
-                )
-            )
-        session.commit()
-    finally:
-        session.close()
-    return TestClient(create_app())
-
-
-@pytest.fixture()
-def fixture():
-    with open(FIXTURE_PATH) as fh:
-        return json.load(fh)
-
 
 def _post_spec(client, fixture) -> dict:
     resp = client.post("/api/v1/specs", json=fixture["spec"])
@@ -64,8 +17,8 @@ def _post_spec(client, fixture) -> dict:
     return resp.json()
 
 
-def test_spec_posts_posted_with_chain_disabled(market_client, fixture):
-    spec = _post_spec(market_client, fixture)
+def test_spec_posts_posted_with_chain_disabled(market_client, demo_fixture):
+    spec = _post_spec(market_client, demo_fixture)
     assert spec["status"] == "POSTED"
     assert spec["microRegionId"] == "miami-brickell"
     assert spec["assetContext"]["doorCount"] == 340
@@ -76,11 +29,11 @@ def test_spec_posts_posted_with_chain_disabled(market_client, fixture):
 
 
 def test_two_bids_move_spec_to_bidding_and_list_in_order(
-    market_client, fixture
+    market_client, demo_fixture
 ):
-    spec = _post_spec(market_client, fixture)
+    spec = _post_spec(market_client, demo_fixture)
     posted = []
-    for bid in fixture["bids"]:
+    for bid in demo_fixture["bids"]:
         body = {k: v for k, v in bid.items() if k != "bidderLabel"}
         body["intentId"] = spec["id"]
         resp = market_client.post("/api/v1/bids", json=body)
@@ -103,20 +56,20 @@ def test_two_bids_move_spec_to_bidding_and_list_in_order(
     ]
 
 
-def test_unknown_micro_region_is_422(market_client, fixture):
-    body = dict(fixture["spec"], microRegionId="nowhere-special")
+def test_unknown_micro_region_is_422(market_client, demo_fixture):
+    body = dict(demo_fixture["spec"], microRegionId="nowhere-special")
     resp = market_client.post("/api/v1/specs", json=body)
     assert resp.status_code == 422
 
 
-def test_inverted_budget_is_422(market_client, fixture):
-    body = dict(fixture["spec"], budgetMinUsdc=99999, budgetMaxUsdc=1)
+def test_inverted_budget_is_422(market_client, demo_fixture):
+    body = dict(demo_fixture["spec"], budgetMinUsdc=99999, budgetMaxUsdc=1)
     resp = market_client.post("/api/v1/specs", json=body)
     assert resp.status_code == 422
 
 
-def test_bid_on_missing_spec_is_404(market_client, fixture):
-    body = {k: v for k, v in fixture["bids"][0].items() if k != "bidderLabel"}
+def test_bid_on_missing_spec_is_404(market_client, demo_fixture):
+    body = {k: v for k, v in demo_fixture["bids"][0].items() if k != "bidderLabel"}
     body["intentId"] = "no-such-spec"
     resp = market_client.post("/api/v1/bids", json=body)
     assert resp.status_code == 404

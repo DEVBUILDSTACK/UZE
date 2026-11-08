@@ -88,3 +88,52 @@ def client(migrated_db):
     finally:
         session.close()
     return TestClient(create_app())
+
+
+# --- Sprint 1.5 marketplace fixtures (Day 2/3) ----------------------
+# Shared by test_intents.py and test_settle.py: a TestClient over
+# clean intent tables with the demo fixture's micro-regions seeded.
+
+FIXTURE_PATH = os.path.join(
+    COMPOSE_DIR, "scripts", "fixtures", "sprint15_demo.json"
+)
+
+
+@pytest.fixture()
+def demo_fixture():
+    import json
+
+    with open(FIXTURE_PATH) as fh:
+        return json.load(fh)
+
+
+@pytest.fixture()
+def market_client(migrated_db, demo_fixture):
+    import db
+    import models
+    from app import create_app
+    from fastapi.testclient import TestClient
+
+    session = db.session()
+    try:
+        session.query(models.Match).delete()
+        session.query(models.Bid).delete()
+        session.query(models.Intent).delete()
+        session.query(models.MicroRegion).delete()
+        # EventLog is append-only by design (Sprint 0 criterion 6) —
+        # it is never cleaned between tests; event assertions filter
+        # by aggregate id instead.
+        session.commit()
+        for row in demo_fixture["microRegions"]:
+            session.add(
+                models.MicroRegion(
+                    id=row["id"],
+                    label=row["label"],
+                    metro=row["metro"],
+                    region=row["region"],
+                )
+            )
+        session.commit()
+    finally:
+        session.close()
+    return TestClient(create_app())
