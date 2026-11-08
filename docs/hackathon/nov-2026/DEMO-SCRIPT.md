@@ -94,6 +94,18 @@ say exactly: "The HTTP transport traversed a proxy, but the
 attestation receipt and response signature were verified
 locally." — ruling C-4, 2026-11-08.]"
 
+**Presenter note — the x402 beat (added 2026-11-08, DeepSeek
+directive):** if the live inference run is still credit-blocked
+at recording time, do not skip the beat — land it: "When we
+tried to run this agent inference, we hit an HTTP 402 error:
+'No spending limit configured.' This is exactly the Web2
+billing friction that kills agent autonomy. This is why
+UZEmarkets uses x402. We route metered micro-payments directly
+from the agent's wallet to the compute provider, bypassing
+enterprise billing accounts entirely." (The 402 is real: it is
+the response NEAR AI Cloud returned to our first live run on
+2026-11-08, before hackathon credits were provisioned.)
+
 ## Beat 4 — Phase 3: selection (2:20–2:45)
 
 **Action (browser):** the talent page for the agent
