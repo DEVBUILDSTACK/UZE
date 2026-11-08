@@ -1366,6 +1366,18 @@ class AssetSubclass(enum.Enum):
     R = "R"  # Resource (subterranean exploration / extraction)
 
 
+class CountryCode(enum.Enum):
+    """The intent's country — the dynamic-extension axis
+    (2026-11-08, Paraguay extension): new markets are added as
+    enum members, not new schemas. PY enters first alongside the
+    founding BR/US footprint and UY."""
+
+    BR = "BR"
+    PY = "PY"
+    UY = "UY"
+    US = "US"
+
+
 class ExecutionEnvironment(enum.Enum):
     """Where an intent's execution runs (James's stack clarification,
     2026-11-08): NEAR intents / multi-party matching, or Arcium
@@ -1484,6 +1496,21 @@ class Intent(Base):
         "agentAttestation",
         SAEnum(AgentAttestation, name="agent_attestation"),
         nullable=True,
+    )
+    # Market extension (Paraguay, 2026-11-08): the intent's
+    # country, and the dual-track macro-distress flag — the owner
+    # is simultaneously optimizing the asset (the Hold) and
+    # preparing its liquidation route (the Exit: Arcium sealed-bid
+    # auction into USDC). The routing rules these fields drive are
+    # filed in the HIADR addenda; the data-science router that
+    # acts on them is Sprint 2 work, not built here.
+    country_code: Mapped[CountryCode | None] = mapped_column(
+        "countryCode",
+        SAEnum(CountryCode, name="country_code"),
+        nullable=True,
+    )
+    macro_distress_exit: Mapped[bool | None] = mapped_column(
+        "macroDistressExit", Boolean, nullable=True
     )
     on_site_days: Mapped[int | None] = mapped_column(
         "onSiteDays", Integer, nullable=True

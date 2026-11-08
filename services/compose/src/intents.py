@@ -32,6 +32,7 @@ from sqlalchemy.orm import Session
 import models
 import inference
 import near_client
+import trust
 from db import get_session
 
 router = APIRouter(prefix="/api/v1", tags=["intents"])
@@ -75,6 +76,8 @@ class SpecIn(BaseModel):
     affiliateId: str | None = None
     executionEnvironment: models.ExecutionEnvironment | None = None
     agentAttestation: models.AgentAttestation | None = None
+    countryCode: models.CountryCode | None = None
+    macroDistressExit: bool | None = None
 
 
 class BidIn(BaseModel):
@@ -107,6 +110,8 @@ class SpecView(BaseModel):
     affiliateId: str | None
     executionEnvironment: str | None
     agentAttestation: str | None
+    countryCode: str | None
+    macroDistressExit: bool | None
     onSiteDays: int | None
     remoteDays: int | None
     budgetMinUsdc: int
@@ -160,6 +165,8 @@ def _spec_view(intent: models.Intent) -> SpecView:
         agentAttestation=(
             intent.agent_attestation.value if intent.agent_attestation else None
         ),
+        countryCode=intent.country_code.value if intent.country_code else None,
+        macroDistressExit=intent.macro_distress_exit,
         onSiteDays=intent.on_site_days,
         remoteDays=intent.remote_days,
         budgetMinUsdc=intent.budget_min_usdc,
@@ -259,6 +266,29 @@ def post_spec(body: SpecIn, db: Session = Depends(get_session)):
             status_code=422,
             detail=f"unknown microRegionId: {body.microRegionId}",
         )
+
+    # Trust-layer resolution (post-audit spec, 2026-11-08): when
+    # the Assurative trust layer resolves the poster's NEAR
+    # account, its Entity is the source of truth and is stamped on
+    # the intent. A client-supplied entityId that contradicts the
+    # trust layer is rejected; when the trust layer cannot resolve
+    # (unconfigured, unreachable, unbound), the posted references
+    # stand — the marketplace is never blocked by the trust layer.
+    entity_id = body.entityId
+    affiliate_id = body.affiliateId
+    resolution = trust.resolve_account(body.posterAccount)
+    if resolution:
+        if entity_id and entity_id != resolution["entityId"]:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "entityId does not match the trust layer's "
+                    "resolution for posterAccount"
+                ),
+            )
+        entity_id = resolution["entityId"]
+        affiliate_id = affiliate_id or resolution["affiliateId"]
+
     intent = models.Intent(
         kind=body.kind,
         poster_kind=body.posterKind,
@@ -271,10 +301,12 @@ def post_spec(body: SpecIn, db: Session = Depends(get_session)):
         asset_subclass=body.assetSubclass,
         target_area=body.targetArea,
         subterranean_context=body.subterraneanContext,
-        entity_id=body.entityId,
-        affiliate_id=body.affiliateId,
+        entity_id=entity_id,
+        affiliate_id=affiliate_id,
         execution_environment=body.executionEnvironment,
         agent_attestation=body.agentAttestation,
+        country_code=body.countryCode,
+        macro_distress_exit=body.macroDistressExit,
         on_site_days=body.onSiteDays,
         remote_days=body.remoteDays,
         budget_min_usdc=body.budgetMinUsdc,

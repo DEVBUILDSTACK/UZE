@@ -33,6 +33,7 @@ from sqlalchemy.orm import Session
 import models
 import near_client
 import settlement
+import trust
 from db import get_session
 from intents import _bid_view, _spec_view
 
@@ -180,6 +181,17 @@ def post_settle(body: SettleIn, db: Session = Depends(get_session)):
     outcome = settlement.settle_usdc(bid.bidder_account, bid.amount_usdc)
     result["settlement"].update(outcome)
 
+    # Provenance (post-audit spec, 2026-11-08): attribute the
+    # settlement to the winning bidder's trust-layer Entity when
+    # the trust layer resolves it. Unresolved changes nothing.
+    bidder_resolution = trust.resolve_account(bid.bidder_account)
+    provenance: dict = {}
+    if bidder_resolution:
+        provenance = {
+            "bidderEntityId": bidder_resolution["entityId"],
+            "bidderAffiliateId": bidder_resolution["affiliateId"],
+        }
+
     if outcome["status"] == "settled":
         intent.status = models.IntentStatus.SETTLED
         match.state = "SETTLED"
@@ -194,6 +206,7 @@ def post_settle(body: SettleIn, db: Session = Depends(get_session)):
                 "payerAddress": outcome["payerAddress"],
                 "payeeAddress": outcome["payeeAddress"],
                 "contractRef": contract.get("result"),
+                **provenance,
             },
         )
         _event(
@@ -201,6 +214,7 @@ def post_settle(body: SettleIn, db: Session = Depends(get_session)):
             "comparable.recorded",
             {
                 "intentId": intent.id,
+                "entityId": intent.entity_id,
                 "domain": intent.domain.value,
                 "workProduct": intent.work_product.value,
                 "assetContext": intent.asset_context,
@@ -215,7 +229,7 @@ def post_settle(body: SettleIn, db: Session = Depends(get_session)):
         _event(
             db, "intent", intent.id, "settlement.signed",
             {"matchId": match.id, "bidId": bid.id,
-             "reason": outcome.get("reason")},
+             "reason": outcome.get("reason"), **provenance},
         )
     else:  # failed
         intent.status = models.IntentStatus.SETTLE_FAILED
@@ -223,7 +237,7 @@ def post_settle(body: SettleIn, db: Session = Depends(get_session)):
         _event(
             db, "intent", intent.id, "settlement.failed",
             {"matchId": match.id, "bidId": bid.id,
-             "reason": outcome.get("reason")},
+             "reason": outcome.get("reason"), **provenance},
         )
     db.commit()
     db.refresh(intent)

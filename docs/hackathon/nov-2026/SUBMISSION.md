@@ -24,6 +24,18 @@ Addendum A, shipped in this sprint):
 - **A — Agriculture & D — Development:** raw land, evaluated by
   polygon spatial underwriting (soil, zoning, financing). A
   GeoJSON polygon is required — radius is invalid for land.
+  **Paraguay extension (2026-11-08):** because of the recent
+  macroeconomic distress and fiat collapse in Paraguay,
+  UZEmarkets offers a dual-track solution for farmers. First, we
+  route their polygons to AgTech partners (like Effatha) to
+  optimize corn and sorghum yields, maximizing their cash flow.
+  Second, if the farm cannot be saved, we immediately route the
+  land to our Arcium sealed-bid auction pipeline to liquidate
+  the RWA into USDC, protecting their capital from fiat
+  devaluation. The schema carries this today: a `countryCode`
+  (BR/PY/UY/US — new markets are new enum members, not new
+  schemas) and a `macroDistressExit` flag marking the dual-track
+  posture; the routing itself is the Sprint 2 data-science layer.
 - **R — Resource:** subterranean assets, evaluated on subsurface
   rights and geology (water, minerals, oil/gas). Polygon required,
   plus a mandatory subterranean context: soil depth, resource
@@ -118,9 +130,16 @@ The stack separates trust from transactions:
   and that attestation travels with its bids.
 
 [STATE: a forensic audit of the Assurative V2 repo is filed at
-docs/audit/assurative-v2-gap-analysis.md — the Entity/Affiliate
-tables and the x401 verification path are the mapped trust-layer
-build; the intent-side references and the x401 stub ship here.]
+docs/audit/assurative-v2-gap-analysis.md, and the trust layer it
+specified is now BUILT (assurative-v2, branch feat/trust-layer):
+Entity / Affiliate / ExternalAccount / AgentCredential tables,
+the /api/v1/trust endpoints, and real Ed25519 x401 verification
+against the agent's NEAR account keys. Compose resolves poster
+accounts against it live — verified end to end on 2026-11-08:
+a spec posted with no entityId was stamped with the trust
+layer's Entity by resolution. The x401 tier gate in compose
+still uses the local stub until the Sprint 2 swap to the trust
+call.]
 
 ## Architecture
 
@@ -167,7 +186,21 @@ build; the intent-side references and the x401 stub ship here.]
   `agentAttestation`) as an additive migration (`4efec7ad31a2`),
   and a forensic gap analysis of the Assurative V2 repo is filed
   (docs/audit/) mapping the Entity/Affiliate build the references
-  resolve against. Suite at the Day 7 draft refresh: 115 tests.
+  resolve against.
+- Assurative V2 trust layer built (assurative-v2, feat/trust-layer):
+  the four trust tables + migration, the /api/v1/trust endpoints
+  (entity / affiliate / bind / agent / resolve / verify-x401 with
+  real Ed25519 verification), admin-gated issuance in the app's
+  existing middleware pattern. Compose consumes it: poster
+  resolution stamps Entity IDs on intents, settlements attribute
+  the bidder's Entity in the EventLog — proven live, two
+  processes over HTTP, on 2026-11-08.
+- Paraguay extension: `countryCode` (BR/PY/UY/US) +
+  `macroDistressExit` on the Intent (migration `85fe8850a6f9`) —
+  the dual-track optimize-or-exit posture for distressed
+  markets, with the routing rules filed as Sprint 2 spec and the
+  Ag-Cattle stack diagrammed (docs/diagrams/05). Suite at the
+  Day 7 draft refresh: 122 tests.
 - Chain Signatures proven end-to-end (MPC signature verified under
   the derived key); the mocked-settlement fallback was retired.
 - Settlement endpoint: selection, match state machine, the exact

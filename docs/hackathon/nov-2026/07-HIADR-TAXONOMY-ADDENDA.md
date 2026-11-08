@@ -111,3 +111,92 @@ data-rich X thread with the JSON hook.
   endpoint serves measured variables computed from real records
   (spec count, comparable count, settled volume) — the sketch's
   example figures were illustrative and are never served as data.
+
+
+---
+
+## Paraguay extension + data-science routing (2026-11-08, DeepSeek directive)
+
+Strategic extension relayed by James: the AgTech/land pilot
+extends to **Paraguay** (macro distress following the Ueno bank
+collapse — the corroborated event in our record, 2026-11-05), and
+the schema must support **dynamic country extension on demand**.
+
+**Conformance note:** the directive names
+`operational_optimization_context` and `rwa_monetization_context`
+as the carriers for these fields. Neither object exists in the
+filed schema and no AgTech referral pilot structure is on record,
+so the fields land in the filed shapes instead of inventing two
+new context objects: `countryCode` and `macroDistressExit` are
+**Intent-level** (migration `85fe8850a6f9`), and the subterranean
+context's `jurisdiction` carries "PY" like any jurisdiction value.
+
+**Shipped (schema):**
+- `countryCode` — enum {BR, PY, UY, US}. New markets arrive as
+  enum members, not schema changes (the dynamic-extension rule).
+- `macroDistressExit` — boolean. The dual-track flag: the owner
+  is optimizing the asset (the Hold) while preparing its
+  liquidation route (the Exit).
+
+**Filed as spec, NOT built (routing):** the data-science router
+remains excluded per the HIADR directive's own sequencing; these
+rules are its specification when it is built (Sprint 2):
+- An agriculture intent with `countryCode == "PY"` routes its
+  polygon to AgTech partner yield optimization (partner API
+  integration — Effatha named in the directive as the example
+  partner; no integration exists yet, partner onboarding is a
+  business step, not a schema step).
+- An intent flagged `macroDistressExit` in a distressed market
+  (PY today) is simultaneously tagged for the exit route:
+  `executionEnvironment = ARCIUM_AUCTION` (the tag shipped in the
+  trust-layer pass) — the Arcium sealed-bid auction pipeline that
+  liquidates the land RWA into USDC on Solana, the capital
+  migration route out of the distressed fiat.
+- The two routes are not exclusive: the flag means both run —
+  optimize to save the farm; keep the exit priced and ready.
+
+
+---
+
+## Diagram 05 mapping review (2026-11-08)
+
+`docs/diagrams/05-agtech-cattle-stack.md` was saved verbatim as
+directed. Per the diagram governance (05-HOW-TO-USE-DIAGRAMS),
+diagrams are shared vocabulary, not the specification — the
+review below maps each element to the filed system and names
+every divergence rather than shipping one silently:
+
+- **Distribution wedge / webhook** (`POST
+  /api/v1/webhooks/agriculture/intent`, crop_type CORN/SORGHUM):
+  not built. Ingestion today is `POST /api/v1/specs`. The webhook
+  belongs to the partner/data-science layer the HIADR directive
+  sequenced to Sprint 2; crop_type rides the intent's asset
+  context conventions when that layer is built.
+- **Agro Digital spatial engine:** our `targetArea` IS standard
+  GeoJSON Polygon at the top level (filed in the HIADR pass) —
+  CAR-mappable as the mapping requires. Their "6m soil" return
+  aligns with `subterraneanContext.soil_analysis_depth_meters`
+  (the filed example value is 6).
+- **Effatha yield loop:** routing rules filed in the Paraguay
+  section above; the partner integration itself is not built
+  (no partner API exists to integrate against yet).
+- **AI & tracking:** the NEAR AI inference module, the x402
+  metering, and x401 all exist; x401 verification is now real in
+  the Assurative trust layer (compose's local stub still serves
+  the tier gate until the Sprint 2 swap to the trust call).
+- **Capital split:** Path 1 (finance) is the filed financing
+  linkage — design only. Path 2 (exit) is expressed by shipped
+  fields: `macroDistressExit` + `executionEnvironment =
+  ARCIUM_AUCTION`, settling in USDC on Solana over the shipped
+  rail.
+- **The named context objects**
+  (`operational_optimization_context`, `rwa_monetization_context`):
+  not separate objects in the filed schema, by design — every
+  field they would carry already lives on the Intent
+  (countryCode, macroDistressExit, subterraneanContext,
+  executionEnvironment, targetArea). Splitting them out as
+  parallel JSONB contexts would duplicate state the Intent
+  already owns. If James/DeepSeek want the named objects as a
+  partner-facing payload shape, that is a serialization view to
+  add at the routing layer, not new storage — flagged for their
+  call, not silently built.

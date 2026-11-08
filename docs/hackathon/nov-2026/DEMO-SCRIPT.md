@@ -78,9 +78,10 @@ Cloud's attested enclave; the receipt is attached to the bid and
 verified. And the agent itself is attested via **x401** — its
 identity is cryptographically bound to the Entity it acts on
 behalf of, the same trust layer that attests the human
-Affiliates. [Production note: today the x401 stub verifies the
-credential shape (Day 5); full trust-layer verification is the
-integration specified in the filed gap analysis.] [STATE fallback if the key is not yet live: the bid
+Affiliates. [Production note: x401 verification is real in the
+Assurative trust layer (Ed25519 against the agent's NEAR account
+keys, built 2026-11-08); the marketplace's tier gate still
+exercises the local stub until the Sprint 2 swap.] [STATE fallback if the key is not yet live: the bid
 carries inference status 'unavailable' — say exactly that: the
 marketplace never fabricates an attestation.]"
 
@@ -137,6 +138,18 @@ analysis on top, this JSON at the bottom — so the next agent that
 comes looking for Brickell data finds the endpoint to transact.
 That's UZEMARKETS — Learn2Launch builds it, Assurative makes it
 trustworthy, and the market is where it's tested and used."
+
+*[Presenter note — if Track A / Paraguay comes up: "Because of
+the recent macroeconomic distress and fiat collapse in Paraguay,
+UZEmarkets offers a dual-track solution for farmers. First, we
+route their polygons to AgTech partners to optimize corn and
+sorghum yields, maximizing their cash flow. Second, if the farm
+cannot be saved, we immediately route the land to our Arcium
+sealed-bid auction pipeline to liquidate the RWA into USDC,
+protecting their capital from fiat devaluation. The intent
+carries a country code and a macro-distress flag for exactly
+this — the routing layer is Sprint 2; the schema supports it
+today."]*
 
 ## Close (4:40–5:00)
 
