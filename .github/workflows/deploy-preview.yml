@@ -1,14 +1,27 @@
 name: Deploy Preview
 
-# Manual only: deploys apps/uze-web from the dispatched ref as a
-# Vercel PREVIEW deployment (never production — production stays
-# push-to-main via deploy.yml). Used to put a branch build on a live
-# public URL ahead of a merge (e.g. the DevPartner portal for partner
-# review). Required GitHub secrets: VERCEL_TOKEN, VERCEL_ORG_ID,
-# VERCEL_PROJECT_ID (same as deploy.yml).
+# Manual or branch-push triggered: deploys apps/uze-web from the
+# hackathon branch as a Vercel PREVIEW deployment (never production
+# — production stays push-to-main via deploy.yml). Used to put a
+# branch build on a live public URL ahead of a merge (e.g. the
+# DevPartner portal for partner review). Required GitHub secrets:
+# VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID (same as deploy.yml).
+# Note: workflow_dispatch only becomes callable once this file also
+# exists on the default branch (post-merge); until then the push
+# trigger below is the firing mechanism.
 
 on:
   workflow_dispatch:
+  push:
+    branches: [hackathon/nov-2026]
+    paths:
+      - "apps/uze-web/**"
+      - "partners/**"
+      - ".github/workflows/deploy-preview.yml"
+
+concurrency:
+  group: deploy-preview-hackathon
+  cancel-in-progress: true
 
 jobs:
   web-vercel-preview:
