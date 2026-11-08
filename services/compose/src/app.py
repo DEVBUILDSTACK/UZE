@@ -27,6 +27,7 @@ import intakes
 import intents
 import metering
 import partners
+import agents
 import pulse
 import settle
 import snapshots
@@ -71,6 +72,7 @@ def create_app() -> FastAPI:
     app.include_router(agtech.router)
     app.include_router(partners.router)
     app.include_router(partners.admin_router)
+    app.include_router(agents.router)
     return app
 
 

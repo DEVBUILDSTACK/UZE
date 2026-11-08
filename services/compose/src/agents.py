@@ -1,0 +1,266 @@
+"""Headless agent surface — GIRA & SURA underwriting endpoints.
+
+The M2M half of the dual-surface architecture (composite directive,
+2026-11-08):
+
+  POST /api/v1/agents/gira/underwrite  {polygonId}
+      GIRA — the A/D/R agent. Assesses a polygon from the LIVE
+      ProviderSnapshot cache (approved partner data only; staged
+      PENDING payloads are counted but never consumed).
+  POST /api/v1/agents/sura/underwrite  {specId}
+      SURA — the HiCRE agent. Assesses a marketplace spec (Intent)
+      from the compose market state.
+
+Both return structured JSON assessments — not chat. Both are gated
+the same way as the metered surface (src/metering.py, Sprint 1.5):
+
+  - x401 identity: an X-IDENTITY header judged by the identity stub
+    verifier. Missing/invalid -> 401. (The stub is swapped for the
+    Assurative trust-layer verification in Sprint 2 — the same swap
+    the metered surface awaits.)
+  - x402 metering: an X-PAYMENT header carrying a mock
+    authorization. Missing/invalid -> 402 with the x402
+    requirements. The tariff is the Sprint 1.5 mock tariff and no
+    funds move; the call is logged as a mock metering event.
+
+Assessments are deterministic and computed from real records —
+partner payloads in the live cache and market state in compose.
+No LLM is consulted (attested inference is a separate, metered
+call; see src/inference.py).
+"""
+from __future__ import annotations
+
+import time
+from typing import Any
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+
+import metering
+import models
+from db import get_session
+
+router = APIRouter(prefix="/api/v1/agents")
+
+
+def _gate(request: Request, resource: str):
+    """x401 then x402, in that order.
+
+    Returns (identity, None) when both gates pass, or
+    (None, response) with the 401/402 challenge to send back —
+    the 402 body is the x402 requirements document, exactly as the
+    metered surface issues it."""
+    identity_header = request.headers.get("X-IDENTITY")
+    if not identity_header:
+        return None, JSONResponse(
+            status_code=401,
+            content={"error": "X-IDENTITY header is required (x401)", "mock": True},
+        )
+    ok, identity = metering.verify_identity_payload(
+        metering._decode_header(identity_header)
+    )
+    if not ok:
+        return None, JSONResponse(
+            status_code=401,
+            content={"error": identity.get("error", "identity verification failed"), "mock": True},
+        )
+
+    payment_header = request.headers.get("X-PAYMENT")
+    if not payment_header:
+        return None, JSONResponse(
+            status_code=402, content=metering.payment_requirements(resource)
+        )
+    valid, reason, _auth = metering.validate_mock_authorization(payment_header)
+    if not valid:
+        content = metering.payment_requirements(resource)
+        content["error"] = f"invalid X-PAYMENT authorization: {reason}"
+        return None, JSONResponse(status_code=402, content=content)
+    return identity, None
+
+
+def _snapshots_for_polygon(db: Session, polygon_id: str, model) -> list:
+    return (
+        db.query(model)
+        .filter(model.raw_payload["polygon_id"].as_string() == polygon_id)
+        .all()
+    )
+
+
+def _gira_guidance(snapshots: list) -> list[str]:
+    """Deterministic explanations derived from the ingested payloads
+    themselves — the same data GIRA's human surface narrates."""
+    lines: list[str] = []
+    for snap in snapshots:
+        payload = snap.raw_payload or {}
+        if snap.partner_id == "AGRO_DIGITAL":
+            soil = payload.get("soil_profile") or {}
+            crop = payload.get("crop_suitability") or {}
+            if soil:
+                lines.append(
+                    "Agro Digital soil chemistry: pH "
+                    f"{soil.get('ph_level')}, nitrogen {soil.get('nitrogen_ppm')} ppm, "
+                    f"phosphorus {soil.get('phosphorus_ppm')} ppm, potassium "
+                    f"{soil.get('potassium_ppm')} ppm, organic matter "
+                    f"{soil.get('organic_matter_pct')}%."
+                )
+            if crop:
+                lines.append(
+                    f"Crop suitability: {crop.get('crop_type')} at "
+                    f"{crop.get('yield_potential_tons_per_ha')} t/ha potential, "
+                    f"ZARC risk {crop.get('zarc_risk_score')}."
+                )
+        elif snap.partner_id == "BDCS":
+            feed = payload.get("feedlot_context") or {}
+            if feed:
+                lines.append(
+                    f"BDCS feedlot: {feed.get('cattle_head_count')} head on "
+                    f"{feed.get('feed_type')}, target slaughter "
+                    f"{feed.get('target_slaughter_weight_kg')} kg, feed "
+                    f"optimization index {feed.get('feed_optimization_index')}."
+                )
+        elif snap.partner_id == "EFFATHA":
+            agro = payload.get("agrotechnical_context") or {}
+            if agro:
+                lines.append(
+                    f"Effatha treatment: {agro.get('delivery_mechanism')} "
+                    f"protocol {agro.get('treatment_protocol_id')} for "
+                    f"{agro.get('target_crop')}, activation "
+                    f"{agro.get('activation_date')}."
+                )
+    return lines
+
+
+@router.post("/gira/underwrite")
+async def gira_underwrite(
+    request: Request,
+    db: Session = Depends(get_session),
+):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    polygon_id = (body or {}).get("polygonId")
+    if not polygon_id:
+        raise HTTPException(status_code=422, detail="polygonId is required")
+    identity, challenge = _gate(request, polygon_id)
+    if challenge is not None:
+        return challenge
+
+    live = _snapshots_for_polygon(db, polygon_id, models.ProviderSnapshot)
+    staged = _snapshots_for_polygon(db, polygon_id, models.StagingProviderSnapshot)
+    pending = [s for s in staged if s.approval_status == "PENDING"]
+
+    sources = [
+        {
+            "partnerId": s.partner_id,
+            "dataCategory": s.data_category,
+            "providerStatus": s.provider_status,
+            "fetchedAt": s.fetched_at,
+        }
+        for s in live
+    ]
+    assessment = {
+        "status": "READY" if live else "INSUFFICIENT_DATA",
+        "liveSnapshots": len(live),
+        "pendingStaging": len(pending),
+        "sources": sources,
+        "guidance": _gira_guidance(live),
+    }
+    db.add(
+        models.EventLog(
+            aggregate_type="polygon",
+            aggregate_id=polygon_id,
+            event_type="agent.underwrite",
+            actor="agent:GIRA",
+            payload={
+                "status": assessment["status"],
+                "liveSnapshots": len(live),
+                "identitySubject": identity.get("subject"),
+                "metering": "mock-x402",
+            },
+        )
+    )
+    db.commit()
+    return JSONResponse(
+        content={
+            "agent": "GIRA",
+            "surface": "headless",
+            "tracks": ["A", "D", "R"],
+            "polygonId": polygon_id,
+            "identity": {"subject": identity.get("subject"), "verified": True, "mock": True},
+            "metering": {"scheme": "mock-exact", "mock": True},
+            "assessment": assessment,
+        }
+    )
+
+
+@router.post("/sura/underwrite")
+async def sura_underwrite(
+    request: Request,
+    db: Session = Depends(get_session),
+):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    spec_id = (body or {}).get("specId")
+    if not spec_id:
+        raise HTTPException(status_code=422, detail="specId is required")
+    identity, challenge = _gate(request, spec_id)
+    if challenge is not None:
+        return challenge
+
+    intent = db.get(models.Intent, spec_id)
+    if intent is None:
+        raise HTTPException(status_code=404, detail="spec not found")
+
+    bids = db.query(models.Bid).filter(models.Bid.intent_id == spec_id).all()
+    amounts = [b.amount_usdc for b in bids if b.amount_usdc is not None]
+    in_budget = [
+        a for a in amounts
+        if intent.budget_min_usdc <= a <= intent.budget_max_usdc
+    ]
+    status_value = intent.status.value if hasattr(intent.status, "value") else intent.status
+    assessment = {
+        "status": status_value,
+        "assetSubclass": intent.asset_subclass.value if intent.asset_subclass else None,
+        "microRegionId": intent.micro_region_id,
+        "budgetMinUsdc": intent.budget_min_usdc,
+        "budgetMaxUsdc": intent.budget_max_usdc,
+        "bidCount": len(bids),
+        "bidsInBudget": len(in_budget),
+        "lowestBidUsdc": min(amounts) if amounts else None,
+        "entityId": intent.entity_id,
+        "guidance": [
+            f"Spec is {status_value} in {intent.micro_region_id} with "
+            f"{len(bids)} bid(s); {len(in_budget)} inside the "
+            f"{intent.budget_min_usdc}–{intent.budget_max_usdc} USDC budget band."
+        ],
+    }
+    db.add(
+        models.EventLog(
+            aggregate_type="intent",
+            aggregate_id=spec_id,
+            event_type="agent.underwrite",
+            actor="agent:SURA",
+            payload={
+                "status": assessment["status"],
+                "bidCount": len(bids),
+                "identitySubject": identity.get("subject"),
+                "metering": "mock-x402",
+            },
+        )
+    )
+    db.commit()
+    return JSONResponse(
+        content={
+            "agent": "SURA",
+            "surface": "headless",
+            "tracks": ["H", "I"],
+            "specId": spec_id,
+            "identity": {"subject": identity.get("subject"), "verified": True, "mock": True},
+            "metering": {"scheme": "mock-exact", "mock": True},
+            "assessment": assessment,
+        }
+    )
