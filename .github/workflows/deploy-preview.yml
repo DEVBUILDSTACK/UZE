@@ -64,3 +64,18 @@ jobs:
             echo "### Preview deployment"
             echo "$URL"
           } >> "$GITHUB_STEP_SUMMARY"
+      # One stable partner-facing URL that always serves the latest
+      # preview build — per-deployment URLs change on every push,
+      # which broke the shared partner link once already.
+      - name: Point the stable partner alias at this deployment
+        working-directory: ${{ runner.temp }}/uze-web-deploy
+        run: |
+          for ALIAS in uzemarkets-devpartner.vercel.app uze-devpartner-portal.vercel.app; do
+            if vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" --token=${{ secrets.VERCEL_TOKEN }}; then
+              echo "Stable alias live: https://$ALIAS"
+              echo "Stable alias: https://$ALIAS" >> "$GITHUB_STEP_SUMMARY"
+              break
+            else
+              echo "Alias $ALIAS unavailable, trying next candidate"
+            fi
+          done
