@@ -61,6 +61,11 @@ class SpecIn(BaseModel):
     availableUntil: int
     tier: models.IntentTier = models.IntentTier.ANY
     referringPartner: str | None = None
+    # Addendum A (HIADR) — optional at the schema level; the track
+    # rules are enforced in post_spec when assetSubclass is present.
+    assetSubclass: models.AssetSubclass | None = None
+    targetArea: dict[str, Any] | None = None
+    subterraneanContext: dict[str, Any] | None = None
 
 
 class BidIn(BaseModel):
@@ -86,6 +91,9 @@ class SpecView(BaseModel):
     deliverable: dict[str, Any]
     microRegionId: str
     assetContext: dict[str, Any]
+    assetSubclass: str | None
+    targetArea: dict[str, Any] | None
+    subterraneanContext: dict[str, Any] | None
     onSiteDays: int | None
     remoteDays: int | None
     budgetMinUsdc: int
@@ -126,6 +134,9 @@ def _spec_view(intent: models.Intent) -> SpecView:
         deliverable=intent.deliverable,
         microRegionId=intent.micro_region_id,
         assetContext=intent.asset_context,
+        assetSubclass=intent.asset_subclass.value if intent.asset_subclass else None,
+        targetArea=intent.target_area,
+        subterraneanContext=intent.subterranean_context,
         onSiteDays=intent.on_site_days,
         remoteDays=intent.remote_days,
         budgetMinUsdc=intent.budget_min_usdc,
@@ -156,6 +167,56 @@ def _bid_view(bid: models.Bid) -> BidView:
     )
 
 
+_POLYGON_TRACKS = {
+    models.AssetSubclass.A,
+    models.AssetSubclass.D,
+    models.AssetSubclass.R,
+}
+_SUBTERRANEAN_TRACKS = {models.AssetSubclass.A, models.AssetSubclass.R}
+
+
+def _validate_hiadr(body: SpecIn) -> None:
+    """Addendum A §§2-3, enforced at ingestion. Specs posted without
+    an assetSubclass (pre-HIADR shape) pass untouched — additive
+    only. A/D/R: GeoJSON polygon required, radius invalid. H/I:
+    radius (with epicenter) or polygon. A/R: subterraneanContext
+    mandatory (§3); D requires the polygon but not the context."""
+    subclass = body.assetSubclass
+    if subclass is None:
+        return
+    area = body.targetArea
+    if subclass in _POLYGON_TRACKS:
+        if not area or area.get("type") != "Polygon" or not area.get("coordinates"):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"assetSubclass {subclass.value} requires targetArea as "
+                    "a GeoJSON Polygon (radius is invalid for A/D/R tracks)"
+                ),
+            )
+    elif area is not None:
+        area_type = area.get("type")
+        if area_type == "Radius":
+            if area.get("epicenterLat") is None or area.get("epicenterLng") is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail="targetArea Radius requires epicenterLat and epicenterLng",
+                )
+        elif area_type != "Polygon":
+            raise HTTPException(
+                status_code=422,
+                detail="targetArea must be a Radius or a GeoJSON Polygon",
+            )
+    if subclass in _SUBTERRANEAN_TRACKS and not body.subterraneanContext:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"assetSubclass {subclass.value} requires subterraneanContext "
+                "(Addendum A §3)"
+            ),
+        )
+
+
 @router.post("/specs", status_code=201)
 def post_spec(body: SpecIn, db: Session = Depends(get_session)):
     if body.budgetMinUsdc > body.budgetMaxUsdc:
@@ -163,6 +224,7 @@ def post_spec(body: SpecIn, db: Session = Depends(get_session)):
             status_code=422,
             detail="budgetMinUsdc must not exceed budgetMaxUsdc",
         )
+    _validate_hiadr(body)
     if db.get(models.MicroRegion, body.microRegionId) is None:
         raise HTTPException(
             status_code=422,
@@ -177,6 +239,9 @@ def post_spec(body: SpecIn, db: Session = Depends(get_session)):
         deliverable=body.deliverable,
         micro_region_id=body.microRegionId,
         asset_context=body.assetContext.model_dump(mode="json"),
+        asset_subclass=body.assetSubclass,
+        target_area=body.targetArea,
+        subterranean_context=body.subterraneanContext,
         on_site_days=body.onSiteDays,
         remote_days=body.remoteDays,
         budget_min_usdc=body.budgetMinUsdc,

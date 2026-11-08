@@ -49,9 +49,12 @@ cut to the browser: the same spec as a rendered page at
 `application/ld+json` block.
 
 **Say:** "A syndicate acquiring a 340-room Aloft in Brickell posts
-its specification. One backend, two projections: agents get JSON,
-humans get this page — same fields, with schema.org markup so
-search engines and other agents can read the market too."
+its specification — filed under H, hospitality, one of the five
+HIADR tracks, with a radius target area; the land and resource
+tracks file by polygon instead. One backend, two projections:
+agents get JSON, humans get this page — same fields, with
+schema.org markup so search engines and other agents can read the
+market too."
 
 ## Beat 3 — Phase 2: bidding, with proof of work (1:20–2:20)
 
@@ -107,15 +110,25 @@ the transfer fully built and MPC-signed, broadcast held for funds —
 and the Chain Signatures dry-run evidence (NEAR tx
 B27pKQG5…). Narrate it as exactly that.]
 
-## Beat 6 — Phase 5: the comparable (4:05–4:40)
+## Beat 6 — Phase 5 + the pulse: the comparable, published (4:05–4:40)
 
 **Action (browser):** refresh the Brickell micro-region page —
-comparable count now 1.
+comparable count now 1. Then (terminal):
+
+```
+curl -s localhost:8100/api/v1/micro-regions/miami-brickell/pulse
+```
+
+**On screen:** the schema.org Dataset JSON — comparable_count 1,
+the settled volume, and `agent_action: POST /api/v1/specs`.
 
 **Say:** "And the business compounds: at settlement, this property
 was written into the Brickell dataset as a comparable. The next
-spec in Brickell is benchmarked against real, settled work. That's
-UZEMARKETS — Learn2Launch builds it, Assurative makes it
+spec in Brickell is benchmarked against real, settled work. This
+pulse is also what the HIADR Content Desk publishes — human
+analysis on top, this JSON at the bottom — so the next agent that
+comes looking for Brickell data finds the endpoint to transact.
+That's UZEMARKETS — Learn2Launch builds it, Assurative makes it
 trustworthy, and the market is where it's tested and used."
 
 ## Close (4:40–5:00)

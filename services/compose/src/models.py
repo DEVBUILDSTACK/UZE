@@ -1349,6 +1349,21 @@ class BidStatus(enum.Enum):
     WITHDRAWN = "WITHDRAWN"
 
 
+class AssetSubclass(enum.Enum):
+    """The HIADR taxonomy (Addendum A, ratified 2026-11-08 via
+    DeepSeek, relayed by James): the marketplace's five tracks.
+    H/I are operating CRE — target area may be a radius or a
+    polygon. A/D/R are raw land / subterranean — a GeoJSON polygon
+    is required, and subterranean context is mandatory for A and R
+    (Addendum A §§2-3; enforcement lives in intents.py)."""
+
+    H = "H"  # Hospitality (resorts, hotels)
+    I = "I"  # Income (multifamily, residential, condos)
+    A = "A"  # Agriculture (farms, agricultural raw land)
+    D = "D"  # Development (industrial, data centers, raw land)
+    R = "R"  # Resource (subterranean exploration / extraction)
+
+
 class MicroRegion(Base):
     """Reference table: the analytical unit of the CRE marketplace
     (D3). Ids are authored slugs (\"miami-brickell\", \"bethesda-cbd\",
@@ -1362,6 +1377,13 @@ class MicroRegion(Base):
     region: Mapped[str] = mapped_column("region", String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+    # Addendum A §4: the HIADR Content Desk data layer — period
+    # aggregates the Desk publishes (prior 30d / 90d, 18m / 36m
+    # lookbacks). Null until the data pipeline populates it; the
+    # /pulse endpoint serves what is real and says so.
+    pulse_data: Mapped[dict | None] = mapped_column(
+        "pulseData", JSON, nullable=True
     )
 
     intents: Mapped[list["Intent"]] = relationship(back_populates="micro_region")
@@ -1401,6 +1423,20 @@ class Intent(Base):
     )
     asset_context: Mapped[dict] = mapped_column(
         "assetContext", JSON, nullable=False
+    )
+    # Addendum A (HIADR): the track, its spatial target, and — for
+    # the land/resource tracks — the subterranean data layer. All
+    # nullable: pre-HIADR rows stay valid (additive only); the API
+    # enforces the track rules on new specs (see intents.py).
+    asset_subclass: Mapped[AssetSubclass | None] = mapped_column(
+        "assetSubclass", SAEnum(AssetSubclass, name="asset_subclass"),
+        nullable=True,
+    )
+    target_area: Mapped[dict | None] = mapped_column(
+        "targetArea", JSON, nullable=True
+    )
+    subterranean_context: Mapped[dict | None] = mapped_column(
+        "subterraneanContext", JSON, nullable=True
     )
     on_site_days: Mapped[int | None] = mapped_column(
         "onSiteDays", Integer, nullable=True

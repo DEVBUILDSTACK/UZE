@@ -16,6 +16,13 @@
   "domain": "cre_expense_analysis",
   "kind": "demand",
   "microRegionId": "miami-brickell",
+  "assetSubclass": "H",
+  "targetArea": {
+    "type": "Radius",
+    "epicenterLat": 25.7587,
+    "epicenterLng": -80.1912,
+    "radiusMiles": 37.5
+  },
   "onSiteDays": 10,
   "posterAccount": "syndicate.acme.testnet",
   "posterKind": "human",

@@ -5,12 +5,34 @@
   this text is submitted anywhere.
 -->
 
-# UZEMARKETS — Talent marketplace for income commercial real estate
+# UZEMARKETS — a multi-asset spatial finance engine (HIADR)
 
-**An information market for commercial real estate work, where a
+**An information market for real-estate work across five tracks —
+Hospitality, Income, Agriculture, Development, Resource — where a
 specification is priced competitively by human specialists and
-attested AI agents — and settlement is authorized on NEAR and paid
+attested AI agents, and settlement is authorized on NEAR and paid
 in USDC on Solana.**
+
+## The HIADR taxonomy
+
+The marketplace is organized as five tracks (schema-enforced —
+Addendum A, shipped in this sprint):
+
+- **H — Hospitality & I — Income:** operating assets, evaluated by
+  micro-region expense analysis (the demo's 340-room Aloft is
+  Track H). A target area may be a 37.5-mile radius or a polygon.
+- **A — Agriculture & D — Development:** raw land, evaluated by
+  polygon spatial underwriting (soil, zoning, financing). A
+  GeoJSON polygon is required — radius is invalid for land.
+- **R — Resource:** subterranean assets, evaluated on subsurface
+  rights and geology (water, minerals, oil/gas). Polygon required,
+  plus a mandatory subterranean context: soil depth, resource
+  types, water source and rights, and the jurisdiction that
+  determines the legal split (e.g. Brazil's mineral regime).
+
+By design, each track routes to its capital: H/I to operating
+lenders, A/D to land and development funds, R to resource
+extraction financiers.
 
 ## The problem
 
@@ -103,7 +125,13 @@ settlement → delivery + comparable written.
   end-to-end (post_intent / submit_bid / settle / get_matches).
 - Marketplace schema (micro-regions, intents, bids, matches) as an
   additive migration with a from-empty replay; full API for specs
-  and bids; 103 automated tests green.
+  and bids; 111 automated tests green.
+- HIADR taxonomy extension (Addendum A): the AssetSubclass enum,
+  radius/polygon target areas with track enforcement at ingestion,
+  the subterranean context layer, and micro-region pulse data —
+  additive migration `851420c2adc4`, from-empty replay verified
+  (schema demo 12/12), plus the Content Desk's `/pulse` endpoint
+  serving schema.org Dataset JSON computed from real records.
 - Chain Signatures proven end-to-end (MPC signature verified under
   the derived key); the mocked-settlement fallback was retired.
 - Settlement endpoint: selection, match state machine, the exact
@@ -120,6 +148,28 @@ settlement → delivery + comparable written.
 - Read-only human surface: spec, talent and micro-region pages
   with JSON-LD, indexes, sitemap, robots and llms.txt — verified
   rendering against the live API.
+
+## The HIADR Content Desk — the organic growth engine
+
+Distribution is built into the data layer. Every micro-region
+carries a pulse: period aggregates (30/90-day, 18/36-month
+lookbacks) served as a schema.org Dataset at
+`GET /api/v1/micro-regions/{id}/pulse` — computed from the
+marketplace's own specs, settled comparables and volume.
+
+The Desk publishes on a fixed cadence: a **daily** micro-region
+pulse (7×/week), a **Sunday** deep-dive spatial analysis (e.g.
+aquifer depletion inside a specific agricultural polygon), and a
+**Tuesday** X thread distilling the blog. Every post is
+dual-surface by construction: a human-readable analysis on top,
+the machine-readable JSON payload at the bottom. When an AI
+crawler ingests the post it doesn't just read text — it receives
+the exact endpoints (`agent_action: POST /api/v1/specs`) to
+transact. That is the GEO (Generative Engine Optimization) play:
+the content is the API's discovery layer, for humans and agents
+alike. [STATE: the data layer — pulse storage + the /pulse
+endpoint — ships in this sprint; the publishing Desk runs on it
+next, per the filed sequence.]
 
 ## What's next
 
