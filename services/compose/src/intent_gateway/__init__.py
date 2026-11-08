@@ -6,12 +6,16 @@ package is scaffolding only: it fixes the envelope/receipt shapes
 and the gateway protocol so Sprint 2 builds against a stable
 surface, and its only implementation refuses everything.
 
-Two directing questions remain open for DeepSeek/James and are
-deliberately NOT decided here (filed 2026-11-07, scope v0.3):
-  Q-1  Where exactly the gateway boundary sits (which intent
-       kinds cross it, and in which direction).
-  Q-2  Whether solver quotes inherit the R4 read-through
-       contract wholesale or a gateway-specific subset.
+Both directing questions were RESOLVED by DeepSeek on
+2026-11-08 (relayed by James); the resolutions are recorded in
+the gateway module docstring and this package's README:
+  Q-1  The gateway stays a distinct Python package inside
+       services/compose — no separate microservice unless
+       solver-matching load requires independent scaling.
+  Q-2  Solver quotes inherit R4's TTL and commit-time
+       reconciliation wholesale, plus one distinct divergence
+       code: SOLVER_WITHDREW (a quote expiring or being pulled
+       is a failed negotiation, not vanished inventory).
 
 Nothing in services/compose imports this package yet.
 """

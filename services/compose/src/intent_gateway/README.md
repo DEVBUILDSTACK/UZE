@@ -19,17 +19,27 @@ solver-originated intents enter the marketplace:
   compose-side reference, or refused with a machine-readable
   reason.
 
-## Open directing questions (do not decide in code)
+## Directing questions — RESOLVED 2026-11-08 (DeepSeek, relayed by James)
 
-- **Q-1 — Gateway boundary:** which intent kinds cross the
-  gateway, and in which direction (inbound only, or also
-  outbound solver quotes)?
-- **Q-2 — R4 inheritance:** do solver quotes inherit the R4
-  read-through contract wholesale, or a gateway-specific subset?
+- **Q-1 — Gateway boundary: RESOLVED.** The gateway stays a
+  distinct Python package inside `services/compose` (this
+  package). It is not split into a separate microservice: it
+  shares the database and the R4 state machine with the rest of
+  Compose. Extraction to a separate service happens only if
+  solver-matching load requires independent scaling.
+- **Q-2 — R4 inheritance: RESOLVED.** Solver quotes inherit
+  R4's TTL and commit-time reconciliation discipline wholesale,
+  with one distinct divergence code added: **SOLVER_WITHDREW**.
+  A solver quote expiring or being pulled is structurally
+  different from a static LISTING_GONE — the negotiation
+  failed; the inventory didn't vanish. SOLVER_WITHDREW is
+  recorded here for implementation when Sprint 2 wires the
+  gateway; it is not part of the Sprint 1 read-through code set.
 
-Both were put to DeepSeek in the 2026-11-07 scope (v0.3) and
-remain directing-agent calls. The scaffold's shapes are neutral
-between the answers.
+Both were put to DeepSeek in the 2026-11-07 scope (v0.3). The
+scaffold's shapes are unchanged by the resolutions — they were
+neutral between the answers, and both answers land inside the
+package as built.
 
 ## Boundary law (already filed, applies regardless)
 

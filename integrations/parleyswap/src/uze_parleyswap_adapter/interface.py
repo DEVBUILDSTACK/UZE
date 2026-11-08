@@ -10,6 +10,23 @@ closed out. Settlement is NOT part of this interface: compose
 settles USDC on Solana through its own settlement path, keeping
 auction execution and settlement as distinct stages (governance
 spec 06, §4).
+
+Directing resolutions (DeepSeek, 2026-11-08, relayed by James)
+that frame this adapter's Sprint 2 plug-in:
+
+Q-1 — The Intent Gateway stays a Python package inside
+services/compose, sharing Compose's database and R4 state
+machine; this adapter likewise stays behind Compose rather
+than becoming a separate service, unless solver-matching load
+requires independent scaling.
+
+Q-2 — Solver-side outcomes reconcile under R4's TTL and
+commit-time reconciliation discipline, with one distinct
+divergence code: SOLVER_WITHDREW. A solver or bidder pulling
+out of an auction path is a failed negotiation (SOLVER_WITHDREW),
+never reported as vanished inventory (LISTING_GONE).
+SOLVER_WITHDREW is recorded for implementation with the
+Sprint 2 gateway wiring.
 """
 from __future__ import annotations
 
@@ -76,7 +93,13 @@ class AuctionCloseout:
 
 
 class ISealedBidAuctionAdapter(Protocol):
-    """The only surface compose calls for sealed-bid auctions."""
+    """The only surface compose calls for sealed-bid auctions.
+
+    Per the 2026-11-08 Q-2 resolution, auction-path withdrawals
+    reconcile as SOLVER_WITHDREW under R4 discipline — the
+    adapter reports outcomes; Compose owns the divergence
+    classification and the settlement that follows a closeout.
+    """
 
     def create_auction(self, terms: AuctionTerms) -> AuctionHandle:
         ...
