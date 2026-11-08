@@ -3,20 +3,25 @@
 The Snapshot Pattern (partners/README.md): a partner pushes a JSON
 payload with its Bearer token; the token maps to exactly one
 partner_id; the payload is validated against the partner's filed
-JSON schema (partners/schemas/); the validated payload is cached
-verbatim in ProviderSnapshot so downstream consumers query our
-database, not the partner's API.
+JSON schema (partners/schemas/); the validated payload lands in
+the STAGING table (StagingProviderSnapshot, approval_status
+PENDING). An admin then approves it — which copies it verbatim
+into ProviderSnapshot, the live cache downstream consumers query —
+or rejects it with a recorded reason. This is the onboarding gate
+from the partner-facing flow: sandbox first, review, then live.
 
 Governance (Evidence-Gated Architecture): every partner is
 UNVERIFIED until an agreement is signed and its API is reviewed, so
 snapshots are stored with provider_status "UNVERIFIED" and nothing
-downstream executes on them. This endpoint accepts and caches —
-it authorizes nothing.
+downstream executes on them. Approval gates consumption, not
+truth.
 
 Configuration:
   PARTNER_API_TOKENS  JSON object mapping bearer token -> partner_id,
                       e.g. {"tok-...": "AGRO_DIGITAL"}. Unconfigured
                       -> the endpoint answers 503, never open.
+  PARTNER_ADMIN_TOKEN Bearer token for the admin approval API.
+                      Unconfigured -> the admin API answers 503.
   PARTNER_SCHEMAS_DIR Optional override for the schemas directory;
                       defaults to the repo's partners/schemas folder.
 """
@@ -121,25 +126,25 @@ async def partner_ingest(
             detail=f"schema validation failed at {location}: {first.message}",
         )
 
-    snapshot = models.ProviderSnapshot(
+    staged = models.StagingProviderSnapshot(
         partner_id=partner_id,
         data_category=DATA_CATEGORIES[partner_id],
         raw_payload=body,
         fetched_at=int(time.time()),
-        cache_status="LIVE",
-        provider_status="UNVERIFIED",
+        approval_status="PENDING",
     )
-    db.add(snapshot)
+    db.add(staged)
     db.flush()
     db.add(
         models.EventLog(
-            aggregate_type="provider_snapshot",
-            aggregate_id=snapshot.id,
-            event_type="partner.snapshot_ingested",
+            aggregate_type="staging_provider_snapshot",
+            aggregate_id=staged.id,
+            event_type="partner.snapshot_staged",
             actor=f"partner:{partner_id}",
             payload={
-                "dataCategory": snapshot.data_category,
+                "dataCategory": staged.data_category,
                 "polygonId": body.get("polygon_id"),
+                "approvalStatus": "PENDING",
                 "providerStatus": "UNVERIFIED",
             },
         )
@@ -149,10 +154,134 @@ async def partner_ingest(
     return JSONResponse(
         status_code=202,
         content={
-            "snapshot_id": snapshot.id,
+            "staging_id": staged.id,
             "partner_id": partner_id,
-            "data_category": snapshot.data_category,
-            "cache_status": snapshot.cache_status,
-            "provider_status": snapshot.provider_status,
+            "data_category": staged.data_category,
+            "approval_status": staged.approval_status,
+            "provider_status": "UNVERIFIED",
+        },
+    )
+
+
+admin_router = APIRouter(prefix="/api/v1/admin/partners")
+
+
+def _require_admin(authorization: str | None) -> None:
+    expected = os.environ.get("PARTNER_ADMIN_TOKEN")
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="partner admin API is not configured on this deployment",
+        )
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="missing bearer token")
+    if authorization.removeprefix("Bearer ").strip() != expected:
+        raise HTTPException(status_code=401, detail="unknown bearer token")
+
+
+def _pending_staged(db: Session, staging_id: str) -> models.StagingProviderSnapshot:
+    staged = db.get(models.StagingProviderSnapshot, staging_id)
+    if staged is None:
+        raise HTTPException(status_code=404, detail="staging_id not found")
+    if staged.approval_status != "PENDING":
+        raise HTTPException(
+            status_code=409,
+            detail=f"staging payload already decided: {staged.approval_status}",
+        )
+    return staged
+
+
+@admin_router.post("/approve/{staging_id}")
+def partner_approve(
+    staging_id: str,
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_session),
+):
+    """Move a staged payload into the live ProviderSnapshot cache."""
+    _require_admin(authorization)
+    staged = _pending_staged(db, staging_id)
+
+    snapshot = models.ProviderSnapshot(
+        partner_id=staged.partner_id,
+        data_category=staged.data_category,
+        raw_payload=staged.raw_payload,
+        fetched_at=staged.fetched_at,
+        cache_status="LIVE",
+        provider_status="UNVERIFIED",
+    )
+    db.add(snapshot)
+    db.flush()
+    staged.approval_status = "APPROVED"
+    staged.reviewed_at = int(time.time())
+    staged.reviewed_by = "partner-admin"
+    db.add(
+        models.EventLog(
+            aggregate_type="provider_snapshot",
+            aggregate_id=snapshot.id,
+            event_type="partner.snapshot_approved",
+            actor="partner-admin",
+            payload={
+                "stagingId": staged.id,
+                "partnerId": staged.partner_id,
+                "dataCategory": staged.data_category,
+                "providerStatus": "UNVERIFIED",
+            },
+        )
+    )
+    db.commit()
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "staging_id": staged.id,
+            "snapshot_id": snapshot.id,
+            "approval_status": "APPROVED",
+        },
+    )
+
+
+@admin_router.post("/reject/{staging_id}")
+async def partner_reject(
+    staging_id: str,
+    request: Request,
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_session),
+):
+    """Reject a staged payload, recording the reason. Nothing goes live."""
+    _require_admin(authorization)
+    staged = _pending_staged(db, staging_id)
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    reason = (body or {}).get("reason") if isinstance(body, dict) else None
+    if not reason or not str(reason).strip():
+        raise HTTPException(status_code=422, detail="a rejection reason is required")
+
+    staged.approval_status = "REJECTED"
+    staged.rejection_reason = str(reason)
+    staged.reviewed_at = int(time.time())
+    staged.reviewed_by = "partner-admin"
+    db.add(
+        models.EventLog(
+            aggregate_type="staging_provider_snapshot",
+            aggregate_id=staged.id,
+            event_type="partner.snapshot_rejected",
+            actor="partner-admin",
+            payload={
+                "partnerId": staged.partner_id,
+                "rejectionReason": staged.rejection_reason,
+            },
+        )
+    )
+    db.commit()
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "staging_id": staged.id,
+            "approval_status": "REJECTED",
+            "rejection_reason": staged.rejection_reason,
         },
     )

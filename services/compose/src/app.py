@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(pulse.router)
     app.include_router(agtech.router)
     app.include_router(partners.router)
+    app.include_router(partners.admin_router)
     return app
 
 

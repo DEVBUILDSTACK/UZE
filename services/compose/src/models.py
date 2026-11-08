@@ -1853,3 +1853,41 @@ class ProviderSnapshot(Base):
     provider_status: Mapped[str] = mapped_column(
         "providerStatus", String, nullable=False, default="UNVERIFIED"
     )
+
+
+class StagingProviderSnapshot(Base):
+    """A partner payload staged for review (the DevPartner onboarding
+    gate). POST /api/v1/partners/ingest writes here with
+    approval_status PENDING; an admin decision moves an APPROVED
+    payload into ProviderSnapshot (verbatim) or records REJECTED
+    with a rejection_reason. Approval gates consumption, not truth:
+    the payload stays partner-claimed data either way.
+    """
+
+    __tablename__ = "staging_provider_snapshot"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    partner_id: Mapped[str] = mapped_column(
+        "partnerId", String, nullable=False, index=True
+    )
+    data_category: Mapped[str] = mapped_column(
+        "dataCategory", String, nullable=False
+    )
+    raw_payload: Mapped[dict] = mapped_column(
+        "rawPayload", JSON, nullable=False
+    )
+    fetched_at: Mapped[int] = mapped_column(
+        "fetchedAt", BigInteger, nullable=False
+    )
+    approval_status: Mapped[str] = mapped_column(
+        "approvalStatus", String, nullable=False, default="PENDING"
+    )
+    rejection_reason: Mapped[str | None] = mapped_column(
+        "rejectionReason", String, nullable=True
+    )
+    reviewed_at: Mapped[int | None] = mapped_column(
+        "reviewedAt", BigInteger, nullable=True
+    )
+    reviewed_by: Mapped[str | None] = mapped_column(
+        "reviewedBy", String, nullable=True
+    )

@@ -22,10 +22,14 @@ A/D/R pipeline without constantly emailing the engineering team.
    push JSON payloads to `POST /api/v1/partners/ingest` on the compose
    API. The token maps to exactly one `partner_id`; payloads are
    validated against the partner's JSON schema in `schemas/`.
-3. **The Snapshot Pattern.** Every accepted payload is validated,
-   timestamped, and permanently cached in the `ProviderSnapshot`
-   database table. Lenders and AI agents query our database, not the
-   partner's API.
+3. **The Snapshot Pattern, behind a staging gate.** Every accepted
+   payload lands first in the `StagingProviderSnapshot` table with
+   approval_status PENDING. Engineering reviews the mapping; an
+   admin approval (`POST /api/v1/admin/partners/approve/{staging_id}`)
+   promotes the payload verbatim into the `ProviderSnapshot` table,
+   and a rejection records its reason. Lenders and AI agents query
+   the live table, never the partner's API — and never unreviewed
+   staging data.
 
 **Governance status (binding, per the Evidence-Gated Architecture,
 `docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md`):** every

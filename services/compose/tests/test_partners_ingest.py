@@ -1,14 +1,14 @@
 """DevPartner ingestion API — POST /api/v1/partners/ingest.
 
-Pins the Snapshot Pattern contract:
+Pins the Snapshot Pattern + onboarding gate contract:
   - unconfigured deployment -> 503 (never silently open)
   - missing/unknown bearer token -> 401
   - token partner != payload partner_id -> 403
   - payload failing the partner's filed JSON schema -> 422
-  - a valid payload per partner -> 202, cached verbatim in
-    ProviderSnapshot with cache_status LIVE and provider_status
-    UNVERIFIED (Evidence-Gated Architecture: partner-claimed data is
-    never stored as verified)
+  - a valid payload per partner -> 202, written to the STAGING
+    table as PENDING (never directly to the live ProviderSnapshot
+    cache — promotion is the admin API's job), stored verbatim,
+    provider UNVERIFIED (Evidence-Gated Architecture)
 """
 from __future__ import annotations
 
@@ -25,10 +25,11 @@ TOKENS = {
     "tok-effatha-test": "EFFATHA",
 }
 
+# The Agro Digital shape exactly as sent to the partner (Fabio) on
+# 2026-11-08 — the filed schema validates this shape.
 AGRO = {
     "partner_id": "AGRO_DIGITAL",
     "polygon_id": "BR-MT-36400",
-    "language": "pt-BR",
     "geojson_polygon": {
         "type": "Polygon",
         "coordinates": [
@@ -43,8 +44,16 @@ AGRO = {
         "potassium_ppm": 45.0,
         "organic_matter_pct": 2.1,
     },
-    "zarc_risk_score": "LOW",
-    "attestation": {"cryptographic_hash": "sha256:a1b2c3d4..."},
+    "crop_suitability": {
+        "crop_type": "CORN_SILAGE",
+        "yield_potential_tons_per_ha": 14.5,
+        "zarc_risk_score": "LOW",
+    },
+    "attestation": {
+        "provider_timestamp": "2026-11-08T14:00:00Z",
+        "cryptographic_hash": "sha256:a1b2c3d4...",
+        "satellite_source": "Sentinel-2",
+    },
 }
 
 BDCS = {
@@ -81,6 +90,7 @@ def configured(monkeypatch):
     monkeypatch.setenv("PARTNER_API_TOKENS", json.dumps(TOKENS))
     yield
     with db_session() as session:
+        session.query(models.StagingProviderSnapshot).delete()
         session.query(models.ProviderSnapshot).delete()
         session.commit()
 
@@ -123,7 +133,7 @@ def test_schema_violation_is_422(market_client, configured):
         (EFFATHA, "tok-effatha-test", "AGROTECHNICAL"),
     ],
 )
-def test_valid_payloads_are_cached_unverified(
+def test_valid_payloads_are_staged_pending(
     market_client, configured, payload, token, category
 ):
     response = _post(market_client, payload, token=token)
@@ -131,14 +141,16 @@ def test_valid_payloads_are_cached_unverified(
     body = response.json()
     assert body["partner_id"] == payload["partner_id"]
     assert body["data_category"] == category
-    assert body["cache_status"] == "LIVE"
+    assert body["approval_status"] == "PENDING"
     assert body["provider_status"] == "UNVERIFIED"
 
     with db_session() as session:
-        rows = session.query(models.ProviderSnapshot).all()
-        assert len(rows) == 1
-        row = rows[0]
-        assert row.id == body["snapshot_id"]
+        staged = session.query(models.StagingProviderSnapshot).all()
+        assert len(staged) == 1
+        row = staged[0]
+        assert row.id == body["staging_id"]
         assert row.raw_payload == payload
-        assert row.provider_status == "UNVERIFIED"
+        assert row.approval_status == "PENDING"
         assert row.fetched_at > 0
+        # The gate: nothing reaches the live cache without approval.
+        assert session.query(models.ProviderSnapshot).count() == 0

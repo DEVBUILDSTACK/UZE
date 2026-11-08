@@ -117,6 +117,7 @@ def market_client(migrated_db, demo_fixture):
     session = db.session()
     try:
         session.query(models.ProviderSnapshot).delete()
+        session.query(models.StagingProviderSnapshot).delete()
         session.query(models.AIAssessment).delete()
         session.query(models.ProviderProposal).delete()
         session.query(models.Observation).delete()
