@@ -263,3 +263,94 @@ def post_bid(body: BidIn, db: Session = Depends(get_session)):
         db.commit()
         db.refresh(bid)
     return {**_bid_view(bid).model_dump(), "chain": chain}
+
+
+# --- Day 6: the read-only projections behind the human surface. ---
+# D4: one backend, two projections. These endpoints exist so the
+# Next.js pages in apps/uze-web render exactly what the agent API
+# serves: micro-region detail with its specs, and a talent profile
+# aggregated from a bidder's bids. Read-only — nothing here writes.
+
+
+class MicroRegionView(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: str
+    label: str
+    metro: str
+    region: str
+    specCount: int
+    comparableCount: int
+
+
+def _micro_region_view(db: Session, row: models.MicroRegion) -> MicroRegionView:
+    spec_count = db.query(models.Intent).filter_by(micro_region_id=row.id).count()
+    comparable_count = (
+        db.query(models.EventLog)
+        .filter_by(
+            aggregate_type="micro_region",
+            aggregate_id=row.id,
+            event_type="comparable.recorded",
+        )
+        .count()
+    )
+    return MicroRegionView(
+        id=row.id,
+        label=row.label,
+        metro=row.metro,
+        region=row.region,
+        specCount=spec_count,
+        comparableCount=comparable_count,
+    )
+
+
+@router.get("/micro-regions")
+def list_micro_regions(db: Session = Depends(get_session)):
+    rows = db.query(models.MicroRegion).order_by(models.MicroRegion.id).all()
+    return [_micro_region_view(db, row) for row in rows]
+
+
+@router.get("/micro-regions/{region_id}")
+def get_micro_region(region_id: str, db: Session = Depends(get_session)):
+    row = db.get(models.MicroRegion, region_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="micro-region not found")
+    specs = (
+        db.query(models.Intent)
+        .filter_by(micro_region_id=row.id)
+        .order_by(models.Intent.created_at)
+        .all()
+    )
+    return {
+        **_micro_region_view(db, row).model_dump(),
+        "specs": [_spec_view(spec) for spec in specs],
+    }
+
+
+class TalentView(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    account: str
+    kind: str
+    bidCount: int
+    totalBidUsdc: int
+    bids: list[BidView]
+
+
+@router.get("/talent/{account}")
+def get_talent(account: str, db: Session = Depends(get_session)):
+    bids = (
+        db.query(models.Bid)
+        .filter_by(bidder_account=account)
+        .order_by(models.Bid.created_at)
+        .all()
+    )
+    if not bids:
+        raise HTTPException(status_code=404, detail="talent not found")
+    return TalentView(
+        account=account,
+        kind=bids[0].bidder_kind.value,
+        bidCount=len(bids),
+        totalBidUsdc=sum(bid.amount_usdc for bid in bids),
+        bids=[_bid_view(bid) for bid in bids],
+    )

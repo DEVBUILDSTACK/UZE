@@ -1,0 +1,11 @@
+{
+  "amountUsdc": 4200,
+  "bidderAccount": "recon.uzemarkets-talent.testnet",
+  "bidderKind": "agent",
+  "etaHours": 48,
+  "onSiteDays": 0,
+  "payload": {
+    "narrative": "AI agent: autonomous analysis in 48 hours, attested inference (attestation receipt attaches on Day 4)."
+  },
+  "remoteDays": 2
+}

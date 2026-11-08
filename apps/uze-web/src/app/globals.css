@@ -328,3 +328,61 @@ form button,
 .home-links a:hover {
   background: var(--panel-strong);
 }
+
+/* Sprint 1.5 marketplace read-only surface (specs / talent /
+   micro-regions). Uses the site variables above; additive only. */
+.mk {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+.mk h1 {
+  font-size: 1.85rem;
+  line-height: 1.25;
+}
+.mk h2 {
+  margin-top: 2rem;
+}
+.mk .lede {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+.mk .note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.mk .card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+}
+.mk dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+}
+.mk dt {
+  color: var(--muted);
+}
+.mk dd {
+  margin: 0;
+}
+.mk table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.mk th,
+.mk td {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.mk a {
+  color: #43b4ca;
+}
+.mk code {
+  font-size: 0.85em;
+}

@@ -1,0 +1,26 @@
+{
+  "assetContext": {
+    "acquisitionStage": "underwriting",
+    "brandAffiliation": "Aloft",
+    "doorCount": 340,
+    "propertyType": "branded_hotel"
+  },
+  "availableFrom": 1794096000,
+  "availableUntil": 1796688000,
+  "budgetMaxUsdc": 25000,
+  "budgetMinUsdc": 4000,
+  "deliverable": {
+    "operatingBudget": "full-year operating budget, every role, every opex line A-Z, brand fees included",
+    "pmSpec": "property manager specification derived from the budget"
+  },
+  "domain": "cre_expense_analysis",
+  "kind": "demand",
+  "microRegionId": "miami-brickell",
+  "onSiteDays": 10,
+  "posterAccount": "syndicate.acme.testnet",
+  "posterKind": "human",
+  "referringPartner": null,
+  "remoteDays": 20,
+  "tier": "ANY",
+  "workProduct": "operating_budget"
+}

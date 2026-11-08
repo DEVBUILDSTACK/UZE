@@ -24,6 +24,7 @@ import commitments
 import db
 import intakes
 import intents
+import metering
 import settle
 import snapshots
 
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(commitments.router)
     app.include_router(intents.router)
     app.include_router(settle.router)
+    app.include_router(metering.router)
     return app
 
 
