@@ -1817,3 +1817,39 @@ class AIAssessment(Base):
     created_at: Mapped[int] = mapped_column(
         "createdAt", BigInteger, nullable=False
     )
+
+
+class ProviderSnapshot(Base):
+    """A partner data snapshot cached by the DevPartner ingestion API
+    (partners/README.md — the Snapshot Pattern).
+
+    A snapshot is partner-claimed data, stored verbatim after schema
+    validation, so downstream consumers query our database instead of
+    the partner's API. Under the Evidence-Gated Architecture every
+    partner is UNVERIFIED until an agreement is signed and its API is
+    reviewed, so provider_status is written "UNVERIFIED" by the
+    ingestion endpoint and a snapshot never triggers financing,
+    treatment, or auction execution.
+    """
+
+    __tablename__ = "provider_snapshot"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    partner_id: Mapped[str] = mapped_column(
+        "partnerId", String, nullable=False, index=True
+    )
+    data_category: Mapped[str] = mapped_column(
+        "dataCategory", String, nullable=False
+    )
+    raw_payload: Mapped[dict] = mapped_column(
+        "rawPayload", JSON, nullable=False
+    )
+    fetched_at: Mapped[int] = mapped_column(
+        "fetchedAt", BigInteger, nullable=False
+    )
+    cache_status: Mapped[str] = mapped_column(
+        "cacheStatus", String, nullable=False, default="LIVE"
+    )
+    provider_status: Mapped[str] = mapped_column(
+        "providerStatus", String, nullable=False, default="UNVERIFIED"
+    )
