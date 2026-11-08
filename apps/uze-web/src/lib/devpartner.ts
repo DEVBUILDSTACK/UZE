@@ -79,7 +79,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       },
       {
         title: "3 · The Snapshot Pattern",
-        body: "Every accepted payload is timestamped and permanently cached in our ProviderSnapshot store. Lenders and AI agents query our database — never the partner's API — so the market keeps working when a partner is offline.",
+        body: "Every accepted payload lands in a staging area for engineering review. Once approved, it is timestamped and permanently cached in our ProviderSnapshot store. Lenders and AI agents query our database — never the partner's API — so the market keeps working when a partner is offline.",
       },
     ],
     governanceHeading: "Partner status",
@@ -92,7 +92,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       "Authorization: Bearer <API key>. The key identifies the partner; a payload whose partner_id does not match the key's partner is rejected.",
     responsesHeading: "Responses",
     responses: [
-      { code: "202", meaning: "Accepted — snapshot cached, snapshot_id returned" },
+      { code: "202", meaning: "Accepted — payload staged for review, staging_id returned" },
       { code: "401", meaning: "Missing or unknown API key" },
       { code: "403", meaning: "Key's partner does not match payload partner_id" },
       { code: "422", meaning: "Payload failed schema validation" },
@@ -158,7 +158,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       },
       {
         title: "3 · O padrão Snapshot",
-        body: "Cada payload aceito recebe um carimbo de tempo e é armazenado permanentemente no nosso repositório ProviderSnapshot. Credores e agentes de IA consultam o nosso banco de dados — nunca a API do parceiro — para que o mercado continue funcionando quando um parceiro estiver offline.",
+        body: "Cada payload aceito entra em uma área de staging para revisão da engenharia. Depois de aprovado, ele recebe um carimbo de tempo e é armazenado permanentemente no nosso repositório ProviderSnapshot. Credores e agentes de IA consultam o nosso banco de dados — nunca a API do parceiro — para que o mercado continue funcionando quando um parceiro estiver offline.",
       },
     ],
     governanceHeading: "Status do parceiro",
@@ -171,7 +171,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       "Authorization: Bearer <chave de API>. A chave identifica o parceiro; um payload cujo partner_id não corresponda ao parceiro da chave é rejeitado.",
     responsesHeading: "Respostas",
     responses: [
-      { code: "202", meaning: "Aceito — snapshot armazenado, snapshot_id retornado" },
+      { code: "202", meaning: "Aceito — payload em staging para revisão, staging_id retornado" },
       { code: "401", meaning: "Chave de API ausente ou desconhecida" },
       { code: "403", meaning: "O parceiro da chave não corresponde ao partner_id do payload" },
       { code: "422", meaning: "O payload não passou na validação do schema" },
@@ -237,7 +237,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       },
       {
         title: "3 · El patrón Snapshot",
-        body: "Cada payload aceptado recibe una marca de tiempo y se almacena permanentemente en nuestro repositorio ProviderSnapshot. Los prestamistas y los agentes de IA consultan nuestra base de datos — nunca la API del socio — para que el mercado siga funcionando cuando un socio está fuera de línea.",
+        body: "Cada payload aceptado entra en un área de staging para revisión de ingeniería. Una vez aprobado, recibe una marca de tiempo y se almacena permanentemente en nuestro repositorio ProviderSnapshot. Los prestamistas y los agentes de IA consultan nuestra base de datos — nunca la API del socio — para que el mercado siga funcionando cuando un socio está fuera de línea.",
       },
     ],
     governanceHeading: "Estado del socio",
@@ -250,7 +250,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
       "Authorization: Bearer <clave de API>. La clave identifica al socio; un payload cuyo partner_id no coincida con el socio de la clave es rechazado.",
     responsesHeading: "Respuestas",
     responses: [
-      { code: "202", meaning: "Aceptado — snapshot almacenado, se devuelve snapshot_id" },
+      { code: "202", meaning: "Aceptado — payload en staging para revisión, se devuelve staging_id" },
       { code: "401", meaning: "Clave de API ausente o desconocida" },
       { code: "403", meaning: "El socio de la clave no coincide con el partner_id del payload" },
       { code: "422", meaning: "El payload no superó la validación del esquema" },
@@ -306,7 +306,6 @@ export const EXAMPLES: Record<string, string> = {
   AGRO_DIGITAL: `{
   "partner_id": "AGRO_DIGITAL",
   "polygon_id": "BR-MT-36400",
-  "language": "pt-BR",
   "geojson_polygon": {
     "type": "Polygon",
     "coordinates": [[[-56.1, -12.5], [-56.0, -12.5], [-56.0, -12.4], [-56.1, -12.4], [-56.1, -12.5]]]
@@ -318,9 +317,15 @@ export const EXAMPLES: Record<string, string> = {
     "potassium_ppm": 45.0,
     "organic_matter_pct": 2.1
   },
-  "zarc_risk_score": "LOW",
+  "crop_suitability": {
+    "crop_type": "CORN_SILAGE",
+    "yield_potential_tons_per_ha": 14.5,
+    "zarc_risk_score": "LOW"
+  },
   "attestation": {
-    "cryptographic_hash": "sha256:a1b2c3d4..."
+    "provider_timestamp": "2026-11-08T14:00:00Z",
+    "cryptographic_hash": "sha256:a1b2c3d4...",
+    "satellite_source": "Sentinel-2"
   }
 }`,
   BDCS: `{
