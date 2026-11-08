@@ -142,14 +142,19 @@ trustworthy, and the market is where it's tested and used."
 *[Presenter note — if Track A / Paraguay comes up: "Because of
 the recent macroeconomic distress and fiat collapse in Paraguay,
 UZEmarkets offers a dual-track solution for farmers. First, we
-route their polygons to AgTech partners to optimize corn and
-sorghum yields, maximizing their cash flow. Second, if the farm
-cannot be saved, we immediately route the land to our Arcium
-sealed-bid auction pipeline to liquidate the RWA into USDC,
-protecting their capital from fiat devaluation. The intent
-carries a country code and a macro-distress flag for exactly
-this — the routing layer is Sprint 2; the schema supports it
-today."]*
+route their polygons into an evidence-gated AgTech referral
+pipeline to assess whether partners can help optimize corn and
+sorghum yields and maximize cash flow. The partner adapters are
+unverified mocks today: a proposal reaches
+FARMER_APPROVAL_PENDING and stops unless the farmer or entity
+explicitly consents. Second, if the farm cannot be saved, the
+exit is separately authorized — never automatic. After the
+outcome is assessed, the owner must explicitly instruct a
+sale-eligibility review and listing approval before the Arcium
+sealed-bid auction adapter can liquidate the RWA into USDC,
+protecting capital from fiat devaluation. The macro-distress
+flag records the posture; it never triggers financing or a sale
+by itself."]*
 
 ## Close (4:40–5:00)
 

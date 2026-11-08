@@ -27,15 +27,23 @@ Addendum A, shipped in this sprint):
   **Paraguay extension (2026-11-08):** because of the recent
   macroeconomic distress and fiat collapse in Paraguay,
   UZEmarkets offers a dual-track solution for farmers. First, we
-  route their polygons to AgTech partners (like Effatha) to
-  optimize corn and sorghum yields, maximizing their cash flow.
-  Second, if the farm cannot be saved, we immediately route the
-  land to our Arcium sealed-bid auction pipeline to liquidate
-  the RWA into USDC, protecting their capital from fiat
-  devaluation. The schema carries this today: a `countryCode`
+  route their polygons into an evidence-gated AgTech referral
+  pipeline to assess whether partners (like Effatha) can help
+  optimize corn and sorghum yields and maximize cash flow.
+  Partner access is behind unverified mock adapters; a proposal
+  reaches **FARMER_APPROVAL_PENDING** and stops there unless the
+  farmer/entity explicitly consents to authorize the service.
+  Second, if the farm cannot be saved, the exit is separately
+  authorized — never automatic. Only after the outcome is
+  assessed may the owner explicitly instruct a sale-eligibility
+  review and listing approval before the Arcium sealed-bid
+  auction adapter can liquidate the RWA into USDC, protecting
+  capital from fiat devaluation. The schema carries this today: a `countryCode`
   (BR/PY/UY/US — new markets are new enum members, not new
   schemas) and a `macroDistressExit` flag marking the dual-track
-  posture; the routing itself is the Sprint 2 data-science layer.
+  posture. The intake and state-gated workflow are built here;
+  live partner integrations remain unverified adapters/mock
+  boundaries until agreements and APIs are signed and reviewed.
 - **R — Resource:** subterranean assets, evaluated on subsurface
   rights and geology (water, minerals, oil/gas). Polygon required,
   plus a mandatory subterranean context: soil depth, resource
@@ -201,6 +209,24 @@ call.]
   markets, with the routing rules filed as Sprint 2 spec and the
   Ag-Cattle stack diagrammed (docs/diagrams/05). Suite at the
   Day 7 draft refresh: 122 tests.
+- Evidence-gated AgTech governance: the mandatory spec is filed
+  at docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md and
+  implemented in compose (migration `e8048229faab`). The
+  agriculture webhook is authenticated and idempotent and can
+  advance a referral only from INTENT_RECEIVED to
+  INPUT_VALIDATED. A single-step workflow guard enforces the
+  full A/D/R ladder; Agro Digital and Effatha sit behind
+  ISpatialProvider / IAgTechProvider interfaces with local mock
+  adapters that fabricate no live result and authorize nothing.
+  SpatialAssessment, ProviderProposal, Observation, and
+  AIAssessment are separate linked evidence records. In the AI
+  record, calculation, signed, scientifically_verified, and
+  review_status are separate fields — a signed calculation is
+  not a scientifically verified yield gain. A mock proposal can
+  reach FARMER_APPROVAL_PENDING only; financing and sale remain
+  separately authorized branches. Full compose suite after
+  this pass: 133 passed; from-empty schema demo 12/12 at head
+  `e8048229faab`.
 - Chain Signatures proven end-to-end (MPC signature verified under
   the derived key); the mocked-settlement fallback was retired.
 - Settlement endpoint: selection, match state machine, the exact

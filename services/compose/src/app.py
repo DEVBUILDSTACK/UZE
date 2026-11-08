@@ -19,6 +19,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+import agtech
 import approvals
 import commitments
 import db
@@ -66,6 +67,7 @@ def create_app() -> FastAPI:
     app.include_router(settle.router)
     app.include_router(metering.router)
     app.include_router(pulse.router)
+    app.include_router(agtech.router)
     return app
 
 

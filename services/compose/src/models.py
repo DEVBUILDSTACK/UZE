@@ -1366,6 +1366,29 @@ class AssetSubclass(enum.Enum):
     R = "R"  # Resource (subterranean exploration / extraction)
 
 
+class AgReferralState(enum.Enum):
+    """The evidence-gated ladder for Tracks A/D/R
+    (docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md).
+    Transitions are evidence- and consent-gated; no state is
+    reached automatically beyond INPUT_VALIDATED at intake."""
+
+    INTENT_RECEIVED = "intent_received"
+    INPUT_VALIDATED = "input_validated"
+    SPATIAL_ASSESSMENT_PENDING = "spatial_assessment_pending"
+    SPATIAL_ASSESSMENT_COMPLETED = "spatial_assessment_completed"
+    PROVIDER_ELIGIBILITY_PENDING = "provider_eligibility_pending"
+    PROVIDER_PROPOSAL_RECEIVED = "provider_proposal_received"
+    FARMER_APPROVAL_PENDING = "farmer_approval_pending"
+    SERVICE_AUTHORIZED = "service_authorized"
+    SERVICE_REPORTED_ACTIVE = "service_reported_active"
+    OBSERVATIONS_COLLECTED = "observations_collected"
+    OUTCOME_ASSESSED = "outcome_assessed"
+    FINANCING_REVIEW = "financing_review"
+    SALE_ELIGIBILITY_REVIEW = "sale_eligibility_review"
+    LISTING_APPROVAL_PENDING = "listing_approval_pending"
+    AUCTION_ADAPTER = "auction_adapter"
+
+
 class CountryCode(enum.Enum):
     """The intent's country — the dynamic-extension axis
     (2026-11-08, Paraguay extension): new markets are added as
@@ -1632,3 +1655,165 @@ class Match(Base):
 
     intent: Mapped["Intent"] = relationship(back_populates="matches")
     bid: Mapped["Bid"] = relationship(back_populates="matches")
+
+
+class AgReferral(Base):
+    """An agriculture referral intake (Tracks A/D/R) under the
+    evidence-gated architecture
+    (docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md).
+
+    Deliberately NOT an Intent: the Intent table summarizes
+    marketplace requests; a referral enters its own state ladder
+    and accumulates evidence in linked records (SpatialAssessment /
+    ProviderProposal / Observation / AIAssessment). The webhook
+    creates the referral and validates its input — and stops.
+    No provider is called, nothing is authorized, and a macro
+    signal recorded here (macroDistressExit) is a flag, never a
+    trigger (the Iron Rule).
+
+    The idempotency key is unique: a replayed webhook returns the
+    original referral instead of creating a duplicate.
+    """
+
+    __tablename__ = "ag_referral"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(
+        "idempotencyKey", String, nullable=False, unique=True, index=True
+    )
+    state: Mapped[AgReferralState] = mapped_column(
+        "state",
+        SAEnum(AgReferralState, name="ag_referral_state"),
+        nullable=False,
+        default=AgReferralState.INTENT_RECEIVED,
+    )
+    payload: Mapped[dict] = mapped_column("payload", JSON, nullable=False)
+    country_code: Mapped[CountryCode | None] = mapped_column(
+        "countryCode",
+        SAEnum(CountryCode, name="country_code"),
+        nullable=True,
+    )
+    macro_distress_exit: Mapped[bool | None] = mapped_column(
+        "macroDistressExit", Boolean, nullable=True
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class SpatialAssessment(Base):
+    """Evidence record for a referral's spatial review.
+
+    Kept separate from AgReferral: a GeoJSON/CAR match is evidence,
+    not a state change by itself, and it never establishes land
+    ownership.
+    """
+
+    __tablename__ = "spatial_assessment"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    provider: Mapped[str] = mapped_column("provider", String, nullable=False)
+    status: Mapped[str] = mapped_column("status", String, nullable=False)
+    geometry: Mapped[dict] = mapped_column("geometry", JSON, nullable=False)
+    registry_matches: Mapped[list] = mapped_column(
+        "registryMatches", JSON, nullable=False, default=list
+    )
+    confidence_score: Mapped[float | None] = mapped_column(
+        "confidenceScore", Float, nullable=True
+    )
+    ownership_established: Mapped[bool] = mapped_column(
+        "ownershipEstablished", Boolean, nullable=False, default=False
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class ProviderProposal(Base):
+    """Evidence record for what a provider proposes.
+
+    A proposal can move a referral to FARMER_APPROVAL_PENDING; it
+    cannot authorize execution.
+    """
+
+    __tablename__ = "provider_proposal"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    provider: Mapped[str] = mapped_column("provider", String, nullable=False)
+    status: Mapped[str] = mapped_column("status", String, nullable=False)
+    proposal: Mapped[dict] = mapped_column("proposal", JSON, nullable=False)
+    execution_authorized: Mapped[bool] = mapped_column(
+        "executionAuthorized", Boolean, nullable=False, default=False
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class Observation(Base):
+    """Evidence record for an observed agricultural outcome."""
+
+    __tablename__ = "observation"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    metric: Mapped[str] = mapped_column("metric", String, nullable=False)
+    value: Mapped[float] = mapped_column("value", Float, nullable=False)
+    unit: Mapped[str] = mapped_column("unit", String, nullable=False)
+    method: Mapped[str] = mapped_column("method", String, nullable=False)
+    source: Mapped[str] = mapped_column("source", String, nullable=False)
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class AIAssessment(Base):
+    """AI calculation kept separate from scientific review.
+
+    `signed` records that an assessment was signed/attested. It is
+    deliberately independent from `scientifically_verified`: a
+    signature does not certify a yield result. `review_status`
+    carries the review state separately from both booleans.
+    """
+
+    __tablename__ = "ai_assessment"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    model_version: Mapped[str] = mapped_column(
+        "modelVersion", String, nullable=False
+    )
+    input_evidence_refs: Mapped[list] = mapped_column(
+        "inputEvidenceRefs", JSON, nullable=False, default=list
+    )
+    calculation: Mapped[dict] = mapped_column(
+        "calculation", JSON, nullable=False
+    )
+    estimated_difference_value: Mapped[float | None] = mapped_column(
+        "estimatedDifferenceValue", Float, nullable=True
+    )
+    estimated_difference_unit: Mapped[str | None] = mapped_column(
+        "estimatedDifferenceUnit", String, nullable=True
+    )
+    signed: Mapped[bool] = mapped_column(
+        "signed", Boolean, nullable=False, default=False
+    )
+    scientifically_verified: Mapped[bool] = mapped_column(
+        "scientificallyVerified", Boolean, nullable=False, default=False
+    )
+    review_status: Mapped[str] = mapped_column(
+        "reviewStatus", String, nullable=False, default="PENDING_REVIEW"
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
