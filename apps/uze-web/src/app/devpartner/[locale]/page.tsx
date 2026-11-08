@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import GiraDebug from "@/components/gira-debug";
+import MermaidDiagram from "@/components/mermaid-diagram";
+import PayloadGenerator from "@/components/payload-generator";
 import {
   API_KEY_EMAIL,
   CONTENT,
@@ -109,6 +112,26 @@ export default async function DevPartnerLocalePage({
           <pre className="dp-code">{EXAMPLES[partner.id]}</pre>
         </section>
       ))}
+
+      <h2>{c.diagrams.title}</h2>
+      <MermaidDiagram chart={c.diagrams.journey} title={c.diagrams.journeyTitle} />
+      <MermaidDiagram chart={c.diagrams.internal} title={c.diagrams.internalTitle} />
+
+      <h2>{c.generator.title}</h2>
+      <p>{c.generator.body}</p>
+      <PayloadGenerator copyLabel={c.generator.copy} copiedLabel={c.generator.copied} />
+
+      <h2>{c.debug.title}</h2>
+      <p>{c.debug.body}</p>
+      <GiraDebug runLabel={c.debug.run} copyLabel={c.debug.copy} copiedLabel={c.debug.copied} />
+
+      <h2>{c.docs.title}</h2>
+      <p>{c.docs.body}</p>
+      <p>
+        <Link className="dp-cta" href={`/devpartner/${locale}/docs`}>
+          {c.docs.open}
+        </Link>
+      </p>
 
       <h2>{c.downloadsHeading}</h2>
       <ul>

@@ -1,24 +1,19 @@
-# Partner Data Ingestion Flow
+# Partner Self-Serve Integration Flow
 
 ```mermaid
 sequenceDiagram
-    participant P as Partner (Agro Digital / BDCS / Effatha)
-    participant API as UZEmarkets Ingestion API
-    participant DB as UZEmarkets Snapshot DB
-    participant L as Lenders / GIRA (A N R & D) / SURA (HiCRE)
+    participant P as Partner Dev Rep
+    participant Portal as DevPortal (UI)
+    participant GIRA as GIRA (AI Assistant)
+    participant API as UZEmarkets Sandbox API
 
-    Note over P,API: 1. Partner pushes secure JSON payload
-    P->>API: POST /api/v1/partners/ingest
-    Note right of P: Headers: Bearer Token<br/>Payload: GeoJSON + Partner Data
-
-    Note over API: 2. Validate, Authenticate & Translate
-    API->>API: Validate Schema (JSON)
-    API->>DB: Write ProviderSnapshot (Status: LIVE)
-
-    API-->>P: 202 Accepted (snapshot_id)
-
-    Note over DB,L: 3. Downstream Consumption
-    L->>API: GET /api/v1/underwriting/{polygon_id}
-    API->>DB: Query Aggregated Snapshots
-    API-->>L: Return Underwriting Package (Cached Data)
+    P->>Portal: 1. Reads Schema & Uses Payload Generator
+    P->>API: 2. POSTs JSON to Sandbox
+    API-->>P: 3. 422 Error (structured: field + error)
+    P->>GIRA: 4. Pastes Error & JSON into GIRA Chat
+    GIRA-->>P: 5. Explains fix + Returns corrected JSON
+    P->>API: 6. POSTs corrected JSON
+    API-->>P: 7. 202 Accepted (staging_id)
+    Note over API: Admin Reviews & Approves
+    P->>API: 8. Production key issued, data goes live
 ```

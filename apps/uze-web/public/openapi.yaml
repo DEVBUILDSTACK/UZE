@@ -1,0 +1,160 @@
+# Served copy of partners/openapi.yaml for the portal docs UI — keep in sync with partners/openapi.yaml.
+openapi: 3.1.0
+info:
+  title: UZEmarkets DevPartner Ingestion API
+  version: 1.0.0
+  description: >
+    Gated REST ingestion for UZEmarkets data partners. A partner pushes a
+    JSON payload with its Bearer token; the payload is validated against
+    the partner's JSON schema (partners/schemas/) and lands in the
+    STAGING table as PENDING. An admin approval promotes it verbatim
+    into the live ProviderSnapshot cache; a rejection records the
+    reason. Snapshots are partner-claimed data stored with
+    provider_status UNVERIFIED until the partner's agreement and API
+    are reviewed (Evidence-Gated Architecture).
+servers:
+  - url: https://api.uzemarkets.com
+    description: Production (compose API)
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/partners/ingest:
+    post:
+      summary: Push a partner data snapshot
+      operationId: partnerIngest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: './schemas/agro-digital.json'
+                - $ref: './schemas/bdcs.json'
+                - $ref: './schemas/effatha.json'
+            examples:
+              agroDigital:
+                summary: Agro Digital — soil + crop suitability + ZARC
+                value:
+                  partner_id: AGRO_DIGITAL
+                  polygon_id: BR-MT-36400
+                  geojson_polygon:
+                    type: Polygon
+                    coordinates: [[[-56.1, -12.5], [-56.0, -12.5], [-56.0, -12.4], [-56.1, -12.4], [-56.1, -12.5]]]
+                  soil_profile:
+                    ph_level: 5.8
+                    nitrogen_ppm: 12.4
+                    phosphorus_ppm: 8.2
+                    potassium_ppm: 45.0
+                    organic_matter_pct: 2.1
+                  crop_suitability:
+                    crop_type: CORN_SILAGE
+                    yield_potential_tons_per_ha: 14.5
+                    zarc_risk_score: LOW
+                  attestation:
+                    provider_timestamp: "2026-11-08T14:00:00Z"
+                    cryptographic_hash: "sha256:a1b2c3d4..."
+                    satellite_source: Sentinel-2
+              bdcs:
+                summary: BDCS — feedlot
+                value:
+                  partner_id: BDCS
+                  polygon_id: BR-MT-36400
+                  language: pt-BR
+                  feedlot_context:
+                    cattle_head_count: 1500
+                    feed_type: CORN_SILAGE
+                    target_slaughter_weight_kg: 550
+                    feed_optimization_index: 0.85
+              effatha:
+                summary: Effatha — satellite frequency treatment
+                value:
+                  partner_id: EFFATHA
+                  polygon_id: BR-MT-36400
+                  language: pt-BR
+                  agrotechnical_context:
+                    delivery_mechanism: SATELLITE_FREQUENCY
+                    treatment_protocol_id: EFFATHA-CORN-01
+                    target_crop: CORN_SILAGE
+                    activation_date: "2026-11-08T00:00:00Z"
+                  attestation:
+                    provider_timestamp: "2026-11-08T14:00:00Z"
+                    cryptographic_hash: "sha256:e5f6g7h8..."
+      responses:
+        '202':
+          description: Payload staged for review (approval_status PENDING)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [staging_id, partner_id, data_category, approval_status, provider_status]
+                properties:
+                  staging_id: { type: string, format: uuid }
+                  partner_id: { type: string }
+                  data_category: { type: string }
+                  approval_status: { type: string, enum: [PENDING] }
+                  provider_status: { type: string, enum: [UNVERIFIED] }
+        '401':
+          description: Missing or unknown Bearer token
+        '403':
+          description: Token's partner does not match payload partner_id
+        '422':
+          description: Payload failed schema validation
+        '503':
+          description: Partner ingestion not configured on this deployment
+  /api/v1/admin/partners/approve/{staging_id}:
+    post:
+      summary: Approve a staged payload — promotes it to the live cache
+      operationId: partnerApprove
+      parameters:
+        - name: staging_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Promoted; returns the live snapshot_id
+        '401':
+          description: Missing or unknown admin token
+        '404':
+          description: staging_id not found
+        '409':
+          description: Staging payload already decided
+        '503':
+          description: Admin API not configured on this deployment
+  /api/v1/admin/partners/reject/{staging_id}:
+    post:
+      summary: Reject a staged payload with a recorded reason
+      operationId: partnerReject
+      parameters:
+        - name: staging_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '200':
+          description: Rejected; reason recorded
+        '401':
+          description: Missing or unknown admin token
+        '404':
+          description: staging_id not found
+        '409':
+          description: Staging payload already decided
+        '422':
+          description: Rejection reason missing
+        '503':
+          description: Admin API not configured on this deployment
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Partner API key. The token maps to exactly one partner_id.

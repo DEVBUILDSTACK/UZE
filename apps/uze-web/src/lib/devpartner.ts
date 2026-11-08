@@ -50,6 +50,22 @@ export interface PortalContent {
   ctaHeading: string;
   ctaBody: string;
   ctaButton: string;
+  diagrams: {
+    title: string;
+    journeyTitle: string;
+    journey: string;
+    internalTitle: string;
+    internal: string;
+  };
+  generator: { title: string; body: string; copy: string; copied: string };
+  debug: {
+    title: string;
+    body: string;
+    run: string;
+    copy: string;
+    copied: string;
+  };
+  docs: { title: string; body: string; open: string; back: string };
   languageLabel: string;
 }
 
@@ -131,13 +147,74 @@ export const CONTENT: Record<Locale, PortalContent> = {
           : d.file === "openapi.yaml"
             ? "OpenAPI specification"
             : d.file.includes("01")
-              ? "Diagram — partner ingestion flow"
-              : "Diagram — internal orchestration",
+              ? "Diagram — partner self-serve journey"
+              : "Diagram — internal agentic architecture",
     })),
     ctaHeading: "Need an API key?",
     ctaBody:
       "Keys are issued per partner after review. Request one from the developer team:",
     ctaButton: "Request API Key",
+    diagrams: {
+      title: "Integration flow",
+      journeyTitle: "Partner self-serve journey",
+      journey: `sequenceDiagram
+    participant P as Partner Dev Rep
+    participant Portal as DevPortal (UI)
+    participant GIRA as GIRA (AI Assistant)
+    participant API as UZEmarkets Sandbox API
+    P->>Portal: 1. Reads Schema & Uses Payload Generator
+    P->>API: 2. POSTs JSON to Sandbox
+    API-->>P: 3. 422 Error (structured: field + error)
+    P->>GIRA: 4. Pastes Error & JSON into GIRA Chat
+    GIRA-->>P: 5. Explains fix + Returns corrected JSON
+    P->>API: 6. POSTs corrected JSON
+    API-->>P: 7. 202 Accepted (staging_id)
+    Note over API: Admin Reviews & Approves
+    P->>API: 8. Production key issued, data goes live`,
+      internalTitle: "Internal agentic architecture",
+      internal: `flowchart TD
+    subgraph PARTNER["Partner Side"]
+        P_DOCS["Reads Portal"]
+        P_POST["POSTs Payload"]
+        P_DEBUG["Asks GIRA for Help"]
+    end
+    subgraph UZE["UZEmarkets Core"]
+        API_SANDBOX["Sandbox API"]
+        VALIDATOR["JSON Schema Validator"]
+        GIRA_DEBUG["GIRA Debug Endpoint"]
+        STAGING[("Staging DB<br/>(PENDING)")]
+        ADMIN["Admin Approval"]
+        LIVE[("Live DB<br/>(APPROVED)")]
+    end
+    P_DOCS --> P_POST
+    P_POST --> API_SANDBOX
+    API_SANDBOX --> VALIDATOR
+    VALIDATOR -- "Fail (Missing Fields)" --> GIRA_DEBUG
+    GIRA_DEBUG -- "Explains Fix" --> P_DEBUG
+    P_DEBUG -- "Corrected Payload" --> P_POST
+    VALIDATOR -- "Pass" --> STAGING
+    STAGING --> ADMIN
+    ADMIN -- "Approved" --> LIVE`,
+    },
+    generator: {
+      title: "Payload Generator",
+      body: "Fill in your values and the generator produces the exact Agro Digital JSON payload our schema expects. Copy it and POST it to the sandbox endpoint.",
+      copy: "Copy to Clipboard",
+      copied: "Copied",
+    },
+    debug: {
+      title: "GIRA Integration Assistant",
+      body: "Paste a payload that failed validation. GIRA applies the same deterministic checks as the API debug endpoint (POST /api/v1/agents/gira/debug): it lists every error with its field, fixes what can be fixed — numbers sent as text, a misplaced zarc_risk_score, keys the schema does not define — and returns the corrected JSON.",
+      run: "Ask GIRA",
+      copy: "Copy to Clipboard",
+      copied: "Copied",
+    },
+    docs: {
+      title: "Interactive API Docs",
+      body: "The full OpenAPI specification, explorable in the browser. Use it to inspect every endpoint, field and response shape before you write code.",
+      open: "Open the interactive API docs",
+      back: "Back to the portal",
+    },
     languageLabel: "Language",
   },
   "pt-BR": {
@@ -217,6 +294,67 @@ export const CONTENT: Record<Locale, PortalContent> = {
     ctaBody:
       "As chaves são emitidas por parceiro, após revisão. Solicite uma à equipe de desenvolvimento:",
     ctaButton: "Solicitar chave de API",
+    diagrams: {
+      title: "Fluxo de integração",
+      journeyTitle: "Jornada self-serve do parceiro",
+      journey: `sequenceDiagram
+    participant P as Partner Dev Rep
+    participant Portal as DevPortal (UI)
+    participant GIRA as GIRA (AI Assistant)
+    participant API as UZEmarkets Sandbox API
+    P->>Portal: 1. Reads Schema & Uses Payload Generator
+    P->>API: 2. POSTs JSON to Sandbox
+    API-->>P: 3. 422 Error (structured: field + error)
+    P->>GIRA: 4. Pastes Error & JSON into GIRA Chat
+    GIRA-->>P: 5. Explains fix + Returns corrected JSON
+    P->>API: 6. POSTs corrected JSON
+    API-->>P: 7. 202 Accepted (staging_id)
+    Note over API: Admin Reviews & Approves
+    P->>API: 8. Production key issued, data goes live`,
+      internalTitle: "Arquitetura interna de agentes",
+      internal: `flowchart TD
+    subgraph PARTNER["Partner Side"]
+        P_DOCS["Reads Portal"]
+        P_POST["POSTs Payload"]
+        P_DEBUG["Asks GIRA for Help"]
+    end
+    subgraph UZE["UZEmarkets Core"]
+        API_SANDBOX["Sandbox API"]
+        VALIDATOR["JSON Schema Validator"]
+        GIRA_DEBUG["GIRA Debug Endpoint"]
+        STAGING[("Staging DB<br/>(PENDING)")]
+        ADMIN["Admin Approval"]
+        LIVE[("Live DB<br/>(APPROVED)")]
+    end
+    P_DOCS --> P_POST
+    P_POST --> API_SANDBOX
+    API_SANDBOX --> VALIDATOR
+    VALIDATOR -- "Fail (Missing Fields)" --> GIRA_DEBUG
+    GIRA_DEBUG -- "Explains Fix" --> P_DEBUG
+    P_DEBUG -- "Corrected Payload" --> P_POST
+    VALIDATOR -- "Pass" --> STAGING
+    STAGING --> ADMIN
+    ADMIN -- "Approved" --> LIVE`,
+    },
+    generator: {
+      title: "Gerador de Payload",
+      body: "Preencha os seus valores e o gerador produz o payload JSON exato da Agro Digital que o nosso esquema espera. Copie e envie por POST para o endpoint sandbox.",
+      copy: "Copiar",
+      copied: "Copiado",
+    },
+    debug: {
+      title: "Assistente de Integração GIRA",
+      body: "Cole um payload que falhou na validação. A GIRA aplica as mesmas verificações determinísticas do endpoint de depuração da API (POST /api/v1/agents/gira/debug): lista cada erro com o seu campo, corrige o que pode ser corrigido — números enviados como texto, um zarc_risk_score mal posicionado, chaves que o esquema não define — e devolve o JSON corrigido.",
+      run: "Perguntar à GIRA",
+      copy: "Copiar",
+      copied: "Copiado",
+    },
+    docs: {
+      title: "Documentação Interativa da API",
+      body: "A especificação OpenAPI completa, explorável no navegador. Use-a para inspecionar cada endpoint, campo e formato de resposta antes de escrever código.",
+      open: "Abrir a documentação interativa da API",
+      back: "Voltar ao portal",
+    },
     languageLabel: "Idioma",
   },
   es: {
@@ -296,6 +434,67 @@ export const CONTENT: Record<Locale, PortalContent> = {
     ctaBody:
       "Las claves se emiten por socio, tras revisión. Solicita una al equipo de desarrollo:",
     ctaButton: "Solicitar clave de API",
+    diagrams: {
+      title: "Flujo de integración",
+      journeyTitle: "Ruta autoservicio del socio",
+      journey: `sequenceDiagram
+    participant P as Partner Dev Rep
+    participant Portal as DevPortal (UI)
+    participant GIRA as GIRA (AI Assistant)
+    participant API as UZEmarkets Sandbox API
+    P->>Portal: 1. Reads Schema & Uses Payload Generator
+    P->>API: 2. POSTs JSON to Sandbox
+    API-->>P: 3. 422 Error (structured: field + error)
+    P->>GIRA: 4. Pastes Error & JSON into GIRA Chat
+    GIRA-->>P: 5. Explains fix + Returns corrected JSON
+    P->>API: 6. POSTs corrected JSON
+    API-->>P: 7. 202 Accepted (staging_id)
+    Note over API: Admin Reviews & Approves
+    P->>API: 8. Production key issued, data goes live`,
+      internalTitle: "Arquitectura interna de agentes",
+      internal: `flowchart TD
+    subgraph PARTNER["Partner Side"]
+        P_DOCS["Reads Portal"]
+        P_POST["POSTs Payload"]
+        P_DEBUG["Asks GIRA for Help"]
+    end
+    subgraph UZE["UZEmarkets Core"]
+        API_SANDBOX["Sandbox API"]
+        VALIDATOR["JSON Schema Validator"]
+        GIRA_DEBUG["GIRA Debug Endpoint"]
+        STAGING[("Staging DB<br/>(PENDING)")]
+        ADMIN["Admin Approval"]
+        LIVE[("Live DB<br/>(APPROVED)")]
+    end
+    P_DOCS --> P_POST
+    P_POST --> API_SANDBOX
+    API_SANDBOX --> VALIDATOR
+    VALIDATOR -- "Fail (Missing Fields)" --> GIRA_DEBUG
+    GIRA_DEBUG -- "Explains Fix" --> P_DEBUG
+    P_DEBUG -- "Corrected Payload" --> P_POST
+    VALIDATOR -- "Pass" --> STAGING
+    STAGING --> ADMIN
+    ADMIN -- "Approved" --> LIVE`,
+    },
+    generator: {
+      title: "Generador de Payload",
+      body: "Complete sus valores y el generador produce el payload JSON exacto de Agro Digital que nuestro esquema espera. Cópielo y envíelo por POST al endpoint sandbox.",
+      copy: "Copiar",
+      copied: "Copiado",
+    },
+    debug: {
+      title: "Asistente de Integración GIRA",
+      body: "Pegue un payload que falló la validación. GIRA aplica las mismas verificaciones deterministas del endpoint de depuración de la API (POST /api/v1/agents/gira/debug): enumera cada error con su campo, corrige lo que puede corregirse — números enviados como texto, un zarc_risk_score mal ubicado, claves que el esquema no define — y devuelve el JSON corregido.",
+      run: "Preguntar a GIRA",
+      copy: "Copiar",
+      copied: "Copiado",
+    },
+    docs: {
+      title: "Documentación Interactiva de la API",
+      body: "La especificación OpenAPI completa, explorable en el navegador. Úsela para inspeccionar cada endpoint, campo y formato de respuesta antes de escribir código.",
+      open: "Abrir la documentación interactiva de la API",
+      back: "Volver al portal",
+    },
     languageLabel: "Idioma",
   },
 };

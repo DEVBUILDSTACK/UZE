@@ -56,8 +56,9 @@ partners/
 ├── README.md                    # This executive summary
 ├── openapi.yaml                 # The Swagger/OpenAPI spec for the API
 ├── diagrams/
-│   ├── 01-partner-ingestion.md  # External flow
-│   └── 02-sosem-internal.md     # Internal flow
+│   ├── 01-partner-ingestion.md  # Partner self-serve journey
+│   ├── 02-sosem-internal.md     # Internal agentic architecture
+│   └── 03-ingestion-sequence.md # Ingestion sequence (staging gate)
 └── schemas/
     ├── agro-digital.json
     ├── bdcs.json
