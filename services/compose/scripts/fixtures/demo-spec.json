@@ -23,6 +23,9 @@
     "epicenterLng": -80.1912,
     "radiusMiles": 37.5
   },
+  "entityId": "a380c150-1fb9-49fb-992a-1e3b89593472",
+  "executionEnvironment": "near_intents",
+  "agentAttestation": "human",
   "onSiteDays": 10,
   "posterAccount": "syndicate.acme.testnet",
   "posterKind": "human",

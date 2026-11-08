@@ -66,6 +66,15 @@ class SpecIn(BaseModel):
     assetSubclass: models.AssetSubclass | None = None
     targetArea: dict[str, Any] | None = None
     subterraneanContext: dict[str, Any] | None = None
+    # Trust-layer references (2026-11-08): string-carried UUIDs of
+    # the Assurative Entity / Affiliate, the execution environment,
+    # and how the poster is attested. All optional — resolution
+    # against the trust layer is post-audit work (see
+    # docs/audit/assurative-v2-gap-analysis.md).
+    entityId: str | None = None
+    affiliateId: str | None = None
+    executionEnvironment: models.ExecutionEnvironment | None = None
+    agentAttestation: models.AgentAttestation | None = None
 
 
 class BidIn(BaseModel):
@@ -94,6 +103,10 @@ class SpecView(BaseModel):
     assetSubclass: str | None
     targetArea: dict[str, Any] | None
     subterraneanContext: dict[str, Any] | None
+    entityId: str | None
+    affiliateId: str | None
+    executionEnvironment: str | None
+    agentAttestation: str | None
     onSiteDays: int | None
     remoteDays: int | None
     budgetMinUsdc: int
@@ -137,6 +150,16 @@ def _spec_view(intent: models.Intent) -> SpecView:
         assetSubclass=intent.asset_subclass.value if intent.asset_subclass else None,
         targetArea=intent.target_area,
         subterraneanContext=intent.subterranean_context,
+        entityId=intent.entity_id,
+        affiliateId=intent.affiliate_id,
+        executionEnvironment=(
+            intent.execution_environment.value
+            if intent.execution_environment
+            else None
+        ),
+        agentAttestation=(
+            intent.agent_attestation.value if intent.agent_attestation else None
+        ),
         onSiteDays=intent.on_site_days,
         remoteDays=intent.remote_days,
         budgetMinUsdc=intent.budget_min_usdc,
@@ -248,6 +271,10 @@ def post_spec(body: SpecIn, db: Session = Depends(get_session)):
         asset_subclass=body.assetSubclass,
         target_area=body.targetArea,
         subterranean_context=body.subterraneanContext,
+        entity_id=body.entityId,
+        affiliate_id=body.affiliateId,
+        execution_environment=body.executionEnvironment,
+        agent_attestation=body.agentAttestation,
         on_site_days=body.onSiteDays,
         remote_days=body.remoteDays,
         budget_min_usdc=body.budgetMinUsdc,

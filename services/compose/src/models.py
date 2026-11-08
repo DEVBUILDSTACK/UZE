@@ -1366,6 +1366,27 @@ class AssetSubclass(enum.Enum):
     R = "R"  # Resource (subterranean exploration / extraction)
 
 
+class ExecutionEnvironment(enum.Enum):
+    """Where an intent's execution runs (James's stack clarification,
+    2026-11-08): NEAR intents / multi-party matching, or Arcium
+    sealed-bid auctions (TEE/REE)."""
+
+    NEAR_INTENTS = "near_intents"
+    ARCIUM_AUCTION = "arcium_auction"
+
+
+class AgentAttestation(enum.Enum):
+    """How the acting party's identity is attested on an intent:
+    a human (trust-layer attestation), or an agent acting on behalf
+    of an Entity under x401 (James's stack clarification,
+    2026-11-08; the x401 stub lives in metering.py, the real
+    verification path is the trust-layer work mapped in
+    docs/audit/assurative-v2-gap-analysis.md)."""
+
+    HUMAN = "human"
+    AGENT_X401 = "agent_x401"
+
+
 class MicroRegion(Base):
     """Reference table: the analytical unit of the CRE marketplace
     (D3). Ids are authored slugs (\"miami-brickell\", \"bethesda-cbd\",
@@ -1439,6 +1460,30 @@ class Intent(Base):
     )
     subterranean_context: Mapped[dict | None] = mapped_column(
         "subterraneanContext", JSON, nullable=True
+    )
+    # Trust-layer references (James's stack clarification,
+    # 2026-11-08): the Assurative V2 Entity this intent belongs to
+    # and the Affiliate acting within it. Plain strings carrying
+    # UUID values — NEVER foreign keys: Assurative is a separate
+    # database (Scope Tenet 01), and cross-database references are
+    # plain strings under the filed R4 rule (the chainIntentRef
+    # precedent). Resolution lives in the trust layer; the gap
+    # analysis is docs/audit/assurative-v2-gap-analysis.md.
+    entity_id: Mapped[str | None] = mapped_column(
+        "entityId", String, nullable=True
+    )
+    affiliate_id: Mapped[str | None] = mapped_column(
+        "affiliateId", String, nullable=True
+    )
+    execution_environment: Mapped[ExecutionEnvironment | None] = mapped_column(
+        "executionEnvironment",
+        SAEnum(ExecutionEnvironment, name="execution_environment"),
+        nullable=True,
+    )
+    agent_attestation: Mapped[AgentAttestation | None] = mapped_column(
+        "agentAttestation",
+        SAEnum(AgentAttestation, name="agent_attestation"),
+        nullable=True,
     )
     on_site_days: Mapped[int | None] = mapped_column(
         "onSiteDays", Integer, nullable=True

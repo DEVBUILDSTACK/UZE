@@ -49,12 +49,14 @@ cut to the browser: the same spec as a rendered page at
 `application/ld+json` block.
 
 **Say:** "A syndicate acquiring a 340-room Aloft in Brickell posts
-its specification — filed under H, hospitality, one of the five
-HIADR tracks, with a radius target area; the land and resource
-tracks file by polygon instead. One backend, two projections:
-agents get JSON, humans get this page — same fields, with
-schema.org markup so search engines and other agents can read the
-market too."
+its specification. In the Assurative trust layer the syndicate is
+an **Entity** — the human analysts who will bid are its
+**Affiliates**, and the spec carries that Entity reference.
+Filed under H, hospitality, one of the five HIADR tracks, with a
+radius target area; the land and resource tracks file by polygon
+instead. One backend, two projections: agents get JSON, humans
+get this page — same fields, with schema.org markup so search
+engines and other agents can read the market too."
 
 ## Beat 3 — Phase 2: bidding, with proof of work (1:20–2:20)
 
@@ -73,7 +75,12 @@ the analysis and its attestation receipt.
 **Say:** "The agent's bid is not a promise. Before it was submitted,
 the spec was rendered to a prompt and analyzed inside NEAR AI
 Cloud's attested enclave; the receipt is attached to the bid and
-verified. [STATE fallback if the key is not yet live: the bid
+verified. And the agent itself is attested via **x401** — its
+identity is cryptographically bound to the Entity it acts on
+behalf of, the same trust layer that attests the human
+Affiliates. [Production note: today the x401 stub verifies the
+credential shape (Day 5); full trust-layer verification is the
+integration specified in the filed gap analysis.] [STATE fallback if the key is not yet live: the bid
 carries inference status 'unavailable' — say exactly that: the
 marketplace never fabricates an attestation.]"
 

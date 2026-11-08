@@ -95,6 +95,33 @@ property is recorded as a comparable in the Brickell dataset.
 Five phases: spec posted → bidding → selection → cross-chain
 settlement → delivery + comparable written.
 
+## The Assurative V2 Foundation vs. UZEmarkets
+
+The stack separates trust from transactions:
+
+- **Everything is an Entity** — the top of the hierarchy. Human
+  partners within a syndicate are its **Affiliates**.
+- **Assurative V2 (the Foundation)** is the trust layer: it handles
+  entity-level authentication, human attestation, attribution, and
+  provenance (for fractional rights and licensing). It is the
+  system of record for who an Entity is and who gets credited.
+- **UZEmarkets (the Marketplace)** sits on top of Assurative V2,
+  consuming Entity/Affiliate identities. It handles the intents,
+  bidding, and multi-party matching — its own transaction state
+  machine, in its own database, carrying trust-layer references
+  on every intent (`entityId`, `affiliateId`,
+  `executionEnvironment`, `agentAttestation` — shipped in this
+  sprint).
+- **Execution (TEE / REE)** is powered by Arcium (sealed-bid
+  auctions) or NEAR (intents and matching). An agent's identity is
+  attested via **x401**: the agent acts on behalf of an Entity,
+  and that attestation travels with its bids.
+
+[STATE: a forensic audit of the Assurative V2 repo is filed at
+docs/audit/assurative-v2-gap-analysis.md — the Entity/Affiliate
+tables and the x401 verification path are the mapped trust-layer
+build; the intent-side references and the x401 stub ship here.]
+
 ## Architecture
 
 - **NEAR** — the intent, identity and agent-control plane: a Rust
@@ -135,6 +162,12 @@ settlement → delivery + comparable written.
   additive migration `851420c2adc4`, from-empty replay verified
   (schema demo 12/12), plus the Content Desk's `/pulse` endpoint
   serving schema.org Dataset JSON computed from real records.
+- Trust-layer linkage: Intent carries the Assurative V2 references
+  (`entityId`, `affiliateId`, `executionEnvironment`,
+  `agentAttestation`) as an additive migration (`4efec7ad31a2`),
+  and a forensic gap analysis of the Assurative V2 repo is filed
+  (docs/audit/) mapping the Entity/Affiliate build the references
+  resolve against. Suite at the Day 7 draft refresh: 115 tests.
 - Chain Signatures proven end-to-end (MPC signature verified under
   the derived key); the mocked-settlement fallback was retired.
 - Settlement endpoint: selection, match state machine, the exact
