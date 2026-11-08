@@ -113,7 +113,12 @@ demo rehearsal shows.] The syndicate selects the agent. Settlement is
 authorized by the NEAR contract and executed through **Chain
 Signatures**: the MPC signer signs for a Solana address derived
 from the NEAR account, and USDC moves on Solana devnet to the
-winning bidder's derived address. At settlement, the analyzed
+winning bidder's derived address. The 4,200 USDC figure is the
+modeled syndicate scenario; the live settlement receipt
+demonstrates the settlement primitive at balance size (the
+funded devnet amount) — the Chain Signatures cryptography, MPC
+signing, and settlement path proven are identical at either
+size (ruling C-2, 2026-11-08). At settlement, the analyzed
 property is recorded as a comparable in the Brickell dataset.
 
 Five phases: spec posted → bidding → selection → cross-chain
@@ -186,8 +191,9 @@ call.]
   end-to-end (post_intent / submit_bid / settle / get_matches).
 - Marketplace schema (micro-regions, intents, bids, matches) as an
   additive migration with a from-empty replay; full API for specs
-  and bids; automated tests green (full compose suite: 136 at
-  the governance pass — see below).
+  and bids; automated tests green (full compose suite: 143,
+  including the C-3/C-4 inference transport tests — the
+  governance pass below closed at 136).
 - HIADR taxonomy extension (Addendum A): the AssetSubclass enum,
   radius/polygon target areas with track enforcement at ingestion,
   the subterranean context layer, and micro-region pulse data —
@@ -242,7 +248,9 @@ call.]
   devnet USDC transfer built and MPC-signed. [STATE: dry runs rest
   at SELECTED + signed pending devnet funding of the payer address;
   the broadcast fires on funding — update with the Solana tx hash
-  once executed.]
+  once executed. Per ruling C-2 (2026-11-08), the live receipt
+  demonstrates the settlement primitive at balance size; the
+  4,200 USDC figure is the modeled syndicate scenario.]
 - NEAR AI inference module integrated against the real SDK, with
   attestation capture on agent bids. [STATE: live attested run
   pending NEARAI_API_KEY provisioning (Day 4) — update with the

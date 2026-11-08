@@ -83,7 +83,12 @@ Assurative trust layer (Ed25519 against the agent's NEAR account
 keys, built 2026-11-08); the marketplace's tier gate still
 exercises the local stub until the Sprint 2 swap.] [STATE fallback if the key is not yet live: the bid
 carries inference status 'unavailable' — say exactly that: the
-marketplace never fabricates an attestation.]"
+marketplace never fabricates an attestation.] [Transport note,
+only if the live run used the REST route (the bid's inference
+carries `transport: rest-proxy-route` with a `transportNote`):
+say exactly: "The HTTP transport traversed a proxy, but the
+attestation receipt and response signature were verified
+locally." — ruling C-4, 2026-11-08.]"
 
 ## Beat 4 — Phase 3: selection (2:20–2:45)
 
