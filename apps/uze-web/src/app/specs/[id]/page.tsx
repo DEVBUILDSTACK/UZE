@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import AgentPanel from "@/components/agent-panel";
 import {
   epochDate,
   fetchMicroRegion,
@@ -121,6 +122,8 @@ export default async function SpecPage({
           <dd>{spec.status}</dd>
         </dl>
       </div>
+
+      <AgentPanel spec={spec} regionLabel={regionLabel} bidCount={bids.length} />
 
       <h2>Bids ({bids.length})</h2>
       {bids.length === 0 ? (

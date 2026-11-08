@@ -26,6 +26,7 @@ export interface SpecView {
     acquisitionStage: string;
   };
   assetSubclass: string | null;
+  entityId: string | null;
   targetArea: { type: string; [key: string]: unknown } | null;
   subterraneanContext: Record<string, unknown> | null;
   onSiteDays: number | null;

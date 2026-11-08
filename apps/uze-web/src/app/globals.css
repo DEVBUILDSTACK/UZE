@@ -425,3 +425,23 @@ form button,
   padding: 0.5rem 1rem;
   font-weight: 600;
 }
+
+/* AgentPanel — dual-surface agent guidance (additive) */
+.agent-panel {
+  border: 1px solid var(--border);
+  border-left: 4px solid #43b4ca;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.agent-panel.sura {
+  border-left-color: #ff6b00;
+}
+.agent-panel h2 {
+  margin-top: 0;
+}
+.agent-tracks {
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
