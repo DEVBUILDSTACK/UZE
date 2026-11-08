@@ -18,6 +18,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/` },
     { url: `${base}/micro-regions` },
     { url: `${base}/specs` },
+    { url: `${base}/devpartner/en` },
+    { url: `${base}/devpartner/pt-BR` },
+    { url: `${base}/devpartner/es` },
   ];
   try {
     const regions = (await fetchMicroRegions()) ?? [];

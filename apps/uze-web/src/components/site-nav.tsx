@@ -72,6 +72,9 @@ export default function SiteNav() {
           <Link href="/guidance" onClick={close}>
             GIRA Guidance
           </Link>
+          <Link href="/devpartner" onClick={close}>
+            Dev Docs
+          </Link>
           <Link href="/onboard" onClick={close}>
             Create your profile
           </Link>

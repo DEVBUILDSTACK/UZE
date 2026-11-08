@@ -386,3 +386,42 @@ form button,
 .mk code {
   font-size: 0.85em;
 }
+
+/* DevPartner portal (additive) */
+.dp-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.dp-langs {
+  font-size: 0.9rem;
+}
+.dp-tiers {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.dp-tier {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+.dp-partner {
+  margin-bottom: 1.5rem;
+}
+.dp-code {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.dp-cta {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+}
