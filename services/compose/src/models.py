@@ -1354,8 +1354,10 @@ class AssetSubclass(enum.Enum):
     DeepSeek, relayed by James): the marketplace's five tracks.
     H/I are operating CRE — target area may be a radius or a
     polygon. A/D/R are raw land / subterranean — a GeoJSON polygon
-    is required, and subterranean context is mandatory for A and R
-    (Addendum A §§2-3; enforcement lives in intents.py)."""
+    is required, and subterranean context is mandatory for A, D
+    and R (Addendum A §§2-3; the D inclusion resolved by DeepSeek
+    2026-11-08 — data centers need water rights and soil/bedrock
+    data to be underwritable). Enforcement lives in intents.py."""
 
     H = "H"  # Hospitality (resorts, hotels)
     I = "I"  # Income (multifamily, residential, condos)

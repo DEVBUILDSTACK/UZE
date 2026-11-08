@@ -91,9 +91,12 @@ data-rich X thread with the JSON hook.
   in the filed schema to replace.)
 - **Subterranean scope:** Addendum A §3 mandates the context for
   **R and A**; the stack sketch's schema comment said A/D/R.
-  Addendum A governs: mandatory for A and R; D requires the polygon
-  (§2) but not the context. Flagged for DeepSeek correction if the
-  intent was A/D/R.
+  Addendum A governed the first implementation (A and R; D polygon
+  only). **RESOLVED by DeepSeek 2026-11-08: mandatory for A, D and
+  R** — a data center (D) requires water rights for cooling and
+  soil/bedrock analysis for foundations, so D cannot be
+  underwritten without the subterranean layer. Implemented the
+  same day (one-line change in the ingestion validator + tests).
 - **targetArea shape:** GeoJSON Polygon at the top level
   ({"type": "Polygon", "coordinates": [...]}) per the stack spec's
   own API payload example; radius form is {"type": "Radius",

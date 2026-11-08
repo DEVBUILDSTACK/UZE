@@ -25,6 +25,9 @@ export interface SpecView {
     brandAffiliation?: string | null;
     acquisitionStage: string;
   };
+  assetSubclass: string | null;
+  targetArea: { type: string; [key: string]: unknown } | null;
+  subterraneanContext: Record<string, unknown> | null;
   onSiteDays: number | null;
   remoteDays: number | null;
   budgetMinUsdc: number;
@@ -94,6 +97,27 @@ export const fetchMicroRegion = (id: string) =>
 
 export const fetchTalent = (handle: string) =>
   get<TalentView>(`/api/v1/talent/${encodeURIComponent(handle)}`);
+
+export interface PulseView {
+  "@context": string;
+  "@type": string;
+  name: string;
+  temporalCoverage: string | null;
+  variableMeasured: {
+    spec_count: number;
+    comparable_count: number;
+    settled_volume_usdc: number;
+  };
+  pulse_data: Record<string, unknown> | null;
+  agent_action: string;
+}
+
+export const fetchPulse = (id: string) =>
+  get<PulseView>(`/api/v1/micro-regions/${encodeURIComponent(id)}/pulse`);
+
+/** Absolute URL of the pulse endpoint — the Dataset's download. */
+export const pulseUrl = (id: string) =>
+  `${COMPOSE_API}/api/v1/micro-regions/${encodeURIComponent(id)}/pulse`;
 
 /** Epoch seconds -> YYYY-MM-DD (the wire carries unix timestamps). */
 export function epochDate(epochSeconds: number): string {

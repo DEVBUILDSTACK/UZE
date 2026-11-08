@@ -172,15 +172,21 @@ _POLYGON_TRACKS = {
     models.AssetSubclass.D,
     models.AssetSubclass.R,
 }
-_SUBTERRANEAN_TRACKS = {models.AssetSubclass.A, models.AssetSubclass.R}
+_SUBTERRANEAN_TRACKS = {
+    models.AssetSubclass.A,
+    models.AssetSubclass.D,
+    models.AssetSubclass.R,
+}
 
 
 def _validate_hiadr(body: SpecIn) -> None:
     """Addendum A §§2-3, enforced at ingestion. Specs posted without
     an assetSubclass (pre-HIADR shape) pass untouched — additive
     only. A/D/R: GeoJSON polygon required, radius invalid. H/I:
-    radius (with epicenter) or polygon. A/R: subterraneanContext
-    mandatory (§3); D requires the polygon but not the context."""
+    radius (with epicenter) or polygon. A/D/R: subterraneanContext
+    mandatory (§3 as resolved by DeepSeek 2026-11-08: a data-center
+    track cannot be underwritten without water and soil/bedrock
+    data, so D is in scope alongside A and R)."""
     subclass = body.assetSubclass
     if subclass is None:
         return

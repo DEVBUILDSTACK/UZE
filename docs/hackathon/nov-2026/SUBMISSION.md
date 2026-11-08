@@ -28,7 +28,10 @@ Addendum A, shipped in this sprint):
   rights and geology (water, minerals, oil/gas). Polygon required,
   plus a mandatory subterranean context: soil depth, resource
   types, water source and rights, and the jurisdiction that
-  determines the legal split (e.g. Brazil's mineral regime).
+  determines the legal split (e.g. Brazil's mineral regime). The
+  subterranean context is mandatory across A, D and R — a data
+  center cannot be underwritten without its cooling-water rights
+  and bedrock data.
 
 By design, each track routes to its capital: H/I to operating
 lenders, A/D to land and development funds, R to resource

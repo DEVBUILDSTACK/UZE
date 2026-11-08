@@ -80,6 +80,25 @@ export default async function SpecPage({
           </dd>
           <dt>Domain</dt>
           <dd>{humanize(spec.domain)}</dd>
+          <dt>Track (HIADR)</dt>
+          <dd>
+            {spec.assetSubclass
+              ? `${spec.assetSubclass} — ${
+                  {
+                    H: "Hospitality",
+                    I: "Income",
+                    A: "Agriculture",
+                    D: "Development",
+                    R: "Resource",
+                  }[spec.assetSubclass] ?? spec.assetSubclass
+                }`
+              : "—"}
+            {spec.targetArea
+              ? spec.targetArea.type === "Radius"
+                ? ` · Radius ${spec.targetArea.radiusMiles ?? ""} mi`
+                : ` · ${spec.targetArea.type}`
+              : ""}
+          </dd>
           <dt>Property</dt>
           <dd>
             {humanize(asset.propertyType)} · {asset.doorCount} doors ·{" "}

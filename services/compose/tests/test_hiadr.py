@@ -4,8 +4,9 @@ Content Desk pulse payload.
 Rules under test (Addendum A §§2-3, as filed):
   - A/D/R require a GeoJSON Polygon targetArea; radius is invalid.
   - H/I accept a Radius (with epicenter) or a Polygon.
-  - subterraneanContext is mandatory for A and R; D requires the
-    polygon but not the context.
+  - subterraneanContext is mandatory for A, D and R (Addendum A
+    §3 as resolved by DeepSeek 2026-11-08 — Track D included:
+    data centers need water rights and soil/bedrock data).
   - Specs without an assetSubclass (pre-HIADR shape) still post —
     the extension is additive.
 The pulse tests pin the honesty contract: measured variables are
@@ -86,8 +87,8 @@ def test_polygon_tracks_reject_radius(market_client, demo_fixture):
         assert "Polygon" in r.json()["detail"]
 
 
-def test_subterranean_mandatory_for_a_and_r_only(market_client, demo_fixture):
-    for subclass in ("A", "R"):
+def test_subterranean_mandatory_for_a_d_and_r(market_client, demo_fixture):
+    for subclass in ("A", "D", "R"):
         r = _post(market_client, _spec(
             demo_fixture, assetSubclass=subclass, targetArea=POLYGON))
         assert r.status_code == 422, (subclass, r.text)
@@ -98,12 +99,6 @@ def test_subterranean_mandatory_for_a_and_r_only(market_client, demo_fixture):
             subterraneanContext=SUBTERRANEAN))
         assert r.status_code == 201, (subclass, r.text)
         assert r.json()["subterraneanContext"]["jurisdiction"] == "BR"
-
-    # D: polygon required, subterranean optional (Addendum A §3).
-    r = _post(market_client, _spec(
-        demo_fixture, assetSubclass="D", targetArea=POLYGON))
-    assert r.status_code == 201, r.text
-    assert r.json()["subterraneanContext"] is None
 
 
 def test_pre_hiadr_spec_still_posts(market_client, demo_fixture):
