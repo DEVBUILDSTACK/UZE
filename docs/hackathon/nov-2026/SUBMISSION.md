@@ -245,16 +245,21 @@ call.]
 - Chain Signatures proven end-to-end (MPC signature verified under
   the derived key); the mocked-settlement fallback was retired.
 - Settlement endpoint: selection, match state machine, the exact
-  devnet USDC transfer built and MPC-signed. [STATE: dry runs rest
-  at SELECTED + signed pending devnet funding of the payer address;
-  the broadcast fires on funding — update with the Solana tx hash
-  once executed. Per ruling C-2 (2026-11-08), the live receipt
-  demonstrates the settlement primitive at balance size; the
-  4,200 USDC figure is the modeled syndicate scenario.]
+  devnet USDC transfer built and MPC-signed. [STATE — EXECUTED
+  2026-11-08: the live broadcast fired on funding. Solana tx
+  `3VXVoKq9pwrMZpQcuNBf6woFKLJm8mfXjNpUByLH9TA5H22j6RC7qFDdmy21KoqbTwdKhrKEyircqgvvj2ihSMJR`
+  (devnet, slot 520159103, verified on-chain): 20.0 USDC moved
+  from the payer to the winning bidder's derived address; the
+  match rests at SETTLED. Per ruling C-2 (2026-11-08), the live
+  receipt demonstrates the settlement primitive at balance size;
+  the 4,200 USDC figure is the modeled syndicate scenario — the
+  $4,200 run rests at SELECTED + signed, its transfer built and
+  MPC-signed, not broadcast.]
 - NEAR AI inference module integrated against the real SDK, with
-  attestation capture on agent bids. [STATE: live attested run
-  pending NEARAI_API_KEY provisioning (Day 4) — update with the
-  completion id + verification kind once run.]
+  attestation capture on agent bids. [STATE: the NEAR AI key is
+  provisioned and authenticates; the live attested run is blocked
+  on NEAR AI org credits / a spending limit in the console —
+  update with the completion id + verification kind once run.]
 - x402/x401 mock flow with an agent retry helper and a dry-run
   script proving the protocol end-to-end.
 - Read-only human surface: spec, talent and micro-region pages

@@ -20,10 +20,14 @@
   on testnet for `uzemarkets-talent.testnet`.
 - Terminal with the compose venv active; `$SPEC_ID` set from
   Beat 2's output.
-- [STATE] Record after the Day 4 live inference run and the funded
-  settlement broadcast, so Beats 3 and 5 show the real attestation
-  and a real Solana receipt. Fallbacks are written into each beat
-  and are honest — use them rather than staging anything.
+- [STATE] The funded settlement broadcast EXECUTED 2026-11-08:
+  Solana tx
+  `3VXVoKq9pwrMZpQcuNBf6woFKLJm8mfXjNpUByLH9TA5H22j6RC7qFDdmy21KoqbTwdKhrKEyircqgvvj2ihSMJR`
+  (20.0 USDC, payer → winning bidder, SETTLED) — Beat 5 shows
+  this real receipt. The live inference run is still pending
+  NEAR AI org credits; Beat 3 keeps its honest fallback until
+  then. Fallbacks are written into each beat and are honest —
+  use them rather than staging anything.
 
 ## Beat 1 — The thesis (0:00–0:35)
 
