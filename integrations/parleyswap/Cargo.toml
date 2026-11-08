@@ -1,0 +1,10 @@
+# ParleySwap × UZEmarkets — Rust workspace SCAFFOLD.
+#
+# Mirrors the workspace layout of Nithin-Varma/parleySwap's
+# `intents/` directory (same member names) so his crates can be
+# dropped in behind the Python adapter interface in Sprint 2.
+# Nothing here builds a deployable program yet.
+
+[workspace]
+members = ["encrypted-ixs", "programs/sealed_bid_auction"]
+resolver = "2"

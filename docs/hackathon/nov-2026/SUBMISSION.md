@@ -105,7 +105,11 @@ agent bids **$4,200 / 48 hours** — and its bid is not a promise: it
 is backed by an executed NEAR AI Cloud inference (the spec rendered
 to a prompt, analyzed inside an attested enclave), with the
 attestation receipt attached to the bid and verified before
-submission. The syndicate selects the agent. Settlement is
+submission. [STATE: the inference module is integrated against
+the real SDK; the live attested run waits on NEARAI_API_KEY
+provisioning — until it lands, the agent bid carries inference
+status "unavailable", never a fabricated receipt, exactly as the
+demo rehearsal shows.] The syndicate selects the agent. Settlement is
 authorized by the NEAR contract and executed through **Chain
 Signatures**: the MPC signer signs for a Solana address derived
 from the NEAR account, and USDC moves on Solana devnet to the
@@ -182,7 +186,8 @@ call.]
   end-to-end (post_intent / submit_bid / settle / get_matches).
 - Marketplace schema (micro-regions, intents, bids, matches) as an
   additive migration with a from-empty replay; full API for specs
-  and bids; 111 automated tests green.
+  and bids; automated tests green (full compose suite: 136 at
+  the governance pass — see below).
 - HIADR taxonomy extension (Addendum A): the AssetSubclass enum,
   radius/polygon target areas with track enforcement at ingestion,
   the subterranean context layer, and micro-region pulse data —
@@ -225,8 +230,12 @@ call.]
   not a scientifically verified yield gain. A mock proposal can
   reach FARMER_APPROVAL_PENDING only; financing and sale remain
   separately authorized branches. Full compose suite after
-  this pass: 133 passed; from-empty schema demo 12/12 at head
-  `e8048229faab`.
+  this pass: 136 passed; from-empty schema demo 12/12 at head
+  `e8048229faab`. The integrated demo rehearsal
+  (scripts/demo_dryrun.sh) runs **14/14**, including its Beat 7
+  approval-gate walk: webhook → mock Effatha proposal
+  (PROVIDER_PROPOSAL_RECEIVED) → FARMER_APPROVAL_PENDING →
+  entity consent record → SERVICE_AUTHORIZED.
 - Chain Signatures proven end-to-end (MPC signature verified under
   the derived key); the mocked-settlement fallback was retired.
 - Settlement endpoint: selection, match state machine, the exact
@@ -272,7 +281,15 @@ Sprint 2 (already filed): interactive human UI, real x402
 facilitation, the redemption writer, Intent Gateway and Tag
 Registry, solver policy with pre-settlement screening — the filed
 series continues exactly as planned; the hackathon is a bounded
-pull-forward (Sprint 1.5), not a fork.
+pull-forward (Sprint 1.5), not a fork. Scaffolding is already in
+place so Sprint 2 starts from sockets, not boilerplate: the
+Intent Gateway package (envelope/receipt shapes + a refusing
+implementation, not yet wired in) and the ParleySwap integration
+scaffold under `integrations/parleyswap/` (the
+`ISealedBidAuctionAdapter` interface plus a Rust workspace
+mirroring Nithin Mengani's `parleySwap` layout — his
+`sealed_bid_auction` program and `encrypted-ixs` crates plug in
+behind the interface; the scaffold itself executes nothing).
 
 ## Submission fields
 

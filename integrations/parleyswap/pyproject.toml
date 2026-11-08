@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uze-parleyswap-adapter"
+version = "0.0.0"
+description = "UZEmarkets adapter interface for ParleySwap (Arcium MPC sealed-bid auctions) — Sprint 2 scaffold, no implementation"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]

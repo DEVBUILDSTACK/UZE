@@ -1,0 +1,6 @@
+# SCAFFOLD — placeholder Arcium configuration.
+#
+# Mirrors `intents/Arcium.toml` in Nithin-Varma/parleySwap.
+# Circuit definitions (starting with determine_winner) and MXE
+# configuration land when Nithin's encrypted-ixs crate plugs in
+# (Sprint 2). No circuits are defined or deployed from this file.

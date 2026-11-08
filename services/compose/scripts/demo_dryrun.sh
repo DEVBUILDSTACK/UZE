@@ -9,7 +9,12 @@
 #     NEARAI_API_KEY lands (never a fabricated attestation);
 #   - settle rests at SELECTED + "signed" until the payer address
 #     is funded (fully built + MPC-signed, broadcast held);
-#   - the pulse comparable count moves only when a settle lands.
+#   - the pulse comparable count moves only when a settle lands;
+#   - Beat 7 exercises the evidence gate end to end: the Track A
+#     webhook enters at INPUT_VALIDATED, the mock Effatha adapter
+#     returns PROVIDER_PROPOSAL_RECEIVED, the referral rests at
+#     FARMER_APPROVAL_PENDING, and only an explicit entity consent
+#     record advances it to SERVICE_AUTHORIZED.
 # When funding + key arrive, the same walk shows SETTLED and the
 # attested analysis with no script changes.
 #
@@ -19,6 +24,7 @@ cd "$(dirname "$0")/.."
 VENV=~/workspace/tools/composevenv/bin/python
 export COMPOSE_DATABASE_URL=postgresql+psycopg://postgres@127.0.0.1:55433/uzemarkets-compose
 export PYTHONPATH=src:src/generated
+export AGTECH_WEBHOOK_SECRET=demo-webhook-secret
 
 cleanup() {
   [ -f /tmp/demo-api.pid ] && kill "$(cat /tmp/demo-api.pid)" 2>/dev/null
@@ -92,5 +98,59 @@ done
 
 echo "== talent page =="
 curl -s $WEB/talent/recon.uzemarkets-talent.testnet | grep -q "4,200 USDC" && echo "OK  agent talent page renders its bid"
+
+echo "== Beat 7: evidence gate — Track A approval (webhook → mock proposal → consent) =="
+GATE_HOOK=$(curl -s -X POST $API/webhooks/agriculture/intent -H 'Content-Type: application/json' -H "X-Webhook-Secret: $AGTECH_WEBHOOK_SECRET" -H 'Idempotency-Key: demo-gate-001' -d '{"schema_version":"1.0","track":"A","transaction_type":"agtech_referral","crop_type":"CORN","production_purpose":"SILAGE","provider_preference":"EFFATHA","country_code":"PY","macro_driver":"fiat_collapse","polygon":{"type":"Polygon","coordinates":[[[-57.6,-25.3],[-57.5,-25.3],[-57.5,-25.2],[-57.6,-25.3]]]}}')
+REFERRAL_ID=$(echo "$GATE_HOOK" | jq -r .id)
+echo "webhook: state=$(echo "$GATE_HOOK" | jq -r .state) referral=$REFERRAL_ID macroDistressExit=$(echo "$GATE_HOOK" | jq -r .macroDistressExit)"
+ENTITY_ID=$(jq -r .entityId scripts/fixtures/demo-spec.json)
+REFERRAL_ID="$REFERRAL_ID" ENTITY_ID="$ENTITY_ID" $VENV - <<'PY' > /tmp/demo-gate.log 2>&1
+import os
+import db, models
+from agtech_workflow import (
+    authorize_service,
+    check_provider_eligibility,
+    complete_spatial_assessment,
+    request_provider_proposal,
+    request_spatial_assessment,
+)
+
+s = db.session()
+ref = s.query(models.AgReferral).filter_by(id=os.environ["REFERRAL_ID"]).one()
+assert ref.state is models.AgReferralState.INPUT_VALIDATED, ref.state
+
+assessment = request_spatial_assessment(s, ref)
+s.commit()
+print(f"spatial: state={ref.state.value} assessment={assessment.status} (mock adapter, pending)")
+
+complete_spatial_assessment(
+    s, ref, assessment,
+    registry_matches=[{"registry": "CAR", "matchId": "mock-car-demo"}],
+    confidence_score=0.81,
+    actor="demo:spatial-reviewer",
+)
+s.commit()
+print(f"spatial completed: state={ref.state.value} ownership_established={assessment.ownership_established}")
+
+eligibility = check_provider_eligibility(s, ref)
+s.commit()
+print(f"eligibility: adapter_status={eligibility.status} state={ref.state.value}")
+
+proposal = request_provider_proposal(s, ref)
+s.commit()
+print(f"proposal: status={proposal.status} state={ref.state.value} execution_authorized={proposal.execution_authorized}")
+assert proposal.status == "PROVIDER_PROPOSAL_RECEIVED"
+assert ref.state is models.AgReferralState.FARMER_APPROVAL_PENDING, ref.state
+
+consent = f"consent:{os.environ['ENTITY_ID']}:farmer-approval-demo-001"
+authorize_service(s, ref, actor="demo:farmer-entity", consent_record_id=consent)
+s.commit()
+print(f"consent: record={consent} -> state={ref.state.value}")
+assert ref.state is models.AgReferralState.SERVICE_AUTHORIZED, ref.state
+s.close()
+print("GATE_OK")
+PY
+cat /tmp/demo-gate.log
+grep -q GATE_OK /tmp/demo-gate.log && echo "OK  approval gate: PROVIDER_PROPOSAL_RECEIVED → FARMER_APPROVAL_PENDING → entity consent → SERVICE_AUTHORIZED" || echo "MISS approval gate (see /tmp/demo-gate.log)"
 
 echo "DEMO DRY RUN COMPLETE — outcomes as printed (current honest state)."
