@@ -211,12 +211,17 @@ lender needs the second."
 *[STATE: the exclusion is demonstrable live on this recording —
 precedent selection is our deterministic code, so
 `precedentsExcludedSelfDealing` shows in the judge response
-regardless. The juror VERDICTS themselves record `unavailable`
-until the NEAR AI org credits land (key authenticates; org
-spending limit unset — HTTP 402), and panel verdicts anchor
-their seat-report hashes as DISABLED while the chain gate is
-off — the deployed talent contract has no anchor method, and
-that gap is recorded, not papered over.]*
+regardless. The demo dry run executes this entire beat
+(BEAT8_EXCLUSION_OK / BEAT8_PRECEDENT_OK / BEAT8_READS_OK). The
+juror VERDICTS themselves record `unavailable` until the NEAR AI
+org credits land (key authenticates; org spending limit unset —
+HTTP 402). Anchoring: the talent contract's `anchor_attestation`
+method was added 2026-11-09 and panel anchoring is LIVE-PROVEN
+on testnet — a 2–1 panel verdict anchored all three seat hashes
+on-chain, each verified equal to the canonical digest (spec 08
+§10 carries the transactions). In the deterministic local dry
+run the chain gate is off, so anchors record DISABLED there by
+design.]*
 
 ## Close (5:15–5:35)
 
