@@ -177,7 +177,48 @@ protecting capital from fiat devaluation. The macro-distress
 flag records the posture; it never triggers financing or a sale
 by itself."]*
 
-## Close (4:40–5:00)
+## Beat 8 — Assuraties + the Juror Team (4:40–5:15)
+
+**Action (terminal):** issue a claim on the Brickell spec from
+the SAME claimant entity whose claim already stands Assuratized
+in this micro-region, and judge it; then issue a second claim
+from a DIFFERENT claimant and judge that:
+
+```
+curl -s -X POST localhost:8100/api/v1/claims -d '{...}'
+curl -s -X POST localhost:8100/api/v1/claims/<id>/judge
+```
+
+**On screen:** the first judge response — the claimant's own
+precedent is NOT in `precedentsUsed`, and
+`precedentsExcludedSelfDealing` reads 1. The second response —
+the same precedent IS used (`precedentsUsed` carries its id,
+excluded 0). Then `GET /api/v1/jurors`: the public scorecards.
+
+**Say:** "Markets run on claims — about an asset, about its
+numbers. Assuraties are the claims standing in this market; the
+ones that survive judgment become Assuratized, and lenders rely
+on those through the Reliance API. Watch the first judgment: the
+claimant's own settled record is excluded from judging their new
+claim. A single operator being writer, moderator, and juror is
+the pattern we refused. The second judgment uses that same
+precedent — precedent is shared, self-dealing is not. Contested
+claims are judged by a panel of models, every seat scored in
+public. Price tells you what the crowd believes. Precedent
+tells you what this micro-region has already settled. The
+lender needs the second."
+
+*[STATE: the exclusion is demonstrable live on this recording —
+precedent selection is our deterministic code, so
+`precedentsExcludedSelfDealing` shows in the judge response
+regardless. The juror VERDICTS themselves record `unavailable`
+until the NEAR AI org credits land (key authenticates; org
+spending limit unset — HTTP 402), and panel verdicts anchor
+their seat-report hashes as DISABLED while the chain gate is
+off — the deployed talent contract has no anchor method, and
+that gap is recorded, not papered over.]*
+
+## Close (5:15–5:35)
 
 **On screen:** repo + contract address card.
 

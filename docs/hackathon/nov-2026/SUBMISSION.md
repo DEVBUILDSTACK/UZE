@@ -191,7 +191,7 @@ call.]
   end-to-end (post_intent / submit_bid / settle / get_matches).
 - Marketplace schema (micro-regions, intents, bids, matches) as an
   additive migration with a from-empty replay; full API for specs
-  and bids; automated tests green (full compose suite: 143,
+  and bids; automated tests green (full compose suite: 196,
   including the C-3/C-4 inference transport tests — the
   governance pass below closed at 136).
 - HIADR taxonomy extension (Addendum A): the AssetSubclass enum,
@@ -265,6 +265,39 @@ call.]
 - Read-only human surface: spec, talent and micro-region pages
   with JSON-LD, indexes, sitemap, robots and llms.txt — verified
   rendering against the live API.
+
+## Assuraties + the Juror Team
+
+Claims are the market's other currency. A claim about an RWA, a
+HiCRE asset, or an asset period — issued by an owner, broker, or
+advisor/agent — stands as one of the **Assuraties**; a claim
+confirmed through judgment is **Assuratized**, and those are the
+claims financing partners rely on through the Reliance API
+(confidential claims carry the ASSURATIZED @ARCIUM mark).
+
+Judgment is precedent-aware and team-shaped: before the juror
+runs, Assuratized claims in the same micro-region are rendered
+into its prompt as precedents — with a hard self-dealing
+exclusion (a claimant's own record never judges their own
+claims, and the exclusion is counted in the response). Contested
+claims are judged by a panel of up to three models, strict
+majority, dissents recorded. Every juror's scorecard is public
+and event-sourced from the append-only log — attempts included,
+nothing laundered by re-judging. The juror path strips
+invisible Unicode from claim text at issue and again at render,
+and every judgment carries a canary trap for framing leaks.
+Panel verdicts record per-seat attestation anchors (sha256 of
+each seat's report) on-chain-ready: today they read DISABLED
+while the chain gate is off, and the deployed contract has no
+anchor method — that gap is recorded, not disguised. Because
+price tells you what the crowd believes, but precedent tells
+you what this micro-region has already settled — and the lender
+needs the second.
+
+[STATE: juror verdicts record `unavailable` until the NEAR AI
+org credits land (key authenticates; spending limit unset —
+HTTP 402). Bonds are mock units; no claim transition moves
+money.]
 
 ## The HIADR Content Desk — the organic growth engine
 

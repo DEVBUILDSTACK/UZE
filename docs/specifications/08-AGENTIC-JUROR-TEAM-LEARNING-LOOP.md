@@ -212,13 +212,29 @@ blocks them.
 
 - `src/juror.py` — `juror` identity on every report (the model
   actually used); PRECEDENTS block in the deterministic prompt
-  rendering; `precedentsUsed` on every outcome.
-- `src/assuraties.py` — precedent selection at judge time;
-  `GET /api/v1/jurors`; `GET /api/v1/learning/recent`.
+  rendering; `precedentsUsed` on every outcome; defensive
+  re-sanitization at render (§8); the canary trap (§8);
+  panels — `panel_models` / `judge_claim_for_model` /
+  `judge_panel` (§9).
+- `src/assuraties.py` — precedent selection at judge time with
+  the self-dealing exclusion and its count (§2); contested
+  claims routed to the panel (§9); event-sourced scorecards at
+  `GET /api/v1/jurors` (§3); `GET /api/v1/learning/recent`;
+  panel attestation anchors recorded at verdict time (§10).
+- `src/sanitize.py` — invisible-Unicode stripping for the
+  juror path (§8).
+- `src/models.py` + migration `c41a9e72d5b0` — the
+  `attestation_anchor` table and `anchor_status` enum (§10);
+  `src/near_client.py` — `anchor_attestation` under the
+  standard chain gate.
 - `tests/test_juror_team.py` — precedent injection proven
   against a capturing client (same micro-region in, different
-  micro-region out), scorecard math, feed ordering and limits,
+  micro-region out), the self-dealing exclusion, scorecard
+  math (incl. the event-sourcing test: superseded attempts
+  counted), panel majority / no-majority / fallback, anchor
+  recording with recomputed digests, feed ordering and limits,
   and the unavailable path's absence from the scorecards.
+- `tests/test_sanitize.py` — §8's pins (see below).
 
 ## 8. Untrusted-input sanitization — the juror-path slice
 
