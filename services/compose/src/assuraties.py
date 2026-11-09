@@ -248,18 +248,33 @@ def challenge_claim(
 
 def _select_precedents(
     db: Session, claim: models.Claim
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], int]:
     """Precedent selection (spec 08 §2): Assuratized claims whose
     Intent sits in the same micro-region as this claim's Intent —
     the system's settled record for that market — most recent
     resolution first (claim id breaks ties, deterministically),
     capped at 3, the claim itself excluded. Rendered into the
     juror prompt by juror.py; the ids land on the juror report as
-    precedentsUsed."""
+    precedentsUsed.
+
+    Self-dealing exclusion (spec 08 §2, DeepSeek Q2(a)): two
+    candidate classes are excluded BEFORE the cap, and counted:
+
+      - precedents claimed by the SAME claimantEntityId as the
+        claim under judgment — a claimant's own resolved record
+        never informs judgments on their own claims;
+      - precedents on the SAME Intent — a claim's siblings on the
+        same asset, whoever claimed them.
+
+    The roles that check each other must be separate: the field's
+    demonstrated failure mode is one operator acting as writer,
+    moderator, and juror at once. The returned excluded count
+    lands on the juror report as precedentsExcludedSelfDealing —
+    the exclusion is itself part of the judgment's record."""
     intent = db.get(models.Intent, claim.intent_id)
     if intent is None:
-        return []
-    rows = (
+        return [], 0
+    candidates = (
         db.query(models.Claim)
         .join(models.Intent, models.Claim.intent_id == models.Intent.id)
         .filter(
@@ -268,9 +283,18 @@ def _select_precedents(
             models.Claim.id != claim.id,
         )
         .order_by(models.Claim.resolved_at.desc(), models.Claim.id)
-        .limit(3)
         .all()
     )
+    eligible: list[models.Claim] = []
+    excluded = 0
+    for row in candidates:
+        if (
+            row.claimant_entity_id == claim.claimant_entity_id
+            or row.intent_id == claim.intent_id
+        ):
+            excluded += 1
+        else:
+            eligible.append(row)
     return [
         {
             "id": row.id,
@@ -281,8 +305,8 @@ def _select_precedents(
                 row.challenge and row.challenge.get("withstood")
             ),
         }
-        for row in rows
-    ]
+        for row in eligible[:3]
+    ], excluded
 
 
 @router.post("/claims/{claim_id}/judge")
@@ -299,7 +323,7 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
         )
     from_status = claim.status
     claim.status = models.ClaimStatus.UNDER_RESOLUTION
-    precedents = _select_precedents(db, claim)
+    precedents, precedents_excluded = _select_precedents(db, claim)
     precedent_ids = [p["id"] for p in precedents]
     claim_dict = _claim_view(claim).model_dump()
     claim_dict["precedents"] = precedents
@@ -326,8 +350,13 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
             if report.get(key) is not None
         }
         # The selection of record is this endpoint's: what was
-        # actually rendered into the prompt, whoever judged.
+        # actually rendered into the prompt, whoever judged —
+        # and how much of the settled record the self-dealing
+        # exclusion held back from it.
         claim.juror_report["precedentsUsed"] = precedent_ids
+        claim.juror_report["precedentsExcludedSelfDealing"] = (
+            precedents_excluded
+        )
         if report.get("juror") or report.get("model"):
             claim.juror_report["juror"] = (
                 report.get("juror") or report.get("model")
@@ -347,6 +376,7 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
             "model": report.get("model"),
             "juror": report.get("juror") or report.get("model"),
             "precedentsUsed": precedent_ids,
+            "precedentsExcludedSelfDealing": precedents_excluded,
             "attemptedAt": attempted_at,
         }
     _log(
@@ -361,6 +391,7 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
             "verdict": report.get("verdict"),
             "juror": report.get("juror") or report.get("model"),
             "precedentsUsed": precedent_ids,
+            "precedentsExcludedSelfDealing": precedents_excluded,
         },
     )
     db.commit()

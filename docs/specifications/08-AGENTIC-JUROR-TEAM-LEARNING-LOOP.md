@@ -48,6 +48,24 @@ makes it operational inside the judgment itself:
   shares the claim's Intent micro-region — the same market —
   excluding the claim itself, ordered by resolution time
   descending (claim id breaks ties), capped at 3.
+- **Self-dealing exclusion (DeepSeek audit Q2(a), 2026-11-09).**
+  Two candidate classes are excluded before the cap, and the
+  number excluded is recorded on every juror report as
+  `precedentsExcludedSelfDealing` (an integer, 0 when nothing
+  was held back): precedents claimed by the **same
+  claimantEntityId** as the claim under judgment, and precedents
+  on the **same Intent**. A claimant's own resolved record
+  never informs judgments on their own claims. The rationale is
+  separation of the roles that check each other: the field's
+  demonstrated failure mode — visible in a sibling hackathon
+  project — is a single operator acting as writer, moderator,
+  and juror at once, with no role left to check the others.
+  Precedent is the system's memory; letting a claimant stock
+  the memory that judges them would rebuild that conflict
+  inside our own pipeline. The exclusion also prices the
+  precedent-poisoning surface named in the build statement:
+  seeding favorable precedents no longer helps the seeder's
+  own claims at all.
 - **Rendering.** The precedents are rendered into the juror
   prompt in a clearly delimited **PRECEDENTS** block: statement,
   claimed value, and resolution outcome, including whether the

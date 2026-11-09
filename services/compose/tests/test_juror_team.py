@@ -32,6 +32,8 @@ import juror
 from test_intents import _post_spec
 
 CLAIMANT = "5e3532e9-aecc-47fb-a557-35804dd7f9e9"
+OTHER_CLAIMANT = "7a8b9c0d-2222-4333-8444-555566667777"
+THIRD_CLAIMANT = "c3d4e5f6-3333-4444-8555-666677778888"
 CHALLENGER = "b1c2d3e4-1111-4222-8333-444455556666"
 SCORECARD_JUROR = "team-scorecard-juror-v1"
 SEED_STATEMENT = (
@@ -179,14 +181,20 @@ def test_precedent_injection_same_micro_region(
     assert finalized.json()["status"] == "ASSURATIZED"
 
     # Judge a new claim on a second Brickell intent through the
-    # REAL juror with a capturing client.
+    # REAL juror with a capturing client. The target's claimant
+    # differs from the seed's: since the self-dealing exclusion
+    # (spec 08 §2, Q2(a)) a claimant's own record is never a
+    # precedent for their own claims, so cross-claimant is the
+    # only way a precedent can be used at all.
     capture = CaptureClient()
     monkeypatch.setattr(
         juror,
         "judge_claim",
         lambda claim: _REAL_JUDGE(claim, client=capture),
     )
-    target = _issue(market_client, spec_b["id"])
+    target = _issue(
+        market_client, spec_b["id"], claimantEntityId=OTHER_CLAIMANT
+    )
     judged = market_client.post(f"/api/v1/claims/{target['id']}/judge")
     assert judged.status_code == 200, judged.text
     assert judged.json()["status"] == "RESOLVED_TRUE"
@@ -199,6 +207,7 @@ def test_precedent_injection_same_micro_region(
     view = market_client.get(f"/api/v1/claims/{target['id']}").json()
     assert view["jurorReport"]["precedentsUsed"] == [seed["id"]]
     assert view["jurorReport"]["juror"] == juror.MODEL
+    assert view["jurorReport"]["precedentsExcludedSelfDealing"] == 0
 
     # A claim in a DIFFERENT micro-region gets no precedents.
     capture_c = CaptureClient()
@@ -207,7 +216,9 @@ def test_precedent_injection_same_micro_region(
         "judge_claim",
         lambda claim: _REAL_JUDGE(claim, client=capture_c),
     )
-    other = _issue(market_client, spec_c["id"])
+    other = _issue(
+        market_client, spec_c["id"], claimantEntityId=OTHER_CLAIMANT
+    )
     judged_c = market_client.post(f"/api/v1/claims/{other['id']}/judge")
     assert judged_c.json()["status"] == "RESOLVED_TRUE"
     prompt_c = capture_c.last_prompt()
@@ -215,6 +226,72 @@ def test_precedent_injection_same_micro_region(
     assert SEED_STATEMENT not in prompt_c
     view_c = market_client.get(f"/api/v1/claims/{other['id']}").json()
     assert view_c["jurorReport"]["precedentsUsed"] == []
+
+
+def test_self_dealing_precedents_excluded(
+    market_client, demo_fixture, stub_juror, monkeypatch
+):
+    """Q2(a): a claimant's own Assuratized record never informs
+    judgments on their own claims, and a claim's same-Intent
+    siblings are excluded whoever claimed them. The exclusion is
+    counted on the juror report; other claimants' claims in the
+    micro-region still see the precedent."""
+    spec_a = _post_spec(market_client, demo_fixture)  # miami-brickell
+    spec_b = _post_spec_in_region(
+        market_client, demo_fixture, "miami-brickell"
+    )
+
+    seed = _issue(
+        market_client,
+        spec_a["id"],
+        statement=SEED_STATEMENT,
+        claimedValue={"totalOperatingExpenses": 3900000},
+    )
+    stub_juror(_report("UPHELD", model="stub-juror-model"))
+    market_client.post(f"/api/v1/claims/{seed['id']}/judge")
+    finalized = _finalize(
+        market_client, seed["id"], "credit-committee-team-010"
+    )
+    assert finalized.json()["status"] == "ASSURATIZED"
+
+    def judge_with_capture(claim_id):
+        capture = CaptureClient()
+        monkeypatch.setattr(
+            juror,
+            "judge_claim",
+            lambda claim: _REAL_JUDGE(claim, client=capture),
+        )
+        resp = market_client.post(f"/api/v1/claims/{claim_id}/judge")
+        assert resp.status_code == 200, resp.text
+        view = market_client.get(f"/api/v1/claims/{claim_id}").json()
+        return capture.last_prompt(), view["jurorReport"]
+
+    # Same claimant, different intent: excluded by claimant.
+    own = _issue(market_client, spec_b["id"])  # CLAIMANT, as the seed
+    prompt, report = judge_with_capture(own["id"])
+    assert "PRECEDENTS" not in prompt
+    assert report["precedentsUsed"] == []
+    assert report["precedentsExcludedSelfDealing"] == 1
+
+    # Different claimant, SAME intent as the seed: excluded by
+    # intent — siblings never judge each other either.
+    sibling = _issue(
+        market_client, spec_a["id"], claimantEntityId=OTHER_CLAIMANT
+    )
+    prompt, report = judge_with_capture(sibling["id"])
+    assert "PRECEDENTS" not in prompt
+    assert report["precedentsUsed"] == []
+    assert report["precedentsExcludedSelfDealing"] == 1
+
+    # Different claimant, different intent: the precedent is used
+    # and nothing is held back.
+    clean = _issue(
+        market_client, spec_b["id"], claimantEntityId=OTHER_CLAIMANT
+    )
+    prompt, report = judge_with_capture(clean["id"])
+    assert SEED_STATEMENT in prompt
+    assert report["precedentsUsed"] == [seed["id"]]
+    assert report["precedentsExcludedSelfDealing"] == 0
 
 
 def test_render_precedents_block_unit():
@@ -317,18 +394,30 @@ def test_juror_scorecard_math(market_client, demo_fixture, stub_juror):
 
 
 def test_learning_feed(market_client, demo_fixture, stub_juror):
-    spec = _post_spec(market_client, demo_fixture)
+    # Three Brickell specs and three distinct claimants: under
+    # the self-dealing exclusion (Q2(a)), precedents accumulate
+    # across claims only when neither the claimant nor the
+    # Intent repeats — which is the honest shape of the ledger
+    # (a market learning from OTHER parties' settled record).
+    spec_a = _post_spec(market_client, demo_fixture)
+    spec_b = _post_spec_in_region(
+        market_client, demo_fixture, "miami-brickell"
+    )
+    spec_c = _post_spec_in_region(
+        market_client, demo_fixture, "miami-brickell"
+    )
 
-    first = _issue(market_client, spec["id"])
+    first = _issue(market_client, spec_a["id"])
     stub_juror(_report("UPHELD"))
     market_client.post(f"/api/v1/claims/{first['id']}/judge")
     _finalize(market_client, first["id"], "credit-committee-team-005")
 
     second = _issue(
         market_client,
-        spec["id"],
+        spec_b["id"],
         statement="Payroll ran 31% of total revenue in 2025.",
         claimedValue={"payrollPctOfRevenue": 31},
+        claimantEntityId=OTHER_CLAIMANT,
     )
     stub_juror(_report("UPHELD"))
     market_client.post(f"/api/v1/claims/{second['id']}/judge")
@@ -336,9 +425,10 @@ def test_learning_feed(market_client, demo_fixture, stub_juror):
 
     third = _issue(
         market_client,
-        spec["id"],
+        spec_c["id"],
         statement="Occupancy averaged 99% across 2025.",
         claimedValue={"occupancyPct": 99},
+        claimantEntityId=THIRD_CLAIMANT,
     )
     stub_juror(_report("REFUTED"))
     market_client.post(f"/api/v1/claims/{third['id']}/judge")
@@ -364,9 +454,14 @@ def test_learning_feed(market_client, demo_fixture, stub_juror):
     assert by_id[second["id"]]["comparableAdded"] is True
     assert by_id[third["id"]]["outcome"] == "RESOLVED_FALSE"
     assert by_id[third["id"]]["comparableAdded"] is False
+    expected_claimants = {
+        first["id"]: CLAIMANT,
+        second["id"]: OTHER_CLAIMANT,
+        third["id"]: THIRD_CLAIMANT,
+    }
     for entry in mine:
         assert entry["juror"] == SCORECARD_JUROR
-        assert entry["claimantEntityId"] == CLAIMANT
+        assert entry["claimantEntityId"] == expected_claimants[entry["claimId"]]
         assert entry["resolvedAt"] is not None
     # Precedents accumulate as the ledger grows: the first claim
     # had none, the second saw the first, the third saw both.
