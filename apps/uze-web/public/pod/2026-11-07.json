@@ -1,0 +1,41 @@
+{
+  "@context": "https://schema.org",
+  "@type": "PodcastEpisode",
+  "name": "UZEmarkets on NEAR — Intents, Verified AI, and the Attribution Record",
+  "series": "The Saturday POD — L2Launch · UZEmarkets",
+  "edition": "2026-11-07",
+  "editionDate": "2026-11-07",
+  "datePublished": "2026-11-09",
+  "version": 2,
+  "status": "recorded — awaiting publication tap",
+  "cast": [
+    "SoSim (host)",
+    "Jay (skeptic / evidence)",
+    "CB (builder / mechanism)"
+  ],
+  "centralQuestion": "What changes when a market states the outcome it wants, proves the intelligence it used, and keeps a verifiable record of who created the value?",
+  "audio": {
+    "contentUrl": "2026-11-07.mp3",
+    "encodingFormat": "audio/mpeg",
+    "durationSeconds": 2159,
+    "music": "BABEL — AKIRA where is my soul (introduction and closing)"
+  },
+  "humanUrl": "2026-11-07.html",
+  "chapters": [
+    "Cold open — private facts, public proof",
+    "The thesis — AI in front, chain behind",
+    "The midterm verdict — affordability was the ballot question",
+    "Four trillion dollars out of the AI trade",
+    "The data-center freeze — the build-out meets the household bill",
+    "What the next two years ask — and the regulation debate behind them",
+    "NEAR Intents — the market states an outcome",
+    "Verified intelligence and screened flow",
+    "The Assurative layer — proof, attribution, and the tag",
+    "Sealed bids — Arcium and Numbers",
+    "Tickets, stays, and the paired asset",
+    "The hackathon build",
+    "The disagreement, what to watch, and the close"
+  ],
+  "previousPosting": "/word-graph/2026-10-31.html",
+  "wordCount": 5084
+}
