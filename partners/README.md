@@ -2,8 +2,9 @@
 
 **Concept:** a public-facing, multilingual, self-serve developer portal
 at `devpartner.uzemarkets.com` that serves as the technical bridge
-between UZEmarkets and its external data partners (Agro Digital, BDCS,
-Effatha).
+between UZEmarkets and its external data partners — software stack
+partners, integrated via API, to extend the reach of landowners and
+business owners through WhatsApp and messaging-based sources.
 
 **The problem:** UZEmarkets cannot be completely dependent on partner
 APIs. If a partner goes offline, underwriting agents and lenders must

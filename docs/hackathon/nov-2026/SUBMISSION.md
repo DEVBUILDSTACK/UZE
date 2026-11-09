@@ -28,7 +28,9 @@ Addendum A, shipped in this sprint):
   macroeconomic distress and fiat collapse in Paraguay,
   UZEmarkets offers a dual-track solution for farmers. First, we
   route their polygons into an evidence-gated AgTech referral
-  pipeline to assess whether partners (like Effatha) can help
+  pipeline to assess whether software stack partners — integrated
+  via API, extending the reach of landowners and business owners
+  through WhatsApp and messaging-based sources — can help
   optimize corn and sorghum yields and maximize cash flow.
   Partner access is behind unverified mock adapters; a proposal
   reaches **FARMER_APPROVAL_PENDING** and stops there unless the
@@ -251,7 +253,7 @@ call.]
   agriculture webhook is authenticated and idempotent and can
   advance a referral only from INTENT_RECEIVED to
   INPUT_VALIDATED. A single-step workflow guard enforces the
-  full A/D/R ladder; Agro Digital and Effatha sit behind
+  full A/D/R ladder; software stack partners sit behind
   ISpatialProvider / IAgTechProvider interfaces with local mock
   adapters that fabricate no live result and authorize nothing.
   SpatialAssessment, ProviderProposal, Observation, and
@@ -264,7 +266,7 @@ call.]
   this pass: 136 passed; from-empty schema demo 12/12 at head
   `e8048229faab`. The integrated demo rehearsal
   (scripts/demo_dryrun.sh) runs **14/14**, including its Beat 7
-  approval-gate walk: webhook → mock Effatha proposal
+  approval-gate walk: webhook → mock partner proposal
   (PROVIDER_PROPOSAL_RECEIVED) → FARMER_APPROVAL_PENDING →
   entity consent record → SERVICE_AUTHORIZED.
 - Chain Signatures proven end-to-end (MPC signature verified under

@@ -142,8 +142,10 @@ is credited as such; the team-and-learning layer is our own design.)
 identity-gated today, metering-ready (x402 rails already in the stack) —
 through which financing partners consume Assuratized claims inside their
 own underwriting. The DevPartner portal is the data-supply counterpart:
-partners (Agro Digital, BDCS, Effatha class) ingest spatial/agricultural
-data through the staging-gated API that feeds GIRA's A/NR/D claims.
+software stack partners, integrated via API to extend the reach of
+landowners and business owners through WhatsApp and messaging-based
+sources, ingest spatial/agricultural data through the staging-gated
+API that feeds GIRA's A/NR/D claims.
 
 **Partnership pathways, in order of proximity:**
 
