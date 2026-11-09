@@ -21,6 +21,18 @@ reason carried). judge_claim never raises and never invents a
 verdict: a response without a parseable UPHELD/REFUTED verdict is
 an "error" outcome, not a judgment. A claim whose juror reports
 unavailable/error stays UNDER_RESOLUTION (see assuraties.py).
+
+The juror is a TEAM surface (spec 08): every report carries a
+stable juror identity — "juror", the model string actually used
+(the fallback model when the C-3 fallback fired) — on which the
+public scorecards at GET /api/v1/jurors key. Judging is
+precedent-aware: when the caller supplies the claim's
+"precedents" (Assuratized claims in the same micro-region,
+selected in assuraties.py), they are rendered into the prompt in
+a delimited PRECEDENTS block and their ids are recorded on every
+outcome as "precedentsUsed" — precedents inform the judgment,
+they never substitute for one: an unavailable/error outcome
+stays verdictless exactly as before.
 """
 
 from __future__ import annotations
@@ -44,11 +56,42 @@ SYSTEM_PROMPT = (
 VERDICTS = ("UPHELD", "REFUTED")
 
 
+def _render_precedents(precedents: list) -> str:
+    """The PRECEDENTS block: Assuratized claims from the claim's
+    micro-region, in the order supplied (most recent resolution
+    first — the selection order is assuraties.py's). Delimited so
+    the block is unmistakable in the prompt and in any re-render."""
+    lines = [
+        "",
+        "PRECEDENTS — Assuratized claims in the same micro-region "
+        "(the market's settled record, most recent first). Weigh "
+        "them as resolved truth about comparable claims; they "
+        "inform this judgment, they do not decide it:",
+    ]
+    for i, precedent in enumerate(precedents, 1):
+        lines.append(f"--- precedent {i} ---")
+        lines.append(f"Statement: {precedent.get('statement')}")
+        lines.append(
+            "Claimed value: "
+            f"{json.dumps(precedent.get('claimedValue'), sort_keys=True)}"
+        )
+        lines.append(
+            "Resolution outcome: ASSURATIZED (challenge withstood: "
+            f"{'yes' if precedent.get('withstood') else 'no'})"
+        )
+    lines.append("--- end precedents ---")
+    return "\n".join(lines) + "\n"
+
+
 def render_claim_as_prompt(claim: dict) -> str:
     """Deterministic rendering of a claim (the ClaimView dict
     shape) into the juror prompt. Same claim, same prompt — the
-    judgment is priced against exactly what was claimed."""
+    judgment is priced against exactly what was claimed. When the
+    claim dict carries "precedents" (spec 08), the PRECEDENTS
+    block is part of the rendering: same claim + same precedents,
+    same prompt."""
     challenge = claim.get("challenge") or {}
+    precedents = claim.get("precedents") or []
     return (
         "Judge this claim. Answer as JSON with keys: verdict "
         '("UPHELD" if the evidence standard supports the claim, '
@@ -68,7 +111,8 @@ def render_claim_as_prompt(claim: dict) -> str:
             else ""
         )
         + "\n"
-        "Evidence standard: a claim about an asset or a period's "
+        + (_render_precedents(precedents) if precedents else "")
+        + "Evidence standard: a claim about an asset or a period's "
         "total operating expenses is UPHELD only if the statement "
         "is specific, internally consistent, and of the kind the "
         "claimant's filed financials would substantiate; vague, "
@@ -114,6 +158,7 @@ async def _run(claim: dict, client, model: str = MODEL) -> dict:
         "status": "ok",
         **verdict,
         "model": model,
+        "juror": model,
         "completionId": completion.id,
         "verification": {
             "signatureKind": inference._to_plain(
@@ -150,6 +195,7 @@ async def _rest_attempt(claim: dict, api_key: str, model: str) -> dict:
         "rationale": analysis.get("rationale"),
         "confidence": analysis.get("confidence"),
         "model": model,
+        "juror": model,
         "completionId": completion_id,
         "transport": "rest-proxy-route",
     }
@@ -202,25 +248,37 @@ async def _run_with_real_client(claim: dict, api_key: str) -> dict:
 
 
 def judge_claim(claim: dict, client=None) -> dict:
-    """Judge one claim (the ClaimView dict shape). `client` is
-    injectable for structural tests, exactly as in
-    inference.analyze_property. Without one, the real SDK client
-    is built from NEARAI_API_KEY; without a key the honest answer
-    is "unavailable" — never a fabricated verdict."""
+    """Judge one claim (the ClaimView dict shape, optionally
+    carrying "precedents" — spec 08). `client` is injectable for
+    structural tests, exactly as in inference.analyze_property.
+    Without one, the real SDK client is built from NEARAI_API_KEY;
+    without a key the honest answer is "unavailable" — never a
+    fabricated verdict. Every outcome records "precedentsUsed"
+    (the precedent claim ids, in the order rendered; [] when the
+    claim carried none) and a stable "juror" identity."""
+    precedent_ids = [p.get("id") for p in (claim.get("precedents") or [])]
     try:
         if client is not None:
-            return asyncio.run(_run(claim, client))
-        api_key = os.environ.get("NEARAI_API_KEY")
-        if not api_key:
-            return {
-                "status": "unavailable",
-                "reason": "NEARAI_API_KEY is not set",
-                "model": MODEL,
-            }
-        return asyncio.run(_run_with_real_client(claim, api_key))
+            result = asyncio.run(_run(claim, client))
+        else:
+            api_key = os.environ.get("NEARAI_API_KEY")
+            if not api_key:
+                result = {
+                    "status": "unavailable",
+                    "reason": "NEARAI_API_KEY is not set",
+                    "model": MODEL,
+                    "juror": MODEL,
+                }
+            else:
+                result = asyncio.run(
+                    _run_with_real_client(claim, api_key)
+                )
     except Exception as exc:
-        return {
+        result = {
             "status": "error",
             "reason": f"{type(exc).__name__}: {exc}",
             "model": MODEL,
+            "juror": MODEL,
         }
+    result["precedentsUsed"] = precedent_ids
+    return result

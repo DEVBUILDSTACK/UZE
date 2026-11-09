@@ -7,6 +7,16 @@
   POST /api/v1/claims/{id}/judge          run the attested juror
   POST /api/v1/claims/{id}/finalize       RESOLVED_TRUE -> ASSURATIZED
   GET  /api/v1/reliance/claims            the Reliance API (x401-gated)
+  GET  /api/v1/jurors                     juror scorecards (public)
+  GET  /api/v1/learning/recent            the learning feed (public)
+
+The juror is a team surface (spec 08): judging is precedent-
+aware — before the juror runs, Assuratized claims in the claim's
+micro-region are selected and rendered into its prompt as
+precedents, and every juror accumulates a public scorecard from
+finalized outcomes. The two public reads are projections derived
+from the claim rows and the EventLog; nothing is stored for them
+and nothing in them is invented.
 
 State discipline is the evidence-gated architecture's: single-step
 transitions only, each guarded — a wrong state is a 409, never a
@@ -37,6 +47,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 import juror
@@ -235,6 +246,45 @@ def challenge_claim(
     return _claim_view(claim)
 
 
+def _select_precedents(
+    db: Session, claim: models.Claim
+) -> list[dict[str, Any]]:
+    """Precedent selection (spec 08 §2): Assuratized claims whose
+    Intent sits in the same micro-region as this claim's Intent —
+    the system's settled record for that market — most recent
+    resolution first (claim id breaks ties, deterministically),
+    capped at 3, the claim itself excluded. Rendered into the
+    juror prompt by juror.py; the ids land on the juror report as
+    precedentsUsed."""
+    intent = db.get(models.Intent, claim.intent_id)
+    if intent is None:
+        return []
+    rows = (
+        db.query(models.Claim)
+        .join(models.Intent, models.Claim.intent_id == models.Intent.id)
+        .filter(
+            models.Claim.status == models.ClaimStatus.ASSURATIZED,
+            models.Intent.micro_region_id == intent.micro_region_id,
+            models.Claim.id != claim.id,
+        )
+        .order_by(models.Claim.resolved_at.desc(), models.Claim.id)
+        .limit(3)
+        .all()
+    )
+    return [
+        {
+            "id": row.id,
+            "statement": row.statement,
+            "claimedValue": row.claimed_value,
+            "outcome": "ASSURATIZED",
+            "withstood": bool(
+                row.challenge and row.challenge.get("withstood")
+            ),
+        }
+        for row in rows
+    ]
+
+
 @router.post("/claims/{claim_id}/judge")
 def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
     claim = _get_claim(db, claim_id)
@@ -249,7 +299,11 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
         )
     from_status = claim.status
     claim.status = models.ClaimStatus.UNDER_RESOLUTION
-    report = juror.judge_claim(_claim_view(claim).model_dump())
+    precedents = _select_precedents(db, claim)
+    precedent_ids = [p["id"] for p in precedents]
+    claim_dict = _claim_view(claim).model_dump()
+    claim_dict["precedents"] = precedents
+    report = juror.judge_claim(claim_dict)
     attempted_at = int(time.time())
     if report.get("status") == "ok":
         claim.juror_report = {
@@ -260,15 +314,24 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
                 "rationale",
                 "confidence",
                 "model",
+                "juror",
                 "completionId",
                 "verification",
                 "transport",
                 "transportNote",
                 "requestedModel",
                 "modelFallback",
+                "precedentsUsed",
             )
             if report.get(key) is not None
         }
+        # The selection of record is this endpoint's: what was
+        # actually rendered into the prompt, whoever judged.
+        claim.juror_report["precedentsUsed"] = precedent_ids
+        if report.get("juror") or report.get("model"):
+            claim.juror_report["juror"] = (
+                report.get("juror") or report.get("model")
+            )
         claim.status = (
             models.ClaimStatus.RESOLVED_TRUE
             if report["verdict"] == "UPHELD"
@@ -282,6 +345,8 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
             "status": report.get("status"),
             "reason": report.get("reason"),
             "model": report.get("model"),
+            "juror": report.get("juror") or report.get("model"),
+            "precedentsUsed": precedent_ids,
             "attemptedAt": attempted_at,
         }
     _log(
@@ -294,6 +359,8 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
             "toStatus": claim.status.value,
             "jurorOutcome": report.get("status"),
             "verdict": report.get("verdict"),
+            "juror": report.get("juror") or report.get("model"),
+            "precedentsUsed": precedent_ids,
         },
     )
     db.commit()
@@ -441,3 +508,145 @@ def reliance_claims(
         },
         "claims": items,
     }
+
+
+# ---------------------------------------------------------------------
+# The juror team surfaces (spec 08) — public, read-only projections.
+# No auth: these are the system's reputation and memory, published
+# the way the Day 6 reads publish market state. Both are DERIVED
+# from the claim rows and the EventLog on every call — no counters
+# are stored anywhere, so nothing here can drift from the record.
+# ---------------------------------------------------------------------
+
+
+def _juror_identity(report: dict[str, Any] | None) -> str | None:
+    """A juror report's stable identity: the "juror" key (the
+    model actually used), falling back to "model" for reports
+    recorded before the identity was made explicit."""
+    if not report:
+        return None
+    return report.get("juror") or report.get("model")
+
+
+@router.get("/jurors")
+def juror_scorecards(db: Session = Depends(get_session)):
+    """One scorecard per juror identity, derived from the claims
+    that juror judged:
+
+      judgedCount     claims that reached a terminal resolution
+                      under this juror (ASSURATIZED + RESOLVED_FALSE)
+      upheldCount     of those, finalized ASSURATIZED on this
+                      juror's UPHELD verdict
+      refutedCount    of those, RESOLVED_FALSE on this juror's
+                      REFUTED verdict (finalize is refused for
+                      them by construction — the refutation IS
+                      the terminal outcome)
+      withstoodCount  ASSURATIZED claims that carried a challenge
+                      this juror's verdict withstood
+      unavailableCount claims currently resting on this juror's
+                      unavailable/error report (the attempt is
+                      recorded on the claim; a later successful
+                      judgment replaces the report, so this counts
+                      attempts not yet superseded)
+
+    Only jurors with at least one judged claim appear. Ordering
+    is deterministic: juror identity ascending."""
+    cards: dict[str, dict[str, Any]] = {}
+    claims = (
+        db.query(models.Claim)
+        .filter(models.Claim.juror_report.isnot(None))
+        .all()
+    )
+    for claim in claims:
+        report = claim.juror_report or {}
+        identity = _juror_identity(report)
+        if identity is None:
+            continue
+        card = cards.setdefault(
+            identity,
+            {
+                "juror": identity,
+                "judgedCount": 0,
+                "upheldCount": 0,
+                "refutedCount": 0,
+                "withstoodCount": 0,
+                "unavailableCount": 0,
+            },
+        )
+        if report.get("status") in ("unavailable", "error"):
+            card["unavailableCount"] += 1
+        if (
+            claim.status is models.ClaimStatus.ASSURATIZED
+            and report.get("verdict") == "UPHELD"
+        ):
+            card["judgedCount"] += 1
+            card["upheldCount"] += 1
+            if claim.challenge and claim.challenge.get("withstood"):
+                card["withstoodCount"] += 1
+        elif (
+            claim.status is models.ClaimStatus.RESOLVED_FALSE
+            and report.get("verdict") == "REFUTED"
+        ):
+            card["judgedCount"] += 1
+            card["refutedCount"] += 1
+    jurors = [c for c in cards.values() if c["judgedCount"] >= 1]
+    jurors.sort(key=lambda c: c["juror"])
+    return {"surface": "juror-scorecards", "jurors": jurors}
+
+
+@router.get("/learning/recent")
+def learning_recent(
+    limit: int = 20, db: Session = Depends(get_session)
+):
+    """The learning feed: the system's terminal learning events,
+    newest first. Two event kinds are terminal for a claim —
+    claim.finalized (the claim became ASSURATIZED and entered the
+    comparable ledger) and a claim.judged event whose outcome was
+    RESOLVED_FALSE (the refutation is terminal; finalize is
+    refused for it). Every entry is joined back to its claim row;
+    no field is invented. limit defaults to 20, capped at 50."""
+    limit = min(max(limit, 1), 50)
+    terminal = or_(
+        models.EventLog.event_type == "claim.finalized",
+        and_(
+            models.EventLog.event_type == "claim.judged",
+            models.EventLog.payload["toStatus"].as_string()
+            == "RESOLVED_FALSE",
+        ),
+    )
+    rows = (
+        db.query(models.EventLog, models.Claim)
+        .join(
+            models.Claim,
+            models.EventLog.aggregate_id == models.Claim.id,
+        )
+        .filter(
+            models.EventLog.aggregate_type == "claim",
+            terminal,
+        )
+        .order_by(models.EventLog.id.desc())
+        .limit(limit)
+        .all()
+    )
+    entries = []
+    for event, claim in rows:
+        outcome = (
+            "ASSURATIZED"
+            if event.event_type == "claim.finalized"
+            else "RESOLVED_FALSE"
+        )
+        report = claim.juror_report or {}
+        entries.append(
+            {
+                "claimId": claim.id,
+                "outcome": outcome,
+                "juror": _juror_identity(report),
+                "precedentsUsedCount": len(
+                    report.get("precedentsUsed") or []
+                ),
+                "comparableAdded": outcome == "ASSURATIZED",
+                "claimantEntityId": claim.claimant_entity_id,
+                "resolvedAt": claim.resolved_at,
+            }
+        )
+    return {"surface": "learning-feed", "entries": entries}
