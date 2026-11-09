@@ -338,19 +338,37 @@ The status is the honest outcome of the attempt, and anchoring
 **never blocks or fails the judgment**:
 
 - `DISABLED` — the chain gate (`COMPOSE_NEAR_CHAIN`) was off.
-  This is the recorded outcome in every environment today.
-- `UNAVAILABLE` — the gate was on but no anchor could be made;
-  `reason` says why. **Today this is always the gated-on
-  outcome, and the reason is structural:** the deployed
-  `uzemarkets-talent.testnet` contract exposes `post_intent`,
-  `submit_bid`, `settle`, and `get_matches`
-  (contracts/near/uzemarkets-talent/src/lib.rs) — none of them
-  anchors an attestation, and `post_intent` was NOT repurposed
-  to carry the hash, because minting a spurious marketplace
-  intent to decorate a claim record is worse than recording
-  the gap. Extending the Rust contract is out of scope for
-  this build.
+  This is the recorded outcome in the test environment and
+  the demo dry run.
+- `UNAVAILABLE` — the gate was on but the chain call failed;
+  `reason` says why.
 - `SUBMITTED` — a chain transaction carries the hash;
-  `nearTxRef` holds its reference. This status exists in the
-  enum and the code path for the day an anchor method ships;
-  nothing about the recording changes when it does.
+  `nearTxRef` holds its hash.
+
+**Anchor method (DeepSeek §11.1, built 2026-11-09).** The
+contract now exposes `anchor_attestation(claim_id, juror,
+attestation_hash)` plus the `get_anchors(claim_id)` view
+(contracts/near/uzemarkets-talent/src/lib.rs). Anchors live in
+raw storage keys (`anchor-rec:` / `anchor-idx:` prefixes), NOT
+in the root contract state — the state struct is exactly as
+first deployed, so the redeploy needed no state migration and
+the marketplace methods are untouched (verified post-redeploy:
+`post_intent` still returns its value, `get_matches` still
+answers). Anchoring is append-only and idempotent per
+(claim, hash). Compose calls it through the same gated
+near_client path as every chain call.
+
+**Live proof (testnet, 2026-11-09).** Contract redeployed
+(tx `BGt1KFLREJT7VPcEfP2mHPRVWd8jDGL6o7MWcMsYnT3S`). One
+challenged claim (panel seats stubbed — inference is
+credit-blocked; the anchor is what was proven) was judged to a
+panel verdict; all three seats anchored SUBMITTED (claim
+`b57b4260-997f-4cbe-bf84-46d8a9ca0a0d`; txs
+`21kJP5KVsRyRNp9VJPeqNMFfbJPCCcrXcmn3U7xqPZvk`,
+`23ycn3vyXNWvGBqFYkCBW9oDbghTonfAPdUFuZBERijm`,
+`BtvizxwWpsfHdrjpgcuCQHvdfmxD4BMz97xAyU4oQdkQ`), and the
+on-chain `get_anchors` read-back matched the
+`attestation_anchor` rows' digests per juror — each digest
+independently recomputed as the sha256 of the seat's report
+as recorded on the claim. SUBMITTED is no longer a code path
+waiting for a method; it is the recorded, verified outcome.

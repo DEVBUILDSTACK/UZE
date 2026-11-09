@@ -803,3 +803,52 @@ def test_panel_no_majority_records_no_anchors(
     assert judged.json()["status"] == "UNDER_RESOLUTION"
     view = market_client.get(f"/api/v1/claims/{claim['id']}").json()
     assert view["attestationAnchors"] == []
+
+
+def test_panel_verdict_anchors_submitted_with_stubbed_chain(
+    market_client, demo_fixture, stub_seats, monkeypatch
+):
+    """The SUBMITTED path (spec 08 §10): with the chain client
+    stubbed to a submitted outcome, every verdict-returning
+    seat's anchor records SUBMITTED with the transaction ref,
+    and the client was called with exactly the digest that the
+    anchor row carries — the sha256 of the seat's report as
+    recorded on the claim, recomputed here independently."""
+    import near_client
+
+    calls = []
+
+    def fake_anchor(claim_id, juror_id, attestation_hash):
+        calls.append((claim_id, juror_id, attestation_hash))
+        return {"status": "submitted", "txHash": "AnchorTxStub11111111111111111111111111111111"}
+
+    monkeypatch.setattr(near_client, "anchor_attestation", fake_anchor)
+
+    spec = _post_spec(market_client, demo_fixture)
+    claim = _issue_challenged(market_client, spec["id"])
+    stub_seats({"seat-a": "UPHELD", "seat-b": "UPHELD", "seat-c": "REFUTED"})
+
+    judged = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    assert judged.json()["status"] == "RESOLVED_TRUE"
+
+    view = market_client.get(f"/api/v1/claims/{claim['id']}").json()
+    anchors = view["attestationAnchors"]
+    assert len(anchors) == 3
+    seats = {r["juror"]: r for r in view["jurorReport"]["panelReports"]}
+    assert len(calls) == 3
+    for anchor in anchors:
+        assert anchor["anchorStatus"] == "SUBMITTED"
+        assert anchor["nearTxRef"] == (
+            "AnchorTxStub11111111111111111111111111111111"
+        )
+        assert anchor["reason"] is None
+        canonical = json.dumps(
+            seats[anchor["juror"]],
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        assert anchor["attestationHash"] == expected
+        # The chain client received this claim, this seat, and
+        # exactly this digest — nothing else was anchored.
+        assert (claim["id"], anchor["juror"], expected) in calls

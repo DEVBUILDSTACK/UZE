@@ -334,9 +334,12 @@ nothing laundered by re-judging. The juror path strips
 invisible Unicode from claim text at issue and again at render,
 and every judgment carries a canary trap for framing leaks.
 Panel verdicts record per-seat attestation anchors (sha256 of
-each seat's report) on-chain-ready: today they read DISABLED
-while the chain gate is off, and the deployed contract has no
-anchor method — that gap is recorded, not disguised. Because
+each seat's report): the contract's `anchor_attestation`
+method stores each hash on NEAR testnet under the claim, and
+with the chain gate on the anchors record SUBMITTED with their
+transaction hashes — live-proven 2026-11-09, the on-chain
+read-back matching the recorded digests hash for hash (spec
+08 §10). With the gate off they record DISABLED. Because
 price tells you what the crowd believes, but precedent tells
 you what this micro-region has already settled — and the lender
 needs the second.

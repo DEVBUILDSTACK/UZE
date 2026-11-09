@@ -136,25 +136,27 @@ def anchor_attestation(
     call in this module — COMPOSE_NEAR_CHAIN=1 or the outcome
     is "disabled", and anchoring never raises.
 
-    With the gate ON, the honest outcome today is
-    "unavailable", and it is important to say why plainly: the
-    deployed uzemarkets-talent.testnet contract exposes
-    post_intent, submit_bid, settle and get_matches
-    (contracts/near/uzemarkets-talent/src/lib.rs), and NONE of
-    them anchors an attestation. Calling post_intent to carry
-    the hash would mint a spurious marketplace intent —
-    corrupting the intent record to decorate the claim record —
-    so no method is called. Extending the Rust contract is out
-    of scope for this build; when an anchor method ships, this
-    function gains a "submitted" path and nothing else changes:
-    callers already record all three outcomes."""
-    if not chain_enabled():
-        return {"status": "disabled"}
-    return {
-        "status": "unavailable",
-        "error": (
-            "no anchor method: uzemarkets-talent.testnet exposes "
-            "post_intent/submit_bid/settle/get_matches; none "
-            "anchors an attestation hash"
-        ),
-    }
+    The deployed uzemarkets-talent.testnet contract exposes
+    anchor_attestation(claim_id, juror, attestation_hash)
+    (contracts/near/uzemarkets-talent/src/lib.rs): the hash —
+    sha256 of the seat's report as recorded on the claim,
+    canonical JSON — is stored on-chain under the claim id,
+    retrievable via get_anchors. A submitted outcome carries
+    the transaction hash; a chain failure records
+    "unavailable" with its reason. Callers record all three
+    outcomes and anchoring never blocks the judgment."""
+    return _run(
+        "anchor_attestation",
+        {
+            "claim_id": claim_id,
+            "juror": juror_id,
+            "attestation_hash": attestation_hash,
+        },
+    )
+
+
+def get_anchors(claim_id: str) -> dict:
+    """Read a claim's on-chain attestation anchors back
+    (spec 08 §10): the view counterpart of anchor_attestation,
+    same gate discipline."""
+    return _run("get_anchors", {"claim_id": claim_id}, view=True)
