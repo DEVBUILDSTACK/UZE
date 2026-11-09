@@ -14,7 +14,19 @@
 #     webhook enters at INPUT_VALIDATED, the mock Effatha adapter
 #     returns PROVIDER_PROPOSAL_RECEIVED, the referral rests at
 #     FARMER_APPROVAL_PENDING, and only an explicit entity consent
-#     record advances it to SERVICE_AUTHORIZED.
+#     record advances it to SERVICE_AUTHORIZED;
+#   - Beat 8 executes the Assuraties + Juror Team machinery
+#     (DEMO-SCRIPT Beat 8): a claim is judged and finalized to
+#     ASSURATIZED, a second claim by the SAME claimant in the
+#     same micro-region shows the self-dealing exclusion counted
+#     (precedentsUsed empty, precedentsExcludedSelfDealing == 1),
+#     a third claim by a DIFFERENT claimant is judged WITH the
+#     first claim as precedent, and the public juror scorecards
+#     + learning feed are read back. Beat 8 runs in-process with
+#     the juror stubbed at its module seam (the tests' pattern)
+#     and the chain gate OFF — deterministic; anchors record
+#     DISABLED locally, SUBMITTED being the live-proven gated
+#     outcome (spec 08 §10).
 # When funding + key arrive, the same walk shows SETTLED and the
 # attested analysis with no script changes.
 #
@@ -152,5 +164,130 @@ print("GATE_OK")
 PY
 cat /tmp/demo-gate.log
 grep -q GATE_OK /tmp/demo-gate.log && echo "OK  approval gate: PROVIDER_PROPOSAL_RECEIVED → FARMER_APPROVAL_PENDING → entity consent → SERVICE_AUTHORIZED" || echo "MISS approval gate (see /tmp/demo-gate.log)"
+
+echo "== Beat 8: Assuraties + Juror Team — exclusion, precedent, public reads =="
+$VENV - <<'PY' > /tmp/demo-beat8.log 2>&1
+import json
+
+import juror
+from app import create_app
+from fastapi.testclient import TestClient
+
+
+# Deterministic stub at the juror seam (the tests' pattern):
+# Beat 8 proves the claim machinery — precedent selection, the
+# self-dealing exclusion, the public reads — not inference,
+# which stays credit-blocked and is never fabricated.
+def _report(claim):
+    return {
+        "status": "ok",
+        "verdict": "UPHELD",
+        "rationale": "beat 8 dry-run stub juror",
+        "confidence": 0.9,
+        "model": "beat8-stub-juror",
+        "juror": "beat8-stub-juror",
+        "completionId": "chatcmpl-beat8-stub",
+        "verification": {"signatureKind": "gateway", "result": "verified"},
+    }
+
+
+juror.judge_claim = _report
+
+CLAIMANT_X = "5e3532e9-aecc-47fb-a557-35804dd7f9e9"
+CLAIMANT_Y = "7a8b9c0d-2222-4333-8444-555566667777"
+
+fixture = json.load(open("scripts/fixtures/sprint15_demo.json"))
+client = TestClient(create_app())
+
+
+def post_spec():
+    resp = client.post("/api/v1/specs", json=fixture["spec"])
+    assert resp.status_code == 201, resp.text
+    return resp.json()["id"]
+
+
+def issue(spec_id, claimant, statement):
+    resp = client.post(
+        "/api/v1/claims",
+        json={
+            "intentId": spec_id,
+            "claimClass": "HICRE_ASSET",
+            "statement": statement,
+            "claimedValue": {"doorCount": 340, "brandAffiliation": "Aloft"},
+            "claimantEntityId": claimant,
+            "bondAmount": 500,
+        },
+    )
+    assert resp.status_code == 201, resp.text
+    return resp.json()["id"]
+
+
+def judge(claim_id):
+    resp = client.post(f"/api/v1/claims/{claim_id}/judge")
+    assert resp.status_code == 200, resp.text
+    return resp.json()
+
+
+# (1) Claim A (claimant X, miami-brickell) is judged and
+# finalized to ASSURATIZED — the settled comparable the next
+# two claims are tested against.
+claim_a = issue(
+    post_spec(), CLAIMANT_X,
+    "Beat 8 claim A: 340 doors under the Aloft brand.",
+)
+judged_a = judge(claim_a)
+assert judged_a["status"] == "RESOLVED_TRUE", judged_a["status"]
+fin = client.post(
+    f"/api/v1/claims/{claim_a}/finalize",
+    json={"authorizationReference": "beat8-dryrun-a"},
+)
+assert fin.status_code == 200, fin.text
+assert fin.json()["status"] == "ASSURATIZED", fin.json()["status"]
+print(f"claim A {claim_a}: judged UPHELD, finalized ASSURATIZED")
+
+# (2) Claim B — the SAME claimant X, a different intent in the
+# same micro-region: claim A must be held back by the
+# self-dealing exclusion (spec 08 §2) and the exclusion must
+# be counted in the report.
+claim_b = issue(
+    post_spec(), CLAIMANT_X,
+    "Beat 8 claim B: same claimant, same micro-region.",
+)
+report_b = judge(claim_b)["jurorReport"]
+assert report_b["precedentsUsed"] == [], report_b
+assert report_b["precedentsExcludedSelfDealing"] == 1, report_b
+print(
+    f"claim B {claim_b}: precedentsUsed=[] "
+    "precedentsExcludedSelfDealing=1"
+)
+print("BEAT8_EXCLUSION_OK")
+
+# (3) Claim C — a DIFFERENT claimant Y, same micro-region:
+# claim A now judges as precedent.
+claim_c = issue(
+    post_spec(), CLAIMANT_Y,
+    "Beat 8 claim C: a different claimant entirely.",
+)
+report_c = judge(claim_c)["jurorReport"]
+assert claim_a in report_c["precedentsUsed"], report_c
+print(f"claim C {claim_c}: precedentsUsed={report_c['precedentsUsed']}")
+print("BEAT8_PRECEDENT_OK")
+
+# (4) The public reads: juror scorecards + the learning feed.
+jurors_resp = client.get("/api/v1/jurors")
+assert jurors_resp.status_code == 200, jurors_resp.text
+cards = jurors_resp.json()["jurors"]
+print(f"juror scorecards: {json.dumps(cards)}")
+feed_resp = client.get("/api/v1/learning/recent")
+assert feed_resp.status_code == 200, feed_resp.text
+entries = feed_resp.json()["entries"]
+print(f"learning feed: {len(entries)} entries, newest first")
+for entry in entries:
+    print(f"  {json.dumps(entry)}")
+assert cards and entries
+print("BEAT8_READS_OK")
+PY
+cat /tmp/demo-beat8.log
+grep -q BEAT8_EXCLUSION_OK /tmp/demo-beat8.log && grep -q BEAT8_PRECEDENT_OK /tmp/demo-beat8.log && grep -q BEAT8_READS_OK /tmp/demo-beat8.log && echo "OK  Beat 8: self-dealing exclusion counted, precedent applied across claimants, scorecards + learning feed read" || echo "MISS Beat 8 (see /tmp/demo-beat8.log)"
 
 echo "DEMO DRY RUN COMPLETE — outcomes as printed (current honest state)."
