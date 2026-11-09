@@ -13,7 +13,7 @@ def test_health_reports_schema_head(client):
     body = resp.json()
     assert body["status"] == "ok"
     assert body["database"] is True
-    assert body["schemaRevision"] == "4ab128b8c311"
+    assert body["schemaRevision"] == "c41a9e72d5b0"
 
 
 def test_intake_flow_readiness_flips(client):

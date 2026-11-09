@@ -28,6 +28,9 @@ import json
 
 import pytest
 
+import hashlib
+import json
+
 import juror
 from test_intents import _post_spec
 
@@ -745,3 +748,58 @@ def test_panel_fallback_with_fewer_than_two_seats(
         "panel unavailable: fewer than two seats configured"
     )
     assert "panelReports" not in body["jurorReport"]
+
+
+# ---------------------------------------------------------------------
+# (f) Attestation anchoring (spec 08 §10): a panel verdict
+# records one anchor per verdict-returning seat — the sha256 of
+# the seat's report exactly as recorded on the claim. The chain
+# gate is off in the test env, so every anchor is DISABLED, and
+# the hash is verified against a recomputed digest. A panel
+# with no verdict anchors nothing.
+# ---------------------------------------------------------------------
+
+
+def test_panel_verdict_anchors_recorded_disabled(
+    market_client, demo_fixture, stub_seats
+):
+    spec = _post_spec(market_client, demo_fixture)
+    claim = _issue_challenged(market_client, spec["id"])
+    stub_seats({"seat-a": "UPHELD", "seat-b": "UPHELD", "seat-c": "REFUTED"})
+
+    judged = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    assert judged.json()["status"] == "RESOLVED_TRUE"
+    # The judge response already carries the anchors.
+    assert len(judged.json()["attestationAnchors"]) == 3
+
+    view = market_client.get(f"/api/v1/claims/{claim['id']}").json()
+    anchors = view["attestationAnchors"]
+    assert len(anchors) == 3
+    seats = {r["juror"]: r for r in view["jurorReport"]["panelReports"]}
+    assert {a["juror"] for a in anchors} == {"seat-a", "seat-b", "seat-c"}
+    for anchor in anchors:
+        assert anchor["anchorStatus"] == "DISABLED"
+        assert anchor["nearTxRef"] is None
+        assert anchor["reason"] is None
+        # Hash correctness against a recomputed digest of the
+        # seat's report as recorded on the claim.
+        canonical = json.dumps(
+            seats[anchor["juror"]],
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        assert anchor["attestationHash"] == expected
+
+
+def test_panel_no_majority_records_no_anchors(
+    market_client, demo_fixture, stub_seats
+):
+    spec = _post_spec(market_client, demo_fixture)
+    claim = _issue_challenged(market_client, spec["id"])
+    stub_seats({"seat-a": "UPHELD", "seat-b": "REFUTED", "seat-c": None})
+
+    judged = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    assert judged.json()["status"] == "UNDER_RESOLUTION"
+    view = market_client.get(f"/api/v1/claims/{claim['id']}").json()
+    assert view["attestationAnchors"] == []

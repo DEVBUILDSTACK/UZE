@@ -303,3 +303,38 @@ judged by a panel** (`juror.judge_panel`).
   scored per seat in public, is the stronger default for the
   claims that are actually disputed — which are precisely the
   claims whose judgments carry consequences.
+
+## 10. On-chain attestation anchoring (DeepSeek audit, item 4)
+
+The pattern worth taking from the field: an attestation hash
+anchored next to the artifact it attests, with every revision.
+When a panel reaches a verdict, compose records one
+**attestation anchor** per verdict-returning seat:
+`attestationHash` is the sha256 of the seat's report exactly as
+recorded on the claim (canonical JSON — sorted keys, compact
+separators), stored on the new `attestation_anchor` table
+(migration `c41a9e72d5b0`: claimId FK, seat juror, hash,
+nearTxRef nullable, `anchor_status` enum, createdAt), and
+exposed on the claim as `attestationAnchors`. A panel with no
+verdict anchors nothing.
+
+The status is the honest outcome of the attempt, and anchoring
+**never blocks or fails the judgment**:
+
+- `DISABLED` — the chain gate (`COMPOSE_NEAR_CHAIN`) was off.
+  This is the recorded outcome in every environment today.
+- `UNAVAILABLE` — the gate was on but no anchor could be made;
+  `reason` says why. **Today this is always the gated-on
+  outcome, and the reason is structural:** the deployed
+  `uzemarkets-talent.testnet` contract exposes `post_intent`,
+  `submit_bid`, `settle`, and `get_matches`
+  (contracts/near/uzemarkets-talent/src/lib.rs) — none of them
+  anchors an attestation, and `post_intent` was NOT repurposed
+  to carry the hash, because minting a spurious marketplace
+  intent to decorate a claim record is worse than recording
+  the gap. Extending the Rust contract is out of scope for
+  this build.
+- `SUBMITTED` — a chain transaction carries the hash;
+  `nearTxRef` holds its reference. This status exists in the
+  enum and the code path for the day an anchor method ships;
+  nothing about the recording changes when it does.

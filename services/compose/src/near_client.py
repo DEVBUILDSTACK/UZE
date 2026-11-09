@@ -126,3 +126,35 @@ def get_matches(intent_ref: str) -> dict:
 
 def settle(intent_ref: str, bid_ref: str) -> dict:
     return _run("settle", {"intent_id": intent_ref, "bid_id": bid_ref})
+
+
+def anchor_attestation(
+    claim_id: str, juror_id: str, attestation_hash: str
+) -> dict:
+    """Anchor a juror attestation hash on NEAR (spec 08 §10):
+    the outcome-record shape and gate discipline of every chain
+    call in this module — COMPOSE_NEAR_CHAIN=1 or the outcome
+    is "disabled", and anchoring never raises.
+
+    With the gate ON, the honest outcome today is
+    "unavailable", and it is important to say why plainly: the
+    deployed uzemarkets-talent.testnet contract exposes
+    post_intent, submit_bid, settle and get_matches
+    (contracts/near/uzemarkets-talent/src/lib.rs), and NONE of
+    them anchors an attestation. Calling post_intent to carry
+    the hash would mint a spurious marketplace intent —
+    corrupting the intent record to decorate the claim record —
+    so no method is called. Extending the Rust contract is out
+    of scope for this build; when an anchor method ships, this
+    function gains a "submitted" path and nothing else changes:
+    callers already record all three outcomes."""
+    if not chain_enabled():
+        return {"status": "disabled"}
+    return {
+        "status": "unavailable",
+        "error": (
+            "no anchor method: uzemarkets-talent.testnet exposes "
+            "post_intent/submit_bid/settle/get_matches; none "
+            "anchors an attestation hash"
+        ),
+    }

@@ -41,6 +41,8 @@ interface (spec 07 §6).
 
 from __future__ import annotations
 
+import hashlib
+import json
 import time
 from typing import Any
 
@@ -53,6 +55,7 @@ from sqlalchemy.orm import Session
 import juror
 import metering
 import models
+import near_client
 import sanitize
 from db import get_session
 
@@ -107,9 +110,13 @@ class ClaimView(BaseModel):
     resolutionMark: str | None
     createdAt: int
     resolvedAt: int | None
+    attestationAnchors: list[dict[str, Any]] = []
 
 
-def _claim_view(claim: models.Claim) -> ClaimView:
+def _claim_view(
+    claim: models.Claim,
+    anchors: list[dict[str, Any]] | None = None,
+) -> ClaimView:
     status = claim.status
     mark = None
     if status is models.ClaimStatus.ASSURATIZED:
@@ -135,7 +142,86 @@ def _claim_view(claim: models.Claim) -> ClaimView:
         resolutionMark=mark,
         createdAt=claim.created_at,
         resolvedAt=claim.resolved_at,
+        attestationAnchors=anchors or [],
     )
+
+
+def _anchor_view(row: models.AttestationAnchor) -> dict[str, Any]:
+    return {
+        "juror": row.juror,
+        "attestationHash": row.attestation_hash,
+        "nearTxRef": row.near_tx_ref,
+        "anchorStatus": row.anchor_status.value,
+        "reason": row.reason,
+        "createdAt": row.created_at,
+    }
+
+
+def _anchors_for(db: Session, claim_id: str) -> list[dict[str, Any]]:
+    rows = (
+        db.query(models.AttestationAnchor)
+        .filter(models.AttestationAnchor.claim_id == claim_id)
+        .order_by(
+            models.AttestationAnchor.created_at,
+            models.AttestationAnchor.id,
+        )
+        .all()
+    )
+    return [_anchor_view(r) for r in rows]
+
+
+def _record_panel_anchors(
+    db: Session,
+    claim: models.Claim,
+    seat_records: list[dict[str, Any]],
+    created_at: int,
+) -> None:
+    """Record one attestation anchor per verdict-returning seat
+    (spec 08 §10). The hash is the sha256 of the seat's report
+    exactly as recorded on the claim (canonical JSON: sorted
+    keys, compact separators) — the hash attests the record of
+    record. Anchoring NEVER blocks or fails the judgment: the
+    chain client's outcome maps submitted -> SUBMITTED (with
+    its tx ref), disabled -> DISABLED, anything else ->
+    UNAVAILABLE with its reason; an unexpected exception in
+    the client is caught and recorded the same way."""
+    for seat in seat_records:
+        if seat.get("status") != "ok" or seat.get("verdict") not in juror.VERDICTS:
+            continue
+        canonical = json.dumps(
+            seat, sort_keys=True, separators=(",", ":")
+        )
+        digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        juror_id = seat.get("juror") or seat.get("model")
+        try:
+            outcome = near_client.anchor_attestation(
+                claim.id, juror_id, digest
+            )
+        except Exception as exc:  # noqa: BLE001 — record, never raise
+            outcome = {
+                "status": "unavailable",
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+        if outcome.get("status") == "submitted":
+            status = models.AnchorStatus.SUBMITTED
+            tx_ref, reason = outcome.get("txHash"), None
+        elif outcome.get("status") == "disabled":
+            status = models.AnchorStatus.DISABLED
+            tx_ref, reason = None, None
+        else:
+            status = models.AnchorStatus.UNAVAILABLE
+            tx_ref, reason = None, outcome.get("error")
+        db.add(
+            models.AttestationAnchor(
+                claim_id=claim.id,
+                juror=juror_id,
+                attestation_hash=digest,
+                near_tx_ref=tx_ref,
+                anchor_status=status,
+                reason=reason,
+                created_at=created_at,
+            )
+        )
 
 
 def _log(
@@ -225,7 +311,8 @@ def issue_claim(body: ClaimIn, db: Session = Depends(get_session)):
 
 @router.get("/claims/{claim_id}")
 def get_claim(claim_id: str, db: Session = Depends(get_session)):
-    return _claim_view(_get_claim(db, claim_id))
+    claim = _get_claim(db, claim_id)
+    return _claim_view(claim, anchors=_anchors_for(db, claim.id))
 
 
 @router.post("/claims/{claim_id}/challenge")
@@ -456,6 +543,18 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
             ]
         if report.get("panelNote"):
             claim.juror_report["panelNote"] = report["panelNote"]
+    # Attestation anchoring (spec 08 §10): a panel verdict —
+    # and only a panel verdict — anchors every verdict-returning
+    # seat's report hash. Recorded before the event log so the
+    # trail and the anchors commit together; anchoring outcomes
+    # never change the judgment.
+    if report.get("status") == "ok" and report.get("panelVerdict"):
+        _record_panel_anchors(
+            db,
+            claim,
+            claim.juror_report.get("panelReports") or [],
+            attempted_at,
+        )
     event_payload: dict[str, Any] = {
         "fromStatus": from_status.value,
         "toStatus": claim.status.value,
@@ -488,7 +587,7 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
         payload=event_payload,
     )
     db.commit()
-    return _claim_view(claim)
+    return _claim_view(claim, anchors=_anchors_for(db, claim.id))
 
 
 @router.post("/claims/{claim_id}/finalize")

@@ -2026,3 +2026,55 @@ class Claim(Base):
     resolved_at: Mapped[int | None] = mapped_column(
         "resolvedAt", BigInteger, nullable=True
     )
+
+
+# ---------------------------------------------------------------------------
+# Attestation anchors — spec 08 §10 (DeepSeek audit directive,
+# item 4). When a panel reaches a verdict, each verdict-returning
+# seat's report is hashed (sha256 of its canonical JSON) and an
+# anchor attempt is recorded here: the pattern worth taking from
+# the field is an attestation hash anchored next to the artifact
+# it attests. The anchor attempt NEVER blocks the judgment:
+#   SUBMITTED  — a chain transaction carries the hash (nearTxRef)
+#   DISABLED   — the chain gate (COMPOSE_NEAR_CHAIN) was off
+#   UNAVAILABLE — the gate was on but anchoring could not happen;
+#                `reason` says why, in plain terms
+# The row is the record of the attempt and its honest outcome.
+# ---------------------------------------------------------------------------
+
+
+class AnchorStatus(enum.Enum):
+    SUBMITTED = "SUBMITTED"
+    DISABLED = "DISABLED"
+    UNAVAILABLE = "UNAVAILABLE"
+
+
+class AttestationAnchor(Base):
+    __tablename__ = "attestation_anchor"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    claim_id: Mapped[str] = mapped_column(
+        "claimId",
+        String,
+        ForeignKey("claim.id"),
+        nullable=False,
+        index=True,
+    )
+    juror: Mapped[str] = mapped_column("juror", String, nullable=False)
+    attestation_hash: Mapped[str] = mapped_column(
+        "attestationHash", String, nullable=False
+    )
+    near_tx_ref: Mapped[str | None] = mapped_column(
+        "nearTxRef", String, nullable=True
+    )
+    anchor_status: Mapped[AnchorStatus] = mapped_column(
+        "anchorStatus",
+        SAEnum(AnchorStatus, name="anchor_status"),
+        nullable=False,
+    )
+    reason: Mapped[str | None] = mapped_column(
+        "reason", String, nullable=True
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
