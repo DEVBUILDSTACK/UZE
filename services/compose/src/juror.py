@@ -46,6 +46,13 @@ an "error" with reason "canary_tripped", never a verdict. The
 report records only "canaryId" (an independent identifier) and
 "canaryTripped" (a boolean); the token value itself is never
 stored anywhere.
+
+Contested claims are judged by a PANEL (spec 08 §9):
+judge_panel runs up to three seats (judge_claim_for_model —
+one model exactly, no fallback chain) over the same
+deterministic prompt and takes the strict majority of returned
+verdicts; a tie or a full abstention is an error with reason
+"panel_no_majority", never a fabricated verdict.
 """
 
 from __future__ import annotations
@@ -362,3 +369,165 @@ def judge_claim(claim: dict, client=None) -> dict:
     result["canaryId"] = canary_id
     result["precedentsUsed"] = precedent_ids
     return result
+
+
+# ---------------------------------------------------------------------
+# Panels — contested claims are judged by a team (spec 08 §9).
+# ---------------------------------------------------------------------
+
+
+def panel_models() -> list[str]:
+    """The configured panel seats: env JUROR_PANEL_MODELS
+    (comma-separated) when set, else the primary MODEL plus the
+    C-3 FALLBACK_MODEL. Deduped in order, capped at 3. A panel
+    needs at least two DISTINCT seats; judge_panel falls back
+    to single-juror judging below that."""
+    raw = os.environ.get("JUROR_PANEL_MODELS")
+    if raw:
+        seats = [s.strip() for s in raw.split(",") if s.strip()]
+    else:
+        seats = [MODEL, FALLBACK_MODEL]
+    deduped: list[str] = []
+    for seat in seats:
+        if seat not in deduped:
+            deduped.append(seat)
+    return deduped[:3]
+
+
+async def _run_seat_with_real_client(
+    claim: dict, api_key: str, model: str, canary: str | None
+) -> dict:
+    """One seat's real path: SDK then REST with THE SEAT'S model
+    only. No C-3 fallback chain — a seat IS a model; judging
+    silently with a different model would falsify the seat's
+    scorecard record."""
+    errors: list[str] = []
+    for label, attempt in (("sdk", _sdk_attempt), ("rest", _rest_attempt)):
+        try:
+            return await attempt(claim, api_key, model, canary)
+        except _CanaryTripped:
+            raise
+        except Exception as exc:
+            errors.append(
+                f"{label}/{model}: {type(exc).__name__}: {exc}"
+            )
+    raise RuntimeError(
+        "seat inference paths failed — " + " | ".join(errors)
+    )
+
+
+def judge_claim_for_model(claim: dict, model: str, client=None) -> dict:
+    """Judge one claim with ONE panel seat: judge_claim's exact
+    outcome discipline (canary embedded per seat, unavailable
+    honest, errors recorded, precedentsUsed stamped) but with
+    the seat's model used exactly — no fallback. `client` is
+    injectable per seat; judge_panel's client_factory supplies
+    them."""
+    precedent_ids = [p.get("id") for p in (claim.get("precedents") or [])]
+    if client is None and not os.environ.get("NEARAI_API_KEY"):
+        return {
+            "status": "unavailable",
+            "reason": "NEARAI_API_KEY is not set",
+            "model": model,
+            "juror": model,
+            "precedentsUsed": precedent_ids,
+        }
+    canary = uuid.uuid4().hex
+    canary_id = uuid.uuid4().hex
+    try:
+        if client is not None:
+            result = asyncio.run(_run(claim, client, model, canary))
+        else:
+            result = asyncio.run(
+                _run_seat_with_real_client(
+                    claim, os.environ["NEARAI_API_KEY"], model, canary
+                )
+            )
+        result["canaryTripped"] = False
+    except _CanaryTripped:
+        result = {
+            "status": "error",
+            "reason": "canary_tripped",
+            "model": model,
+            "juror": model,
+            "canaryTripped": True,
+        }
+    except Exception as exc:
+        result = {
+            "status": "error",
+            "reason": f"{type(exc).__name__}: {exc}",
+            "model": model,
+            "juror": model,
+            "canaryTripped": False,
+        }
+    result["canaryId"] = canary_id
+    result["precedentsUsed"] = precedent_ids
+    return result
+
+
+def judge_panel(claim: dict, client_factory=None) -> dict:
+    """Judge one CONTESTED claim as a panel (spec 08 §9).
+
+    Every seat judges independently with the SAME deterministic
+    prompt (precedents included — the rendering is claim-only,
+    seats differ by model, not by evidence). The panel verdict
+    is the strict majority of seats that returned a parsed
+    verdict; unavailable/error seats abstain. A tie, or every
+    seat abstaining, is NOT a verdict: the report is an "error"
+    with reason "panel_no_majority" and the claim rests
+    UNDER_RESOLUTION — a panel that cannot decide does not get
+    to pretend it did.
+
+    With fewer than two distinct seats configured there is no
+    panel: judging falls back to the single-juror path and the
+    report carries panelNote saying exactly that.
+
+    The returned report mirrors judge_claim's shape (status /
+    verdict) so the endpoint's state machine consumes it
+    unchanged, plus: "panel" (True), "panelVerdict" (the
+    majority verdict or None), "panelReports" (every seat's
+    full report, in seat order), and a composite "juror"
+    identity ("panel:<seat>+<seat>+...")."""
+    seats = panel_models()
+    if len(seats) < 2:
+        result = judge_claim(claim)
+        result["panelNote"] = (
+            "panel unavailable: fewer than two seats configured"
+        )
+        return result
+    precedent_ids = [p.get("id") for p in (claim.get("precedents") or [])]
+    seat_reports = []
+    for model in seats:
+        client = client_factory(model) if client_factory is not None else None
+        seat_reports.append(
+            judge_claim_for_model(claim, model, client=client)
+        )
+    returned = [
+        r
+        for r in seat_reports
+        if r.get("status") == "ok" and r.get("verdict") in VERDICTS
+    ]
+    upheld = sum(1 for r in returned if r["verdict"] == "UPHELD")
+    refuted = len(returned) - upheld
+    panel_identity = "panel:" + "+".join(seats)
+    base: dict[str, Any] = {
+        "panel": True,
+        "panelReports": seat_reports,
+        "juror": panel_identity,
+        "model": panel_identity,
+        "precedentsUsed": precedent_ids,
+    }
+    if returned and upheld != refuted:
+        verdict = "UPHELD" if upheld > refuted else "REFUTED"
+        return {
+            **base,
+            "status": "ok",
+            "verdict": verdict,
+            "panelVerdict": verdict,
+        }
+    return {
+        **base,
+        "status": "error",
+        "reason": "panel_no_majority",
+        "panelVerdict": None,
+    }

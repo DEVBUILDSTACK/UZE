@@ -18,9 +18,11 @@ Pins the lifecycle contract:
     and the EventLog resolution trail
 
 The juror is stubbed at the module seam (juror.judge_claim) for
-the API tests, and exercised structurally against a fake
-InferenceClient for its own tests — the same discipline as
-test_inference.py. No test fabricates a live attestation.
+the API tests — and at juror.judge_panel for contested claims,
+which route to the panel since spec 08 §9 — and exercised
+structurally against a fake InferenceClient for its own tests —
+the same discipline as test_inference.py. No test fabricates a
+live attestation.
 """
 from __future__ import annotations
 
@@ -55,6 +57,38 @@ def _refuted(claim):
     report["verdict"] = "REFUTED"
     report["rationale"] = "opex lines omit the brand fee"
     return report
+
+
+def _panel_upheld(claim):
+    """A panel report stub (spec 08 §9): contested claims are
+    judged by juror.judge_panel, not judge_claim — two seats,
+    both UPHELD, majority UPHELD."""
+    seat = {
+        "status": "ok",
+        "verdict": "UPHELD",
+        "rationale": "panel seat stub",
+        "confidence": 0.9,
+        "model": "stub-juror-model",
+        "juror": "stub-juror-model",
+        "completionId": "chatcmpl-stub-panel",
+        "verification": {"signatureKind": "gateway", "result": "verified"},
+        "precedentsUsed": [],
+    }
+    second = {
+        **seat,
+        "model": "stub-juror-model-b",
+        "juror": "stub-juror-model-b",
+    }
+    return {
+        "status": "ok",
+        "verdict": "UPHELD",
+        "panel": True,
+        "panelVerdict": "UPHELD",
+        "panelReports": [seat, second],
+        "juror": "panel:stub-juror-model+stub-juror-model-b",
+        "model": "panel:stub-juror-model+stub-juror-model-b",
+        "precedentsUsed": [],
+    }
 
 
 @pytest.fixture()
@@ -279,7 +313,7 @@ def test_resolved_false_never_assuratizes(
 
 
 def test_challenged_claim_finalizes_withstood(
-    market_client, demo_fixture, stub_juror
+    market_client, demo_fixture, monkeypatch
 ):
     spec = _post_spec(market_client, demo_fixture)
     claim = _issue(market_client, spec["id"]).json()
@@ -287,7 +321,9 @@ def test_challenged_claim_finalizes_withstood(
         f"/api/v1/claims/{claim['id']}/challenge",
         json={"challengerEntityId": CHALLENGER, "bondAmount": 750},
     )
-    stub_juror(_upheld)
+    # Contested claims route to the panel (spec 08 §9): the
+    # stub seam for a challenged claim is juror.judge_panel.
+    monkeypatch.setattr(juror, "judge_panel", _panel_upheld)
     market_client.post(f"/api/v1/claims/{claim['id']}/judge")
     finalized = market_client.post(
         f"/api/v1/claims/{claim['id']}/finalize",

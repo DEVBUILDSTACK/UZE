@@ -135,12 +135,13 @@ juror identity, **event-sourced from the append-only EventLog**
 | `panelDissents` | panel judgments on terminal claims where this seat's parsed verdict differed from the panel verdict |
 
 Only jurors with at least one judged (terminal, credited)
-claim appear; ordering is deterministic (juror identity
-ascending). No authentication: scorecards are reputation, and
-reputation only works published. External agent systems
-deciding which juror seat to trust — or whether to challenge
-a claim a weak seat upheld — read the same numbers a financing
-partner reads. There is one record.
+claim — or at least one recorded panel dissent (§9), which is
+itself a reputation fact — appear; ordering is deterministic
+(juror identity ascending). No authentication: scorecards are
+reputation, and reputation only works published. External
+agent systems deciding which juror seat to trust — or whether
+to challenge a claim a weak seat upheld — read the same
+numbers a financing partner reads. There is one record.
 
 ## 4. The learning feed — GET /api/v1/learning/recent
 
@@ -258,3 +259,47 @@ Sprint 2 scope.
   at unit level; a dirty claim stored stripped; a dirty
   precedent rendered stripped; a canary-echoing juror
   producing error/canary_tripped through the real judge path.
+
+## 9. Panels for contested claims (DeepSeek audit Q3)
+
+A challenged claim is a contested claim, and a single juror is
+the wrong shape for a contest. Since this amendment, judging
+routes by contention: **unchallenged claims keep the
+single-juror path unchanged; a claim carrying a challenge is
+judged by a panel** (`juror.judge_panel`).
+
+- **Seats.** Up to 3 juror seats, from env
+  `JUROR_PANEL_MODELS` (comma-separated) when set, else the
+  primary model plus the C-3 fallback model — deduped. A panel
+  requires at least two **distinct** seats; below that, judging
+  falls back to the single-juror path and the report carries
+  `panelNote: "panel unavailable: fewer than two seats
+  configured"` — the fallback is recorded, never silent.
+- **Independence.** Each seat judges with the SAME
+  deterministic prompt (precedents included): seats differ by
+  model, not by evidence. A seat is judged by
+  `juror.judge_claim_for_model` — the seat's model used
+  exactly, with no fallback chain, because silently judging
+  with a different model would falsify the seat's record.
+  Each seat embeds its own canary (§8).
+- **Verdict.** The panel verdict is the strict majority of
+  seats that returned a parsed verdict. Unavailable/error
+  seats abstain. A tie — or every seat abstaining — is not a
+  verdict: the report is an error with reason
+  `panel_no_majority`, and the claim rests UNDER_RESOLUTION.
+  Finalize consumes the panel verdict exactly as it consumes
+  a single verdict.
+- **Record.** The claim's juror report carries `panel`,
+  `panelVerdict`, and `panelReports` (every seat's full
+  report, in seat order); the `claim.judged` event carries
+  `panelAttempts` (per-seat juror/outcome/verdict), which is
+  what the event-sourced scorecards (§3) read: seats whose
+  verdict matched the panel outcome are credited with the
+  terminal outcome; a seat whose verdict differed records a
+  **dissent** (`panelDissents`); abstentions record neither.
+- **Why panels, from the field.** The sibling project this
+  design answers runs a single juror with an escalation-only
+  council as its only check. A panel of independent models,
+  scored per seat in public, is the stronger default for the
+  claims that are actually disputed — which are precisely the
+  claims whose judgments carry consequences.

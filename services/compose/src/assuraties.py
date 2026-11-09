@@ -324,6 +324,37 @@ def _select_precedents(
     ], excluded
 
 
+_SEAT_RECORD_KEYS = (
+    "status",
+    "verdict",
+    "rationale",
+    "confidence",
+    "model",
+    "juror",
+    "completionId",
+    "verification",
+    "transport",
+    "transportNote",
+    "requestedModel",
+    "modelFallback",
+    "precedentsUsed",
+    "canaryId",
+    "canaryTripped",
+    "reason",
+)
+
+
+def _seat_record(seat_report: dict[str, Any]) -> dict[str, Any]:
+    """One panel seat's report as recorded on the claim (spec 08
+    §9): the same field discipline as the single-juror record —
+    the fields the seat actually produced, nothing invented."""
+    return {
+        key: seat_report[key]
+        for key in _SEAT_RECORD_KEYS
+        if seat_report.get(key) is not None
+    }
+
+
 @router.post("/claims/{claim_id}/judge")
 def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
     claim = _get_claim(db, claim_id)
@@ -342,7 +373,13 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
     precedent_ids = [p["id"] for p in precedents]
     claim_dict = _claim_view(claim).model_dump()
     claim_dict["precedents"] = precedents
-    report = juror.judge_claim(claim_dict)
+    # Contested claims — a challenge stands on the claim — are
+    # judged by the PANEL (spec 08 §9); unchallenged claims keep
+    # the single-juror path exactly as before.
+    if claim.challenge is not None:
+        report = juror.judge_panel(claim_dict)
+    else:
+        report = juror.judge_claim(claim_dict)
     attempted_at = int(time.time())
     if report.get("status") == "ok":
         claim.juror_report = {
@@ -363,9 +400,16 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
                 "precedentsUsed",
                 "canaryId",
                 "canaryTripped",
+                "panel",
+                "panelVerdict",
+                "panelNote",
             )
             if report.get(key) is not None
         }
+        if report.get("panelReports") is not None:
+            claim.juror_report["panelReports"] = [
+                _seat_record(r) for r in report["panelReports"]
+            ]
         # The selection of record is this endpoint's: what was
         # actually rendered into the prompt, whoever judged —
         # and how much of the settled record the self-dealing
@@ -401,20 +445,47 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
         for key in ("canaryId", "canaryTripped"):
             if report.get(key) is not None:
                 claim.juror_report[key] = report[key]
+        # Panel records (spec 08 §9) ride on contested claims
+        # the same way: every seat's report is part of the
+        # claim's record, decided or not.
+        if report.get("panel"):
+            claim.juror_report["panel"] = True
+            claim.juror_report["panelVerdict"] = report.get("panelVerdict")
+            claim.juror_report["panelReports"] = [
+                _seat_record(r) for r in report.get("panelReports") or []
+            ]
+        if report.get("panelNote"):
+            claim.juror_report["panelNote"] = report["panelNote"]
+    event_payload: dict[str, Any] = {
+        "fromStatus": from_status.value,
+        "toStatus": claim.status.value,
+        "jurorOutcome": report.get("status"),
+        "verdict": report.get("verdict"),
+        "juror": report.get("juror") or report.get("model"),
+        "precedentsUsed": precedent_ids,
+        "precedentsExcludedSelfDealing": precedents_excluded,
+    }
+    if report.get("panelReports") is not None:
+        # Per-seat attempts, from the normalized records of
+        # record — this is what the event-sourced scorecards
+        # (spec 08 §3) read back.
+        event_payload["panelAttempts"] = [
+            {
+                "juror": r.get("juror") or r.get("model"),
+                "outcome": r.get("status"),
+                "verdict": r.get("verdict"),
+            }
+            for r in claim.juror_report.get("panelReports") or []
+        ]
+        event_payload["panelVerdict"] = report.get("panelVerdict")
+    if report.get("panelNote"):
+        event_payload["panelNote"] = report["panelNote"]
     _log(
         db,
         claim,
         "claim.judged",
         actor="agent:JUROR",
-        payload={
-            "fromStatus": from_status.value,
-            "toStatus": claim.status.value,
-            "jurorOutcome": report.get("status"),
-            "verdict": report.get("verdict"),
-            "juror": report.get("juror") or report.get("model"),
-            "precedentsUsed": precedent_ids,
-            "precedentsExcludedSelfDealing": precedents_excluded,
-        },
+        payload=event_payload,
     )
     db.commit()
     return _claim_view(claim)
@@ -628,8 +699,9 @@ def juror_scorecards(db: Session = Depends(get_session)):
 
     Events whose payload carries no juror identity are skipped —
     never attributed by guess. Only jurors with at least one
-    judged (terminal, credited) claim appear. Ordering is
-    deterministic: juror identity ascending."""
+    judged (terminal, credited) claim — or at least one recorded
+    panel dissent, which is itself a reputation fact — appear.
+    Ordering is deterministic: juror identity ascending."""
     cards: dict[str, dict[str, Any]] = {}
 
     def card_for(identity: str) -> dict[str, Any]:
@@ -730,7 +802,11 @@ def juror_scorecards(db: Session = Depends(get_session)):
         for identity in dissenters:
             card_for(identity)["panelDissents"] += 1
 
-    jurors = [c for c in cards.values() if c["judgedCount"] >= 1]
+    jurors = [
+        c
+        for c in cards.values()
+        if c["judgedCount"] >= 1 or c["panelDissents"] >= 1
+    ]
     jurors.sort(key=lambda c: c["juror"])
     return {"surface": "juror-scorecards", "jurors": jurors}
 

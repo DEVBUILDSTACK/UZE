@@ -332,7 +332,9 @@ def test_render_precedents_block_unit():
 # ---------------------------------------------------------------------
 
 
-def test_juror_scorecard_math(market_client, demo_fixture, stub_juror):
+def test_juror_scorecard_math(
+    market_client, demo_fixture, stub_juror, monkeypatch
+):
     spec = _post_spec(market_client, demo_fixture)
 
     upheld = _issue(market_client, spec["id"])
@@ -365,8 +367,11 @@ def test_juror_scorecard_math(market_client, demo_fixture, stub_juror):
     assert card["withstoodCount"] == 0
     assert card["unavailableCount"] == 0
 
-    # A challenged claim this juror upholds, then finalized, adds
-    # the withstood count.
+    # A challenged claim upheld, then finalized, adds the
+    # withstood count. Contested claims route to the PANEL
+    # (spec 08 §9): the panel stub seats SCORECARD_JUROR and a
+    # second seat, both UPHELD — the panel credits each seat
+    # whose verdict matched the panel verdict.
     challenged = _issue(
         market_client,
         spec["id"],
@@ -377,15 +382,52 @@ def test_juror_scorecard_math(market_client, demo_fixture, stub_juror):
         f"/api/v1/claims/{challenged['id']}/challenge",
         json={"challengerEntityId": CHALLENGER, "bondAmount": 750},
     )
-    stub_juror(_report("UPHELD"))
+
+    def panel_upheld(claim):
+        seats = []
+        for model in (SCORECARD_JUROR, "zz-second-seat"):
+            seats.append(
+                {
+                    "status": "ok",
+                    "verdict": "UPHELD",
+                    "rationale": "panel seat stub",
+                    "confidence": 0.9,
+                    "model": model,
+                    "juror": model,
+                    "completionId": f"chatcmpl-{model}",
+                    "verification": {
+                        "signatureKind": "gateway",
+                        "result": "verified",
+                    },
+                    "precedentsUsed": [],
+                }
+            )
+        return {
+            "status": "ok",
+            "verdict": "UPHELD",
+            "panel": True,
+            "panelVerdict": "UPHELD",
+            "panelReports": seats,
+            "juror": f"panel:{SCORECARD_JUROR}+zz-second-seat",
+            "model": f"panel:{SCORECARD_JUROR}+zz-second-seat",
+            "precedentsUsed": [],
+        }
+
+    monkeypatch.setattr(juror, "judge_panel", panel_upheld)
     market_client.post(f"/api/v1/claims/{challenged['id']}/judge")
     _finalize(market_client, challenged["id"], "credit-committee-team-004")
 
-    card = market_client.get("/api/v1/jurors").json()["jurors"][0]
+    cards = market_client.get("/api/v1/jurors").json()["jurors"]
+    card = [c for c in cards if c["juror"] == SCORECARD_JUROR][0]
     assert card["judgedCount"] == 3
     assert card["upheldCount"] == 2
     assert card["refutedCount"] == 1
     assert card["withstoodCount"] == 1
+    # The second seat was credited alongside, with no dissent.
+    second = [c for c in cards if c["juror"] == "zz-second-seat"][0]
+    assert second["judgedCount"] == 1
+    assert second["upheldCount"] == 1
+    assert second["panelDissents"] == 0
 
 
 def test_scorecard_counts_superseded_attempts(
@@ -552,3 +594,154 @@ def test_unavailable_judge_adds_no_scorecard_entry(
     assert all(
         e["claimId"] != claim["id"] for e in feed["entries"]
     )
+
+
+# ---------------------------------------------------------------------
+# (e) Panels for contested claims (spec 08 §9): a challenged
+# claim is judged by up to three seats with the same prompt;
+# the strict majority of returned verdicts decides; dissent is
+# recorded per seat; no majority means no verdict. Seats are
+# stubbed at juror.judge_claim_for_model — deterministic, no
+# inference fabricated.
+# ---------------------------------------------------------------------
+
+SEATS = ("seat-a", "seat-b", "seat-c")
+
+
+def _seat_fn(verdicts):
+    """verdicts: seat model -> verdict, or None for a seat that
+    cannot run (unavailable)."""
+
+    def fn(claim, model, client=None):
+        verdict = verdicts.get(model)
+        if verdict is None:
+            return {
+                "status": "unavailable",
+                "reason": "seat is down (stub)",
+                "model": model,
+                "juror": model,
+                "precedentsUsed": [],
+            }
+        return {
+            "status": "ok",
+            "verdict": verdict,
+            "rationale": f"{model} seat stub",
+            "confidence": 0.9,
+            "model": model,
+            "juror": model,
+            "completionId": f"chatcmpl-{model}",
+            "verification": {
+                "signatureKind": "gateway",
+                "result": "verified",
+            },
+            "precedentsUsed": [],
+        }
+
+    return fn
+
+
+@pytest.fixture()
+def stub_seats(monkeypatch):
+    def install(verdicts, seats=SEATS):
+        monkeypatch.setenv("JUROR_PANEL_MODELS", ",".join(seats))
+        monkeypatch.setattr(
+            juror, "judge_claim_for_model", _seat_fn(verdicts)
+        )
+
+    return install
+
+
+def _issue_challenged(client, spec_id):
+    claim = _issue(client, spec_id)
+    resp = client.post(
+        f"/api/v1/claims/{claim['id']}/challenge",
+        json={"challengerEntityId": CHALLENGER, "bondAmount": 750},
+    )
+    assert resp.status_code == 200, resp.text
+    return claim
+
+
+def test_panel_majority_upheld_and_dissent_recorded(
+    market_client, demo_fixture, stub_seats
+):
+    spec = _post_spec(market_client, demo_fixture)
+    claim = _issue_challenged(market_client, spec["id"])
+    stub_seats({"seat-a": "UPHELD", "seat-b": "UPHELD", "seat-c": "REFUTED"})
+
+    judged = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    assert judged.status_code == 200, judged.text
+    body = judged.json()
+    assert body["status"] == "RESOLVED_TRUE"
+    report = body["jurorReport"]
+    assert report["panel"] is True
+    assert report["panelVerdict"] == "UPHELD"
+    assert report["verdict"] == "UPHELD"
+    assert len(report["panelReports"]) == 3
+    by_seat = {r["juror"]: r for r in report["panelReports"]}
+    assert by_seat["seat-c"]["verdict"] == "REFUTED"
+
+    finalized = _finalize(
+        market_client, claim["id"], "credit-committee-team-008"
+    )
+    assert finalized.json()["status"] == "ASSURATIZED"
+    assert finalized.json()["withstood"] is True
+
+    cards = {
+        c["juror"]: c
+        for c in market_client.get("/api/v1/jurors").json()["jurors"]
+    }
+    # Majority seats are credited with the terminal outcome.
+    assert cards["seat-a"]["judgedCount"] == 1
+    assert cards["seat-a"]["upheldCount"] == 1
+    assert cards["seat-a"]["withstoodCount"] == 1
+    assert cards["seat-a"]["panelDissents"] == 0
+    assert cards["seat-b"]["upheldCount"] == 1
+    # The dissenting seat is credited with nothing — but its
+    # dissent is on its record.
+    assert cards["seat-c"]["judgedCount"] == 0
+    assert cards["seat-c"]["upheldCount"] == 0
+    assert cards["seat-c"]["panelDissents"] == 1
+
+
+def test_panel_no_majority_rests_under_resolution(
+    market_client, demo_fixture, stub_seats
+):
+    spec = _post_spec(market_client, demo_fixture)
+    claim = _issue_challenged(market_client, spec["id"])
+    # 1 UPHELD, 1 REFUTED, 1 abstention: no strict majority.
+    stub_seats({"seat-a": "UPHELD", "seat-b": "REFUTED", "seat-c": None})
+
+    judged = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    body = judged.json()
+    assert body["status"] == "UNDER_RESOLUTION"
+    report = body["jurorReport"]
+    assert report["panel"] is True
+    assert report["panelVerdict"] is None
+    assert report["status"] == "error"
+    assert report["reason"] == "panel_no_majority"
+    assert "verdict" not in report
+    assert len(report["panelReports"]) == 3
+
+    # Not finalized, not resolvable by fiat: finalize refuses.
+    refused = _finalize(
+        market_client, claim["id"], "credit-committee-team-009"
+    )
+    assert refused.status_code == 409
+
+
+def test_panel_fallback_with_fewer_than_two_seats(
+    market_client, demo_fixture, stub_juror, monkeypatch
+):
+    spec = _post_spec(market_client, demo_fixture)
+    claim = _issue_challenged(market_client, spec["id"])
+    monkeypatch.setenv("JUROR_PANEL_MODELS", "solo-seat")
+    # The fallback IS the single-juror path — stubbed as usual.
+    stub_juror(_report("UPHELD", model="solo-seat"))
+
+    judged = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    body = judged.json()
+    assert body["status"] == "RESOLVED_TRUE"
+    assert body["jurorReport"]["panelNote"] == (
+        "panel unavailable: fewer than two seats configured"
+    )
+    assert "panelReports" not in body["jurorReport"]
