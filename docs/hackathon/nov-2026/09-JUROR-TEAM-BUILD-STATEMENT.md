@@ -120,6 +120,8 @@ ratified packet (D1–D11) without reopening it:
 - Every financing decision made on Assuratized data feeds back: settled
   deals generate period actuals, which become the next precedents.
 
+**Why precedent, and not a prediction market.** The competitive field at this hackathon resolves claims by price: a market trades on whether a claim is true, and the price becomes the answer. Price answers "what does the crowd believe." Precedent answers "what has this micro-region's evidence base already settled." For underwriting, the second question is the one the lender asks — a market price on a sentence is not a documented underwriting rationale. We are not building a better price. We are building the settled record a credit decision can stand on.
+
 **For UZEmarkets:** the compounding asset is the comparable ledger plus two
 reputation graphs (claimants, jurors) that no competitor can fork — the
 mechanism can be copied; the accumulated, publicly verifiable record cannot.
