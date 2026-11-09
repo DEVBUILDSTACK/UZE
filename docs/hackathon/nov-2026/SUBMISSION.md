@@ -211,6 +211,25 @@ call.]
   and the x401 identity stub for tier C+ engagements, ahead of
   Sprint 2's real facilitation and identity work.
 
+## The WhatsApp Funnel
+
+The distribution channel for the Markets geography above is
+messaging. Brazil is the second-largest WhatsApp market globally. We leverage the Meta-Business API through our Messaging & Intelligence VPS to ingest deals directly from 80,000 Brazilian business owners and the US East Coast diaspora (Boston to Miami), routing them via NEAR Intents to GIRA and SURA.
+
+The technical architecture is filed as **Diagram 08**
+(`docs/diagrams/08-hermes-near-architecture.md` — Multi-Agentic
+Team & MIV Technical Architecture, the MIV version superseding
+the earlier Diagram 08); the business flow is **Diagram 09**
+(`docs/diagrams/09-whatsapp-business-flow.md` — WhatsApp
+Outreach & Americas Diaspora Flow). Spec 10 §8 records the same
+architecture: Meta-Business API (WhatsApp) → MIV Hermes Harness
+→ UZE Core (GIRA/SURA) → NEAR AI inference & underwriting.
+
+[STATE: the funnel is the Sprint 2+ channel architecture —
+designed and diagrammed, not yet a live channel. Nothing in
+this section is running today; the hackathon build is the
+marketplace, the juror team, and the surfaces above.]
+
 ## What was built in the hackathon window
 
 [STATE — refresh at filing]

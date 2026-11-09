@@ -124,3 +124,9 @@ The stated target sets are the 80,000-member Brazilian
 business-owner network and the US Portuguese-speaking investor
 corridor (Boston→Miami). Recorded here as strategy; the MIV
 build is Sprint 2+ work, behind spec 09's gates.
+
+Diagrams: Diagram 08 was superseded by the MIV version
+(`docs/diagrams/08-hermes-near-architecture.md` — Multi-Agentic
+Team & MIV Technical Architecture), and Diagram 09 was added
+(`docs/diagrams/09-whatsapp-business-flow.md` — WhatsApp
+Outreach & Americas Diaspora Flow).
