@@ -6,8 +6,8 @@
   "edition": "2026-11-07",
   "editionDate": "2026-11-07",
   "datePublished": "2026-11-09",
-  "version": 3,
-  "status": "recorded — launch edition (Version 3, with the Assuraties closing segment)",
+  "version": 4,
+  "status": "recorded — complete edition (Version 4: the launch edition as initially prepared, with the post-dated bonus segment and closing disclosure spliced in the final portion, before the closing music)",
   "cast": [
     "SoSim (host)",
     "Jay (skeptic / evidence)",
@@ -15,10 +15,11 @@
   ],
   "centralQuestion": "What changes when a market states the outcome it wants, proves the intelligence it used, and keeps a verifiable record of who created the value?",
   "audio": {
-    "contentUrl": "2026-11-07.mp3",
+    "contentUrl": "2026-11-07-complete-v4.mp3",
     "encodingFormat": "audio/mpeg",
-    "durationSeconds": 2526,
-    "music": "BABEL — AKIRA where is my soul (introduction and closing)"
+    "durationSeconds": 3035,
+    "music": "BABEL — AKIRA where is my soul (introduction and closing)",
+    "launchEditionContentUrl": "2026-11-07.mp3"
   },
   "humanUrl": "2026-11-07.html",
   "chapters": [
@@ -35,7 +36,9 @@
     "Tickets, stays, and the paired asset",
     "The hackathon build",
     "The disagreement, what to watch, and the close",
-    "Assuraties — claims that earn their name"
+    "Assuraties — claims that earn their name",
+    "Bonus — the juror pathway and surveyed land (post-dated addition)",
+    "Closing disclosure — building through Learn2Launch (post-dated addition)"
   ],
   "additions": [
     {
@@ -58,5 +61,5 @@
     }
   ],
   "previousPosting": "/word-graph/2026-10-31.html",
-  "wordCount": 5941
+  "wordCount": 7124
 }
