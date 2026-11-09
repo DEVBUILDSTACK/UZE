@@ -4,6 +4,8 @@
 (relayed by James). The Hermes build does NOT begin until the Nov 15
 Sprint 2 kickoff. Diagram: `docs/diagrams/07-hermes-agentic-team.md`.**
 
+**Refinement:** spec 10 (`docs/specifications/10-NEAR-AI-CORE-INTENT-ROUTING-KVM-EDGE.md`, DeepSeek's refined directive, 2026-11-09) supersedes this draft on the core/edge boundary, the NEAR AI engine, and Intent routing. This draft remains the reference for the team structure, the Double-Tap gate, and the sanitization rule.
+
 Terminology note: this spec uses James's settled spellings — **Assuraties**
 (present, plural-only) and **Assuratized** (resolved). Renderings in the
 directive package ("Assuratied", "Assurete") are dictation noise and are
