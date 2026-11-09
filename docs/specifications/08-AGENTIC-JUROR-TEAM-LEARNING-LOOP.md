@@ -218,3 +218,43 @@ blocks them.
   against a capturing client (same micro-region in, different
   micro-region out), scorecard math, feed ordering and limits,
   and the unavailable path's absence from the scorecards.
+
+## 8. Untrusted-input sanitization — the juror-path slice
+
+Claim text is untrusted input rendered into a judge's prompt —
+ours, and later other claims' precedent blocks. The hackathon
+slice of the sanitization pipeline (DeepSeek's Hermes
+architecture directive, 2026-11-09) covers exactly this path;
+the full pipeline, including Grok/Hermes desk output, is
+Sprint 2 scope.
+
+- **Invisible-Unicode stripping** (`src/sanitize.py`). The
+  classes stripped: zero-width characters (U+200B–U+200D),
+  the BOM (U+FEFF), bidi controls (U+202A–U+202E) and isolates
+  (U+2066–U+2069), Unicode tag characters (U+E0000–U+E007F),
+  and the soft hyphen (U+00AD). Applied to the claim
+  `statement` and the string leaves of `claimedValue` **at
+  claim creation** — the claim of record is the sanitized
+  claim; no unsanitized copy exists — and applied **again
+  defensively at render time** in juror.py (the claim's own
+  text and every precedent's), because the prompt path never
+  trusts stored text to be clean. Visible text is untouched:
+  the sanitizer removes the hidden channel, and judging
+  visible claims is the juror's evidence standard, not the
+  sanitizer's.
+- **Canary trap.** Every attempted judgment embeds a fresh
+  canary token (uuid4 hex) in the prompt framing, on a
+  delimited `SENTINEL:` line instructing that it is a security
+  sentinel and must not be reproduced. If the completion
+  echoes the token, the framing has leaked into the answer:
+  the outcome is recorded as status `error` with reason
+  `canary_tripped` — never a verdict — and the claim rests
+  UNDER_RESOLUTION. The report records only `canaryId` (an
+  independent identifier) and `canaryTripped` (a boolean);
+  the token value itself is stored nowhere. The unavailable
+  path attempts no judgment, embeds no canary, and carries
+  neither field.
+- `tests/test_sanitize.py` — every invisible class stripped
+  at unit level; a dirty claim stored stripped; a dirty
+  precedent rendered stripped; a canary-echoing juror
+  producing error/canary_tripped through the real judge path.

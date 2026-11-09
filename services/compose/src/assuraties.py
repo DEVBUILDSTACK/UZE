@@ -53,6 +53,7 @@ from sqlalchemy.orm import Session
 import juror
 import metering
 import models
+import sanitize
 from db import get_session
 
 router = APIRouter(prefix="/api/v1", tags=["assuraties"])
@@ -178,12 +179,26 @@ def issue_claim(body: ClaimIn, db: Session = Depends(get_session)):
             status_code=422,
             detail="periodKind is only valid on HICRE_PERIOD claims",
         )
+    # Untrusted-input sanitization (spec 08 §8): the statement
+    # and the claimed value's string leaves are stripped of
+    # invisible Unicode BEFORE they become the claim of record.
+    # The sanitized form is what is stored, judged, and later
+    # rendered as precedent — there is no unsanitized copy.
+    statement = sanitize.strip_invisible(body.statement)
+    if not statement:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "statement carries no visible content once "
+                "invisible characters are stripped"
+            ),
+        )
     claim = models.Claim(
         intent_id=body.intentId,
         claim_class=body.claimClass,
         period_kind=body.periodKind,
-        statement=body.statement,
-        claimed_value=body.claimedValue,
+        statement=statement,
+        claimed_value=sanitize.sanitize_value(body.claimedValue),
         claimant_entity_id=body.claimantEntityId,
         bond_amount=body.bondAmount,
         status=models.ClaimStatus.ISSUED,
@@ -346,6 +361,8 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
                 "requestedModel",
                 "modelFallback",
                 "precedentsUsed",
+                "canaryId",
+                "canaryTripped",
             )
             if report.get(key) is not None
         }
@@ -379,6 +396,11 @@ def judge_claim_endpoint(claim_id: str, db: Session = Depends(get_session)):
             "precedentsExcludedSelfDealing": precedents_excluded,
             "attemptedAt": attempted_at,
         }
+        # The canary record (spec 08 §8) rides on attempted
+        # judgments — ok or error — whenever the juror ran.
+        for key in ("canaryId", "canaryTripped"):
+            if report.get(key) is not None:
+                claim.juror_report[key] = report[key]
     _log(
         db,
         claim,
