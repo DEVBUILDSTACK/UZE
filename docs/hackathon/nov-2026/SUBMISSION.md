@@ -98,8 +98,9 @@ Around them, the geographic hierarchy:
   into Paraguay and Uruguay.
 
 The demo's micro-regions sit inside this map: Brickell and
-Aventura (Miami), Bethesda and Arlington (DC metro), Northwest
-Baltimore, Kissimmee (Orlando), and Tampa.
+Aventura (Miami), Fort Lauderdale, Bethesda and Arlington (DC
+metro), Northwest Baltimore, Baltimore City and Towson,
+Kissimmee (Orlando), and Tampa.
 
 UZEmarkets' Mid-Atlantic focus is anchored by Dugan's Wharf in Baltimore — the historic Pratt Street wharf, now Pier 4 of the Inner Harbor, home to the National Aquarium's Marine Mammal Pavilion and a marked Network to Freedom site.
 

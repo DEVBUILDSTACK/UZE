@@ -1,6 +1,6 @@
 """Seed the demonstration database with the Sprint 1.5 demo fixture.
 
-Reset + migrate + the 7 micro-regions + the Aloft Brickell spec +
+Reset + migrate + the 10 micro-regions + the Aloft Brickell spec +
 both bids, through the real API (TestClient), chain gate CLOSED —
 this seeds the read-model the Day 6 human surface renders. (The
 live chain flow is scripts/settle_dryrun.py / the demo recording.)
