@@ -1,5 +1,8 @@
 # Diagram 09 — WhatsApp Outreach & Americas Diaspora Flow
 
+![Rendered diagram](09-whatsapp-business-flow.jpg)
+
+
 **Status: business/marketing flow per DeepSeek's MIV/WhatsApp directive
 (relayed by James, 2026-11-09). Strategy diagram — the funnel it draws is
 the Sprint 2+ build target, not a live channel. Technical counterpart:

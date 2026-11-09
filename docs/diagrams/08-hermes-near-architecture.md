@@ -1,5 +1,8 @@
 # Diagram 08 — Multi-Agentic Team & MIV Technical Architecture
 
+![Rendered diagram](08-hermes-near-architecture.jpg)
+
+
 **Status: architecture per DeepSeek's MIV/WhatsApp directive (relayed by
 James, 2026-11-09). This version supersedes the earlier Diagram 08 (NEAR AI
 core / KVM edge) filed the same day: the Messaging & Intelligence VPS (MIV)
