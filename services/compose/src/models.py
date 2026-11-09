@@ -1891,3 +1891,138 @@ class StagingProviderSnapshot(Base):
     reviewed_by: Mapped[str | None] = mapped_column(
         "reviewedBy", String, nullable=True
     )
+
+
+# ---------------------------------------------------------------------------
+# Sprint 1.5 extension — ASSURATIES: the claim > judge > resolved
+# pipeline over marketplace intents
+# (docs/specifications/07-ASSURATIES-CLAIM-RESOLUTION-EXTENSION.md).
+# Strictly additive: one new table + its enums; no existing table is
+# touched. The mechanism interprets Credence's claim markets for
+# HiCRE and ANR&D RWA (Credence: github.com/Paramchoudhary/Credence,
+# MIT License — see the spec for the attribution and the mapping).
+# ---------------------------------------------------------------------------
+
+
+class ClaimClass(enum.Enum):
+    """What a claim is about. HICRE_PERIOD claims are about one
+    accounting period of one HiCRE asset: its total operating
+    expenses (see ClaimPeriodKind)."""
+
+    RWA = "RWA"
+    HICRE_ASSET = "HICRE_ASSET"
+    HICRE_PERIOD = "HICRE_PERIOD"
+
+
+class ClaimPeriodKind(enum.Enum):
+    """The period a HICRE_PERIOD claim covers. Required on period
+    claims, forbidden on all others (enforced in assuraties.py).
+    HISTORICAL_TOTAL is the historicals-in-total claim: the asset's
+    total operating expenses over its recorded history."""
+
+    MONTHLY = "MONTHLY"
+    QUARTERLY = "QUARTERLY"
+    ANNUAL = "ANNUAL"
+    HISTORICAL_TOTAL = "HISTORICAL_TOTAL"
+
+
+class ClaimStatus(enum.Enum):
+    """The claim lifecycle (spec 07, §5). ASSURATIZED is the
+    terminal reliance grade: reached only from RESOLVED_TRUE
+    through the authorization-guarded finalize step.
+    RESOLVED_FALSE is terminal and can never become ASSURATIZED."""
+
+    ISSUED = "ISSUED"
+    CHALLENGED = "CHALLENGED"
+    UNDER_RESOLUTION = "UNDER_RESOLUTION"
+    RESOLVED_TRUE = "RESOLVED_TRUE"
+    RESOLVED_FALSE = "RESOLVED_FALSE"
+    ASSURATIZED = "ASSURATIZED"
+
+
+class ConfidentialTier(enum.Enum):
+    """Where a claim's evidence may live. STANDARD runs in the
+    REE/TEE environment of spec 07 §4 (NEAR AI attested juror +
+    NEAR ledger). ARCIUM marks the confidential tier — evidence
+    and judging under Arcium MPC, the "ASSURATIZED @ARCIUM" mark
+    once resolved. In this build ARCIUM is a data flag only: no
+    Arcium calls are made (the ParleySwap scaffold refuses; see
+    integrations/parleyswap/ and spec 07 §6)."""
+
+    STANDARD = "STANDARD"
+    ARCIUM = "ARCIUM"
+
+
+class Claim(Base):
+    """One attributable claim about an RWA, a HiCRE asset, or one
+    period of a HiCRE asset (its total operating expenses),
+    standing behind advisory or seller financials.
+
+    `intent_id` is a real FK: the claim hangs off a marketplace
+    Intent in THIS database (the Bid precedent). `claimant_entity_id`
+    is the opposite case — an AssurativeV2 trust-layer Entity id,
+    a plain string by the R4 rule (cross-database references are
+    never FKs; see Intent.entity_id).
+
+    `bond_amount` is the claimant's skin in the game in MOCK units:
+    recorded, never moved. No claim state transition executes a
+    financial transaction (the Iron Rule, spec 07 §7); settlement
+    stays USDC on Solana through the settle flow.
+
+    `juror_report` carries the juror's latest report verbatim —
+    inference outcome, model, completion id, and the verification
+    fields when genuinely present. An unavailable/error outcome is
+    recorded with its reason and does NOT resolve the claim.
+    `challenge` carries the single challenge record
+    (challengerEntityId, bondAmount, challengedAt; withstood is
+    added at finalize when a challenged claim is upheld).
+    """
+
+    __tablename__ = "claim"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    intent_id: Mapped[str] = mapped_column(
+        "intentId", String, ForeignKey("intent.id"), nullable=False, index=True
+    )
+    claim_class: Mapped[ClaimClass] = mapped_column(
+        "claimClass", SAEnum(ClaimClass, name="claim_class"), nullable=False
+    )
+    period_kind: Mapped[ClaimPeriodKind | None] = mapped_column(
+        "periodKind",
+        SAEnum(ClaimPeriodKind, name="claim_period_kind"),
+        nullable=True,
+    )
+    statement: Mapped[str] = mapped_column("statement", String, nullable=False)
+    claimed_value: Mapped[dict] = mapped_column(
+        "claimedValue", JSON, nullable=False
+    )
+    claimant_entity_id: Mapped[str] = mapped_column(
+        "claimantEntityId", String, nullable=False
+    )
+    bond_amount: Mapped[int] = mapped_column(
+        "bondAmount", BigInteger, nullable=False, default=0
+    )
+    status: Mapped[ClaimStatus] = mapped_column(
+        "status",
+        SAEnum(ClaimStatus, name="claim_status"),
+        nullable=False,
+        default=ClaimStatus.ISSUED,
+    )
+    confidential_tier: Mapped[ConfidentialTier] = mapped_column(
+        "confidentialTier",
+        SAEnum(ConfidentialTier, name="confidential_tier"),
+        nullable=False,
+        default=ConfidentialTier.STANDARD,
+    )
+    juror_report: Mapped[dict | None] = mapped_column(
+        "jurorReport", JSON, nullable=True
+    )
+    challenge: Mapped[dict | None] = mapped_column(
+        "challenge", JSON, nullable=True
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+    resolved_at: Mapped[int | None] = mapped_column(
+        "resolvedAt", BigInteger, nullable=True
+    )
