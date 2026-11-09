@@ -37,6 +37,26 @@
     "The disagreement, what to watch, and the close",
     "Assuraties — claims that earn their name"
   ],
+  "additions": [
+    {
+      "date": "2026-11-09",
+      "title": "Bonus segment — Assuraties, the juror pathway, and surveyed land",
+      "contentUrl": "2026-11-07-bonus-segment-en.mp3",
+      "encodingFormat": "audio/mpeg",
+      "durationSeconds": 343,
+      "language": "en",
+      "note": "Three-character segment (SoSim, Jay, CB): NEAR AI juror pathway to Assuratized claims, Reliance API consumption by agents and human evaluators, HiCRE hotel-parcel financing case, ANRD polygon parcels with IoT-configured land surveys (drones, agricultural machinery, robots). Brazilian Portuguese edition pending owner approval."
+    },
+    {
+      "date": "2026-11-09",
+      "title": "Executive summary — Assuraties for financing partners",
+      "contentUrl": "2026-11-07-assuraties-exec-summary-en.mp3",
+      "encodingFormat": "audio/mpeg",
+      "durationSeconds": 135,
+      "language": "en",
+      "note": "Narrated partner statement; written version in partners/README.md (Assuraties & the Reliance API) and docs/specifications/07-ASSURATIES-CLAIM-RESOLUTION-EXTENSION.md."
+    }
+  ],
   "previousPosting": "/word-graph/2026-10-31.html",
   "wordCount": 5941
 }
