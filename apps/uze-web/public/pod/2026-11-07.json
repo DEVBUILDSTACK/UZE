@@ -6,8 +6,8 @@
   "edition": "2026-11-07",
   "editionDate": "2026-11-07",
   "datePublished": "2026-11-09",
-  "version": 5,
-  "status": "recorded — complete edition (Version 5: the launch edition as initially prepared, the GotJuice hit spliced after the week-in-review, and the bonus segment and closing disclosure in the final portion; Assuraties / Assuratized pronunciation corrected throughout via spoken respellings)",
+  "version": 7,
+  "status": "recorded — complete edition (Version 7: the launch edition as initially prepared, the GotJuice hit spliced after the week-in-review, and the bonus segment and closing disclosure in the final portion; Assuraties / Assuratized pronounced as coined throughout — Assurative onset, short i, T-I-Z-E-D)",
   "cast": [
     "SoSim (host)",
     "Jay (skeptic / evidence)",
@@ -15,9 +15,9 @@
   ],
   "centralQuestion": "What changes when a market states the outcome it wants, proves the intelligence it used, and keeps a verifiable record of who created the value?",
   "audio": {
-    "contentUrl": "2026-11-07-complete-v5.mp3",
+    "contentUrl": "2026-11-07-complete-v7.mp3",
     "encodingFormat": "audio/mpeg",
-    "durationSeconds": 3071,
+    "durationSeconds": 3137,
     "music": "BABEL — AKIRA where is my soul (introduction and closing)",
     "launchEditionContentUrl": "2026-11-07.mp3"
   },
@@ -56,7 +56,7 @@
       "title": "Bonus segment — Assuraties, the juror pathway, and surveyed land",
       "contentUrl": "2026-11-07-bonus-segment-en.mp3",
       "encodingFormat": "audio/mpeg",
-      "durationSeconds": 326,
+      "durationSeconds": 335,
       "language": "en",
       "note": "Three-character segment (SoSim, Jay, CB): NEAR AI juror pathway to Assuratized claims, Reliance API consumption by agents and human evaluators, HiCRE hotel-parcel financing case, ANRD polygon parcels with IoT-configured land surveys (drones, agricultural machinery, robots). Brazilian Portuguese edition pending owner approval."
     },
@@ -65,7 +65,7 @@
       "title": "Executive summary — Assuraties for financing partners",
       "contentUrl": "2026-11-07-assuraties-exec-summary-en.mp3",
       "encodingFormat": "audio/mpeg",
-      "durationSeconds": 134,
+      "durationSeconds": 135,
       "language": "en",
       "note": "Narrated partner statement; written version in partners/README.md (Assuraties & the Reliance API) and docs/specifications/07-ASSURATIES-CLAIM-RESOLUTION-EXTENSION.md."
     }
