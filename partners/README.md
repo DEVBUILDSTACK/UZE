@@ -40,6 +40,55 @@ serves SURA, the HiCRE agent surface. Lenders and both agent
 surfaces query the live `ProviderSnapshot` table — never the
 partner's API, and never unreviewed staging data.
 
+## Assuraties & the Reliance API — verified claims for financing partners
+
+Partner data tells UZEmarkets what a parcel *is*. **Assuraties**
+establish what a financing partner may *rely on*.
+
+Financial packages for income real estate and land rest on advisory
+and seller financials that nobody stands behind in any checkable way.
+Assuraties turn the load-bearing numbers into **claims**: discrete
+assertions — about a real-world asset, a HiCRE property, or a HiCRE
+asset's operating period (total operating expenses and historicals) —
+each issued by an identified claimant, priced, and backed by a bond.
+
+**The juror pathway.** Claims are judged by AI jurors running on
+NEAR AI, inference executed in a trusted, attested environment. A
+juror evaluates the claim against its evidence and against precedent:
+prior resolved claims in the same micro-region. Any party may
+challenge a claim by posting a counter-bond, which escalates it to a
+juror panel. Every juror judgment is **anchored on the NEAR
+blockchain** — the judgment's digest is written on-chain, so the
+verdict a financing partner relies on can be verified against the
+chain itself. A claim resolved in its favor, or challenged and
+upheld through the process, is finalized as **Assuratized**: the
+reliance grade. A confidential tier, **ASSURATIZED @ARCIUM**, covers
+claims whose evidence or bids must remain sealed.
+
+**How a financing partner consumes it.** Only Assuratized claims are
+served, through the **Reliance API**:
+
+- **An agent** at the financing firm queries the API
+  programmatically — identity-verified, payment authorized per call —
+  and checks the claim's on-chain anchor before a credit decision.
+- **A human evaluator** sees the identical record: the claim, the
+  bonds posted for and against it, each juror's report including
+  dissents, and the anchor proving the record was not altered after
+  the fact.
+
+For a **HiCRE** parcel, the stated operating expenses behind a loan
+application arrive pre-judged and verifiable in minutes instead of
+weeks of document diligence. For an **ANRD** parcel — agriculture,
+natural resources, development — the parcels are polygon-mapped, and
+new land surveys configured with IoT (drones, agricultural machinery
+telemetry, and robots) generate the survey evidence — boundaries,
+soil, and water — that claims are judged against, including the
+mandatory subterranean context for land and resource tracks.
+
+The record compounds: every Assuratized claim becomes a comparable —
+actual operating results by period, micro-region, and asset class —
+and every claimant's track record is locked in the ledger.
+
 **Governance status (binding, per the Evidence-Gated Architecture,
 `docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md`):** every
 partner is an **UNVERIFIED** provider until an agreement is signed and
