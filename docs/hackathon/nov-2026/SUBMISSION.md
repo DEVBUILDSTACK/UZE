@@ -76,6 +76,29 @@ settled, is written back as a comparable in its micro-region
 dataset — so the marketplace compounds: each engagement makes the
 next benchmark in that neighborhood better.
 
+## Markets
+
+UZEMARKETS launches into paired US primary HiCRE markets:
+
+- **Market 1 — Mid-Atlantic:** Baltimore, MD + the Washington,
+  DC metro.
+- **Market 2 — South & Central Florida:** Miami, Fort
+  Lauderdale, Tampa, Orlando.
+
+Around them, the geographic hierarchy:
+
+- **Tier 1 (US)** — the paired primary markets above.
+- **Tier 2 (US Diaspora)** — the East Coast corridor,
+  Boston→Miami: Portuguese-speaking (primarily Brazilian)
+  entrepreneurs, high-net-worth individuals, and cross-border
+  real-estate investors.
+- **Tier 3 (South America)** — Brazil, extending immediately
+  into Paraguay and Uruguay.
+
+The demo's micro-regions sit inside this map: Brickell and
+Aventura (Miami), Bethesda and Arlington (DC metro), Northwest
+Baltimore, Kissimmee (Orlando), and Tampa.
+
 ## What it is
 
 One marketplace, two service lines (the second feeds on the first):

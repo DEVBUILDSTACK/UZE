@@ -90,3 +90,37 @@ today, stated plainly so the spec never overclaims:
   concierge are built as separate microservices that push Intents to the
   UZE core, under spec 09's gates (Double-Tap; sanitization before
   ingestion; James's taps on posting policy and Grok spend still open).
+
+## 7. Addendum — geographic scope (2026-11-09)
+
+The paired US primary HiCRE markets:
+
+- **Market 1 — Mid-Atlantic:** Baltimore, MD + Washington, DC metro.
+- **Market 2 — South & Central Florida:** Miami, Fort Lauderdale,
+  Tampa, Orlando.
+
+The hierarchy around them: **Tier 1 (US)** — the paired markets.
+**Tier 2 (US Diaspora)** — the East Coast corridor Boston→Miami:
+Portuguese-speaking (primarily Brazilian) entrepreneurs, HNW
+individuals, cross-border real-estate investors. **Tier 3 (South
+America)** — Brazil, extending immediately into Paraguay and
+Uruguay. The demo micro-regions (Brickell, Aventura, Bethesda,
+Arlington, Baltimore-NW, Kissimmee, Tampa, and the seeded
+Baltimore City / Towson / Fort Lauderdale additions) are the
+micro-region layer inside Tier 1.
+
+## 8. Addendum — the Messaging & Intelligence VPS (MIV) (2026-11-09)
+
+The MIV architecture includes the Meta-Business API. The flow:
+
+**Meta-Business API (WhatsApp) → MIV Hermes Harness → UZE Core
+(GIRA/SURA) → NEAR AI inference & underwriting.**
+
+The channel is the lead-generation and distribution funnel for
+HiCRE and A·N·R·D: owners and operators reached where they
+already communicate, routed through the harness into the same
+core and the same underwriting — one record, not a side pipe.
+The stated target sets are the 80,000-member Brazilian
+business-owner network and the US Portuguese-speaking investor
+corridor (Boston→Miami). Recorded here as strategy; the MIV
+build is Sprint 2+ work, behind spec 09's gates.
