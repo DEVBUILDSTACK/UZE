@@ -388,6 +388,49 @@ def test_juror_scorecard_math(market_client, demo_fixture, stub_juror):
     assert card["withstoodCount"] == 1
 
 
+def test_scorecard_counts_superseded_attempts(
+    market_client, demo_fixture, stub_juror, monkeypatch
+):
+    """Q4: scorecards are event-sourced. A claim judged twice —
+    first unavailable (the real juror, no key), then ok under the
+    SAME juror identity — must show BOTH the unavailable attempt
+    and the terminal outcome on that juror's card. The pre-fix
+    derivation read the claim's current jurorReport, so the
+    superseded attempt vanished."""
+    monkeypatch.delenv("NEARAI_API_KEY", raising=False)
+    # A dedicated juror identity for this test: the unavailable
+    # path attributes to juror.MODEL, so point MODEL at a fresh
+    # identity — the EventLog is append-only across the session
+    # and the real MODEL already has attempts from other tests.
+    es_juror = "event-sourced-juror-v1"
+    monkeypatch.setattr(juror, "MODEL", es_juror)
+    spec = _post_spec(market_client, demo_fixture)
+    claim = _issue(market_client, spec["id"])
+
+    # Attempt 1: no stub, no key — the real juror honestly
+    # reports unavailable under the dedicated identity.
+    first = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    assert first.json()["status"] == "UNDER_RESOLUTION"
+    assert first.json()["jurorReport"]["status"] == "unavailable"
+    assert first.json()["jurorReport"]["juror"] == es_juror
+
+    # Attempt 2: the same juror identity now answers UPHELD.
+    stub_juror(_report("UPHELD", model=es_juror))
+    second = market_client.post(f"/api/v1/claims/{claim['id']}/judge")
+    assert second.json()["status"] == "RESOLVED_TRUE"
+    _finalize(market_client, claim["id"], "credit-committee-team-007")
+
+    cards = market_client.get("/api/v1/jurors").json()["jurors"]
+    mine = [c for c in cards if c["juror"] == es_juror]
+    assert len(mine) == 1
+    card = mine[0]
+    assert card["attemptCount"] == 2
+    assert card["unavailableCount"] == 1
+    assert card["judgedCount"] == 1
+    assert card["upheldCount"] == 1
+    assert card["refutedCount"] == 0
+
+
 # ---------------------------------------------------------------------
 # (c) The learning feed.
 # ---------------------------------------------------------------------

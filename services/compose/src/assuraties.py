@@ -559,67 +559,155 @@ def _juror_identity(report: dict[str, Any] | None) -> str | None:
     return report.get("juror") or report.get("model")
 
 
+def _empty_card(identity: str) -> dict[str, Any]:
+    return {
+        "juror": identity,
+        "judgedCount": 0,
+        "upheldCount": 0,
+        "refutedCount": 0,
+        "withstoodCount": 0,
+        "unavailableCount": 0,
+        "attemptCount": 0,
+        "panelDissents": 0,
+    }
+
+
 @router.get("/jurors")
 def juror_scorecards(db: Session = Depends(get_session)):
-    """One scorecard per juror identity, derived from the claims
-    that juror judged:
+    """One scorecard per juror identity, EVENT-SOURCED from the
+    append-only EventLog (spec 08 §3, DeepSeek Q4 fix):
 
-      judgedCount     claims that reached a terminal resolution
-                      under this juror (ASSURATIZED + RESOLVED_FALSE)
-      upheldCount     of those, finalized ASSURATIZED on this
-                      juror's UPHELD verdict
-      refutedCount    of those, RESOLVED_FALSE on this juror's
-                      REFUTED verdict (finalize is refused for
-                      them by construction — the refutation IS
-                      the terminal outcome)
-      withstoodCount  ASSURATIZED claims that carried a challenge
-                      this juror's verdict withstood
-      unavailableCount claims currently resting on this juror's
-                      unavailable/error report (the attempt is
-                      recorded on the claim; a later successful
-                      judgment replaces the report, so this counts
-                      attempts not yet superseded)
+      attempts        EVERY claim.judged event is an attempt by
+                      its recorded juror with its recorded outcome
+                      (payload juror / jurorOutcome, written by
+                      the judge endpoint since the claims build;
+                      panel events carry per-seat panelAttempts,
+                      each one a seat attempt). attemptCount is
+                      the total; unavailableCount is the attempts
+                      whose outcome was unavailable or error —
+                      INCLUDING attempts a later judgment
+                      superseded. (The pre-fix derivation read
+                      each claim's CURRENT jurorReport, so a
+                      superseded attempt vanished from the
+                      record; the log does not forget.)
+      terminal credit a claim's DECIDING judgment is its last
+                      claim.judged event with jurorOutcome "ok".
+                      ASSURATIZED credits upheld (+withstood when
+                      the claim's challenge was withstood);
+                      RESOLVED_FALSE credits refuted. A single
+                      juror is credited directly. A panel credits
+                      the seats whose verdict matched the panel
+                      verdict; a seat whose parsed verdict
+                      differed is recorded as a dissent
+                      (panelDissents); abstaining seats are
+                      credited with neither.
+      judgedCount     terminal claims credited to this juror
+                      (upheld + refuted).
 
-    Only jurors with at least one judged claim appear. Ordering
-    is deterministic: juror identity ascending."""
+    Events whose payload carries no juror identity are skipped —
+    never attributed by guess. Only jurors with at least one
+    judged (terminal, credited) claim appear. Ordering is
+    deterministic: juror identity ascending."""
     cards: dict[str, dict[str, Any]] = {}
-    claims = (
-        db.query(models.Claim)
-        .filter(models.Claim.juror_report.isnot(None))
+
+    def card_for(identity: str) -> dict[str, Any]:
+        return cards.setdefault(identity, _empty_card(identity))
+
+    events = (
+        db.query(models.EventLog)
+        .filter(
+            models.EventLog.aggregate_type == "claim",
+            models.EventLog.event_type == "claim.judged",
+        )
+        .order_by(models.EventLog.id)
         .all()
     )
-    for claim in claims:
-        report = claim.juror_report or {}
-        identity = _juror_identity(report)
+    deciding: dict[str, dict[str, Any]] = {}
+    for event in events:
+        payload = event.payload or {}
+        panel_attempts = payload.get("panelAttempts")
+        if panel_attempts:
+            for attempt in panel_attempts:
+                identity = attempt.get("juror")
+                if identity is None:
+                    continue
+                card = card_for(identity)
+                card["attemptCount"] += 1
+                if attempt.get("outcome") in ("unavailable", "error"):
+                    card["unavailableCount"] += 1
+            if payload.get("jurorOutcome") == "ok":
+                deciding[event.aggregate_id] = {
+                    "kind": "panel",
+                    "verdict": payload.get("verdict"),
+                    "seats": {
+                        a.get("juror"): a.get("verdict")
+                        for a in panel_attempts
+                        if a.get("outcome") == "ok"
+                        and a.get("juror") is not None
+                    },
+                }
+            continue
+        identity = payload.get("juror")
         if identity is None:
             continue
-        card = cards.setdefault(
-            identity,
-            {
-                "juror": identity,
-                "judgedCount": 0,
-                "upheldCount": 0,
-                "refutedCount": 0,
-                "withstoodCount": 0,
-                "unavailableCount": 0,
-            },
-        )
-        if report.get("status") in ("unavailable", "error"):
+        card = card_for(identity)
+        card["attemptCount"] += 1
+        if payload.get("jurorOutcome") in ("unavailable", "error"):
             card["unavailableCount"] += 1
-        if (
-            claim.status is models.ClaimStatus.ASSURATIZED
-            and report.get("verdict") == "UPHELD"
-        ):
+        if payload.get("jurorOutcome") == "ok":
+            deciding[event.aggregate_id] = {
+                "kind": "single",
+                "verdict": payload.get("verdict"),
+                "juror": identity,
+            }
+
+    terminal_claims = (
+        db.query(models.Claim)
+        .filter(
+            models.Claim.status.in_(
+                [
+                    models.ClaimStatus.ASSURATIZED,
+                    models.ClaimStatus.RESOLVED_FALSE,
+                ]
+            )
+        )
+        .all()
+    )
+    for claim in terminal_claims:
+        attribution = deciding.get(claim.id)
+        if attribution is None:
+            continue
+        upheld = claim.status is models.ClaimStatus.ASSURATIZED
+        withstood = bool(
+            upheld and claim.challenge and claim.challenge.get("withstood")
+        )
+        if attribution["kind"] == "single":
+            credited = [attribution["juror"]]
+            dissenters: list[str] = []
+        else:
+            panel_verdict = attribution["verdict"]
+            credited = [
+                identity
+                for identity, verdict in attribution["seats"].items()
+                if verdict == panel_verdict
+            ]
+            dissenters = [
+                identity
+                for identity, verdict in attribution["seats"].items()
+                if verdict in juror.VERDICTS and verdict != panel_verdict
+            ]
+        for identity in credited:
+            card = card_for(identity)
             card["judgedCount"] += 1
-            card["upheldCount"] += 1
-            if claim.challenge and claim.challenge.get("withstood"):
-                card["withstoodCount"] += 1
-        elif (
-            claim.status is models.ClaimStatus.RESOLVED_FALSE
-            and report.get("verdict") == "REFUTED"
-        ):
-            card["judgedCount"] += 1
-            card["refutedCount"] += 1
+            if upheld:
+                card["upheldCount"] += 1
+                if withstood:
+                    card["withstoodCount"] += 1
+            else:
+                card["refutedCount"] += 1
+        for identity in dissenters:
+            card_for(identity)["panelDissents"] += 1
+
     jurors = [c for c in cards.values() if c["judgedCount"] >= 1]
     jurors.sort(key=lambda c: c["juror"])
     return {"surface": "juror-scorecards", "jurors": jurors}

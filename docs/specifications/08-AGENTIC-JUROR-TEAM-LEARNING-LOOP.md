@@ -93,22 +93,54 @@ carries the ids of the memory it used.
 
 A public, read-only projection (the Day 6 pattern: derived on
 every call, nothing stored, nothing invented). One scorecard per
-juror identity, built from the claims that juror judged:
+juror identity, **event-sourced from the append-only EventLog**
+(DeepSeek audit Q4 fix, 2026-11-09). The derivation is precise:
+
+- **Attempts.** Every `claim.judged` EventLog row is an attempt
+  by its recorded juror with its recorded outcome. The judge
+  endpoint has written `juror` and `jurorOutcome` into the event
+  payload since the claims build (spec 07); panel judgments
+  (see below) write one `panelAttempts` entry per seat, and each
+  entry is that seat's attempt. `attemptCount` is a juror's
+  total attempts; `unavailableCount` is the attempts whose
+  outcome was unavailable or error — **including attempts a
+  later judgment superseded**. Events whose payload carries no
+  juror identity are skipped, never attributed by guess.
+- **Terminal credit.** A claim's *deciding* judgment is its
+  last `claim.judged` event with outcome ok. ASSURATIZED
+  credits `upheldCount` (plus `withstoodCount` when the claim's
+  challenge was withstood); RESOLVED_FALSE credits
+  `refutedCount` (finalize is refused for these by
+  construction — the refutation is the terminal outcome).
+  `judgedCount` is the total terminal claims credited. A single
+  juror is credited directly; a panel credits the seats whose
+  verdict matched the panel verdict, and a seat whose parsed
+  verdict differed is recorded as a dissent (`panelDissents`) —
+  abstaining seats are credited with neither.
+- **Why event-sourced.** The first derivation read each claim's
+  *current* jurorReport: when a claim was judged twice, the
+  first attempt was overwritten by the second and vanished
+  from the scorecard — a juror's failed attempts could be
+  laundered by re-judging. The EventLog is append-only, so the
+  derivation now counts what actually happened, in order.
 
 | field | derivation |
 |---|---|
-| `judgedCount` | claims that reached a terminal resolution under this juror: ASSURATIZED + RESOLVED_FALSE |
-| `upheldCount` | finalized ASSURATIZED on this juror's UPHELD verdict |
-| `refutedCount` | RESOLVED_FALSE on this juror's REFUTED verdict (finalize is refused for these by construction — the refutation is the terminal outcome) |
-| `withstoodCount` | ASSURATIZED claims carrying a challenge this juror's verdict withstood |
-| `unavailableCount` | claims currently resting on this juror's unavailable/error report — attempts recorded on the claim and not yet superseded by a successful judgment |
+| `attemptCount` | all `claim.judged` attempts by this juror (panel seats: their `panelAttempts` entries) |
+| `unavailableCount` | attempts with outcome unavailable/error, superseded or not |
+| `judgedCount` | terminal claims credited to this juror (upheld + refuted) |
+| `upheldCount` | credited ASSURATIZED outcomes |
+| `refutedCount` | credited RESOLVED_FALSE outcomes |
+| `withstoodCount` | credited ASSURATIZED claims whose challenge was withstood |
+| `panelDissents` | panel judgments on terminal claims where this seat's parsed verdict differed from the panel verdict |
 
-Only jurors with at least one judged claim appear; ordering is
-deterministic (juror identity ascending). No authentication:
-scorecards are reputation, and reputation only works published.
-External agent systems deciding which juror seat to trust — or
-whether to challenge a claim a weak seat upheld — read the same
-numbers a financing partner reads. There is one record.
+Only jurors with at least one judged (terminal, credited)
+claim appear; ordering is deterministic (juror identity
+ascending). No authentication: scorecards are reputation, and
+reputation only works published. External agent systems
+deciding which juror seat to trust — or whether to challenge
+a claim a weak seat upheld — read the same numbers a financing
+partner reads. There is one record.
 
 ## 4. The learning feed — GET /api/v1/learning/recent
 
