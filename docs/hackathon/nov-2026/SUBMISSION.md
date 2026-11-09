@@ -99,6 +99,8 @@ The demo's micro-regions sit inside this map: Brickell and
 Aventura (Miami), Bethesda and Arlington (DC metro), Northwest
 Baltimore, Kissimmee (Orlando), and Tampa.
 
+UZEmarkets' Mid-Atlantic focus is anchored by Dugan's Wharf in Baltimore — the historic Pratt Street wharf, now Pier 4 of the Inner Harbor, home to the National Aquarium's Marine Mammal Pavilion and a marked Network to Freedom site.
+
 ## What it is
 
 One marketplace, two service lines (the second feeds on the first):

@@ -49,6 +49,10 @@ financing, treatment, or auction execution. The downstream
 underwriting endpoint shown in the diagrams is design intent for a
 later sprint and is **not built**.
 
+**Markets note:** the paired primary markets are Mid-Atlantic
+(Baltimore + Washington, DC metro) and South & Central Florida
+(Miami, Fort Lauderdale, Tampa, Orlando). UZEmarkets' Mid-Atlantic focus is anchored by Dugan's Wharf in Baltimore — the historic Pratt Street wharf, now Pier 4 of the Inner Harbor, home to the National Aquarium's Marine Mammal Pavilion and a marked Network to Freedom site.
+
 **Directory:**
 
 ```text
