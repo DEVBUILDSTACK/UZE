@@ -6,8 +6,8 @@
   "edition": "2026-11-07",
   "editionDate": "2026-11-07",
   "datePublished": "2026-11-09",
-  "version": 2,
-  "status": "recorded — awaiting publication tap",
+  "version": 3,
+  "status": "recorded — launch edition (Version 3, with the Assuraties closing segment)",
   "cast": [
     "SoSim (host)",
     "Jay (skeptic / evidence)",
@@ -17,7 +17,7 @@
   "audio": {
     "contentUrl": "2026-11-07.mp3",
     "encodingFormat": "audio/mpeg",
-    "durationSeconds": 2159,
+    "durationSeconds": 2526,
     "music": "BABEL — AKIRA where is my soul (introduction and closing)"
   },
   "humanUrl": "2026-11-07.html",
@@ -34,8 +34,9 @@
     "Sealed bids — Arcium and Numbers",
     "Tickets, stays, and the paired asset",
     "The hackathon build",
-    "The disagreement, what to watch, and the close"
+    "The disagreement, what to watch, and the close",
+    "Assuraties — claims that earn their name"
   ],
   "previousPosting": "/word-graph/2026-10-31.html",
-  "wordCount": 5084
+  "wordCount": 5941
 }
