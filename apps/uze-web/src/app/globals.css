@@ -129,7 +129,7 @@ h3 {
   left: 0;
   height: 100dvh;
   width: min(19rem, 86vw);
-  background: rgba(10, 10, 18, 0.97);
+  background: rgba(245, 242, 238, 0.97);
   border-right: 1px solid var(--border);
   transform: translateX(-102%);
   transition: transform 0.22s ease;
