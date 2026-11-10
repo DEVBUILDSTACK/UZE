@@ -63,18 +63,54 @@ key out of this database, per the R4 rule).
 |---|---|---|
 | `RWA` | A real-world asset as such | title/encumbrance assertions, existence and condition of the asset, subterranean context on A/D/R tracks |
 | `HICRE_ASSET` | A hospitality / income CRE asset | door count, brand affiliation, occupancy history, acquisition stage |
-| `HICRE_PERIOD` | **One accounting period of one HiCRE asset: its total operating expenses** | monthly / quarterly / annual total operating expenses, and historical total operating expenses in total |
+| `HICRE_PERIOD` | **One accounting period of one HiCRE asset: its full P&L — revenue, operating expenses, and net operating income (see §2.1)** | monthly / quarterly / annual total operating expenses, and historical total operating expenses in total; room revenue and occupancy for the period; net operating income |
 
 `HICRE_PERIOD` claims REQUIRE a `periodKind`
 (`MONTHLY | QUARTERLY | ANNUAL | HISTORICAL_TOTAL`); non-period
 claims must NOT carry one. Period claims are the sharp end of the
 design: operating-expense projections are the numbers financing
-partners actually underwrite against.
+partners actually underwrite against — and, per §2.1, the revenue
+side and the aggregate are claimable on the same terms.
 
 `claimedValue` is the claim's payload as JSON — for a period claim,
 the expense lines and their total; for an asset claim, the asserted
 facts. `bondAmount` is the claimant's skin in the game, in mock
 units in this build: bonds are recorded, never moved (see §7).
+
+### 2.1 The full P&L — revenue, expenses, and the aggregate
+
+*Scope expansion (directive, 2026-11-10). Documentation only:
+`claimedValue` is JSON, so no schema or code change is required for
+the Nov 13 merge; what this sharpens is prompt engineering and
+evidence routing in Sprint 2.*
+
+"P&L" in this specification means the complete financial truth of
+the asset — both sides, and their combination. A claim may assert
+a fact about:
+
+- **Revenue / income** — e.g., actual room revenue, occupancy
+  rates, crop yield revenue, land lease income.
+- **Expenses / operating costs** — e.g., labor, maintenance, brand
+  fees, fertilizer costs, extraction costs.
+- **The aggregate P&L** — net operating income, or the period's
+  total financial performance.
+
+For `HICRE_PERIOD`, this supersedes the expenses-only reading of
+the class table: a period claim may carry revenue lines, expense
+lines, or the aggregate, for a monthly / quarterly / annual period
+or as a historical total. For `HICRE_ASSET`, revenue-performance
+facts (occupancy history is the filed example) are asset claims on
+the same terms. For `RWA` claims on the A/D/R tracks, yield
+revenue, lease income, and input / extraction costs are the
+corresponding sides.
+
+The Juror Team evaluates the side in dispute, with the evidence
+schema that matches it — revenue ledgers for a revenue assertion,
+expense receipts for an expense assertion (SURA judges HiCRE
+claims; GIRA judges ANRD claims). A contested claim, stated
+plainly, is one of three things: a **revenue overstatement**, an
+**expense understatement**, or a **disagreement over the final
+net income**.
 
 ## 3. Terminology — Assuraties / Assuratized
 
