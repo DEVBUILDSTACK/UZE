@@ -4,13 +4,13 @@ import UploadBox from "@/components/upload-box";
 export const metadata: Metadata = {
   title: "UZE Underwrite | UZEmarkets",
   description:
-    "Forward a T-12 or P&L and get a verified, micro-region-benchmarked PDF report in minutes. The $289 verified analysis that replaces a $6,000 manual one.",
+    "UZE Underwrite: Underwriting Super Intelligence. Forward a T-12 or P&L and get a verified, micro-region-benchmarked PDF report in minutes.",
 };
 
 const API_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "WebAPI",
-  name: "UZE Underwrite — Agentic Email Gateway",
+  name: "UZE Underwrite",
   description:
     "Submit a property financial statement (T-12 / P&L) and receive a verified, micro-region-benchmarked PDF assessment. Routing: HiCRE/Hotel to SURA, ANRD/Farm to GIRA; use cases include emergency P&L verification, acquisition due-diligence valuation (NOI / Cap Rate on 12/18/36-month historicals), and human talent placement.",
   url: "https://uzemarkets.com/underwrite",
@@ -44,13 +44,13 @@ const SKILL_JSON = {
   },
 };
 
-/** UZE Underwrite landing (directed, 2026-11-10): the lead-gen
- *  surface for the Email Gateway — value prop, the three ruled
- *  pricing tiers, the intake address and upload box, and the
- *  agent-facing skill contract. Copy discipline: the gateway's
- *  demo scope is stated on the page (public intake activates
- *  with the API launch); no capability is claimed beyond the
- *  filed build. */
+/** UZE Underwrite landing (positioning corrected 2026-11-10):
+ *  Underwriting Super Intelligence; the value proposition is
+ *  Cost Recovery; NO specific pricing in public copy (pricing
+ *  lives in the API docs / economics note); the words broker,
+ *  middleman, and gateway do not appear in public copy. The two
+ *  functional tasks are stated: P&L verification against
+ *  regional comps, and valuation (NOI / Cap Rate). */
 export default function UnderwritePage() {
   return (
     <main className="mk">
@@ -60,58 +60,41 @@ export default function UnderwritePage() {
       />
       <h1>UZE Underwrite</h1>
       <p className="lede">
-        A verified P&amp;L and a benchmarked valuation — in minutes,
-        not weeks. The manual version of this analysis is a
-        $6,000 analyst engagement. UZE Underwrite returns the
-        verified PDF for $289.
+        <strong>Underwriting Super Intelligence.</strong>
+      </p>
+      <p>
+        Traditional financial analysis is slow and manual. UZE
+        Underwrite replaces it with instant, verified intelligence.
+      </p>
+      <p>
+        Forward your T-12s or P&amp;Ls to our system. Our AI
+        agents (SURA for HiCRE, GIRA for ANRD) verify your
+        operating expenses against micro-region comps, or
+        calculate your asset valuation based on NOI and market cap
+        rates.
+      </p>
+      <p>
+        Stop paying for manual data entry. Unlock Cost Recovery
+        today.
       </p>
 
       <section>
-        <h2>How it works</h2>
+        <h2>Send your financials</h2>
         <p>
           Forward your T-12 or P&amp;L to{" "}
           <a href="mailto:ingest@uzemarkets.com">
             ingest@uzemarkets.com
           </a>{" "}
-          — or use the upload box below. The gateway routes your
-          document to the underwriting agent for its asset class:
-          SURA for income property, GIRA for land. You get back a
-          one-page PDF: the full P&amp;L verified line by line —
-          revenue, operating expenses, taxes, and insurance, each
-          benchmarked against the property&apos;s own micro-region
-          — and, for acquisitions, a valuation from the
-          12/18/36-month historicals at the market cap rate.
+          — or use the upload box below. You receive a verified
+          PDF in minutes: the P&amp;L verified against regional
+          comps, or the valuation run on NOI and market cap rates.
         </p>
         <UploadBox />
       </section>
 
       <section>
-        <h2>Pricing</h2>
-        <p>
-          <strong>Emergency P&amp;L Service — $289.</strong> The
-          full retail service: verified P&amp;L PDF with
-          human-in-the-loop review. Built for the moment the
-          analyst is gone and the board or the lender needs the
-          numbers now.
-        </p>
-        <p>
-          <strong>API Bundle — $5.00 per document.</strong> For
-          agents hitting the endpoint directly: parsing, inference,
-          the PDF, and the routing in one price. No human review.
-        </p>
-        <p>
-          <strong>Permissionless Routing — $1.00 per document.</strong>{" "}
-          Your agent pays the parsing and inference providers
-          directly; UZEmarkets takes $1.00 for the orchestration
-          and the report.
-        </p>
-      </section>
-
-      <section>
         <h2>For agents — the skill contract</h2>
-        <p>
-          AI agents can call the gateway directly. The contract:
-        </p>
+        <p>AI agents can call UZE Underwrite directly. The contract:</p>
         <pre className="skill-json">{JSON.stringify(SKILL_JSON, null, 2)}</pre>
       </section>
     </main>
