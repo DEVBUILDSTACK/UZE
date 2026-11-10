@@ -1,9 +1,16 @@
 name: vercel-domains (manual ops)
 
-# Manual-only ops job: assign custom domains to the uze-web Vercel project
-# using the repo's existing Vercel secrets. No push triggers — dispatch by hand.
-# 2026-11-10: apex -> Production; devpartner + blog -> git branch hackathon/nov-2026.
-# demo.uzemarkets.com is deliberately NOT assigned (reserved).
+# Manual-only ops job for the uze-web Vercel project, using the repo's
+# existing Vercel secrets. No push triggers — dispatch by hand.
+#
+# 2026-11-10 (v2): apex stays a Production project domain. blog and
+# devpartner are NOT project domains: every deployment of this project is
+# CLI-made from a git-free copy (no git metadata), so gitBranch domains
+# resolve to DEPLOYMENT_NOT_FOUND. They are served as deployment ALIASES
+# re-pointed by deploy-preview.yml on each preview build — the same
+# mechanism as the stable partner alias. This job therefore REMOVES the
+# branch-domain entries so the names are free for aliasing.
+# demo.uzemarkets.com stays unassigned (reserved).
 
 on:
   workflow_dispatch:
@@ -17,18 +24,15 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
-      - name: Assign domains via the Vercel API
+      - name: Apex production domain; free blog/devpartner for aliasing
         run: |
           set -u
           API="https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}"
-          add() {
-            name="$1"; branch="${2:-}"
-            if [ -n "$branch" ]; then body="{\"name\":\"$name\",\"gitBranch\":\"$branch\"}"; else body="{\"name\":\"$name\"}"; fi
-            echo "== POST $name (branch: ${branch:-production})"
-            curl -s -X POST "$API" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d "$body" | head -c 800; echo
-          }
-          add "uzemarkets.com"
-          add "devpartner.uzemarkets.com" "hackathon/nov-2026"
-          add "blog.uzemarkets.com" "hackathon/nov-2026"
+          echo "== POST uzemarkets.com (production; idempotent)"
+          curl -s -X POST "$API" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d '{"name":"uzemarkets.com"}' | head -c 400; echo
+          for D in blog.uzemarkets.com devpartner.uzemarkets.com; do
+            echo "== DELETE project domain $D (aliasing takes over)"
+            curl -s -X DELETE "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains/${D}?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 400; echo
+          done
           echo "== domains now on the project:"
-          curl -s "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 4000; echo
+          curl -s "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 2000; echo
