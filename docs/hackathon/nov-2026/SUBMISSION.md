@@ -28,9 +28,9 @@ you for advice; their assets belong to the market for execution.
 ## The Covenant — a dual-sided talent marketplace
 
 **UZEmarkets is a dual-sided talent marketplace for the
-Americas** (human + agentic), under the original taxonomy:
-**Talent, Tickets, Touring, and Stay** — Stay being the
-hospitality use cases of investment and managed real estate.
+Americas** — human and agentic: the human talent that operates
+the assets, and the agentic talent (GIRA and SURA) that
+underwrites, prices, and verifies them.
 
 > UZEmarkets is a dual-sided talent marketplace for the
 > Americas. We do not take your brokerage or legal clients. We
