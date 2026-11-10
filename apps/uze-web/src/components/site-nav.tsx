@@ -15,15 +15,15 @@ import { usePathname } from "next/navigation";
 const ACTIVE_MARKETS = [
   {
     label: "South Florida / Miami",
-    href: "https://blog.uzemarkets.com/micro-regions?market=south-florida",
+    href: "https://podcast.uzemarkets.com/micro-regions?market=south-florida",
   },
   {
     label: "Washington DC / Baltimore",
-    href: "https://blog.uzemarkets.com/micro-regions?market=mid-atlantic",
+    href: "https://podcast.uzemarkets.com/micro-regions?market=mid-atlantic",
   },
   {
     label: "Costa Rica",
-    href: "https://blog.uzemarkets.com/micro-regions?market=costa-rica",
+    href: "https://podcast.uzemarkets.com/micro-regions?market=costa-rica",
   },
 ];
 
@@ -98,7 +98,7 @@ export default function SiteNav() {
         <h3>Active Markets</h3>
         <ul className="markets active">
           <li>
-            <a href="https://blog.uzemarkets.com" onClick={close}>
+            <a href="https://podcast.uzemarkets.com" onClick={close}>
               Hospitality &amp; Income CRE
             </a>
           </li>

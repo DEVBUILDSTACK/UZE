@@ -10,7 +10,7 @@ import Wordmark from "@/components/wordmark";
 const SOCIALS = [
   {
     label: "Hospitality & Income CRE",
-    href: "https://blog.uzemarkets.com",
+    href: "https://podcast.uzemarkets.com",
     external: true,
     glyph: (
       <>
