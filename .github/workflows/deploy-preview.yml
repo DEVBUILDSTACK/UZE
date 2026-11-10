@@ -79,3 +79,7 @@ jobs:
               echo "Alias $ALIAS unavailable, trying next candidate"
             fi
           done
+
+# 2026-11-10: no-op comment to trigger a fresh preview build after the
+# uzemarkets.com branch domains were assigned (branch domains attach to
+# deployments created after assignment).
