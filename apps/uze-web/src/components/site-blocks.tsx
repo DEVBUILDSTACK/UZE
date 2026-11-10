@@ -66,6 +66,65 @@ export function RoadmapBlock({ track }: { track: "hicre" | "anrd" }) {
   );
 }
 
+/** §0 — The Innovation (James's positioning directive, 2026-11-10).
+ *  Universal opening, identical on both tracks; track-specific closing.
+ *  The phrase "autonomous innovation replaces human pricing" is the
+ *  position statement, used exactly; no other AI/autonomy language, no
+ *  technology partner names, launch framing only. */
+export function InnovationBlock({ track }: { track: "hicre" | "anrd" }) {
+  return (
+    <>
+      <h2>The Innovation</h2>
+      <p>
+        UZEmarkets is building information markets — markets that price
+        the value of a property&apos;s facts, not just the property
+        itself.
+      </p>
+      <p>
+        When autonomous innovation replaces human pricing, two things
+        change at once: the risk of being wrong falls, and the speed of
+        financing decisions rises. The lender no longer waits weeks for a
+        stranger&apos;s opinion. The owner no longer accepts a discount
+        for someone else&apos;s uncertainty. The market prices the truth,
+        and the truth moves the money.
+      </p>
+      <p>
+        UZEmarkets stands as an innovator in the Americas market across
+        two very different asset classes, judged by two very different
+        rules.
+      </p>
+      {track === "hicre" ? (
+        <p>
+          Income-producing commercial real estate — hotels, resorts,
+          apartment buildings, any property that earns money from rents
+          and guests — is judged on the income it proves, period after
+          period. Every month produces a fresh set of facts. The engine
+          prices those facts continuously, so a good property is financed
+          on what it has proven, not on what someone hopes it might do.
+        </p>
+      ) : (
+        <>
+          <p>
+            Land is judged on evidence about what it holds and what it
+            can become — whether that is agricultural production,
+            subterranean natural resources, or the development
+            opportunity the land itself makes possible.
+          </p>
+          <p>
+            And critically: when a parcel&apos;s intended use is
+            reallocated — agricultural land steered toward development,
+            or a resource-bearing tract redirected because liquidity or
+            monetization demands it — the engine follows the land&apos;s
+            highest and best use, not the original plan. A shift in use
+            is not a break in the record. It is a new question the market
+            prices.
+          </p>
+        </>
+      )}
+    </>
+  );
+}
+
 /** The public house email, rendered per the wordmark rules: only the
  *  domain's UZE is tangerine; the local part, the @ and .com are ink. */
 export function HouseEmail() {
