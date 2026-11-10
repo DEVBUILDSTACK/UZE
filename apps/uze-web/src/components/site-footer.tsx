@@ -100,6 +100,9 @@ export default function SiteFooter() {
           ),
         )}
       </div>
+      <p className="footer-links">
+        <Link href="/knowledge-base">Knowledge Base</Link>
+      </p>
       <p className="copyright">
         © 2026 <Wordmark />
       </p>

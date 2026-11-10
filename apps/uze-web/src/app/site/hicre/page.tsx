@@ -232,6 +232,10 @@ export default function HicrePage() {
           Create your profile
         </Link>
       </p>
+      <p className="note">
+        How our AI economics work — metering, identity, and access:{" "}
+        <Link href="/knowledge-base">Knowledge Base</Link>.
+      </p>
       <HouseEmail />
     </main>
   );
