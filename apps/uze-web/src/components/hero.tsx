@@ -41,8 +41,8 @@ export default function Hero() {
         <Link className="cta-primary" href="/onboard">
           Create your profile
         </Link>
-        <a className="cta-quiet" href="https://blog.uzemarkets.com">
-          Read the blog
+        <a className="cta-quiet" href="https://podcast.uzemarkets.com">
+          See our podcast
         </a>
       </div>
     </section>
