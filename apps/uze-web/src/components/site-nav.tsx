@@ -9,10 +9,22 @@ import Link from "next/link";
 import Wordmark from "@/components/wordmark";
 import { usePathname } from "next/navigation";
 
+// Active Markets — the Hospitality & Income CRE markets. Each link
+// lands on the Content Desk index filtered to that market's
+// micro-regions; micro-regions exist only in the active markets.
 const ACTIVE_MARKETS = [
-  "South Florida / Miami",
-  "Washington DC / Baltimore",
-  "Costa Rica",
+  {
+    label: "South Florida / Miami",
+    href: "https://blog.uzemarkets.com/micro-regions?market=south-florida",
+  },
+  {
+    label: "Washington DC / Baltimore",
+    href: "https://blog.uzemarkets.com/micro-regions?market=mid-atlantic",
+  },
+  {
+    label: "Costa Rica",
+    href: "https://blog.uzemarkets.com/micro-regions?market=costa-rica",
+  },
 ];
 
 const PILOT_MARKETS = [
@@ -70,9 +82,6 @@ export default function SiteNav() {
           </button>
         </div>
         <nav>
-          <a href="https://blog.uzemarkets.com" onClick={close}>
-            Hospitality &amp; Income CRE
-          </a>
           <Link href="/" onClick={close}>
             Home
           </Link>
@@ -88,11 +97,16 @@ export default function SiteNav() {
         </nav>
         <h3>Active Markets</h3>
         <ul className="markets active">
+          <li>
+            <a href="https://blog.uzemarkets.com" onClick={close}>
+              Hospitality &amp; Income CRE
+            </a>
+          </li>
           {ACTIVE_MARKETS.map((m) => (
-            <li key={m}>
-              <Link href="/guidance" onClick={close}>
-                {m}
-              </Link>
+            <li key={m.label}>
+              <a href={m.href} onClick={close}>
+                {m.label}
+              </a>
             </li>
           ))}
         </ul>
