@@ -28,7 +28,7 @@ flowchart TD
 
     subgraph OUTPUT["The Deliverable"]
         PDF_PL["Verified P&L PDF<br/>(+ Cross-sell for PM)"]
-        PDF_VAL["Valuation & Benchmark PDF<br/>(Assuraties Attested)"]
+        PDF_VAL["Valuation & Benchmark PDF<br/>(Micro-Region Benchmark Verified)"]
         PLACEMENT["Placed Manager<br/>(Active/Pilot or Outstaffed)"]
     end
 
