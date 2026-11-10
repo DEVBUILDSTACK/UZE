@@ -4,8 +4,32 @@ import SiteFooter from "@/components/site-footer";
 import "./globals.css";
 
 export const metadata = {
+  metadataBase: new URL("https://uzemarkets.com"),
   title: "UZE",
-  description: "UZEmarkets — the information market where offerings are tested and used.",
+  description:
+    "UZEmarkets — the information market where offerings are tested and used.",
+  openGraph: {
+    type: "website",
+    siteName: "UZEmarkets",
+    title: "UZEmarkets — Information Markets",
+    description:
+      "Test and use Hospitality, Income, Agriculture, Development and Resource in one information market.",
+    images: [
+      {
+        url: "/og-uzemarkets.png",
+        width: 1200,
+        height: 630,
+        alt: "UZEmarkets — Information Markets",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "UZEmarkets — Information Markets",
+    description:
+      "Test and use Hospitality, Income, Agriculture, Development and Resource in one information market.",
+    images: ["/og-uzemarkets.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
