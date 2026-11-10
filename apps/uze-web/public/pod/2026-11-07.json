@@ -71,5 +71,19 @@
     }
   ],
   "previousPosting": "/word-graph/2026-10-31.html",
-  "wordCount": 7230
+  "wordCount": 7230,
+  "musicCredits": [
+    {
+      "role": "introduction",
+      "artist": "Burhan",
+      "song": "To the Sun",
+      "url": "https://open.spotify.com/track/4Lb2JNnTxHrXZY5th8BOaq"
+    },
+    {
+      "role": "closing",
+      "artist": "BABEL",
+      "song": "AKIRA where is my soul",
+      "url": "https://open.spotify.com/track/3ViG8iMQXEII2quA6mqt0n"
+    }
+  ]
 }
