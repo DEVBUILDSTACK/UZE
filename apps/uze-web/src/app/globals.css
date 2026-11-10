@@ -530,7 +530,7 @@ form button,
 
 .hero-rot {
   color: var(--accent);
-  display: inline-block;
+  display: block;
   transition: opacity 0.38s ease, transform 0.38s ease;
 }
 
