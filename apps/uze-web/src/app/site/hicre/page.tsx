@@ -20,11 +20,11 @@ export const metadata: Metadata = {
 export default function HicrePage() {
   return (
     <main className="mk">
-      <h1>HiCRE — Hospitality &amp; Income Properties</h1>
+      <h1>Prove your property&apos;s P&amp;L. Get financed faster.</h1>
       <p className="lede">
-        For owners, brokers, and lenders. UZEmarkets proves the numbers a
-        property&apos;s financing depends on — so decisions take days, not
-        months, and price the record instead of the doubt.
+        UZEmarkets is the information market where revenue, operating
+        expenses, and net income are verified by AI, challenged on
+        evidence, and trusted by lenders.
       </p>
 
       <InnovationBlock track="hicre" />

@@ -1,45 +1,30 @@
 "use client";
 
-/** Landing hero (James, 2026-11-10) - the Altitude grammar applied to
- *  UZEmarkets: one fixed headline frame, a rotating area of focus
- *  (the five HIADR tracks), one constant USP support line, and a
- *  single primary CTA. "Run ___ from one global business account"
- *  becomes "Test and use ___ in one information market." */
-import { useEffect, useState } from "react";
+/** Landing hero. Original form (2026-11-10): the Altitude grammar
+ *  with a rotating HIADR focus word. Replaced the same evening by
+ *  the Hero Correction directive: the rotating "Test and use ___"
+ *  frame and the USP support line were killed as vague and
+ *  jargon-bearing ("AssurativeV2" never appears in client-facing
+ *  copy). The hero now states the pain and the solution directly:
+ *  prove the P&L, get financed faster. */
 import Link from "next/link";
 import Wordmark from "@/components/wordmark";
 
-const FOCUS = ["Hospitality", "Income", "Agriculture", "Development", "Resource"];
-
 export default function Hero() {
-  const [i, setI] = useState(0);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = setInterval(
-      () => setI((v) => (v + 1) % FOCUS.length),
-      2800,
-    );
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <section className="hero">
       <span className="hero-pill">
         <Wordmark tone="white" />
       </span>
-      <h1>
-        Test and use
-        <span key={i} className="hero-rot">{FOCUS[i]}</span>
-        in one information market.
-      </h1>
+      <h1>Prove your property&apos;s P&amp;L. Get financed faster.</h1>
       <p className="hero-support">
-        Buyer demand shapes what&apos;s offered. Every offering is proven
-        genuine through AssurativeV2, and every use makes it better.
+        UZEmarkets is the information market where revenue, operating
+        expenses, and net income are verified by AI, challenged on
+        evidence, and trusted by lenders.
       </p>
       <div className="hero-ctas">
         <Link className="cta-primary" href="/onboard">
-          Create your profile
+          Verify Your Property
         </Link>
         <a className="cta-quiet" href="https://podcast.uzemarkets.com">
           See our podcast
