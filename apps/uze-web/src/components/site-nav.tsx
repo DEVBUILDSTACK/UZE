@@ -91,6 +91,9 @@ export default function SiteNav() {
           <Link href="/devpartner" onClick={close}>
             Dev Docs
           </Link>
+          <a href="https://blog.uzemarkets.com" onClick={close}>
+            Blog
+          </a>
           <Link href="/onboard" onClick={close}>
             Create your profile
           </Link>
