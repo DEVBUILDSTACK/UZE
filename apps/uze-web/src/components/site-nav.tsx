@@ -88,6 +88,9 @@ export default function SiteNav() {
           <Link href="/guidance" onClick={close}>
             GIRA Guidance
           </Link>
+          <Link className="underwrite" href="/underwrite" onClick={close}>
+            UZE Underwrite
+          </Link>
           <Link href="/devpartner" onClick={close}>
             Dev Docs
           </Link>

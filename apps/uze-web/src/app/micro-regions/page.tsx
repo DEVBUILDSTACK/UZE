@@ -39,6 +39,17 @@ export default async function MicroRegionsIndexPage({
           </span>
         ))}
       </p>
+      <div className="uw-banner">
+        <p>
+          <strong>Have a T-12 or P&amp;L?</strong> Don&apos;t wait
+          for a spec. Forward your financials to UZE Underwrite,
+          and our AI will verify the full P&amp;L and benchmark it
+          against this exact micro-region in minutes.
+        </p>
+        <a className="uw-btn" href="/underwrite">
+          Upload Financials
+        </a>
+      </div>
       {market?.note && <p className="note">{market.note}</p>}
       {!live && (
         <p className="note">

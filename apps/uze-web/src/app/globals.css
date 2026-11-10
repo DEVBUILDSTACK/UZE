@@ -167,6 +167,50 @@ h3 {
   border-color: var(--border);
 }
 
+.drawer nav a.underwrite {
+  background: #ff6b00;
+  color: #fff;
+  font-weight: 700;
+}
+
+.drawer nav a.underwrite:hover {
+  border-color: #ff6b00;
+}
+
+.uw-banner {
+  border: 1px solid #ff6b00;
+  background: #fff4ec;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.uw-banner p {
+  margin: 0;
+}
+
+.uw-btn {
+  justify-self: start;
+  background: #ff6b00;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+}
+
+.skill-json {
+  overflow-x: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .drawer h3 {
   margin: 1.4rem 0 0.5rem;
   font-size: 0.8rem;
