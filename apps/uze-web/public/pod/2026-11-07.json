@@ -1,0 +1,75 @@
+{
+  "@context": "https://schema.org",
+  "@type": "PodcastEpisode",
+  "name": "UZEmarkets on NEAR — Intents, Verified AI, and the Attribution Record",
+  "series": "The Saturday POD — L2Launch · UZEmarkets",
+  "edition": "2026-11-07",
+  "editionDate": "2026-11-07",
+  "datePublished": "2026-11-09",
+  "version": 8,
+  "status": "recorded — complete edition (Version 8: the launch edition as initially prepared, the GotJuice hit spliced after the week-in-review, and the bonus segment and closing disclosure in the final portion; Assuraties / Assuratized pronounced as coined — A-S-S-U-R-A-T-I-E-S / A-S-S-U-R-A-T-I-Z-E-D, the Assurative stem with its A, hard T)",
+  "cast": [
+    "SoSim (host)",
+    "Jay (skeptic / evidence)",
+    "CB (builder / mechanism)"
+  ],
+  "centralQuestion": "What changes when a market states the outcome it wants, proves the intelligence it used, and keeps a verifiable record of who created the value?",
+  "audio": {
+    "contentUrl": "2026-11-07-complete-v8.mp3",
+    "encodingFormat": "audio/mpeg",
+    "durationSeconds": 3194,
+    "music": "BABEL — AKIRA where is my soul (introduction and closing)",
+    "launchEditionContentUrl": "2026-11-07.mp3"
+  },
+  "humanUrl": "2026-11-07.html",
+  "chapters": [
+    "Cold open — private facts, public proof",
+    "The thesis — AI in front, chain behind",
+    "The midterm verdict — affordability was the ballot question",
+    "Four trillion dollars out of the AI trade",
+    "The data-center freeze — the build-out meets the household bill",
+    "What the next two years ask — and the regulation debate behind them",
+    "NEAR Intents — the market states an outcome",
+    "Verified intelligence and screened flow",
+    "The Assurative layer — proof, attribution, and the tag",
+    "Sealed bids — Arcium and Numbers",
+    "Tickets, stays, and the paired asset",
+    "The hackathon build",
+    "The disagreement, what to watch, and the close",
+    "GotJuice — Nvidia: the juice behind the headline (post-dated addition)",
+    "Assuraties — claims that earn their name",
+    "Bonus — the juror pathway and surveyed land (post-dated addition)",
+    "Closing disclosure — building through Learn2Launch (post-dated addition)"
+  ],
+  "additions": [
+    {
+      "date": "2026-11-09",
+      "title": "GotJuice — Nvidia: the juice behind the headline",
+      "contentUrl": "2026-11-07-gotjuice-en.mp3",
+      "encodingFormat": "audio/mpeg",
+      "durationSeconds": 41,
+      "language": "en",
+      "note": "Standing segment, 35–40 second format: headline facts and market impact only. Story tipped by Instagram reels (@unseenmarkets, @schemology) and BBC Newshour (Spotify, 9 Nov 2026); verified against NYT, FT, Reuters and TechCrunch reporting and the Nvidia board statement of 8 Nov 2026. Confirmed: board independent investigation opened 8 Nov; Huang staff memo admitting unfaithfulness; House chairs' letter of 5 Nov requesting a closed-door briefing (18 Nov). Alleged, unproven: MSS recruitment of Alice Huang; Megaspeed chip diversion (denied on record by Megaspeed and Nvidia). Corrected from the circulating clips: the stock fell a little over 4% on Monday, not ~10%; Congress requested a briefing, no subpoena issued. Closing line quotes the TeamBlind post title \"GG Jensen\" (9 Nov 2026)."
+    },
+    {
+      "date": "2026-11-09",
+      "title": "Bonus segment — Assuraties, the juror pathway, and surveyed land",
+      "contentUrl": "2026-11-07-bonus-segment-en.mp3",
+      "encodingFormat": "audio/mpeg",
+      "durationSeconds": 399,
+      "language": "en",
+      "note": "Three-character segment (SoSim, Jay, CB): NEAR AI juror pathway to Assuratized claims, Reliance API consumption by agents and human evaluators, HiCRE hotel-parcel financing case, ANRD polygon parcels with IoT-configured land surveys (drones, agricultural machinery, robots). Brazilian Portuguese edition pending owner approval."
+    },
+    {
+      "date": "2026-11-09",
+      "title": "Executive summary — Assuraties for financing partners",
+      "contentUrl": "2026-11-07-assuraties-exec-summary-en.mp3",
+      "encodingFormat": "audio/mpeg",
+      "durationSeconds": 135,
+      "language": "en",
+      "note": "Narrated partner statement; written version in partners/README.md (Assuraties & the Reliance API) and docs/specifications/07-ASSURATIES-CLAIM-RESOLUTION-EXTENSION.md."
+    }
+  ],
+  "previousPosting": "/word-graph/2026-10-31.html",
+  "wordCount": 7230
+}
