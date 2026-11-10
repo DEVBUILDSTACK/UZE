@@ -13,17 +13,13 @@ const FOCUS = ["Hospitality", "Income", "Agriculture", "Development", "Resource"
 
 export default function Hero() {
   const [i, setI] = useState(0);
-  const [out, setOut] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = setInterval(() => {
-      setOut(true);
-      setTimeout(() => {
-        setI((v) => (v + 1) % FOCUS.length);
-        setOut(false);
-      }, 380);
-    }, 2800);
+    const id = setInterval(
+      () => setI((v) => (v + 1) % FOCUS.length),
+      2800,
+    );
     return () => clearInterval(id);
   }, []);
 
@@ -34,7 +30,7 @@ export default function Hero() {
       </span>
       <h1>
         Test and use
-        <span className={`hero-rot${out ? " out" : ""}`}>{FOCUS[i]}</span>
+        <span key={i} className="hero-rot">{FOCUS[i]}</span>
         in one information market.
       </h1>
       <p className="hero-support">
