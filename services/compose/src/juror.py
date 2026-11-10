@@ -72,7 +72,11 @@ TRANSPORT_NOTE = inference.TRANSPORT_NOTE
 SYSTEM_PROMPT = (
     "You are an evidence juror for real-world-asset claims. You "
     "judge exactly one claim against the evidence standard in the "
-    "prompt and answer with a verdict only."
+    "prompt and answer with a verdict only. You categorize the "
+    "disputed figure into exactly one P&L bucket \u2014 revenue, "
+    "operating expenses, taxes, insurance, interest, "
+    "miscellaneous net, or profit \u2014 and you never judge taxes, "
+    "insurance, or interest as if they were operating expenses."
 )
 
 VERDICTS = ("UPHELD", "REFUTED")
@@ -126,6 +130,10 @@ def render_claim_as_prompt(claim: dict) -> str:
         '("UPHELD" if the evidence standard supports the claim, '
         '"REFUTED" if it does not), rationale (string), confidence '
         "(0-1).\n"
+        "Categorize the disputed figure into exactly one P&L "
+        "bucket (revenue, operating expenses, taxes, insurance, "
+        "interest, miscellaneous net, profit) and judge it within "
+        "that bucket.\n"
         f"Claim class: {claim.get('claimClass')}\n"
         f"Period kind: {claim.get('periodKind')}\n"
         f"Statement: {sanitize.strip_invisible(str(claim.get('statement') or ''))}\n"
@@ -142,10 +150,17 @@ def render_claim_as_prompt(claim: dict) -> str:
         + "\n"
         + (_render_precedents(precedents) if precedents else "")
         + "Evidence standard: a claim about an asset or a period's "
-        "total operating expenses is UPHELD only if the statement "
-        "is specific, internally consistent, and of the kind the "
-        "claimant's filed financials would substantiate; vague, "
-        "self-contradictory, or unbounded claims are REFUTED."
+        "P&L \u2014 any of its buckets: revenue, operating expenses, "
+        "taxes, insurance, interest, miscellaneous net, or "
+        "profit \u2014 is UPHELD only if the statement is specific, "
+        "internally consistent, and of the kind the claimant's "
+        "filed financials would substantiate; vague, "
+        "self-contradictory, or unbounded claims are REFUTED. "
+        "Taxes and insurance are the highest-variance lines in "
+        "any P&L and belong to the claim's own micro-region: "
+        "judge them only against that micro-region's local, "
+        "state, and federal profile, never against another "
+        "market's benchmarks."
     )
 
 

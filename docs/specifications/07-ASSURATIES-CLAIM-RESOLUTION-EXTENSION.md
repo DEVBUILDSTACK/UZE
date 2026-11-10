@@ -112,6 +112,44 @@ plainly, is one of three things: a **revenue overstatement**, an
 **expense understatement**, or a **disagreement over the final
 net income**.
 
+### 2.2 The P&L taxonomy — seven buckets
+
+*Taxonomy directive, 2026-11-10.*
+
+When a claim concerns an asset's financial performance, the
+disputed figure belongs to **exactly one** of these buckets, and
+the Juror Team evaluates it within that bucket:
+
+| Bucket | Contents |
+|---|---|
+| **Revenue** | gross income, rent, room revenue, crop sales |
+| **Operating Expenses** | labor, maintenance, utilities, brand fees, fertilizer — the day-to-day costs of running the asset |
+| **Taxes** | local (city / county), state, and federal — **the primary source of micro-market variance** |
+| **Insurance(s)** | property, liability, business interruption, crop insurance — **highly variable by geography and climate** |
+| **Interest** | interest expense (the cost of debt) or interest income (the yield on cash reserves) |
+| **Miscellaneous Net** | below-the-line items, one-time charges, secondary income |
+| **Profit** | net income — the final bottom line |
+
+Operating Expenses never absorb Taxes, Insurance, or Interest:
+the three are broken out always — in claims, in juror prompts,
+and in judgments.
+
+### 2.3 Micro-market variability mandate
+
+Benchmarks segregate **strictly by `micro_region_id`** — in the
+Precedent Index and in every Juror Team judgment. (Spec 08's
+precedent selection is already same-micro-region; this mandate
+makes the segregation binding for benchmark use generally.) A
+Juror cannot evaluate a cost claim in Miami-Brickell using the
+tax and insurance benchmarks of Baltimore-Towson: a South Florida
+property-tax profile (homestead exemptions, millage rates) and
+its hurricane-driven insurance costs are fundamentally different
+quantities from the Mid-Atlantic's. **Taxes are the single
+largest driver of this variability.** A claim about a tax
+expense or an insurance cost is judged against the specific
+local, state, and federal profile of its exact micro-market —
+never against another market's benchmarks.
+
 ## 3. Terminology — Assuraties / Assuratized
 
 James's coinage (2026-11-09), built from the `ASSUR-` root of

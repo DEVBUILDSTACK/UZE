@@ -44,6 +44,17 @@ export default function HicrePage() {
         independent way to know they are true.
       </p>
       <p>
+        Two lines in that statement swing more than all the others:
+        taxes and insurance. A property tax bill follows the city,
+        county, and state the property sits in; an insurance premium
+        follows its geography and climate — Miami&rsquo;s hurricane
+        exposure has nothing in common with Baltimore&rsquo;s. A cost
+        judged against the wrong market&rsquo;s benchmarks is a cost
+        misjudged. That is why UZEmarkets works in micro-regions:
+        every number is weighed against its own local market, and no
+        other.
+      </p>
+      <p>
         So every decision carries a hidden charge: the cost of not being
         sure. The decision-maker either spends weeks or months checking
         everything themselves — slow, expensive, and repeated from zero on

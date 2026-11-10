@@ -74,6 +74,13 @@ export default function AnrdPage() {
         governments, each asking different questions, on a different
         clock.
       </p>
+      <p>
+        Land carries the same trap in its own form: property taxes
+        follow the local jurisdiction, and crop insurance follows
+        the local crop and climate — both swing sharply from one
+        place to the next. A figure means nothing outside its own
+        micro-region, so that is where UZEmarkets judges it.
+      </p>
 
       <h2>Single, large events</h2>
       <p>
