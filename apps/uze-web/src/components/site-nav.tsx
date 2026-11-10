@@ -88,8 +88,8 @@ export default function SiteNav() {
           <Link href="/guidance" onClick={close}>
             GIRA Guidance
           </Link>
-          <a href="https://blog.uzemarkets.com" onClick={close}>
-            Blog
+          <a href="https://dealfi.uzemarkets.com" onClick={close}>
+            DealFi
           </a>
           <Link href="/onboard" onClick={close}>
             Create your profile

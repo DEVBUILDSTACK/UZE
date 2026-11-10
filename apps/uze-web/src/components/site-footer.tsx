@@ -103,7 +103,7 @@ export default function SiteFooter() {
       <p className="footer-links">
         <Link href="/knowledge-base">Knowledge Base</Link>
         {" · "}
-        <a href="https://blog.uzemarkets.com">Blog</a>
+        <a href="https://dealfi.uzemarkets.com">DealFi</a>
       </p>
       <p className="copyright">
         © 2026 <Wordmark />
