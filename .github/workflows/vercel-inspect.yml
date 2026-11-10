@@ -1,0 +1,30 @@
+name: vercel-inspect (manual ops)
+
+# Manual-only diagnostics: print recent deployments + git refs + domains.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Inspect deployments
+        run: |
+          set -u
+          echo "== last 6 deployments:"
+          curl -s "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_ORG_ID}&limit=6" -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)
+          for x in d.get('deployments',[]):
+              m=x.get('meta') or {}
+              print(x.get('uid'), x.get('state'), x.get('url'), '| ref:', m.get('githubCommitRef'), '| sha:', (m.get('githubCommitSha') or '')[:7], '| target:', x.get('target'))
+          "
+          echo "== project domains:"
+          curl -s "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 1500; echo
