@@ -25,6 +25,35 @@ client wants to liquidate an asset via a sealed-bid auction, we
 will take that listing. Advisors, beware. Your clients belong to
 you for advice; their assets belong to the market for execution.
 
+## The Covenant — a dual-sided talent marketplace
+
+**UZEmarkets is a dual-sided talent marketplace for the
+Americas** (human + agentic), under the original taxonomy:
+**Talent, Tickets, Touring, and Stay** — Stay being the
+hospitality use cases of investment and managed real estate.
+
+> UZEmarkets is a dual-sided talent marketplace for the
+> Americas. We do not take your brokerage or legal clients. We
+> empower you with verified data. But we do take your auction
+> listings, and we do place the human and agentic talent
+> required to manage the asset.
+
+- **We do not take advisory clients** — no brokerage
+  commissions, no legal retainers, no tax advisory fees. We
+  provide verified data to empower the broker, the lawyer, and
+  the accountant.
+- **We do take auction listings** — the RWA auction house takes
+  direct listings from owners and syndicates, regardless of who
+  advises them.
+- **We do take property management & operations** — we place
+  general managers, maintenance staff, and operational teams
+  for hospitality, resorts, motels, mobile home parks, and
+  syndicate-owned properties: our own sourced human talent in
+  active and pilot markets, and outstaffing through human
+  property-management partners outside them.
+- **The agentic side** — we place agentic talent (GIRA and
+  SURA) to underwrite, price, and verify the assets.
+
 ## The HIADR taxonomy
 
 The marketplace is organized as five tracks (schema-enforced —
