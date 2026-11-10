@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function AnrdPage() {
   return (
     <main className="mk">
-      <h1>Agriculture, Natural Resources &amp; Development</h1>
+      <h1>Prove your land&apos;s value. Unlock capital.</h1>
       <p className="lede">
         For landowners, developers, and syndicates. Land does not produce
         a monthly income story. It is valued on what it holds and what it
