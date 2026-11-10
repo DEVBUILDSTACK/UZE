@@ -35,6 +35,8 @@ export interface PortalContent {
   tiers: { title: string; body: string }[];
   governanceHeading: string;
   governanceBody: string;
+  promiseHeading: string;
+  promiseBody: string;
   apiHeading: string;
   endpointLabel: string;
   authLabel: string;
@@ -102,6 +104,9 @@ export const CONTENT: Record<Locale, PortalContent> = {
     governanceHeading: "Partner status",
     governanceBody:
       "Every partner is UNVERIFIED until an agreement is signed and its API is reviewed. Snapshots are stored as partner-claimed data with provider status UNVERIFIED; a snapshot never triggers financing, treatment or auction execution on its own.",
+    promiseHeading: "The Brand Promise",
+    promiseBody:
+      "We are the Truth Layer. We do not take your clients, we do not broker your deals, and we do not give legal or tax advice. We empower you — the broker, the lawyer, the accountant — with verified, micro-region-specific financial truth. But make no mistake: we are an RWA auction house. If your client wants to liquidate an asset via a sealed-bid auction, we will take that listing. Advisors, beware. Your clients belong to you for advice; their assets belong to the market for execution.",
     apiHeading: "Ingestion API",
     endpointLabel: "Endpoint",
     authLabel: "Authentication",
@@ -245,6 +250,9 @@ export const CONTENT: Record<Locale, PortalContent> = {
     governanceHeading: "Status do parceiro",
     governanceBody:
       "Todo parceiro é NÃO VERIFICADO até que um acordo seja assinado e sua API seja revisada. Os snapshots são armazenados como dados declarados pelo parceiro, com status de provedor NÃO VERIFICADO; um snapshot nunca aciona, por si só, financiamento, tratamento ou execução de leilão.",
+    promiseHeading: "A Promessa da Marca",
+    promiseBody:
+      "Nós somos a Camada da Verdade. Não tomamos seus clientes, não intermediamos seus negócios e não prestamos consultoria jurídica ou tributária. Capacitamos você — o corretor, o advogado, o contador — com a verdade financeira verificada e específica de cada microrregião. Mas não se engane: somos uma casa de leilões de RWA. Se o seu cliente quiser liquidar um ativo por leilão de lances selados, aceitaremos esse anúncio. Consultores, atenção. Seus clientes pertencem a vocês para aconselhamento; os ativos deles pertencem ao mercado para execução.",
     apiHeading: "API de ingestão",
     endpointLabel: "Endpoint",
     authLabel: "Autenticação",
@@ -388,6 +396,9 @@ export const CONTENT: Record<Locale, PortalContent> = {
     governanceHeading: "Estado del socio",
     governanceBody:
       "Todo socio está NO VERIFICADO hasta que se firma un acuerdo y se revisa su API. Los snapshots se almacenan como datos declarados por el socio, con estado de proveedor NO VERIFICADO; un snapshot nunca activa por sí solo financiación, tratamiento ni ejecución de subastas.",
+    promiseHeading: "La Promesa de la Marca",
+    promiseBody:
+      "Somos la Capa de la Verdad. No tomamos a sus clientes, no intermediamos sus negocios y no damos asesoría legal ni fiscal. Le damos a usted — el corredor, el abogado, el contador — la verdad financiera verificada y específica de cada microrregión. Pero que no haya error: somos una casa de subastas de RWA. Si su cliente quiere liquidar un activo mediante una subasta de ofertas selladas, aceptaremos esa publicación. Asesores, atención. Sus clientes les pertenecen para el consejo; sus activos pertenecen al mercado para la ejecución.",
     apiHeading: "API de ingesta",
     endpointLabel: "Endpoint",
     authLabel: "Autenticación",
@@ -531,6 +542,9 @@ export const CONTENT: Record<Locale, PortalContent> = {
     governanceHeading: "Estado do parceiro",
     governanceBody:
       "Todos os parceiros estão NÃO VERIFICADOS até ser assinado um acordo e a sua API ser revista. Os snapshots são guardados como dados declarados pelo parceiro, com estado de fornecedor NÃO VERIFICADO; um snapshot nunca despoleta, por si só, financiamento, tratamento ou execução de leilão.",
+    promiseHeading: "A Promessa da Marca",
+    promiseBody:
+      "Nós somos a Camada da Verdade. Não tomamos os seus clientes, não intermediamos os seus negócios e não prestamos aconselhamento jurídico ou fiscal. Capacitamos o utilizador — o mediador, o advogado, o contabilista — com a verdade financeira verificada e específica de cada microrregião. Mas não se engane: somos uma casa de leilões de RWA. Se o seu cliente quiser liquidar um ativo através de um leilão de licitações seladas, aceitaremos esse anúncio. Consultores, atenção. Os seus clientes pertencem-lhe para aconselhamento; os ativos deles pertencem ao mercado para execução.",
     apiHeading: "API de ingestão",
     endpointLabel: "Endpoint",
     authLabel: "Autenticação",

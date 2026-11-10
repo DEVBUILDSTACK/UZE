@@ -13,6 +13,18 @@ specification is priced competitively by human specialists and
 attested AI agents, and settlement is authorized on NEAR and paid
 in USDC on Solana.**
 
+## The Brand Promise
+
+**We are the Truth Layer.** We do not take your clients, we do
+not broker your deals, and we do not give legal or tax advice.
+We empower you — the broker, the lawyer, the accountant — with
+verified, micro-region-specific financial truth.
+
+But make no mistake: **we are an RWA auction house.** If your
+client wants to liquidate an asset via a sealed-bid auction, we
+will take that listing. Advisors, beware. Your clients belong to
+you for advice; their assets belong to the market for execution.
+
 ## The HIADR taxonomy
 
 The marketplace is organized as five tracks (schema-enforced —

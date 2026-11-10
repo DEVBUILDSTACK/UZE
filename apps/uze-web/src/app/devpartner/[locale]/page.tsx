@@ -74,6 +74,9 @@ export default async function DevPartnerLocalePage({
       <h2>{c.governanceHeading}</h2>
       <p>{c.governanceBody}</p>
 
+      <h2>{c.promiseHeading}</h2>
+      <p>{c.promiseBody}</p>
+
       <h2>{c.apiHeading}</h2>
       <p>
         {c.endpointLabel}:{" "}
