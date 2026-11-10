@@ -21,6 +21,7 @@ export const REPO_PARTNERS_URL =
 
 export interface PartnerInfo {
   id: string;
+  displayName: string;
   schemaFile: string;
   blurb: string;
 }
@@ -82,7 +83,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     kicker: "UZEmarkets · DevPartner",
     h1: "The technical bridge for UZEmarkets data partners",
     intro:
-      "UZEmarkets cannot depend on partner APIs staying online. This portal is the standardized way for our data partners — Agro Digital, BDCS and Effatha — to push spatial, soil, feedlot and agrotechnical data into the UZEmarkets A/D/R pipeline, and the public reference for how that data is validated, cached and consumed.",
+      "UZEmarkets cannot depend on partner APIs staying online. This portal is the standardized way for our data partners — ADV Americas, BDCS and Effatha — to push spatial, soil, feedlot and agrotechnical data into the UZEmarkets A/D/R pipeline, and the public reference for how that data is validated, cached and consumed.",
     howHeading: "How it works",
     tiers: [
       {
@@ -120,17 +121,20 @@ export const CONTENT: Record<Locale, PortalContent> = {
     partners: [
       {
         id: "AGRO_DIGITAL",
+        displayName: "ADV Americas",
         schemaFile: "agro-digital.json",
         blurb:
           "Natural resources & agriculture — soil chemistry, ZARC climate risk, spatial mapping.",
       },
       {
         id: "BDCS",
+        displayName: "BDCS",
         schemaFile: "bdcs.json",
         blurb: "Agriculture — feedlot integration and cattle optimization.",
       },
       {
         id: "EFFATHA",
+        displayName: "EFFATHA",
         schemaFile: "effatha.json",
         blurb:
           "Agriculture — satellite frequency treatment and crop yield.",
@@ -198,7 +202,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     },
     generator: {
       title: "Payload Generator",
-      body: "Fill in your values and the generator produces the exact Agro Digital JSON payload our schema expects. Copy it and POST it to the sandbox endpoint.",
+      body: "Fill in your values and the generator produces the exact ADV Americas JSON payload our schema expects. Copy it and POST it to the sandbox endpoint.",
       copy: "Copy to Clipboard",
       copied: "Copied",
     },
@@ -222,7 +226,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     kicker: "UZEmarkets · DevPartner",
     h1: "A ponte técnica para os parceiros de dados da UZEmarkets",
     intro:
-      "A UZEmarkets não pode depender da disponibilidade das APIs dos parceiros. Este portal é a forma padronizada para os nossos parceiros de dados — Agro Digital, BDCS e Effatha — enviarem dados espaciais, de solo, de confinamento e agrotécnicos para o pipeline A/D/R da UZEmarkets, e a referência pública de como esses dados são validados, armazenados e consumidos.",
+      "A UZEmarkets não pode depender da disponibilidade das APIs dos parceiros. Este portal é a forma padronizada para os nossos parceiros de dados — ADV Americas, BDCS e Effatha — enviarem dados espaciais, de solo, de confinamento e agrotécnicos para o pipeline A/D/R da UZEmarkets, e a referência pública de como esses dados são validados, armazenados e consumidos.",
     howHeading: "Como funciona",
     tiers: [
       {
@@ -260,17 +264,20 @@ export const CONTENT: Record<Locale, PortalContent> = {
     partners: [
       {
         id: "AGRO_DIGITAL",
+        displayName: "ADV Americas",
         schemaFile: "agro-digital.json",
         blurb:
           "Recursos naturais e agricultura — química do solo, risco climático ZARC, mapeamento espacial.",
       },
       {
         id: "BDCS",
+        displayName: "BDCS",
         schemaFile: "bdcs.json",
         blurb: "Agricultura — integração de confinamentos e otimização de gado.",
       },
       {
         id: "EFFATHA",
+        displayName: "EFFATHA",
         schemaFile: "effatha.json",
         blurb:
           "Agricultura — tratamento por frequência de satélite e produtividade de safras.",
@@ -338,7 +345,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     },
     generator: {
       title: "Gerador de Payload",
-      body: "Preencha os seus valores e o gerador produz o payload JSON exato da Agro Digital que o nosso esquema espera. Copie e envie por POST para o endpoint sandbox.",
+      body: "Preencha os seus valores e o gerador produz o payload JSON exato da ADV Americas que o nosso esquema espera. Copie e envie por POST para o endpoint sandbox.",
       copy: "Copiar",
       copied: "Copiado",
     },
@@ -362,7 +369,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     kicker: "UZEmarkets · DevPartner",
     h1: "El puente técnico para los socios de datos de UZEmarkets",
     intro:
-      "UZEmarkets no puede depender de que las API de los socios estén siempre en línea. Este portal es la vía estandarizada para que nuestros socios de datos — Agro Digital, BDCS y Effatha — envíen datos espaciales, de suelo, de feedlots y agrotécnicos al pipeline A/D/R de UZEmarkets, y la referencia pública de cómo esos datos se validan, se almacenan y se consumen.",
+      "UZEmarkets no puede depender de que las API de los socios estén siempre en línea. Este portal es la vía estandarizada para que nuestros socios de datos — ADV Americas, BDCS y Effatha — envíen datos espaciales, de suelo, de feedlots y agrotécnicos al pipeline A/D/R de UZEmarkets, y la referencia pública de cómo esos datos se validan, se almacenan y se consumen.",
     howHeading: "Cómo funciona",
     tiers: [
       {
@@ -400,17 +407,20 @@ export const CONTENT: Record<Locale, PortalContent> = {
     partners: [
       {
         id: "AGRO_DIGITAL",
+        displayName: "ADV Americas",
         schemaFile: "agro-digital.json",
         blurb:
           "Recursos naturales y agricultura — química del suelo, riesgo climático ZARC, mapeo espacial.",
       },
       {
         id: "BDCS",
+        displayName: "BDCS",
         schemaFile: "bdcs.json",
         blurb: "Agricultura — integración de feedlots y optimización ganadera.",
       },
       {
         id: "EFFATHA",
+        displayName: "EFFATHA",
         schemaFile: "effatha.json",
         blurb:
           "Agricultura — tratamiento por frecuencia satelital y rendimiento de cultivos.",
@@ -478,7 +488,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     },
     generator: {
       title: "Generador de Payload",
-      body: "Complete sus valores y el generador produce el payload JSON exacto de Agro Digital que nuestro esquema espera. Cópielo y envíelo por POST al endpoint sandbox.",
+      body: "Complete sus valores y el generador produce el payload JSON exacto de ADV Americas que nuestro esquema espera. Cópielo y envíelo por POST al endpoint sandbox.",
       copy: "Copiar",
       copied: "Copiado",
     },
@@ -502,7 +512,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     kicker: "UZEmarkets · DevPartner",
     h1: "A ponte técnica para os parceiros de dados da UZEmarkets",
     intro:
-      "A UZEmarkets não pode depender de que as APIs dos parceiros estejam sempre disponíveis. Este portal é a forma normalizada de os nossos parceiros de dados — Agro Digital, BDCS e Effatha — enviarem dados espaciais, de solo, de engorda de gado e agrotécnicos para o pipeline A/D/R da UZEmarkets, e a referência pública de como esses dados são validados, guardados e consumidos.",
+      "A UZEmarkets não pode depender de que as APIs dos parceiros estejam sempre disponíveis. Este portal é a forma normalizada de os nossos parceiros de dados — ADV Americas, BDCS e Effatha — enviarem dados espaciais, de solo, de engorda de gado e agrotécnicos para o pipeline A/D/R da UZEmarkets, e a referência pública de como esses dados são validados, guardados e consumidos.",
     howHeading: "Como funciona",
     tiers: [
       {
@@ -540,17 +550,20 @@ export const CONTENT: Record<Locale, PortalContent> = {
     partners: [
       {
         id: "AGRO_DIGITAL",
+        displayName: "ADV Americas",
         schemaFile: "agro-digital.json",
         blurb:
           "Recursos naturais e agricultura — química do solo, risco climático ZARC, mapeamento espacial.",
       },
       {
         id: "BDCS",
+        displayName: "BDCS",
         schemaFile: "bdcs.json",
         blurb: "Agricultura — integração de explorações de engorda e otimização de gado.",
       },
       {
         id: "EFFATHA",
+        displayName: "EFFATHA",
         schemaFile: "effatha.json",
         blurb:
           "Agricultura — tratamento por frequência de satélite e produtividade das culturas.",
@@ -618,7 +631,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     },
     generator: {
       title: "Gerador de Payload",
-      body: "Preencha os seus valores e o gerador produz o payload JSON exato da Agro Digital que o nosso esquema espera. Copie-o e envie-o por POST para o endpoint sandbox.",
+      body: "Preencha os seus valores e o gerador produz o payload JSON exato da ADV Americas que o nosso esquema espera. Copie-o e envie-o por POST para o endpoint sandbox.",
       copy: "Copiar para a área de transferência",
       copied: "Copiado",
     },

@@ -45,7 +45,7 @@ export default function AgentPanel({
             GIRA works this {spec.assetSubclass} track from partner
             data cached in our ProviderSnapshot store — never from a
             live partner API. For a polygon like this one, the inputs
-            are Agro Digital&apos;s soil chemistry and crop
+            are ADV Americas&apos; soil chemistry and crop
             suitability, BDCS feedlot and feed optimization data, and
             Effatha&apos;s satellite treatment records, each staged,
             reviewed and approved before it can be consumed.

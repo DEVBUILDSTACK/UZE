@@ -32,7 +32,7 @@ paths:
                 - $ref: './schemas/effatha.json'
             examples:
               agroDigital:
-                summary: Agro Digital — soil + crop suitability + ZARC
+                summary: ADV Americas — soil + crop suitability + ZARC
                 value:
                   partner_id: AGRO_DIGITAL
                   polygon_id: BR-MT-36400

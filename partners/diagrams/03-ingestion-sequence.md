@@ -2,7 +2,7 @@
 
 ```mermaid
 sequenceDiagram
-    participant P as Partner (Agro Digital / BDCS / Effatha)
+    participant P as Partner (ADV Americas / BDCS / Effatha)
     participant API as UZEmarkets Ingestion API
     participant DB as UZEmarkets Snapshot DB
     participant L as Lenders / GIRA (A N R & D) / SURA (HiCRE)

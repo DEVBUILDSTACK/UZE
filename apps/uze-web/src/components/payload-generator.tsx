@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-/** Payload Generator — builds the exact Agro Digital ingestion
+/** Payload Generator — builds the exact ADV Americas ingestion
  *  payload from form values. Field names are the schema's own;
  *  numeric inputs are emitted as JSON numbers, and the polygon is
  *  a single GeoJSON ring. */

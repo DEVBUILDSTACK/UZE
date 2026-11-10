@@ -100,7 +100,7 @@ export default async function DevPartnerLocalePage({
       <p>{c.partnersIntro}</p>
       {c.partners.map((partner) => (
         <section key={partner.id} className="dp-partner">
-          <h3>{partner.id}</h3>
+          <h3>{partner.displayName}</h3>
           <p>{partner.blurb}</p>
           <p>
             {c.schemaLabel}:{" "}
