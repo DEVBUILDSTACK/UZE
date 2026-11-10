@@ -1,14 +1,16 @@
 import Link from "next/link";
+import Hero from "@/components/hero";
 
-/** Public front door. Evaluation-first: anyone can look around;
- *  profile creation is an invitation, not a gate. The email-code
- *  signup flow lives at /onboard and activates with the API deploy. */
+/** Public front door (James, 2026-11-10): clean landing page in the
+ *  POD/blog coloration, Altitude-pattern hero - rotating HIADR focus,
+ *  constant USP support line, one primary CTA (Create your profile,
+ *  the entity on-ramp). Evaluation-first: anyone can look around;
+ *  profile creation is an invitation, not a gate. */
 export default function Home() {
   return (
     <main>
-      <h1>UZE</h1>
-      <p>Talent, tickets, touring and stay — one AI ecosystem.</p>
-      <p>
+      <Hero />
+      <p className="hero-gira">
         Meet GIRA, your concierge for what&apos;s on, where it&apos;s
         happening, and how to be there.
       </p>
@@ -18,7 +20,9 @@ export default function Home() {
             <Link href="/guidance">See how GIRA guidance works</Link>
           </li>
           <li>
-            <Link href="/onboard">Create your UZE profile</Link>
+            <a href="https://blog.uzemarkets.com">
+              The Content Desk — micro-regions, pulses and specs
+            </a>
           </li>
         </ul>
       </nav>
