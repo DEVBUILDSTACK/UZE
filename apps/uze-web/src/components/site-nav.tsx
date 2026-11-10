@@ -1,20 +1,23 @@
 /** Site header + hamburger drawer — mirrors the mockup's collapsible
  *  Command & Control navigation pattern: brand wordmark up top, the
- *  full menu (sections + pilot markets) behind the hamburger. */
+ *  full menu (sections + active and pilot markets) behind the
+ *  hamburger. */
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const MARKETS = [
+const ACTIVE_MARKETS = [
   "South Florida / Miami",
   "Washington DC / Baltimore",
+  "Costa Rica",
+];
+
+const PILOT_MARKETS = [
   "Rio de Janeiro",
   "São Paulo",
   "Barcelona",
-  "Ibiza",
-  "Costa Rica",
 ];
 
 export default function SiteNav() {
@@ -79,9 +82,19 @@ export default function SiteNav() {
             Create your profile
           </Link>
         </nav>
+        <h3>Active Markets</h3>
+        <ul className="markets active">
+          {ACTIVE_MARKETS.map((m) => (
+            <li key={m}>
+              <Link href="/guidance" onClick={close}>
+                {m}
+              </Link>
+            </li>
+          ))}
+        </ul>
         <h3>Pilot Markets</h3>
         <ul className="markets">
-          {MARKETS.map((m) => (
+          {PILOT_MARKETS.map((m) => (
             <li key={m}>
               <Link href="/guidance" onClick={close}>
                 {m}

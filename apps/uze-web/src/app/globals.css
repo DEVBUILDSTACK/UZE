@@ -198,6 +198,11 @@ h3 {
   display: block;
 }
 
+.drawer ul.markets.active a {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .drawer .drawer-foot {
   margin-top: 1.6rem;
   color: var(--muted);
