@@ -22,6 +22,7 @@ from fastapi.responses import JSONResponse
 import agtech
 import approvals
 import assuraties
+import email_gateway
 import commitments
 import db
 import intakes
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     app.include_router(partners.admin_router)
     app.include_router(agents.router)
     app.include_router(assuraties.router)
+    app.include_router(email_gateway.router)
     return app
 
 
