@@ -1,9 +1,11 @@
 import { fetchMicroRegions } from "@/lib/compose";
+import { MICRO_REGIONS_SNAPSHOT } from "@/lib/micro-regions-snapshot";
 
 export const dynamic = "force-dynamic";
 
 export default async function MicroRegionsIndexPage() {
-  const regions = (await fetchMicroRegions()) ?? [];
+  const live = await fetchMicroRegions();
+  const regions = live ?? MICRO_REGIONS_SNAPSHOT;
 
   return (
     <main className="mk">
@@ -13,6 +15,12 @@ export default async function MicroRegionsIndexPage() {
         &quot;DC metro&quot;.
       </p>
       <h1>Micro-regions</h1>
+      {!live && (
+        <p className="note">
+          Index snapshot from the Content Desk dataset — live records
+          replace it when the composition API is connected.
+        </p>
+      )}
       <table>
         <thead>
           <tr>

@@ -78,10 +78,20 @@ export interface TalentView {
 }
 
 async function get<T>(path: string): Promise<T | null> {
-  const res = await fetch(`${COMPOSE_API}${path}`, { cache: "no-store" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`compose API ${res.status} on ${path}`);
-  return (await res.json()) as T;
+  // Degradation contract: an unreachable or erroring composition API
+  // yields null, never a thrown error — every consuming page renders
+  // its empty / snapshot / not-found state instead of a server error.
+  // (2026-11-10: the blog surface 500'd on Vercel, where no compose
+  // API listens on the default loopback URL.)
+  try {
+    const res = await fetch(`${COMPOSE_API}${path}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
 }
 
 export const fetchSpec = (id: string) =>

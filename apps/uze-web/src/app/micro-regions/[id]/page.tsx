@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
 import { fetchMicroRegion, fetchPulse, humanize, pulseUrl } from "@/lib/compose";
+import {
+  MICRO_REGION_DETAILS_SNAPSHOT,
+  MICRO_REGION_PULSES_SNAPSHOT,
+} from "@/lib/micro-regions-snapshot";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +13,12 @@ export default async function MicroRegionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const region = await fetchMicroRegion(id);
+  const liveRegion = await fetchMicroRegion(id);
+  const region = liveRegion ?? MICRO_REGION_DETAILS_SNAPSHOT[id];
   if (!region) notFound();
-  const pulse = await fetchPulse(id);
+  const pulse =
+    (await fetchPulse(id)) ??
+    (liveRegion ? null : MICRO_REGION_PULSES_SNAPSHOT[id] ?? null);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -61,12 +68,20 @@ export default async function MicroRegionPage({
         {region.specCount === 1 ? "" : "s"} · {region.comparableCount}{" "}
         settled comparable{region.comparableCount === 1 ? "" : "s"}
       </p>
+      {!liveRegion && (
+        <p className="note">
+          Snapshot from the Content Desk dataset — live records replace
+          it when the composition API is connected.
+        </p>
+      )}
 
       {pulse && (
         <>
           <h2>Pulse — the Content Desk dataset</h2>
           <p className="note">
-            Live from marketplace records
+            {liveRegion
+              ? "Live from marketplace records"
+              : "From the Content Desk dataset snapshot"}
             {pulse.temporalCoverage
               ? ` · coverage ${pulse.temporalCoverage}`
               : ""}
