@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { HouseEmail, RoadmapBlock } from "@/components/site-blocks";
+import {
+  HouseEmail,
+  InnovationBlock,
+  RoadmapBlock,
+} from "@/components/site-blocks";
 
 export const metadata: Metadata = {
   title: "HiCRE — Hospitality & Income Properties | UZEmarkets",
@@ -22,6 +26,8 @@ export default function HicrePage() {
         property&apos;s financing depends on — so decisions take days, not
         months, and price the record instead of the doubt.
       </p>
+
+      <InnovationBlock track="hicre" />
 
       <h2>The problem UZEmarkets solves</h2>
       <p>

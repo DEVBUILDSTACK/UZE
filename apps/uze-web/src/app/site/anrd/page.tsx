@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { HouseEmail, RoadmapBlock } from "@/components/site-blocks";
+import {
+  HouseEmail,
+  InnovationBlock,
+  RoadmapBlock,
+} from "@/components/site-blocks";
 
 export const metadata: Metadata = {
   title: "Land & Development — Agriculture, Natural Resources | UZEmarkets",
@@ -23,6 +27,33 @@ export default function AnrdPage() {
         a monthly income story. It is valued on what it holds and what it
         can become — and UZEmarkets proves those facts before the money
         moves.
+      </p>
+
+      <InnovationBlock track="anrd" />
+
+      <h2>The Paraguay Example</h2>
+      <p>
+        <strong>When Liquidity Becomes the Only Metric.</strong>{" "}
+        Sovereign risk and economic instability do not just affect
+        currency; they freeze the banking system. When a nation faces
+        sudden economic distress or governmental fraud, the traditional
+        routes to liquidity close overnight.
+      </p>
+      <p>
+        In these moments, a landowner&apos;s perspective shifts
+        instantly. Land held for long-term agricultural yield or future
+        development must suddenly be reallocated for immediate
+        monetization. The question changes from &ldquo;What will this
+        land produce next year?&rdquo; to &ldquo;How fast can this land
+        be converted to capital?&rdquo;
+      </p>
+      <p>
+        UZEmarkets is built for this reality. We don&apos;t just price
+        the original plan; we price the highest and best use of the land
+        right now, based on the current economic environment. When the
+        traditional banking system freezes, UZEmarkets provides the
+        verified, rapid underwriting required to unlock immediate
+        liquidity from raw land and agricultural assets.
       </p>
 
       <h2>A completely different animal</h2>
