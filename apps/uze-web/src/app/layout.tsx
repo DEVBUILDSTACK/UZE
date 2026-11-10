@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import SiteNav from "@/components/site-nav";
+import SiteFooter from "@/components/site-footer";
 import "./globals.css";
 
 export const metadata = {
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <SiteNav />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );
