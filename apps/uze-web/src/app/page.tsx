@@ -17,6 +17,17 @@ export default function Home() {
       <nav>
         <ul className="home-links">
           <li>
+            <Link href="/site/hicre">
+              For owners, brokers and lenders — HiCRE
+            </Link>
+          </li>
+          <li>
+            <Link href="/site/anrd">
+              For landowners, developers and syndicates — Agriculture,
+              Natural Resources &amp; Development
+            </Link>
+          </li>
+          <li>
             <Link href="/guidance">See how GIRA guidance works</Link>
           </li>
           <li>
