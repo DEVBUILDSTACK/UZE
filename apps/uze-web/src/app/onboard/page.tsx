@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Wordmark from "@/components/wordmark";
 import { requestOtp } from "@/lib/onboard";
 
 export default function OnboardEmail() {
@@ -43,6 +44,12 @@ export default function OnboardEmail() {
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
+      <p className="note">
+        Questions or team access? Email:{" "}
+        <a href="mailto:UZEmarket@uzemarkets.com">
+          UZEmarket@<Wordmark />
+        </a>
+      </p>
       <p>
         Just evaluating with the team?{" "}
         <Link href="/">Browse the public site first</Link> — no email

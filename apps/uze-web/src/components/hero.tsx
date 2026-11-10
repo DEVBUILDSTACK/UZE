@@ -7,6 +7,7 @@
  *  becomes "Test and use ___ in one information market." */
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Wordmark from "@/components/wordmark";
 
 const FOCUS = ["Hospitality", "Income", "Agriculture", "Development", "Resource"];
 
@@ -28,7 +29,9 @@ export default function Hero() {
 
   return (
     <section className="hero">
-      <span className="hero-pill">UZEmarkets</span>
+      <span className="hero-pill">
+        <Wordmark tone="white" />
+      </span>
       <h1>
         Test and use{" "}
         <span className={`hero-rot${out ? " out" : ""}`}>{FOCUS[i]}</span>

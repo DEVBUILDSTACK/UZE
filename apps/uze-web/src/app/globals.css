@@ -580,3 +580,21 @@ form button,
   color: var(--muted);
   margin: 2.6rem 0 0;
 }
+
+/* Wordmark treatment (James, 2026-11-10): UZE always tangerine;
+   "markets" ink on light grounds, white reversed out of black. */
+.wordmark {
+  white-space: nowrap;
+}
+
+.wm-uze {
+  color: var(--accent);
+}
+
+.wm-markets {
+  color: var(--text);
+}
+
+.wm-markets-w {
+  color: #f5f2ee;
+}

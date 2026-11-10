@@ -5,6 +5,7 @@
  *  Entity flow, so its symbol routes to the entity on-ramp (/onboard)
  *  rather than a public chat link. */
 import Link from "next/link";
+import Wordmark from "@/components/wordmark";
 
 const SOCIALS = [
   {
@@ -99,7 +100,9 @@ export default function SiteFooter() {
           ),
         )}
       </div>
-      <p className="copyright">© 2026 UZEmarkets</p>
+      <p className="copyright">
+        © 2026 <Wordmark />
+      </p>
     </footer>
   );
 }
