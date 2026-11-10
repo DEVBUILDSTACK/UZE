@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Wordmark from "@/components/wordmark";
 import { usePathname } from "next/navigation";
 
 const ACTIVE_MARKETS = [
@@ -46,7 +47,7 @@ export default function SiteNav() {
             {open ? "✕" : "☰"}
           </button>
           <Link className="brand" href="/" onClick={close}>
-            UZE<span className="gira">GIRA</span>
+            <Wordmark />
           </Link>
           <Link className="quick" href="/onboard" onClick={close}>
             Create profile
@@ -62,7 +63,7 @@ export default function SiteNav() {
       <aside className={`drawer${open ? " open" : ""}`} aria-hidden={!open}>
         <div className="drawer-head">
           <span className="brand">
-            UZE<span className="gira">GIRA</span>
+            <Wordmark />
           </span>
           <button className="menu-btn" aria-label="Close menu" onClick={close}>
             ✕
