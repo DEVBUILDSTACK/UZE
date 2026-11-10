@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "UZE",
-  description: "Talent, tickets, touring and stay — one AI ecosystem.",
+  description: "UZEmarkets — the information market where offerings are tested and used.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
