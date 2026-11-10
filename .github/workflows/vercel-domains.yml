@@ -1,0 +1,34 @@
+name: vercel-domains (manual ops)
+
+# Manual-only ops job: assign custom domains to the uze-web Vercel project
+# using the repo's existing Vercel secrets. No push triggers — dispatch by hand.
+# 2026-11-10: apex -> Production; devpartner + blog -> git branch hackathon/nov-2026.
+# demo.uzemarkets.com is deliberately NOT assigned (reserved).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Assign domains via the Vercel API
+        run: |
+          set -u
+          API="https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}"
+          add() {
+            name="$1"; branch="${2:-}"
+            if [ -n "$branch" ]; then body="{\"name\":\"$name\",\"gitBranch\":\"$branch\"}"; else body="{\"name\":\"$name\"}"; fi
+            echo "== POST $name (branch: ${branch:-production})"
+            curl -s -X POST "$API" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d "$body" | head -c 800; echo
+          }
+          add "uzemarkets.com"
+          add "devpartner.uzemarkets.com" "hackathon/nov-2026"
+          add "blog.uzemarkets.com" "hackathon/nov-2026"
+          echo "== domains now on the project:"
+          curl -s "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 4000; echo
