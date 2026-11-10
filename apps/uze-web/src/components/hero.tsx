@@ -33,9 +33,8 @@ export default function Hero() {
         <Wordmark tone="white" />
       </span>
       <h1>
-        Test and use{" "}
+        Test and use
         <span className={`hero-rot${out ? " out" : ""}`}>{FOCUS[i]}</span>
-        <br />
         in one information market.
       </h1>
       <p className="hero-support">
