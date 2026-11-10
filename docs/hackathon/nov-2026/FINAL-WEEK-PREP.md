@@ -35,10 +35,12 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   superset (132 branch-only lines: the `.mk` Content Desk blocks and
   later additions). Taking the branch file at merge loses nothing.
 - C-5: AssurativeV2 `feat/trust-layer` merges to its main the same day.
-- Re-point devpartner / blog / podcast serving from branch-preview
-  aliases to Production, with no gap; **re-verify after the merge:**
-  blog (Content Desk index + a region page), devpartner (portal, all
-  four locales), podcast (editions index), the POD edition URL
+- Re-point devpartner / blog / podcast / dealfi serving from
+  branch-preview aliases to Production, with no gap; **re-verify
+  after the merge:** podcast (editions index + Content Desk index
+  and a region page at /micro-regions), dealfi (the DealFi page;
+  blog host mirrors it while its CNAME remains), devpartner
+  (portal, all four locales), the POD edition URL
   (https://uze-web-uze2.vercel.app/pod/2026-11-07.html), and the nav
   structure.
 - File the held SUBMISSION-CHECKLIST edit: preferred track =

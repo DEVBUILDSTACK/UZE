@@ -82,13 +82,14 @@ jobs:
 
       # The custom subdomains ride the same alias mechanism (NOT Vercel
       # gitBranch domains: CLI deployments carry no git metadata, so
-      # branch domains resolve to DEPLOYMENT_NOT_FOUND). blog serves the
-      # Content Desk surface and devpartner the portal via the app's
-      # host-routing middleware.
+      # branch domains resolve to DEPLOYMENT_NOT_FOUND). The subdomains
+      # serve their surfaces via the app's host-routing middleware
+      # (devpartner: the portal; podcast: the POD + Content Desk;
+      # dealfi: the DealFi page; blog: the DealFi mirror).
       - name: Point the custom subdomains at this deployment
         working-directory: ${{ runner.temp }}/uze-web-deploy
         run: |
-          for ALIAS in blog.uzemarkets.com devpartner.uzemarkets.com podcast.uzemarkets.com; do
+          for ALIAS in blog.uzemarkets.com devpartner.uzemarkets.com podcast.uzemarkets.com dealfi.uzemarkets.com; do
             if vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" --token=${{ secrets.VERCEL_TOKEN }}; then
               echo "Custom domain live: https://$ALIAS" >> "$GITHUB_STEP_SUMMARY"
             else

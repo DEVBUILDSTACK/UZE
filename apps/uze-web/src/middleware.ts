@@ -8,10 +8,11 @@ import type { NextRequest } from "next/server";
  *
  *    devpartner.uzemarkets.com  -> the DevPartner portal
  *                                  (/devpartner, locale-aware root)
- *    blog.uzemarkets.com        -> RESERVED for the future written
- *                                  publication (James, 2026-11-10);
- *                                  the Content Desk no longer
- *                                  displays on this host
+ *    dealfi.uzemarkets.com      -> DealFi, the regional market
+ *                                  deal and financing page
+ *                                  (James's rename, 2026-11-10)
+ *    blog.uzemarkets.com        -> the same DealFi page, for as
+ *                                  long as the blog CNAME remains
  *    podcast.uzemarkets.com     -> the Saturday POD editions index
  *                                  (James, 2026-11-10)
  *    demo.uzemarkets.com        -> the demo / sandbox environment
@@ -52,10 +53,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (host.startsWith("blog.")) {
+  if (host.startsWith("dealfi.") || host.startsWith("blog.")) {
     if (pathname === "/") {
       const url = request.nextUrl.clone();
-      url.pathname = "/blog";
+      url.pathname = "/dealfi";
       return NextResponse.rewrite(url);
     }
     return NextResponse.next();
