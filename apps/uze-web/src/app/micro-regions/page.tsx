@@ -1,20 +1,45 @@
 import { fetchMicroRegions } from "@/lib/compose";
 import { MICRO_REGIONS_SNAPSHOT } from "@/lib/micro-regions-snapshot";
+import {
+  MARKET_BY_SLUG,
+  MARKETS,
+  withPlaceholders,
+} from "@/lib/markets";
 
 export const dynamic = "force-dynamic";
 
-export default async function MicroRegionsIndexPage() {
+export default async function MicroRegionsIndexPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ market?: string }>;
+}) {
+  const { market: marketSlug } = await searchParams;
+  const market = marketSlug ? MARKET_BY_SLUG[marketSlug] : undefined;
+
   const live = await fetchMicroRegions();
-  const regions = live ?? MICRO_REGIONS_SNAPSHOT;
+  const all = withPlaceholders(live ?? MICRO_REGIONS_SNAPSHOT);
+  const regions = market
+    ? all.filter((r) => market.regionIds.includes(r.id))
+    : all;
 
   return (
     <main className="mk">
       <p className="note">
-        UZEMARKETS · micro-regions — the analytical unit of the
-        marketplace: Brickell, not &quot;Miami&quot;; Bethesda, not
-        &quot;DC metro&quot;.
+        UZEMARKETS · Hospitality &amp; Income CRE — micro-regions, the
+        analytical unit of the marketplace: Brickell, not
+        &quot;Miami&quot;; Bethesda, not &quot;DC metro&quot;.
       </p>
-      <h1>Micro-regions</h1>
+      <h1>{market ? market.label : "Micro-regions"}</h1>
+      <p className="note">
+        Markets: <a href="/micro-regions">All</a>
+        {MARKETS.map((m) => (
+          <span key={m.slug}>
+            {" · "}
+            <a href={`/micro-regions?market=${m.slug}`}>{m.label}</a>
+          </span>
+        ))}
+      </p>
+      {market?.note && <p className="note">{market.note}</p>}
       {!live && (
         <p className="note">
           Index snapshot from the Content Desk dataset — live records

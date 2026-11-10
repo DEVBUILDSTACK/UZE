@@ -4,6 +4,11 @@ import {
   MICRO_REGION_DETAILS_SNAPSHOT,
   MICRO_REGION_PULSES_SNAPSHOT,
 } from "@/lib/micro-regions-snapshot";
+import {
+  MARKET_BY_REGION_ID,
+  PLACEHOLDER_DETAILS,
+  PLACEHOLDER_REGION_IDS,
+} from "@/lib/markets";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +19,13 @@ export default async function MicroRegionPage({
 }) {
   const { id } = await params;
   const liveRegion = await fetchMicroRegion(id);
-  const region = liveRegion ?? MICRO_REGION_DETAILS_SNAPSHOT[id];
+  const region =
+    liveRegion ??
+    MICRO_REGION_DETAILS_SNAPSHOT[id] ??
+    PLACEHOLDER_DETAILS[id];
   if (!region) notFound();
+  const market = MARKET_BY_REGION_ID[id];
+  const isPlaceholder = !liveRegion && PLACEHOLDER_REGION_IDS.has(id);
   const pulse =
     (await fetchPulse(id)) ??
     (liveRegion ? null : MICRO_REGION_PULSES_SNAPSHOT[id] ?? null);
@@ -68,11 +78,29 @@ export default async function MicroRegionPage({
         {region.specCount === 1 ? "" : "s"} · {region.comparableCount}{" "}
         settled comparable{region.comparableCount === 1 ? "" : "s"}
       </p>
-      {!liveRegion && (
+      {market && (
         <p className="note">
-          Snapshot from the Content Desk dataset — live records replace
-          it when the composition API is connected.
+          Market:{" "}
+          <a href={`/micro-regions?market=${market.slug}`}>
+            {market.label}
+          </a>{" "}
+          — Hospitality &amp; Income CRE. The analysis for this
+          micro-region is backward-looking (historical) and
+          forward-looking operating expenses and revenues.
         </p>
+      )}
+      {isPlaceholder ? (
+        <p className="note">
+          Placeholder micro-region — coverage in preparation; no
+          analysis published yet.
+        </p>
+      ) : (
+        !liveRegion && (
+          <p className="note">
+            Snapshot from the Content Desk dataset — live records
+            replace it when the composition API is connected.
+          </p>
+        )
       )}
 
       {pulse && (
