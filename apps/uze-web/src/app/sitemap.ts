@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/specs` },
     { url: `${base}/devpartner/en` },
     { url: `${base}/devpartner/pt-BR` },
+    { url: `${base}/devpartner/pt-PT` },
     { url: `${base}/devpartner/es` },
   ];
   try {

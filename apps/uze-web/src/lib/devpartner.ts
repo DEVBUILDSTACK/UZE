@@ -1,11 +1,11 @@
 /** DevPartner portal content — DevPartner Software Stack Portal
  *  (partners/README.md in the monorepo). The portal is public and
- *  ungated and serves three locales: /devpartner/en,
- *  /devpartner/pt-BR, /devpartner/es. The canonical documents live
+ *  ungated and serves four locales: /devpartner/en,
+ *  /devpartner/pt-BR, /devpartner/es, /devpartner/pt-PT. The canonical documents live
  *  in the repo's partners/ folder; this module carries the rendered
  *  copy so the pages stay static. */
 
-export const LOCALES = ["en", "pt-BR", "es"] as const;
+export const LOCALES = ["en", "pt-BR", "es", "pt-PT"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export function isLocale(value: string): value is Locale {
@@ -87,7 +87,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     tiers: [
       {
         title: "1 · Public knowledge base",
-        body: "Documentation, diagrams and the OpenAPI specification — open to anyone, in English, Brazilian Portuguese and Spanish.",
+        body: "Documentation, diagrams and the OpenAPI specification — open to anyone, in English, Brazilian Portuguese, Spanish and European Portuguese.",
       },
       {
         title: "2 · Gated REST ingestion",
@@ -227,7 +227,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     tiers: [
       {
         title: "1 · Base de conhecimento pública",
-        body: "Documentação, diagramas e a especificação OpenAPI — abertos a todos, em inglês, português brasileiro e espanhol.",
+        body: "Documentação, diagramas e a especificação OpenAPI — abertos a todos, em inglês, português brasileiro, espanhol e português europeu.",
       },
       {
         title: "2 · Ingestão REST com acesso controlado",
@@ -367,7 +367,7 @@ export const CONTENT: Record<Locale, PortalContent> = {
     tiers: [
       {
         title: "1 · Base de conocimiento pública",
-        body: "Documentación, diagramas y la especificación OpenAPI — abiertos a todos, en inglés, portugués brasileño y español.",
+        body: "Documentación, diagramas y la especificación OpenAPI — abiertos a todos, en inglés, portugués brasileño, español y portugués europeo.",
       },
       {
         title: "2 · Ingesta REST con acceso controlado",
@@ -494,6 +494,146 @@ export const CONTENT: Record<Locale, PortalContent> = {
       body: "La especificación OpenAPI completa, explorable en el navegador. Úsela para inspeccionar cada endpoint, campo y formato de respuesta antes de escribir código.",
       open: "Abrir la documentación interactiva de la API",
       back: "Volver al portal",
+    },
+    languageLabel: "Idioma",
+  },
+  "pt-PT": {
+    title: "Portal do Programador DevPartner — UZEmarkets",
+    kicker: "UZEmarkets · DevPartner",
+    h1: "A ponte técnica para os parceiros de dados da UZEmarkets",
+    intro:
+      "A UZEmarkets não pode depender de que as APIs dos parceiros estejam sempre disponíveis. Este portal é a forma normalizada de os nossos parceiros de dados — Agro Digital, BDCS e Effatha — enviarem dados espaciais, de solo, de engorda de gado e agrotécnicos para o pipeline A/D/R da UZEmarkets, e a referência pública de como esses dados são validados, guardados e consumidos.",
+    howHeading: "Como funciona",
+    tiers: [
+      {
+        title: "1 · Base de conhecimento pública",
+        body: "Documentação, diagramas e a especificação OpenAPI — abertos a todos, em inglês, português brasileiro, espanhol e português europeu.",
+      },
+      {
+        title: "2 · Ingestão REST com acesso controlado",
+        body: "Os parceiros enviam payloads JSON para o endpoint de ingestão com um token Bearer (chave de API). Cada token corresponde exatamente a um parceiro, e cada payload é validado em relação ao esquema JSON publicado desse parceiro.",
+      },
+      {
+        title: "3 · O padrão Snapshot",
+        body: "Cada payload aceite vai para uma área de preparação (staging) para revisão pela equipa de engenharia. Depois de aprovado, recebe um carimbo de data e hora e fica guardado permanentemente no nosso repositório ProviderSnapshot. Os credores e os nossos agentes de IA — GIRA (A N R & D) e SURA (HiCRE) — consultam a nossa base de dados, nunca a API do parceiro — para que o mercado continue a funcionar quando um parceiro está offline.",
+      },
+    ],
+    governanceHeading: "Estado do parceiro",
+    governanceBody:
+      "Todos os parceiros estão NÃO VERIFICADOS até ser assinado um acordo e a sua API ser revista. Os snapshots são guardados como dados declarados pelo parceiro, com estado de fornecedor NÃO VERIFICADO; um snapshot nunca despoleta, por si só, financiamento, tratamento ou execução de leilão.",
+    apiHeading: "API de ingestão",
+    endpointLabel: "Endpoint",
+    authLabel: "Autenticação",
+    authBody:
+      "Authorization: Bearer <chave de API>. A chave identifica o parceiro; um payload cujo partner_id não corresponda ao parceiro da chave é rejeitado.",
+    responsesHeading: "Respostas",
+    responses: [
+      { code: "202", meaning: "Aceite — payload em staging para revisão, staging_id devolvido" },
+      { code: "401", meaning: "Chave de API em falta ou desconhecida" },
+      { code: "403", meaning: "O parceiro da chave não corresponde ao partner_id do payload" },
+      { code: "422", meaning: "O payload não passou na validação do esquema" },
+      { code: "503", meaning: "Ingestão não configurada nesta implementação" },
+    ],
+    partnersHeading: "Esquemas dos parceiros",
+    partnersIntro:
+      "Um esquema por parceiro, com controlo de versões juntamente com este portal. Os payloads que não validam são rejeitados — nada é corrigido silenciosamente.",
+    partners: [
+      {
+        id: "AGRO_DIGITAL",
+        schemaFile: "agro-digital.json",
+        blurb:
+          "Recursos naturais e agricultura — química do solo, risco climático ZARC, mapeamento espacial.",
+      },
+      {
+        id: "BDCS",
+        schemaFile: "bdcs.json",
+        blurb: "Agricultura — integração de explorações de engorda e otimização de gado.",
+      },
+      {
+        id: "EFFATHA",
+        schemaFile: "effatha.json",
+        blurb:
+          "Agricultura — tratamento por frequência de satélite e produtividade das culturas.",
+      },
+    ],
+    schemaLabel: "Esquema",
+    exampleLabel: "Payload de exemplo",
+    downloadsHeading: "Transferências",
+    downloads: DOWNLOADS.map((d) => ({
+      ...d,
+      label:
+        d.file === "README.md"
+          ? "Resumo executivo (README)"
+          : d.file === "openapi.yaml"
+            ? "Especificação OpenAPI"
+            : d.file.includes("01")
+              ? "Diagrama — percurso do parceiro em autosserviço"
+              : "Diagrama — arquitetura interna de agentes",
+    })),
+    ctaHeading: "Precisa de uma chave de API?",
+    ctaBody:
+      "As chaves são emitidas por parceiro, após revisão. Peça uma à equipa de desenvolvimento:",
+    ctaButton: "Pedir chave de API",
+    diagrams: {
+      title: "Fluxo de integração",
+      journeyTitle: "Percurso do parceiro em autosserviço",
+      journey: `sequenceDiagram
+    participant P as Partner Dev Rep
+    participant Portal as DevPortal (UI)
+    participant GIRA as GIRA (AI Assistant)
+    participant API as UZEmarkets Sandbox API
+    P->>Portal: 1. Reads Schema & Uses Payload Generator
+    P->>API: 2. POSTs JSON to Sandbox
+    API-->>P: 3. 422 Error (structured: field + error)
+    P->>GIRA: 4. Pastes Error & JSON into GIRA Chat
+    GIRA-->>P: 5. Explains fix + Returns corrected JSON
+    P->>API: 6. POSTs corrected JSON
+    API-->>P: 7. 202 Accepted (staging_id)
+    Note over API: Admin Reviews & Approves
+    P->>API: 8. Production key issued, data goes live`,
+      internalTitle: "Arquitetura interna de agentes",
+      internal: `flowchart TD
+    subgraph PARTNER["Partner Side"]
+        P_DOCS["Reads Portal"]
+        P_POST["POSTs Payload"]
+        P_DEBUG["Asks GIRA for Help"]
+    end
+    subgraph UZE["UZEmarkets Core"]
+        API_SANDBOX["Sandbox API"]
+        VALIDATOR["JSON Schema Validator"]
+        GIRA_DEBUG["GIRA Debug Endpoint"]
+        STAGING[("Staging DB<br/>(PENDING)")]
+        ADMIN["Admin Approval"]
+        LIVE[("Live DB<br/>(APPROVED)")]
+    end
+    P_DOCS --> P_POST
+    P_POST --> API_SANDBOX
+    API_SANDBOX --> VALIDATOR
+    VALIDATOR -- "Fail (Missing Fields)" --> GIRA_DEBUG
+    GIRA_DEBUG -- "Explains Fix" --> P_DEBUG
+    P_DEBUG -- "Corrected Payload" --> P_POST
+    VALIDATOR -- "Pass" --> STAGING
+    STAGING --> ADMIN
+    ADMIN -- "Approved" --> LIVE`,
+    },
+    generator: {
+      title: "Gerador de Payload",
+      body: "Preencha os seus valores e o gerador produz o payload JSON exato da Agro Digital que o nosso esquema espera. Copie-o e envie-o por POST para o endpoint sandbox.",
+      copy: "Copiar para a área de transferência",
+      copied: "Copiado",
+    },
+    debug: {
+      title: "Assistente de Integração GIRA",
+      body: "Cole um payload que tenha falhado a validação. A GIRA aplica as mesmas verificações determinísticas do endpoint de depuração da API (POST /api/v1/agents/gira/debug): enumera cada erro com o respetivo campo, corrige o que pode ser corrigido — números enviados como texto, um zarc_risk_score mal posicionado, chaves que o esquema não define — e devolve o JSON corrigido.",
+      run: "Perguntar à GIRA",
+      copy: "Copiar para a área de transferência",
+      copied: "Copiado",
+    },
+    docs: {
+      title: "Documentação Interativa da API",
+      body: "A especificação OpenAPI completa, explorável no navegador. Utilize-a para inspecionar cada endpoint, campo e formato de resposta antes de escrever código.",
+      open: "Abrir a documentação interativa da API",
+      back: "Voltar ao portal",
     },
     languageLabel: "Idioma",
   },
