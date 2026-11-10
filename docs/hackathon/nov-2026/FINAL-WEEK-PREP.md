@@ -43,6 +43,15 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   (portal, all four locales), the POD edition URL
   (https://uze-web-uze2.vercel.app/pod/2026-11-07.html), and the nav
   structure.
+- **Content Desk public home (James's ruling, 2026-11-10):** at
+  this merge the desk moves to **uzemarkets.com/micro-regions**.
+  In the same pass, point the four desk links at the apex path:
+  the drawer "Hospitality & Income CRE" title, the three market
+  links (?market=south-florida / mid-atlantic / costa-rica), the
+  home page's Content Desk link, and the footer icon. Until the
+  merge they stand on podcast.uzemarkets.com (James's interim
+  correction) — do not point them at the apex earlier, or they
+  404 on the recording.
 - File the held SUBMISSION-CHECKLIST edit: preferred track =
   **Unstoppable DeFi** (James, 2026-11-09).
 - demo.uzemarkets.com stays pinned to the recording deployment through
