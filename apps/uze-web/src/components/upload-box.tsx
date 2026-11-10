@@ -69,7 +69,7 @@ export default function UploadBox() {
         Public intake activates with the API launch. Today, forward
         your financials to{" "}
         <a href="mailto:ingest@uzemarkets.com">ingest@uzemarkets.com</a>{" "}
-        and the gateway returns the verified PDF report.
+        and UZE Underwrite returns the verified PDF report.
       </p>
     </div>
   );
