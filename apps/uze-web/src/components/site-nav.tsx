@@ -70,6 +70,9 @@ export default function SiteNav() {
           </button>
         </div>
         <nav>
+          <a href="https://blog.uzemarkets.com" onClick={close}>
+            Hospitality &amp; Income CRE
+          </a>
           <Link href="/" onClick={close}>
             Home
           </Link>
