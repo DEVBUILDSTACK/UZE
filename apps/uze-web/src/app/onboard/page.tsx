@@ -47,7 +47,9 @@ export default function OnboardEmail() {
       <p className="note">
         Questions or team access? Email:{" "}
         <a href="mailto:UZEmarket@uzemarkets.com">
-          UZEmarket@<Wordmark />.com
+          <span className="addr-ink">UZEmarket@</span>
+          <Wordmark />
+          <span className="addr-ink">.com</span>
         </a>
       </p>
       <p>

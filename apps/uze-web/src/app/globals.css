@@ -617,3 +617,10 @@ form button,
 .wm-markets-w {
   color: #f5f2ee;
 }
+
+/* Email address rendering (James, 2026-11-10): the local part and
+   the @ are always black, as is the .com - the ONLY tangerine in an
+   address is the UZE of the domain wordmark. */
+.addr-ink {
+  color: var(--text);
+}
