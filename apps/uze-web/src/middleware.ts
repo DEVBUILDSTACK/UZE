@@ -8,8 +8,10 @@ import type { NextRequest } from "next/server";
  *
  *    devpartner.uzemarkets.com  -> the DevPartner portal
  *                                  (/devpartner, locale-aware root)
- *    blog.uzemarkets.com        -> the HIADR Content Desk surface
- *                                  (micro-region pulses)
+ *    blog.uzemarkets.com        -> RESERVED for the future written
+ *                                  publication (James, 2026-11-10);
+ *                                  the Content Desk no longer
+ *                                  displays on this host
  *    podcast.uzemarkets.com     -> the Saturday POD editions index
  *                                  (James, 2026-11-10)
  *    demo.uzemarkets.com        -> the demo / sandbox environment
@@ -53,7 +55,7 @@ export function middleware(request: NextRequest) {
   if (host.startsWith("blog.")) {
     if (pathname === "/") {
       const url = request.nextUrl.clone();
-      url.pathname = "/micro-regions";
+      url.pathname = "/blog";
       return NextResponse.rewrite(url);
     }
     return NextResponse.next();
