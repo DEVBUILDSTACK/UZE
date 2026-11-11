@@ -127,7 +127,10 @@
   document.getElementById('skip-back').addEventListener('click',function(){audio.currentTime=Math.max(0,audio.currentTime-15);});
   document.getElementById('skip-fwd').addEventListener('click',function(){audio.currentTime=Math.min(audio.duration||audio.currentTime+30,audio.currentTime+30);});
   function fmt(t){t=Math.max(0,Math.floor(t));var m=Math.floor(t/60),sec=t%60;return m+':'+(sec<10?'0':'')+sec;}
-  function chapterIndexAt(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i])idx=i;}return idx;}
+  // Live lookup carries a 0.5s tolerance: an MP3 seek lands on the frame
+  // boundary just BEFORE the requested time, so an exact comparison would
+  // attribute the chapter-start position to the previous chapter.
+  function chapterIndexAt(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i]-0.5)idx=i;}return idx;}
   function chapterIndexForShare(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i]-1)idx=i;}return idx;}
   // Arriving from a shared chapter link (?t=<seconds>): start there.
   var params=new URLSearchParams(window.location.search);
