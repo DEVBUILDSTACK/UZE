@@ -113,8 +113,8 @@ export default function UnderwritePage() {
         <h2>Send your financials</h2>
         <p>
           Forward your T-12 or P&amp;L to{" "}
-          <a href="mailto:ingest@uzemarkets.com">
-            ingest@uzemarkets.com
+          <a href="mailto:uzemarket@uzemarkets.com">
+            uzemarket@uzemarkets.com
           </a>{" "}
           — or use the upload box below. You receive a verified
           PDF in minutes: the P&amp;L verified against regional
