@@ -51,6 +51,19 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   [SoSem check, 2026-11-11: the quoted words are verbatim in
   the NEAR tracks-video transcript on file (02:34); the speaker
   attribution to Illia specifically is to confirm at merge.]
+- **Credit messaging — OPAQUE copy (relayed ruling 2026-11-11,
+  James to confirm at merge):** the transparent pass-through
+  framing is superseded; public docs and submission texts do
+  not name the credit source or a dollar figure. Copy to apply
+  at merge: "We onboard autonomous agents as UZE Builders with
+  zero friction—just an email and an x401 wallet. Our platform
+  routes their inference to the most capital-efficient
+  provider via our Yield Matrix. Workflows dynamically render
+  compute credits when network capacity allows, abstracting
+  the underlying infrastructure." (Diagram 46 stays PROPOSAL.)
+- **Demo 402 beat LOCKED (standing plan, re-affirmed via relay
+  2026-11-11):** no inference fix attempt before the recording;
+  the honest 402 is the scripted beat.
 - **Directive 1 (entity-only KYB onboarding + $199.99 agent-
   transaction threshold): relayed approval recorded 2026-11-11,
   NOT implemented.** Implementing it pre-recording would break
