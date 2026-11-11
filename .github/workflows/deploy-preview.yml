@@ -85,11 +85,12 @@ jobs:
       # branch domains resolve to DEPLOYMENT_NOT_FOUND). The subdomains
       # serve their surfaces via the app's host-routing middleware
       # (devpartner: the portal; podcast: the POD + Content Desk;
-      # dealfi: the DealFi page; blog: the DealFi mirror).
+      # dealfi: the DealFi page; blog: the DealFi mirror; demo: the demo
+# page — bound 2026-11-10 at James's direction, ahead of the Nov 12 pin).
       - name: Point the custom subdomains at this deployment
         working-directory: ${{ runner.temp }}/uze-web-deploy
         run: |
-          for ALIAS in blog.uzemarkets.com devpartner.uzemarkets.com podcast.uzemarkets.com dealfi.uzemarkets.com; do
+          for ALIAS in blog.uzemarkets.com devpartner.uzemarkets.com podcast.uzemarkets.com dealfi.uzemarkets.com demo.uzemarkets.com; do
             if vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" --token=${{ secrets.VERCEL_TOKEN }}; then
               echo "Custom domain live: https://$ALIAS" >> "$GITHUB_STEP_SUMMARY"
             else
