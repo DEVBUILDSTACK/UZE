@@ -350,6 +350,12 @@ marketplace, the juror team, and the surfaces above.]
   update with the completion id + verification kind once run.]
 - x402/x401 mock flow with an agent retry helper and a dry-run
   script proving the protocol end-to-end.
+- Autonomous treasury (2026-11-11): the NEAR compute-balance
+  check + autonomous mock swap on the agent surface, the
+  on-ramp increment ladder enforced by API, Send/Receive
+  routing across six networks, the /treasury page, and demo
+  beats 9–10 in the integrated dry run. Full compose suite
+  after this pass: see the filing refresh.
 - Read-only human surface: spec, talent and micro-region pages
   with JSON-LD, indexes, sitemap, robots and llms.txt — verified
   rendering against the live API.
@@ -389,6 +395,52 @@ needs the second.
 org credits land (key authenticates; spending limit unset —
 HTTP 402). Bonds are mock units; no claim transition moves
 money.]
+
+## The Autonomous Treasury — agents that fund their own intelligence
+
+An autonomous agent chained to a corporate credit card is not
+autonomous. UZEmarkets' treasury is permissionless and
+self-custodial, for human syndicates and agents alike:
+
+- **Fiat on-ramp without custody.** A third-party provider
+  (debit / ACH / bank) routes fiat directly into the user's
+  self-custodial wallet — UZEmarkets never touches fiat, which
+  is the whole money-transmitter posture. Default target: USDC
+  on Solana; alternatives on Base, Robinhood Chain, Ink, and
+  Arc. Amounts follow a fixed ladder: $5–$100 by $5, $101–$250
+  by $10, $251–$1,750 by $50 — enforced by the API
+  (`POST /api/v1/treasury/onramp/config`, 422 outside the ladder).
+- **Send & Receive — no off-ramp.** Funds move P2P and
+  cross-chain through the swap router between Solana, Base,
+  Ink, Robinhood Chain, Arc, and native NEAR
+  (`POST /api/v1/treasury/send-receive`). Payments ride x402
+  rails; identity rides x401, with Arc a supported network for
+  x401 identity routing.
+- **The autonomous swap.** Before any agent task on the
+  x402-gated surface, the treasury checks the agent's NEAR
+  compute balance. Below the inference threshold, the agent
+  does not ask a human for money: the engine swaps from its
+  settlement rails (Solana USDC, Base ETH, Robinhood USDG, Ink)
+  into native NEAR, and the swap is written to the append-only
+  EventLog (`agent.treasury.swap_executed`) — the agent funds
+  its own compute to underwrite RWAs.
+
+[STATE: built 2026-11-11 on the owner's override; demo beats 9
+and 10 execute it end to end. Execution is MOCKED in the
+hackathon build in the same register as the x402 mock tariff:
+balances are mock state, swaps are simulations labelled
+`mock: true`, no funds move and no keys are held (custody gate
+A5 is open). The ladder validation, the pre-task trigger, the
+rail table, and the EventLog records are the real mechanism; a
+live CDP swap replaces the simulation at the marked seam.
+Sourcing, verified by code read: the Fundio repo contributes
+its CDP onramp session pattern; there is no AgentKit or swap
+module in Fundio to extract (AgentKit integration is a Sprint 2
+item). Real x401 is Proof's open protocol (draft 0.2.0) —
+verification design filed in research note 18; this build's
+identity gate remains the metering stub. Cross-chain USDC in
+production rides CCTP **V2** — V1 contracts pause December 1,
+2026; no CCTP code exists in this stack today.]
 
 ## The HIADR Content Desk — the organic growth engine
 

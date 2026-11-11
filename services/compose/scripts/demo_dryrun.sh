@@ -27,6 +27,11 @@
 #     and the chain gate OFF — deterministic; anchors record
 #     DISABLED locally, SUBMITTED being the live-proven gated
 #     outcome (spec 08 §10).
+#   - Beat 9 exercises the autonomous treasury (2026-11-11
+#     override): SURA starts below the NEAR compute threshold,
+#     the engine autonomously executes a (mock) swap from
+#     Solana USDC into NEAR, the balance reads funded, and the
+#     swap is read back from the append-only EventLog.
 # When funding + key arrive, the same walk shows SETTLED and the
 # attested analysis with no script changes.
 #
@@ -289,5 +294,43 @@ print("BEAT8_READS_OK")
 PY
 cat /tmp/demo-beat8.log
 grep -q BEAT8_EXCLUSION_OK /tmp/demo-beat8.log && grep -q BEAT8_PRECEDENT_OK /tmp/demo-beat8.log && grep -q BEAT8_READS_OK /tmp/demo-beat8.log && echo "OK  Beat 8: self-dealing exclusion counted, precedent applied across claimants, scorecards + learning feed read" || echo "MISS Beat 8 (see /tmp/demo-beat8.log)"
+
+echo "== Beat 9: autonomous treasury — the agent funds its own compute =="
+BAL_BEFORE=$(curl -s $API/treasury/balance/SURA)
+echo "SURA NEAR balance before: $(echo "$BAL_BEFORE" | jq -c '{balance, funded, mock}')"
+ENSURE=$(curl -s -X POST $API/treasury/ensure-compute -H 'Content-Type: application/json' -d '{"agent":"SURA","rail":"SOLANA_USDC"}')
+echo "ensure-compute: $(echo "$ENSURE" | jq -c '{swap_executed, swap: .swap | {source_asset, target_asset, amount, near_received, mock}}')"
+BAL_AFTER=$(curl -s $API/treasury/balance/SURA)
+echo "SURA NEAR balance after: $(echo "$BAL_AFTER" | jq -c '{balance, funded}')"
+$VENV - <<'PY' > /tmp/demo-beat9.log 2>&1
+import db, models
+s = db.session()
+rows = (s.query(models.EventLog)
+        .filter_by(aggregate_type="agent", aggregate_id="SURA",
+                   event_type="agent.treasury.swap_executed")
+        .all())
+assert rows, "no swap event recorded"
+latest = rows[-1].payload
+assert latest["source_asset"] == "SOLANA_USDC", latest
+assert latest["target_asset"] == "NEAR", latest
+assert latest["mock"] is True, latest
+print(f"EventLog agent.treasury.swap_executed: {latest}")
+print("BEAT9_TREASURY_OK")
+s.close()
+PY
+cat /tmp/demo-beat9.log
+grep -q BEAT9_TREASURY_OK /tmp/demo-beat9.log && echo "OK  Beat 9: low NEAR balance → autonomous mock swap SOLANA_USDC → NEAR → balance funded, swap in the append-only EventLog (mock execution, no funds move)" || echo "MISS Beat 9 (see /tmp/demo-beat9.log)"
+
+echo "== Beat 10: treasury config — human on-ramp ladder + agent send/receive =="
+CFG_OK=$(curl -s -X POST $API/treasury/onramp/config -H 'Content-Type: application/json' -d '{"amount":250}')
+echo "on-ramp \$250: $(echo "$CFG_OK" | jq -c '{amount, target_chain, target_asset, custody, uze_touches_fiat}')"
+CFG_BAD=$(curl -s -o /dev/null -w '%{http_code}' -X POST $API/treasury/onramp/config -H 'Content-Type: application/json' -d '{"amount":107}')
+CFG_OVER=$(curl -s -o /dev/null -w '%{http_code}' -X POST $API/treasury/onramp/config -H 'Content-Type: application/json' -d '{"amount":1800}')
+echo "on-ramp \$107 -> HTTP $CFG_BAD · \$1800 -> HTTP $CFG_OVER (ladder enforced)"
+SR=$(curl -s -X POST $API/treasury/send-receive -H 'Content-Type: application/json' -d '{"amount":10,"source_chain":"SOLANA","target_chain":"NEAR","agent":"GIRA"}')
+echo "send/receive GIRA: $(echo "$SR" | jq -c '{route, source_chain, target_chain, credited_near, mock}')"
+GIRA_BAL=$(curl -s $API/treasury/balance/GIRA)
+echo "GIRA NEAR balance after send/receive: $(echo "$GIRA_BAL" | jq -c '{balance, funded}')"
+[ "$CFG_BAD" = "422" ] && [ "$CFG_OVER" = "422" ] && echo "$SR" | jq -e '.credited_near == 10' >/dev/null && echo "$GIRA_BAL" | jq -e '.funded == true' >/dev/null && echo "OK  Beat 10: ladder validates (250 OK, 107 + 1800 refused), agent send/receive SOLANA → NEAR credits compute, balance funded" || echo "MISS Beat 10"
 
 echo "DEMO DRY RUN COMPLETE — outcomes as printed (current honest state)."

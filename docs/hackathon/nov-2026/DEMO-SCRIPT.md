@@ -223,7 +223,73 @@ on-chain, each verified equal to the canonical digest (spec 08
 run the chain gate is off, so anchors record DISABLED there by
 design.]*
 
-## Close (5:15–5:35)
+## Beat 9 — The autonomous treasury: the agent funds its own compute (5:15–5:40)
+
+**Action (terminal):** read SURA's NEAR compute balance, then
+trigger the pre-task compute check:
+
+```
+curl -s localhost:8100/api/v1/treasury/balance/SURA
+curl -s -X POST localhost:8100/api/v1/treasury/ensure-compute -d '{"agent":"SURA","rail":"SOLANA_USDC"}'
+curl -s localhost:8100/api/v1/treasury/balance/SURA
+```
+
+**On screen:** the balance starts BELOW the inference threshold
+(`funded: false`); the ensure-compute response shows
+`swap_executed: true` — source SOLANA_USDC, target NEAR — and
+the balance then reads funded. The swap is read back from the
+append-only EventLog (`agent.treasury.swap_executed`).
+
+**Say:** "An autonomous agent cannot be chained to a corporate
+credit card. Before SURA runs, the treasury checks her NEAR
+compute balance — and when it runs low, she does not ask a human
+for money. The engine swaps from her settlement rails — Solana
+USDC, Base ETH, Robinhood USDG, Ink — into native NEAR, and the
+swap is written to the same append-only log as everything else
+she does. The agent funds its own intelligence."
+
+*[STATE: swap EXECUTION is mocked for the hackathon — balances
+are mock state, the swap is a simulation labelled `mock: true`
+in every payload, and no funds move (no keys are held; custody
+gate A5 is open). The check, the rail table, the pre-task
+trigger on the x402-gated agent surface, and the EventLog
+record are the real mechanism; a live CDP swap replaces the
+simulation at the marked seam in treasury_router.py. The demo
+dry run executes this beat (BEAT9_TREASURY_OK). Built
+2026-11-11 on the owner's override of the UZEmarkets/SigLayer
+boundary for this module.]*
+
+## Beat 10 — The treasury around the agent (5:40–6:05)
+
+**Action (terminal + /treasury page):** a human configures an
+on-ramp amount; the ladder refuses what it must. Then the
+agent's Send/Receive move that funded Beat 9 is shown as a
+treasury operation:
+
+```
+curl -s -X POST localhost:8100/api/v1/treasury/onramp/config -d '{"amount":250}'
+curl -s -X POST localhost:8100/api/v1/treasury/onramp/config -d '{"amount":107}'   # 422
+curl -s -X POST localhost:8100/api/v1/treasury/send-receive -d '{"amount":10,"source_chain":"SOLANA","target_chain":"NEAR","agent":"GIRA"}'
+```
+
+**Say:** "The same treasury serves the syndicate. Fiat arrives
+through a third-party provider, straight into the user's own
+wallet — we never touch it, which is why no money-transmitter
+license stands between a syndicate and its own funds. Amounts
+move on a fixed ladder — five to a hundred by fives, then tens,
+then fifties, capped at seventeen-fifty — and there is no
+off-ramp: funds move by Send and Receive, between Solana, Base,
+Ink, Robinhood, Arc and NEAR. Identity rides x401; payments
+ride x402."
+
+*[STATE: the ladder validation is real and enforced by the API
+(422s as shown). Funding and swap execution are mocked — no
+funds move. x401 in this build is the identity stub at the
+metering seam; the real protocol is Proof's (draft 0.2.0), and
+its integration design is filed as research note 18. The demo
+dry run executes this beat (Beat 10 OK line).]*
+
+## Close (6:05–6:25)
 
 **On screen:** repo + contract address card.
 

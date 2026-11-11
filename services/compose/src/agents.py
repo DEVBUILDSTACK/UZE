@@ -41,6 +41,7 @@ from sqlalchemy.orm import Session
 import metering
 import models
 import partners as partners_module
+import treasury_router
 from db import get_session
 
 router = APIRouter(prefix="/api/v1/agents")
@@ -149,6 +150,13 @@ async def gira_underwrite(
     if challenge is not None:
         return challenge
 
+    # Autonomous treasury (2026-11-11 override): before the task
+    # executes, check GIRA's NEAR compute balance; if it is below
+    # the inference threshold the engine swaps into NEAR itself
+    # (mock execution — see treasury_router) and the swap lands
+    # in the EventLog with this handler's commit.
+    treasury = treasury_router.ensure_compute_funded(db, "GIRA")
+
     live = _snapshots_for_polygon(db, polygon_id, models.ProviderSnapshot)
     staged = _snapshots_for_polygon(db, polygon_id, models.StagingProviderSnapshot)
     pending = [s for s in staged if s.approval_status == "PENDING"]
@@ -192,6 +200,7 @@ async def gira_underwrite(
             "polygonId": polygon_id,
             "identity": {"subject": identity.get("subject"), "verified": True, "mock": True},
             "metering": {"scheme": "mock-exact", "mock": True},
+            "treasury": treasury,
             "assessment": assessment,
         }
     )
@@ -216,6 +225,11 @@ async def sura_underwrite(
     intent = db.get(models.Intent, spec_id)
     if intent is None:
         raise HTTPException(status_code=404, detail="spec not found")
+
+    # Autonomous treasury (2026-11-11 override): same pre-task
+    # compute check for SURA as for GIRA (see above) — after the
+    # spec resolves, before the assessment executes.
+    treasury = treasury_router.ensure_compute_funded(db, "SURA")
 
     bids = db.query(models.Bid).filter(models.Bid.intent_id == spec_id).all()
     amounts = [b.amount_usdc for b in bids if b.amount_usdc is not None]
@@ -263,6 +277,7 @@ async def sura_underwrite(
             "specId": spec_id,
             "identity": {"subject": identity.get("subject"), "verified": True, "mock": True},
             "metering": {"scheme": "mock-exact", "mock": True},
+            "treasury": treasury,
             "assessment": assessment,
         }
     )

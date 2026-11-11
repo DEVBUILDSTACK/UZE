@@ -47,3 +47,11 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   **Unstoppable DeFi** (James, 2026-11-09).
 - demo.uzemarkets.com stays pinned to the recording deployment through
   the Nov 14 submission.
+- **CCTP V2 requirement (added 2026-11-11):** Circle pauses CCTP V1
+  contracts **December 1, 2026** (burn limits already falling since
+  Oct 31). The UZE stack contains no Wormhole/CCTP code today; the
+  Fundio reference modal runs Wormhole Connect 3.1.0 on defaults.
+  When a bridge is integrated into UZE: pin a Connect version whose
+  CCTP route is V2, configure the CCTP V2 route explicitly, and test
+  USDC moves (Solana / Base / Arc) **before Dec 1, 2026**. Research
+  note 18, Part 4 carries the verified state.

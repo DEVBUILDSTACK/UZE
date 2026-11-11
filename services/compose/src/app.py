@@ -33,6 +33,8 @@ import agents
 import pulse
 import settle
 import snapshots
+import treasury
+import treasury_router
 
 
 def create_app() -> FastAPI:
@@ -75,6 +77,8 @@ def create_app() -> FastAPI:
     app.include_router(partners.router)
     app.include_router(partners.admin_router)
     app.include_router(agents.router)
+    app.include_router(treasury_router.router)
+    app.include_router(treasury.router)
     app.include_router(assuraties.router)
     app.include_router(email_gateway.router)
     return app
