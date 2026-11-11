@@ -35,6 +35,7 @@ import settle
 import snapshots
 import assign
 import contributions
+import costar
 import treasury
 import treasury_router
 
@@ -83,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(treasury.router)
     app.include_router(assign.router)
     app.include_router(contributions.router)
+    app.include_router(costar.router)
     app.include_router(assuraties.router)
     app.include_router(email_gateway.router)
     return app

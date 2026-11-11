@@ -348,4 +348,11 @@ TU=$(curl -s -X POST $API/treasury/escrow/demo-syndicate/true-up -H 'Content-Typ
 echo "pool: $(echo "$POOL" | jq -c '{total_usdc, shares: [.receipts[] | .share_bps]}') · true-up transfers: $(echo "$TU" | jq -c '[.transfers[] | {from: .from_partner, to: .to_partner, amt: .amount_usdc}]')"
 [ "$BAD_CAT" = "422" ] && echo "$POOL" | jq -e '.total_usdc == 300000' >/dev/null && echo "$TU" | jq -e '[.transfers[] | select(.to_partner=="partner-a") | .amount_usdc] | add == 50000' >/dev/null && echo "BEAT11_ASSIGN_OK" && echo "OK  Beat 11: 9 categories live (unknown refused), mock listing + bid recorded, 3 partners x 100k pool with receipts, true-up to 50/25/25 computes B+C -> A 25k each (mock instructions, nothing executed)" || echo "MISS Beat 11"
 
+echo "== Beat 12: institutional underwrite — multi-year normalization, metrics, synthetic comps =="
+MY=$(curl -s -X POST $API/ingest/multiyear -H 'Content-Type: application/json' -d @scripts/fixtures/multiyear-t12-sura.json)
+echo "multi-year: $(echo "$MY" | jq -c '{periods: [.periods[] | .period], noi_growth_rate, flags: [.fluctuation_flags[] | .bucket]}')"
+COMPS=$(curl -s "$API/underwrite/comps?micro_region=baltimore-washington")
+echo "comps: $(echo "$COMPS" | jq -c '{provider, synthetic, comps: (.sales_comps | length), revpar: .hospitality_metrics.revpar_usd}')"
+echo "$MY" | jq -e '.noi_growth_rate > 0' >/dev/null && echo "$MY" | jq -e '[.fluctuation_flags[] | select(.bucket=="Insurance(s)")] | length == 1' >/dev/null && echo "$COMPS" | jq -e '.synthetic == true' >/dev/null && echo "BEAT12_UNDERWRITE_OK" && echo "OK  Beat 12: 3 inconsistent T-12 years normalized to the 7 buckets, NOI growth computed, the 2026 insurance spike flagged, comps served as labelled SYNTHETIC (CoStar-shaped, license pending)" || echo "MISS Beat 12"
+
 echo "DEMO DRY RUN COMPLETE — outcomes as printed (current honest state)."

@@ -490,5 +490,5 @@ behind the interface; the scaffold itself executes nothing).
 - **Contract:** `uzemarkets-talent.testnet` (NEAR testnet)
 - **Demo video:** [LINK — 3–5 min recording, script in DEMO-SCRIPT.md]
 - **X demo post:** [JAMES — post URL]
-- **Team lead email:** [JAMES — email]
+- **Team lead email:** uzemarket@uzemarkets.com
 - **NEAR payout address:** [JAMES — address]

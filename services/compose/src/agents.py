@@ -206,6 +206,29 @@ async def gira_underwrite(
     )
 
 
+# SURA's institutional analysis directive (2026-11-11, owner's
+# tap). This is the instruction set the underwriting analysis
+# follows — carried in code so the demo surface, the email
+# gateway, and any future model-backed path all read the same
+# words. (juror.py is a different instrument — the Assuraties
+# claim judge — and is deliberately NOT edited for this.)
+SURA_ANALYSIS_DIRECTIVE = (
+    "You are an institutional real estate financial analyst. "
+    "Analyze the provided multi-year T-12s, normalized through "
+    "the Standard Chart of Accounts into the seven-bucket P&L "
+    "(Revenue / Operating Expenses / Taxes / Insurance(s) / "
+    "Interest Expense/Income / Miscellaneous Net / Profit) — "
+    "operating expenses never absorb taxes, insurance, or "
+    "interest. Calculate historical NOI growth across the "
+    "years provided. Evaluate the asking price using Cap Rate, "
+    "Price per Unit, and Price per Square Foot against the "
+    "provided micro-region sales comps. Highlight any anomalous "
+    "line items or unexplained expense fluctuations (any bucket "
+    "moving more than 15% year-over-year is flagged). Judge "
+    "only against same-micro-region benchmarks."
+)
+
+
 @router.post("/sura/underwrite")
 async def sura_underwrite(
     request: Request,
@@ -239,6 +262,7 @@ async def sura_underwrite(
     ]
     status_value = intent.status.value if hasattr(intent.status, "value") else intent.status
     assessment = {
+        "analysisDirective": SURA_ANALYSIS_DIRECTIVE,
         "status": status_value,
         "assetSubclass": intent.asset_subclass.value if intent.asset_subclass else None,
         "microRegionId": intent.micro_region_id,

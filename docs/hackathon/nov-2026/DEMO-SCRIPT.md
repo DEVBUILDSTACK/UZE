@@ -304,6 +304,27 @@ SUBMISSION.md under the 2026-11-10 narrative scope ruling;
 the dry run executes this beat (Beat 11 OK line).]*
 
 
+## Optional Beat 12 — Institutional underwrite (only if runtime allows; +~25s)
+
+**Action (terminal):** three years of the same hotel's T-12s —
+with deliberately inconsistent labels across years ("Repairs &
+Maintenance" / "R&M" / "Maintenance Expense") — normalize
+through the Standard Chart of Accounts into the seven-bucket
+P&L; NOI growth computes across the years; the 2026 insurance
+spike (+44%) is flagged for review while taxes sit in their
+own bucket throughout. The valuation carries price per unit
+and price per square foot beside the cap rate, read against
+micro-region comps served by the CoStar-shaped adapter.
+
+**Say:** "Institutional underwriting is a normalization
+problem before it is a math problem. The comps adapter is
+CoStar-shaped, built to the interface, license pending — the
+demo figures are synthetic and labelled synthetic."
+*[STATE: chart mapping + metrics + multi-year analysis BUILT
+2026-11-11 (owner's tap); CoStar provider is a MOCK with
+synthetic data; the dry run executes this beat (Beat 12 OK
+line).]*
+
 ## Close (6:05–6:25)
 
 **On screen:** repo + contract address card.

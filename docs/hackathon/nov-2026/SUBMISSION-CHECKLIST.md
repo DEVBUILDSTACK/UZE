@@ -25,7 +25,7 @@ Prepared 2026-11-08 (DeepSeek directive) so James can submit without hunting.
   account `uzemarkets.near` (verified unregistered 2026-11-09) to be
   created by James's son with a Ledger multisig; any payout can then
   be transferred there.)
-- **Team lead email:** _PENDING — James to supply._
+- **Team lead email:** uzemarket@uzemarkets.com — supplied by James in his own words 2026-11-11. NOTE: the address cannot receive mail until the iCloud Custom Email Domain setup completes (apple-domain TXT; James expects activation later tonight, Nov 11). It is the published intake address and is correct for the form regardless.
 - **Track:** one preferred track (13 available) — _James/DeepSeek to confirm._
 - **Public X demo post:** _James posts_ (@NEARProtocol, #NEARHackathon).
 

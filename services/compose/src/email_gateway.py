@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import base64
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from fpdf import FPDF
 from pydantic import BaseModel
@@ -140,6 +140,9 @@ _MOCK_BY_AGENT: dict[str, dict] = {
         "netOperatingIncome": 504100,
         "historicalsNOI": {"months12": 504100, "months18": 731200, "months36": 1398500},
         "capRate": 0.055,
+        "askingPrice": 9400000,
+        "units": 128,
+        "grossLeasableAreaSqFt": 96400,
         "assessment": (
             "SURA assessment: net operating income of $504,100 on "
             "revenue of $1,842,500 (NOI margin 27.4%). Taxes and "
@@ -187,16 +190,49 @@ def extract_mock_data(
     if use_case == "acquisition_due_diligence":
         noi = data["historicalsNOI"]["months12"]
         data["impliedValue"] = round(noi / data["capRate"], 2)
+        # Institutional metrics (2026-11-11): beyond the cap
+        # rate — price per unit and price per square foot
+        # against the asking price, plus historical NOI growth
+        # from the annualized 36-month base to trailing 12.
+        asking = data.get("askingPrice")
+        if asking and data.get("units"):
+            data["pricePerUnit"] = round(asking / data["units"], 2)
+        if asking and data.get("grossLeasableAreaSqFt"):
+            data["pricePerSqFt"] = round(
+                asking / data["grossLeasableAreaSqFt"], 2
+            )
+        base_annualized = data["historicalsNOI"]["months36"] / 3
+        if base_annualized:
+            data["noiGrowthRate"] = round(
+                (noi - base_annualized) / base_annualized, 4
+            )
+        metrics_note = ""
+        if "pricePerUnit" in data:
+            metrics_note = (
+                f" At the ${asking:,} asking price: "
+                f"${data['pricePerUnit']:,.2f} per unit and "
+                f"${data['pricePerSqFt']:,.2f} per square foot, to be"
+                " read against the micro-region sales comps."
+            )
+        if "noiGrowthRate" in data:
+            metrics_note += (
+                f" Historical NOI growth of {data['noiGrowthRate']:.1%}"
+                " from the 36-month annualized base to trailing 12."
+            )
         data["assessment"] = (
             data["assessment"]
             + f" Valuation: at a {data['capRate']:.2%} capitalization"
             f" rate on trailing-12 NOI of ${noi:,}, the implied value"
             f" is ${data['impliedValue']:,.2f}, subject to benchmark"
             " verification of the 12/18/36-month historicals."
+            + metrics_note
         )
     else:
         data.pop("historicalsNOI", None)
         data.pop("capRate", None)
+        data.pop("askingPrice", None)
+        data.pop("units", None)
+        data.pop("grossLeasableAreaSqFt", None)
     return data
 
 
@@ -246,6 +282,15 @@ def render_pdf(payload: EmailIngest, agent: str, data: dict, cross_sell: str | N
         pdf.cell(0, 7, f"{data['capRate']:.2%}", new_x="LMARGIN", new_y="NEXT")
         pdf.cell(70, 7, "Implied Value")
         pdf.cell(0, 7, _money(data["impliedValue"]), new_x="LMARGIN", new_y="NEXT")
+        if "pricePerUnit" in data:
+            pdf.cell(70, 7, "Price per Unit (asking)")
+            pdf.cell(0, 7, _money(data["pricePerUnit"]), new_x="LMARGIN", new_y="NEXT")
+        if "pricePerSqFt" in data:
+            pdf.cell(70, 7, "Price per Sq Ft (asking)")
+            pdf.cell(0, 7, _money(data["pricePerSqFt"]), new_x="LMARGIN", new_y="NEXT")
+        if "noiGrowthRate" in data:
+            pdf.cell(70, 7, "NOI Growth (36m base to T12)")
+            pdf.cell(0, 7, f"{data['noiGrowthRate']:.1%}", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
     pdf.set_font("helvetica", "B", 12)
     pdf.cell(0, 8, "Agent assessment", new_x="LMARGIN", new_y="NEXT")
@@ -265,6 +310,78 @@ def render_pdf(payload: EmailIngest, agent: str, data: dict, cross_sell: str | N
         "generation are live.",
     )
     return bytes(pdf.output())
+
+
+def analyze_multiyear(years: list[dict]) -> dict:
+    """Multi-year T-12 analysis (2026-11-11): each year's raw
+    line items are normalized through the StandardChartOfAccounts
+    into the seven ratified buckets, NOI is derived per year
+    (Revenue minus OpEx, Taxes, Insurance, Interest, Misc —
+    Profit bucket lines are NOT double-counted), historical NOI
+    growth is computed first-to-last year, and any bucket moving
+    more than 15% year-over-year is flagged as an expense/revenue
+    fluctuation for analyst review. Unmapped labels are surfaced,
+    never guessed."""
+    import chart_of_accounts as coa
+
+    ordered = sorted(years, key=lambda y: y.get("period", ""))
+    periods = []
+    for entry in ordered:
+        normalized = coa.normalize_line_items(entry.get("line_items", {}))
+        b = normalized["buckets"]
+        noi = (
+            b["Revenue"]
+            - b["Operating Expenses"]
+            - b["Taxes"]
+            - b["Insurance(s)"]
+            - b["Interest Expense/Income"]
+            - b["Miscellaneous Net Expenses/Income"]
+        )
+        periods.append(
+            {
+                "period": entry.get("period"),
+                "buckets": b,
+                "noi": round(noi, 2),
+                "unmapped": normalized["unmapped"],
+            }
+        )
+    flags = []
+    for prev, cur in zip(periods, periods[1:]):
+        for bucket in coa.BUCKETS:
+            before, after = prev["buckets"][bucket], cur["buckets"][bucket]
+            if before and abs(after - before) / abs(before) > 0.15:
+                flags.append(
+                    {
+                        "bucket": bucket,
+                        "from_period": prev["period"],
+                        "to_period": cur["period"],
+                        "change_pct": round((after - before) / abs(before), 4),
+                        "note": "fluctuation >15% YoY — requires line-item review",
+                    }
+                )
+    growth = None
+    if len(periods) >= 2 and periods[0]["noi"]:
+        growth = round(
+            (periods[-1]["noi"] - periods[0]["noi"]) / abs(periods[0]["noi"]), 4
+        )
+    return {
+        "periods": periods,
+        "noi_growth_rate": growth,
+        "fluctuation_flags": flags,
+        "taxonomy": "seven-bucket P&L (Spec 07 §2.2); OpEx excludes Taxes/Insurance/Interest",
+        "mock": True,
+    }
+
+
+class MultiYearIngest(BaseModel):
+    years: list[dict]
+
+
+@router.post("/multiyear")
+def ingest_multiyear(payload: MultiYearIngest):
+    if not payload.years:
+        raise HTTPException(status_code=422, detail="at least one year is required")
+    return JSONResponse(content=analyze_multiyear(payload.years))
 
 
 @router.post("/email")
