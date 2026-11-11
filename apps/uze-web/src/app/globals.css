@@ -672,6 +672,13 @@ form button,
   color: #f5f2ee;
 }
 
+/* The tangerine UZE lettering in the (c) trademark line is a link home
+   (James, 2026-11-11); it keeps the wordmark look — no underline. */
+.wm-uze-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* Email address rendering (James, 2026-11-10): the local part and
    the @ are always black, as is the .com - the ONLY tangerine in an
    address is the UZE of the domain wordmark. */

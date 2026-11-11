@@ -5,7 +5,6 @@
  *  Entity flow, so its symbol routes to the entity on-ramp (/onboard)
  *  rather than a public chat link. */
 import Link from "next/link";
-import Wordmark from "@/components/wordmark";
 
 const SOCIALS = [
   {
@@ -106,7 +105,17 @@ export default function SiteFooter() {
         <a href="https://dealfi.uzemarkets.com">DealFi</a>
       </p>
       <p className="copyright">
-        © 2026 <Wordmark />
+        © 2026{" "}
+        <span className="wordmark">
+          <a
+            href="https://uzemarkets.com"
+            className="wm-uze-link"
+            aria-label="UZEmarkets — home"
+          >
+            <span className="wm-uze">UZE</span>
+          </a>
+          <span className="wm-markets">markets</span>
+        </span>
       </p>
     </footer>
   );
