@@ -128,16 +128,22 @@
   document.getElementById('skip-fwd').addEventListener('click',function(){audio.currentTime=Math.min(audio.duration||audio.currentTime+30,audio.currentTime+30);});
   function fmt(t){t=Math.max(0,Math.floor(t));var m=Math.floor(t/60),sec=t%60;return m+':'+(sec<10?'0':'')+sec;}
   function chapterIndexAt(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i])idx=i;}return idx;}
+  function chapterIndexForShare(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i]-1)idx=i;}return idx;}
   // Arriving from a shared chapter link (?t=<seconds>): start there.
   var params=new URLSearchParams(window.location.search);
   var startAt=parseFloat(params.get('t'));
   if(!isNaN(startAt)&&startAt>0){
-    var idx0=chapterIndexAt(startAt);
+    var idx0=chapterIndexForShare(startAt);
+    var target=starts[idx0];
     var note=document.getElementById('shared-note');
-    note.textContent='Shared chapter: “'+rows[idx0].getAttribute('data-title')+'” — the player is set to its start, '+fmt(starts[idx0])+'. Press play.';
+    note.textContent='Shared chapter: “'+rows[idx0].getAttribute('data-title')+'” — the player is set to its start, '+fmt(target)+'. Press play.';
     note.classList.add('show');
-    var seekNow=function(){audio.currentTime=startAt;};
+    var seekNow=function(){try{audio.currentTime=target;}catch(e){}};
     if(audio.readyState>=1){seekNow();}else{audio.addEventListener('loadedmetadata',seekNow,{once:true});}
+    audio.addEventListener('canplay',function reassert(){
+      if(Math.abs(audio.currentTime-target)>2){seekNow();}
+      audio.removeEventListener('canplay',reassert);
+    });
     nowTitle.textContent=rows[idx0].getAttribute('data-title');
     rows.forEach(function(r,j){r.classList.toggle('active',j===idx0);});
     current=idx0;
