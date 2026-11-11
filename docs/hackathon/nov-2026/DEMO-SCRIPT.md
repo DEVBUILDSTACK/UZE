@@ -289,6 +289,21 @@ metering seam; the real protocol is Proof's (draft 0.2.0), and
 its integration design is filed as research note 18. The demo
 dry run executes this beat (Beat 10 OK line).]*
 
+## Optional Beat 11 — Assign + contribution receipts (only if runtime allows; +~25s, Close shifts)
+
+**Action (terminal):** the Assign category vocabulary (nine
+categories, closed set — an unknown category is refused), a
+mock BANKRUPTCY_ESTATE listing with a recorded bid; then three
+partners' agents contribute 100k each to the demo syndicate's
+mock escrow pool, receipts show the 33.3% shares, and the
+true-up to a 50/25/25 legal split computes B and C each sending
+A 25k — as mock instructions, executed nowhere. *[STATE: UZE
+Assign and the receipts are MOCK builds from 2026-11-11 (the
+owner's tap); no custody, no funds. Deliberately absent from
+SUBMISSION.md under the 2026-11-10 narrative scope ruling;
+the dry run executes this beat (Beat 11 OK line).]*
+
+
 ## Close (6:05–6:25)
 
 **On screen:** repo + contract address card.

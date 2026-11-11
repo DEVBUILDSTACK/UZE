@@ -333,4 +333,19 @@ GIRA_BAL=$(curl -s $API/treasury/balance/GIRA)
 echo "GIRA NEAR balance after send/receive: $(echo "$GIRA_BAL" | jq -c '{balance, funded}')"
 [ "$CFG_BAD" = "422" ] && [ "$CFG_OVER" = "422" ] && echo "$SR" | jq -e '.credited_near == 10' >/dev/null && echo "$GIRA_BAL" | jq -e '.funded == true' >/dev/null && echo "OK  Beat 10: ladder validates (250 OK, 107 + 1800 refused), agent send/receive SOLANA → NEAR credits compute, balance funded" || echo "MISS Beat 10"
 
+echo "== Beat 11: UZE Assign categories + A2A contribution receipts (mock) =="
+CATS=$(curl -s $API/assign/categories)
+echo "assign categories: $(echo "$CATS" | jq -c '.categories | length') (closed vocabulary)"
+LST=$(curl -s -X POST $API/assign/listings -H 'Content-Type: application/json' -d '{"category":"BANKRUPTCY_ESTATE","title":"Estate lot 12 — warehouse contract","reserve_price_usdc":45000}')
+LID=$(echo "$LST" | jq -r '.listing_id')
+curl -s -X POST $API/assign/listings/$LID/bids -H 'Content-Type: application/json' -d '{"bidder":"agent-sura","amount_usdc":46000}' >/dev/null
+BAD_CAT=$(curl -s -o /dev/null -w '%{http_code}' -X POST $API/assign/listings -H 'Content-Type: application/json' -d '{"category":"SPACESHIPS","title":"x"}')
+for P in partner-a partner-b partner-c; do
+  curl -s -X POST $API/treasury/escrow/contribute -H 'Content-Type: application/json' -d "{\"entity_id\":\"demo-syndicate\",\"partner_id\":\"$P\",\"agent_id\":\"agent-$P\",\"amount_usdc\":100000}" >/dev/null
+done
+POOL=$(curl -s $API/treasury/escrow/demo-syndicate)
+TU=$(curl -s -X POST $API/treasury/escrow/demo-syndicate/true-up -H 'Content-Type: application/json' -d '{"equity_bps":{"partner-a":5000,"partner-b":2500,"partner-c":2500}}')
+echo "pool: $(echo "$POOL" | jq -c '{total_usdc, shares: [.receipts[] | .share_bps]}') · true-up transfers: $(echo "$TU" | jq -c '[.transfers[] | {from: .from_partner, to: .to_partner, amt: .amount_usdc}]')"
+[ "$BAD_CAT" = "422" ] && echo "$POOL" | jq -e '.total_usdc == 300000' >/dev/null && echo "$TU" | jq -e '[.transfers[] | select(.to_partner=="partner-a") | .amount_usdc] | add == 50000' >/dev/null && echo "BEAT11_ASSIGN_OK" && echo "OK  Beat 11: 9 categories live (unknown refused), mock listing + bid recorded, 3 partners x 100k pool with receipts, true-up to 50/25/25 computes B+C -> A 25k each (mock instructions, nothing executed)" || echo "MISS Beat 11"
+
 echo "DEMO DRY RUN COMPLETE — outcomes as printed (current honest state)."
