@@ -415,7 +415,10 @@ self-custodial, for human syndicates and agents alike:
   Ink, Robinhood Chain, Arc, and native NEAR
   (`POST /api/v1/treasury/send-receive`). Payments ride x402
   rails; identity rides x401, with Arc a supported network for
-  x401 identity routing.
+  x401 identity routing. Plus POST /api/v1/treasury/swap quoting LIVE
+  against NEAR Intents' 1Click API — asset map pulled from the live
+  registry; a live Base ETH -> wNEAR quote returned a real deposit
+  address on 2026-11-11 (quote-only; no funds sent).
 - **The autonomous swap.** Before any agent task on the
   x402-gated surface, the treasury checks the agent's NEAR
   compute balance. Below the inference threshold, the agent
