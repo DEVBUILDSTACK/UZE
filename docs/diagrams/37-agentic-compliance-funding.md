@@ -1,4 +1,8 @@
-# PROPOSAL — relayed architecture package, 2026-11-11 (not ratified)
+# STATUS (updated 2026-11-11): Contribution Receipts + mock
+escrow pool + true-up BUILT AS MOCK (owner's tap, commit
+c3f9c82) — accounting only, no custody. The KYB/KYC compliance
+half remains PROPOSAL (relayed approval recorded, not acted
+on; see diagram 36).
 
 This diagram arrived inside a relayed "master directive" package.
 Under the standing relay rule it is filed as a PROPOSAL: it does

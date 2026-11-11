@@ -1,4 +1,9 @@
-# PROPOSAL — relayed architecture package, 2026-11-11 (not ratified)
+# STATUS (updated 2026-11-11): SPRINT 2 DESIGN — not built.
+A relayed amendment (2026-11-11, recorded, pending the owner's
+own confirmation) brings it inside the ratified Nov 8 rule:
+the market close LOCKS escrow, whitelists buyers, and sends a
+"Ready to Execute" alert; a HUMAN clicks Execute to start the
+Arcium MPC process. No auto-execution, as ratified.
 
 This diagram arrived inside a relayed "master directive" package.
 Under the standing relay rule it is filed as a PROPOSAL: it does

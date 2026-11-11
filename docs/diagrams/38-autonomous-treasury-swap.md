@@ -1,4 +1,7 @@
-# PROPOSAL — relayed architecture package, 2026-11-11 (not ratified)
+# STATUS (updated 2026-11-11): BUILT — treasury_router +
+direct 1Click swap route, live quote verified, commit 445f996.
+The two divergence notes below stand (no Fundio AgentKit
+participant exists; no free-inference branch).
 
 This diagram arrived inside a relayed "master directive" package.
 Under the standing relay rule it is filed as a PROPOSAL: it does

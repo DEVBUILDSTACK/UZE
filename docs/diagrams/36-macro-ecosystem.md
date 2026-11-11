@@ -1,4 +1,8 @@
-# PROPOSAL — relayed architecture package, 2026-11-11 (not ratified)
+# STATUS (updated 2026-11-11): MIXED — UZE Assign BUILT AS MOCK
+(owner's tap, commit c3f9c82); entity-only onboarding remains
+PROPOSAL (a relayed approval was received 2026-11-11 and is
+recorded, not acted on — it awaits the owner's own words and,
+if confirmed, is scoped post-submission).
 
 This diagram arrived inside a relayed "master directive" package.
 Under the standing relay rule it is filed as a PROPOSAL: it does

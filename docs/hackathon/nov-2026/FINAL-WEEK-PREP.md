@@ -35,6 +35,22 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   superset (132 branch-only lines: the `.mk` Content Desk blocks and
   later additions). Taking the branch file at merge loses nothing.
 - C-5: AssurativeV2 `feat/trust-layer` merges to its main the same day.
+- **Second track — Agent Economy (relayed approval 2026-11-11,
+  James to confirm at merge):** file the same project to Agent
+  Economy alongside Unstoppable DeFi. DRAFT framing (SoSem's
+  draft from the built system — NOT a text James supplied;
+  confirm or replace at merge): "An autonomous treasury for
+  AI agents: GIRA and SURA hold NEAR for their own inference,
+  check their balance before every task, and top up by swapping
+  Solana USDC or Base ETH through NEAR Intents' 1Click route —
+  a live quote against the production API is part of the demo.
+  Agents that fund their own intelligence, on x402 rails."
+- **Directive 1 (entity-only KYB onboarding + $199.99 agent-
+  transaction threshold): relayed approval recorded 2026-11-11,
+  NOT implemented.** Implementing it pre-recording would break
+  Beat 10 (a human configuring the on-ramp) and the public
+  /treasury surface; if James confirms in his own words, it is
+  scoped as post-submission work.
 - Re-point devpartner / blog / podcast / dealfi serving from
   branch-preview aliases to Production, with no gap; **re-verify
   after the merge:** podcast (editions index + Content Desk index
