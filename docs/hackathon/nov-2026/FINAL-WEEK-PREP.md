@@ -36,21 +36,28 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   later additions). Taking the branch file at merge loses nothing.
 - C-5: AssurativeV2 `feat/trust-layer` merges to its main the same day.
 - **Second track — Agent Economy (relayed approval 2026-11-11,
-  James to confirm at merge):** file the same project to Agent
-  Economy alongside Unstoppable DeFi. DRAFT framing (SoSem's
-  draft from the built system — NOT a text James supplied;
-  confirm or replace at merge): "An autonomous treasury for
-  AI agents: GIRA and SURA hold NEAR for their own inference,
-  check their balance before every task, and top up by swapping
-  Solana USDC or Base ETH through NEAR Intents' 1Click route —
-  a live quote against the production API is part of the demo.
-  Agents that fund their own intelligence, on x402 rails."
+  James to confirm at merge).** Text supplied via relay
+  2026-11-11, replacing SoSem's draft — use exactly this:
+  "As Illia Polosukhin noted, 'an agent needs to be able to
+  actually interact with the real world to really be useful.'
+  UZEmarkets answers this with a Swarm-for-Hire architecture.
+  We put an on-chain bid (Intent) for a standard business case
+  (a property P&L verification). GIRA and SURA (the agents)
+  accept the job, evaluate the real-world data, and settle the
+  payment out of the job fee. Furthermore, we answer the need
+  for 'governance AI review' with our Assuraties Juror Team—a
+  truth-seeking market on property facts, resolved by an
+  auditable AI arbiter."
+  [SoSem check, 2026-11-11: the quoted words are verbatim in
+  the NEAR tracks-video transcript on file (02:34); the speaker
+  attribution to Illia specifically is to confirm at merge.]
 - **Directive 1 (entity-only KYB onboarding + $199.99 agent-
   transaction threshold): relayed approval recorded 2026-11-11,
   NOT implemented.** Implementing it pre-recording would break
   Beat 10 (a human configuring the on-ramp) and the public
-  /treasury surface; if James confirms in his own words, it is
-  scoped as post-submission work.
+  /treasury surface; A relayed ruling (2026-11-11) DEFERs it to
+  post-submission (Sprint 2) — consistent with this hold;
+  recorded as relayed, settled when James confirms.
 - Re-point devpartner / blog / podcast / dealfi serving from
   branch-preview aliases to Production, with no gap; **re-verify
   after the merge:** podcast (editions index + Content Desk index
