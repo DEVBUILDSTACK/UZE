@@ -50,6 +50,14 @@ CROSS_SELL_CTA = (
     "in 48 hours."
 )
 
+ANRD_REJECTION = (
+    "UZE Underwrite currently processes Hospitality & Income CRE "
+    "only. Please contact our team directly for A|NR|D spatial "
+    "underwriting."
+)
+
+_ANRD_KEYWORDS = ("anrd", "farm", "land", "agriculture")
+
 _TALENT_KEYWORDS = ("talent", "management", "hiring")
 _VALUATION_KEYWORDS = ("acquisition", "due diligence", "valuation")
 _EMERGENCY_KEYWORDS = ("urgent p&l", "replacement", "immediate")
@@ -62,13 +70,48 @@ class EmailIngest(BaseModel):
 
 
 def route_agent(subject: str) -> str | None:
-    """Subject-keyword routing to the track's underwriting agent."""
+    """Subject-keyword routing on the UZE Underwrite endpoint:
+    HiCRE only (scope narrowed 2026-11-10) — every valid T-12
+    routes to SURA. GIRA remains in the codebase (_MOCK_BY_AGENT,
+    the agents module) but is DISABLED on this endpoint; ANRD
+    subjects are rejected before routing (see ingest_email)."""
     s = subject.lower()
     if "hicre" in s or "hotel" in s:
         return "SURA"
-    if "anrd" in s or "farm" in s:
-        return "GIRA"
     return None
+
+
+def is_anrd_subject(subject: str) -> bool:
+    s = subject.lower()
+    return any(k in s for k in _ANRD_KEYWORDS)
+
+
+# User-directed analysis (diagram 17): the subject directs not
+# just the flow but the FOCUS. Intent is P&L verification vs
+# valuation (from the use case); the modifier names why the user
+# needs it. Precedence: distressed > refinancing > cost recovery
+# > the acquisition default.
+_MODIFIERS = (
+    (("distressed", "distress"), "distressed_sale", "rapid liquidity"),
+    (("refinanc",), "refinancing", "debt service coverage"),
+    (("cost recovery", "overspend"), "cost_recovery", "OpEx overspend"),
+)
+
+
+def detect_direction(subject: str, use_case: str) -> tuple[str, str | None, str | None]:
+    """Returns (intent, modifier, focus)."""
+    intent = (
+        "valuation"
+        if use_case == "acquisition_due_diligence"
+        else "pnl_verification"
+    )
+    s = subject.lower()
+    for keywords, modifier, focus in _MODIFIERS:
+        if any(k in s for k in keywords):
+            return intent, modifier, focus
+    if use_case == "acquisition_due_diligence":
+        return intent, "standard_acquisition", "market comps"
+    return intent, None, None
 
 
 def detect_use_case(subject: str) -> str:
@@ -127,7 +170,9 @@ _MOCK_BY_AGENT: dict[str, dict] = {
 }
 
 
-def extract_mock_data(attachment_base64: str, agent: str, use_case: str) -> dict:
+def extract_mock_data(
+    attachment_base64: str, agent: str, use_case: str, focus: str | None = None
+) -> dict:
     """MOCK extraction (demo scope): deterministic sample figures
     per track. The attachment bytes are accepted and measured but
     NOT OCR-read — real document intelligence is a later phase.
@@ -135,6 +180,10 @@ def extract_mock_data(attachment_base64: str, agent: str, use_case: str) -> dict
     implied value (NOI / Cap Rate) computed from them."""
     data = dict(_MOCK_BY_AGENT[agent])
     data["attachmentBytes"] = len(base64.b64decode(attachment_base64))
+    if focus:
+        data["assessment"] = (
+            data["assessment"] + f" Directed focus: {focus}."
+        )
     if use_case == "acquisition_due_diligence":
         noi = data["historicalsNOI"]["months12"]
         data["impliedValue"] = round(noi / data["capRate"], 2)
@@ -220,6 +269,15 @@ def render_pdf(payload: EmailIngest, agent: str, data: dict, cross_sell: str | N
 
 @router.post("/email")
 def ingest_email(payload: EmailIngest):
+    if is_anrd_subject(payload.subject):
+        # Scope narrowing (2026-11-10): UZE Underwrite is HiCRE
+        # only. ANRD subjects are declined politely, before any
+        # use-case or track routing.
+        return JSONResponse(
+            status_code=422,
+            content={"error": ANRD_REJECTION},
+        )
+
     use_case = detect_use_case(payload.subject)
 
     if use_case == "talent_placement":
@@ -249,7 +307,8 @@ def ingest_email(payload: EmailIngest):
                 content={"error": "Could not determine asset track"},
             )
 
-    data = extract_mock_data(payload.attachment_base64, agent, use_case)
+    intent, modifier, focus = detect_direction(payload.subject, use_case)
+    data = extract_mock_data(payload.attachment_base64, agent, use_case, focus)
     cross_sell = CROSS_SELL_CTA if use_case == "emergency_replacement" else None
     pdf_b64 = base64.b64encode(
         render_pdf(payload, agent, data, cross_sell)
@@ -257,6 +316,9 @@ def ingest_email(payload: EmailIngest):
     response = {
         "status": "success",
         "useCase": use_case,
+        "intent": intent,
+        "modifier": modifier,
+        "focus": focus,
         "agent": agent,
         "extracted": data,
         "pdf_base64": pdf_b64,

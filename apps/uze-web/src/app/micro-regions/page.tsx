@@ -42,9 +42,9 @@ export default async function MicroRegionsIndexPage({
       <div className="uw-banner">
         <p>
           <strong>Have a T-12 or P&amp;L?</strong> Don&apos;t wait
-          for a spec. Forward your financials to UZE Underwrite.
-          Harness Underwriting Super Intelligence to verify
-          P&amp;L against regional comps, run an NOI valuation,
+          for a spec. Forward your hospitality or income property
+          financials to UZE Underwrite. Harness Underwriting Super
+          Intelligence to verify P&amp;L against regional comps,
           unlock cost recovery, and generate a verified PDF in
           minutes.
         </p>
