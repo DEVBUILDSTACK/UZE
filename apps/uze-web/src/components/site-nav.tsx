@@ -5,7 +5,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Wordmark from "@/components/wordmark";
 import { usePathname } from "next/navigation";
 
@@ -58,12 +57,12 @@ export default function SiteNav() {
           >
             {open ? "✕" : "☰"}
           </button>
-          <Link className="brand" href="/" onClick={close}>
+          <a className="brand" href="https://uzemarkets.com" aria-label="UZEmarkets — home">
             <Wordmark />
-          </Link>
-          <Link className="quick" href="/onboard" onClick={close}>
+          </a>
+          <a className="quick" href="https://uzemarkets.com/onboard">
             Create profile
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -74,32 +73,32 @@ export default function SiteNav() {
       />
       <aside className={`drawer${open ? " open" : ""}`} aria-hidden={!open}>
         <div className="drawer-head">
-          <span className="brand">
+          <a className="brand" href="https://uzemarkets.com" aria-label="UZEmarkets — home">
             <Wordmark />
-          </span>
+          </a>
           <button className="menu-btn" aria-label="Close menu" onClick={close}>
             ✕
           </button>
         </div>
         <nav>
-          <Link href="/" onClick={close}>
+          <a href="https://uzemarkets.com" onClick={close}>
             Home
-          </Link>
-          <Link href="/guidance" onClick={close}>
+          </a>
+          <a href="https://uzemarkets.com/guidance" onClick={close}>
             GIRA Guidance
-          </Link>
-          <Link className="underwrite" href="/underwrite" onClick={close}>
+          </a>
+          <a className="underwrite" href="https://uzemarkets.com/underwrite" onClick={close}>
             UZE Underwrite
-          </Link>
-          <Link href="/devpartner" onClick={close}>
+          </a>
+          <a href="https://devpartner.uzemarkets.com" onClick={close}>
             Dev Docs
-          </Link>
+          </a>
           <a href="https://dealfi.uzemarkets.com" onClick={close}>
             DealFi
           </a>
-          <Link href="/onboard" onClick={close}>
+          <a href="https://uzemarkets.com/onboard" onClick={close}>
             Create your profile
-          </Link>
+          </a>
         </nav>
         <h3>Active Markets</h3>
         <ul className="markets active">
@@ -120,9 +119,9 @@ export default function SiteNav() {
         <ul className="markets">
           {PILOT_MARKETS.map((m) => (
             <li key={m}>
-              <Link href="/guidance" onClick={close}>
+              <a href="https://uzemarkets.com/guidance" onClick={close}>
                 {m}
-              </Link>
+              </a>
             </li>
           ))}
         </ul>
