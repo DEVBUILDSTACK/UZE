@@ -39,6 +39,20 @@
   .actions{font-family:Helvetica,Arial,sans-serif;font-size:14px;margin:26px 0 4px}
   .actions a{display:inline-block;border:1px solid #ff6b00;border-radius:999px;padding:5px 14px;margin:0 8px 6px 0;text-decoration:none}
   .credits{color:#555;font-family:Helvetica,Arial,sans-serif;font-size:13px;margin-top:22px;line-height:1.6}
+  .share-panel{margin-top:14px;border-top:1px solid rgba(245,242,238,.18);padding-top:12px;display:none}
+  .share-panel.open{display:block}
+  .share-panel .in-chapter{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#d8d2c9;margin:0 0 10px;line-height:1.5}
+  .share-panel .in-chapter b{color:#f5f2ee}
+  .share-scopes{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}
+  .share-scopes label{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#f5f2ee;background:rgba(245,242,238,.06);border:1px solid rgba(245,242,238,.25);border-radius:8px;padding:8px 12px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+  .share-scopes label.sel{border-color:#ff6b00;background:rgba(255,107,0,.14)}
+  .share-scopes input{accent-color:#ff6b00}
+  .share-channels{display:flex;flex-wrap:wrap;gap:8px}
+  .share-channels button,.share-channels a{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#f5f2ee;border:1px solid #f5f2ee;border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none}
+  .share-channels button:active,.share-channels a:active{background:#ff6b00;border-color:#ff6b00;color:#f5f2ee}
+  .share-feedback{font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#ff6b00;margin:10px 0 0;min-height:16px}
+  .shared-note{display:none;margin:0 0 12px;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#ffe3cc;border:1px solid #ff6b00;border-radius:8px;padding:9px 12px;line-height:1.5}
+  .shared-note.show{display:block}
 
   /* Unified Dapp chrome (James, 2026-11-10) - replicates the uzemarkets.com
      header and footer on the static POD pages so the surfaces navigate
@@ -61,11 +75,28 @@
 <p class="edition-date">Saturday · 7 November 2026</p>
 <h1>Saturday POD — UZEmarkets on NEAR: Intents, Verified AI, and the Attribution Record</h1>
 <p class="meta">53:14 · Cast: SoSim, Jay, CB</p>
+<p class="shared-note" id="shared-note"></p>
 <div class="player">
 <p class="now-label">Now playing</p>
 <p class="now-title" id="now-chapter">Introduction — To the Sun</p>
 <audio id="pod-audio" controls preload="metadata" src="/pod/2026-11-07-complete-v8.mp3"></audio>
-<div class="skips"><button type="button" id="skip-back">↩ 15s back</button><button type="button" id="skip-fwd">30s forward ↪</button></div>
+<div class="skips"><button type="button" id="skip-back">↩ 15s back</button><button type="button" id="skip-fwd">30s forward ↪</button><button type="button" id="share-toggle" aria-expanded="false">Share</button></div>
+<div class="share-panel" id="share-panel">
+<p class="in-chapter">You are in: <b id="share-chapter-name">Introduction — To the Sun</b> · chapter starts <span id="share-chapter-time">0:00</span></p>
+<div class="share-scopes" role="radiogroup" aria-label="What to share">
+<label class="sel"><input type="radio" name="share-scope" value="chapter" checked> <span>From this chapter — the link opens at the chapter's start</span></label>
+<label><input type="radio" name="share-scope" value="episode-listen"> <span>The entire episode — listen</span></label>
+<label><input type="radio" name="share-scope" value="episode-read"> <span>The entire episode — read &amp; listen</span></label>
+</div>
+<div class="share-channels">
+<button type="button" id="share-wa">WhatsApp</button>
+<button type="button" id="share-email">Email</button>
+<button type="button" id="share-x">X</button>
+<button type="button" id="share-copy">Copy link</button>
+<button type="button" id="share-more" style="display:none">More apps…</button>
+</div>
+<p class="share-feedback" id="share-feedback"></p>
+</div>
 </div>
 <h2>Chapters</h2>
 <p class="meta">Tap a chapter to jump straight to it — the player follows along and highlights where you are.</p>
@@ -95,8 +126,86 @@
   });
   document.getElementById('skip-back').addEventListener('click',function(){audio.currentTime=Math.max(0,audio.currentTime-15);});
   document.getElementById('skip-fwd').addEventListener('click',function(){audio.currentTime=Math.min(audio.duration||audio.currentTime+30,audio.currentTime+30);});
+  function fmt(t){t=Math.max(0,Math.floor(t));var m=Math.floor(t/60),sec=t%60;return m+':'+(sec<10?'0':'')+sec;}
+  function chapterIndexAt(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i])idx=i;}return idx;}
+  // Arriving from a shared chapter link (?t=<seconds>): start there.
+  var params=new URLSearchParams(window.location.search);
+  var startAt=parseFloat(params.get('t'));
+  if(!isNaN(startAt)&&startAt>0){
+    var idx0=chapterIndexAt(startAt);
+    var note=document.getElementById('shared-note');
+    note.textContent='Shared chapter: “'+rows[idx0].getAttribute('data-title')+'” — the player is set to its start, '+fmt(starts[idx0])+'. Press play.';
+    note.classList.add('show');
+    var seekNow=function(){audio.currentTime=startAt;};
+    if(audio.readyState>=1){seekNow();}else{audio.addEventListener('loadedmetadata',seekNow,{once:true});}
+    nowTitle.textContent=rows[idx0].getAttribute('data-title');
+    rows.forEach(function(r,j){r.classList.toggle('active',j===idx0);});
+    current=idx0;
+  }
+  // Share — the chapter the listener is currently within, or the whole episode.
+  var LISTEN_URL='https://podcast.uzemarkets.com/pod/2026-11-07-listen.html';
+  var READ_URL='https://podcast.uzemarkets.com/pod/2026-11-07.html';
+  var panel=document.getElementById('share-panel');
+  var toggle=document.getElementById('share-toggle');
+  var feedback=document.getElementById('share-feedback');
+  toggle.addEventListener('click',function(){
+    var open=panel.classList.toggle('open');
+    toggle.setAttribute('aria-expanded',open?'true':'false');
+  });
+  var scopeLabels=document.querySelectorAll('.share-scopes label');
+  document.querySelectorAll('input[name="share-scope"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      scopeLabels.forEach(function(l){l.classList.remove('sel');});
+      r.closest('label').classList.add('sel');
+      feedback.textContent='';
+    });
+  });
+  function sharePayload(){
+    var scope=document.querySelector('input[name="share-scope"]:checked').value;
+    var idx=chapterIndexAt(audio.currentTime);
+    var title=rows[idx].getAttribute('data-title');
+    if(scope==='chapter'){
+      return {url:LISTEN_URL+'?t='+Math.floor(starts[idx]),
+              text:'“'+title+'” — from '+fmt(starts[idx])+' in the Saturday POD · 7 November 2026: UZEmarkets on NEAR'};
+    }
+    if(scope==='episode-read'){
+      return {url:READ_URL,
+              text:'Saturday POD · 7 November 2026 — UZEmarkets on NEAR: Intents, Verified AI, and the Attribution Record (read & listen)'};
+    }
+    return {url:LISTEN_URL,
+            text:'Saturday POD · 7 November 2026 — UZEmarkets on NEAR: Intents, Verified AI, and the Attribution Record (listen)'};
+  }
+  document.getElementById('share-wa').addEventListener('click',function(){
+    var p=sharePayload();
+    window.open('https://wa.me/?text='+encodeURIComponent(p.text+' '+p.url),'_blank');
+  });
+  document.getElementById('share-email').addEventListener('click',function(){
+    var p=sharePayload();
+    window.location.href='mailto:?subject='+encodeURIComponent('Saturday POD · 7 November 2026 — UZEmarkets')+'&body='+encodeURIComponent(p.text+'\n'+p.url);
+  });
+  document.getElementById('share-x').addEventListener('click',function(){
+    var p=sharePayload();
+    window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(p.text)+'&url='+encodeURIComponent(p.url),'_blank');
+  });
+  document.getElementById('share-copy').addEventListener('click',function(){
+    var p=sharePayload();
+    var done=function(){feedback.textContent='Link copied — it opens at '+ (document.querySelector('input[name="share-scope"]:checked').value==='chapter' ? 'the chapter start.' : 'the episode.');};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(p.url).then(done,function(){window.prompt('Copy this link:',p.url);});}
+    else{window.prompt('Copy this link:',p.url);}
+  });
+  var moreBtn=document.getElementById('share-more');
+  if(navigator.share){
+    moreBtn.style.display='';
+    moreBtn.addEventListener('click',function(){
+      var p=sharePayload();
+      navigator.share({title:'Saturday POD · 7 November 2026 — UZEmarkets',text:p.text,url:p.url}).catch(function(){});
+    });
+  }
   var current=-1;
   audio.addEventListener('timeupdate',function(){
+    var cIdx=chapterIndexAt(audio.currentTime);
+    document.getElementById('share-chapter-name').textContent=rows[cIdx].getAttribute('data-title');
+    document.getElementById('share-chapter-time').textContent=fmt(starts[cIdx]);
     var t=audio.currentTime,idx=0;
     for(var i=0;i<starts.length;i++){if(t>=starts[i])idx=i;}
     if(idx!==current){
