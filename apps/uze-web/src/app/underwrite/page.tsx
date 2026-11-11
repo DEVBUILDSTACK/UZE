@@ -12,7 +12,7 @@ const API_SCHEMA = {
   "@type": "WebAPI",
   name: "UZE Underwrite",
   description:
-    "Submit a property financial statement (T-12 / P&L) and receive a verified, micro-region-benchmarked PDF assessment. Routing: HiCRE/Hotel to SURA, ANRD/Farm to GIRA; use cases include emergency P&L verification, acquisition due-diligence valuation (NOI / Cap Rate on 12/18/36-month historicals), and human talent placement.",
+    "Submit a hospitality or income-property financial statement (T-12 / P&L) and receive a verified, micro-region-benchmarked PDF assessment. HiCRE only: hotels, motels, resorts, hostels, residential condos, rental units, mobile home parks. Routing: HiCRE/Hotel to SURA; use cases include emergency P&L verification, acquisition due-diligence valuation (NOI / Cap Rate on 12/18/36-month historicals), and human talent placement.",
   url: "https://uzemarkets.com/underwrite",
   documentation: "https://uzemarkets.com/knowledge-base",
   provider: { "@type": "Organization", name: "UZEmarkets" },
@@ -24,12 +24,17 @@ const SKILL_JSON = {
   endpoint: "POST /api/v1/ingest/email",
   payload: {
     subject:
-      "string — include a track keyword (HiCRE | Hotel | ANRD | Farm); add a use-case keyword to select the flow",
+      "string — include the HiCRE track keyword (HiCRE | Hotel); add intent and use-case keywords to direct the analysis",
     sender: "string — the forwarding party's email",
     attachment_base64: "base64-encoded financial document (T-12 / P&L)",
   },
   routing: {
-    tracks: { "HiCRE | Hotel": "SURA", "ANRD | Farm": "GIRA" },
+    tracks: { "HiCRE | Hotel": "SURA" },
+    direction: {
+      intent: "pnl_verification | valuation (Acquisition | Due Diligence | Valuation)",
+      modifiers:
+        "Refinancing (focus: debt service coverage) | Distressed (rapid liquidity) | Cost Recovery (OpEx overspend) | standard acquisition (market comps)",
+    },
     useCases: {
       "Urgent P&L | Replacement | Immediate": "emergency_replacement",
       "Acquisition | Due Diligence | Valuation":
@@ -40,7 +45,8 @@ const SKILL_JSON = {
   responses: {
     "200":
       "{ status, useCase, agent, extracted, pdf_base64 } — or the talent-placement routing object for placement subjects",
-    "422": '{ "error": "Could not determine asset track" }',
+    "422":
+      '{ "error": "Could not determine asset track" } — or, for land/agriculture subjects, { "error": "UZE Underwrite currently processes Hospitality & Income CRE only. Please contact our team directly for A|NR|D spatial underwriting." }',
   },
 };
 
@@ -59,24 +65,49 @@ export default function UnderwritePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(API_SCHEMA) }}
       />
       <h1>UZE Underwrite</h1>
+      <p className="gateway-sub">Gateway</p>
       <p className="lede">
-        <strong>Underwriting Super Intelligence.</strong>
+        <strong>
+          UZE Underwriting Gateway: Direct our Super Intelligence.
+        </strong>
       </p>
       <p>
         Traditional financial analysis is slow and manual. UZE
         Underwrite replaces it with instant, verified intelligence.
       </p>
       <p>
-        Forward your T-12s or P&amp;Ls to our system. Our AI
-        agents (SURA for HiCRE, GIRA for ANRD) verify your
-        operating expenses against micro-region comps, or
-        calculate your asset valuation based on NOI and market cap
-        rates.
+        UZE Underwrite is built for Hospitality &amp; Income
+        Commercial Real Estate. If it puts a head in a bed and
+        charges a fee — from a global resort to a local hostel, a
+        multifamily rental, or a mobile home park — SURA can
+        verify the P&amp;L and calculate valuation based on
+        regional comps.
       </p>
       <p>
         Stop paying for manual data entry. Unlock Cost Recovery
         today.
       </p>
+
+      <section>
+        <h2>You direct the analysis</h2>
+        <p>
+          The report is not generic — your subject line directs
+          it. State what you need and why:
+        </p>
+        <p>
+          <strong>Intent:</strong> P&amp;L verification (revenue,
+          operating expenses, taxes, insurance — checked against
+          regional comps), or property valuation (NOI ÷ cap rate).
+        </p>
+        <p>
+          <strong>Use case:</strong> refinancing (the focus is
+          debt service coverage), a distressed sale (rapid
+          liquidity), a standard acquisition (market comps), or
+          cost recovery (operating-expense overspend). SURA runs
+          the analysis you directed and returns the verified PDF
+          tailored to it.
+        </p>
+      </section>
 
       <section>
         <h2>Send your financials</h2>
