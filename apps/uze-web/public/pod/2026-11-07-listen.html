@@ -132,6 +132,7 @@
   // attribute the chapter-start position to the previous chapter.
   function chapterIndexAt(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i]-0.5)idx=i;}return idx;}
   function chapterIndexForShare(t){var idx=0;for(var i=0;i<starts.length;i++){if(t>=starts[i]-1)idx=i;}return idx;}
+  var current=-1;
   // Arriving from a shared chapter link (?t=<seconds>): start there.
   var params=new URLSearchParams(window.location.search);
   var startAt=parseFloat(params.get('t'));
@@ -210,13 +211,10 @@
       navigator.share({title:'Saturday POD · 7 November 2026 — UZEmarkets',text:p.text,url:p.url}).catch(function(){});
     });
   }
-  var current=-1;
   audio.addEventListener('timeupdate',function(){
-    var cIdx=chapterIndexAt(audio.currentTime);
-    document.getElementById('share-chapter-name').textContent=rows[cIdx].getAttribute('data-title');
-    document.getElementById('share-chapter-time').textContent=fmt(starts[cIdx]);
-    var t=audio.currentTime,idx=0;
-    for(var i=0;i<starts.length;i++){if(t>=starts[i])idx=i;}
+    var idx=chapterIndexAt(audio.currentTime);
+    document.getElementById('share-chapter-name').textContent=rows[idx].getAttribute('data-title');
+    document.getElementById('share-chapter-time').textContent=fmt(starts[idx]);
     if(idx!==current){
       current=idx;
       rows.forEach(function(r,j){r.classList.toggle('active',j===idx);});
