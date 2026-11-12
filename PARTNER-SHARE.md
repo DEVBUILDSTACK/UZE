@@ -23,6 +23,13 @@ A navigation index for partners. Each link goes directly to the section it names
 *   [UZE Assign Technical Spec](https://github.com/DEVBUILDSTACK/UZE/blob/main/docs/specifications/assign/README.md) — 🟡
 *   [UZE Auction Technical Spec](https://github.com/DEVBUILDSTACK/UZE/blob/main/docs/specifications/auction/README.md) — 🟡 the Commitment Ladder and the human-gated Temporal Trigger · 🔴 live MPC execution
 
+## 4. Integrated Ecosystem Layer — Ticketing & Information Markets
+
+*Integrated 2026-11-12 by the owner's explicit override of the hackathon boundary, as mocks — the submission narrative in SUBMISSION.md is unchanged.*
+
+*   **Venue Ticketing (per-seat NFT tickets)** — 🟡 BUILT AS MOCK: venue-as-data events, per-seat minting, listing, provenance-invariant transfers (the original NFT moves; no re-mint), verification, and recorded bridge intents across NEAR / LightLink / Solana / Ink / Base / Robinhood — `services/compose/src/ticketing.py`, all responses labelled `mock`, nothing settles
+*   [GENSYN Bridge Spec](https://github.com/DEVBUILDSTACK/UZE/blob/main/docs/GENSYN-BRIDGE-SPEC.md) — 🟡 the mock derivation (scalar holder calls → distribution → threshold binary markets) · 🔴 the production information-market bridge it specifies
+
 ---
 
 The full documentation in a single file: [UZE-MASTER-COMPOSITE.md](https://github.com/DEVBUILDSTACK/UZE/blob/main/UZE-MASTER-COMPOSITE.md) (historical archive).

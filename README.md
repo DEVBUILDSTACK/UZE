@@ -29,6 +29,7 @@ For developers and auditors looking for the actual implementation details:
 *   [**UZE Underwrite Spec**](./docs/specifications/underwrite/README.md) — The 7-bucket P&L taxonomy, multi-year T-12 normalization, and the CoStar-shaped adapter (synthetic data, license pending).
 *   [**UZE Assign Spec**](./docs/specifications/assign/README.md) — The assignment marketplace surface, fractional syndicate contribution receipts, and the Commitment Ladder.
 *   [**UZE Auction Spec**](./docs/specifications/auction/README.md) — The confidential auction design, the Commitment Ladder schedule, and the Temporal Trigger with its human execution gate.
+*   [**Ticketing & Delphi Bridge Spec**](./docs/GENSYN-BRIDGE-SPEC.md) — 🟡 the integrated ticketing + information-market mock layer (per-seat TicketNFT, provenance transfers, holder-gated price calls, derived threshold markets; endpoints in `services/compose/src/ticketing.py`) · 🔴 the production Delphi bridge it specifies
 
 ---
 
