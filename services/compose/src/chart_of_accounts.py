@@ -132,7 +132,17 @@ def bucket_for(label: str) -> str | None:
     label has no filed variant (never guessed)."""
     key = _key(label)
     # Try the spaced form, then the squashed form ("R&M" -> "rm").
-    return _VARIANTS.get(key) or _VARIANTS.get(key.replace(" ", ""))
+    hit = _VARIANTS.get(key) or _VARIANTS.get(key.replace(" ", ""))
+    if hit is not None:
+        return hit
+    # Dialect fallback (2026-11-12, owner's tap): the Yardi pack
+    # is consulted only after the standard table misses, so a
+    # standard mapping always wins over a dialect one.
+    from chart_of_accounts_yardi import YARDI_VARIANTS
+
+    return YARDI_VARIANTS.get(key) or YARDI_VARIANTS.get(
+        key.replace(" ", "")
+    )
 
 
 def normalize_line_items(items: dict[str, float]) -> dict[str, Any]:
