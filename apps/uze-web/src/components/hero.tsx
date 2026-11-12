@@ -53,7 +53,7 @@ const STATES: HeroState[] = [
     quiet: { label: "Explore micro-regions", href: "https://uzemarkets.com/micro-regions", external: true },
   },
   {
-    badge: "ACTIVE MARKETS",
+    badge: "UZE ACTIVE MARKETS",
     h1: "Brickell, not “Miami.”",
     support:
       "Micro-regions, the analytical unit of the marketplace: Brickell, not “Miami”; Bethesda, not “DC metro.”",
@@ -163,7 +163,10 @@ export default function Hero() {
                   <Wordmark tone="white" />
                 </span>
               ) : (
-                <span className="hero-pill">{s.badge}</span>
+                <span className="hero-pill">
+                  <span className="wm-uze">UZE</span>
+                  {s.badge.slice(3)}
+                </span>
               )}
               <h1>{s.h1}</h1>
               <p className="hero-support">{s.support}</p>
