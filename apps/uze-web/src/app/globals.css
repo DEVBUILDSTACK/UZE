@@ -575,6 +575,22 @@ form button,
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* The ambient pulse (motion spec, 2026-11-11): the background
+     field breathes on a continuous 4s ease-in-out loop —
+     scale 1→1.02, opacity .8→1 — behind the rotating block. */
+  animation: hero-ambient 4s ease-in-out infinite;
+}
+
+@keyframes hero-ambient {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
 }
 
 .hero-ring {
@@ -612,39 +628,126 @@ form button,
   }
 }
 
-.hero-content {
+/* The unified rotating block (motion spec, 2026-11-11): all
+   three states share one grid cell, so the stage is always the
+   tallest block — no layout shift on rotation. The whole block
+   moves as one: exit fades/slides up, enter fades/slides in
+   from below, 0.8s on cubic-bezier(0.4, 0, 0.2, 1). */
+.hero-stage {
   position: relative;
-  animation: hero-breathe 7s ease-in-out infinite;
+  display: grid;
 }
 
-@keyframes hero-breathe {
+.hero-block {
+  grid-area: 1 / 1;
+}
+
+.hero-block.is-idle {
+  visibility: hidden;
+}
+
+.hero-block.is-exiting {
+  animation: hero-block-out 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.hero-block.is-entering {
+  animation: hero-block-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes hero-block-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+}
+
+@keyframes hero-block-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Circular bullets: one row of round chips per state, each with
+   a filled tangerine dot. */
+.hero-chips {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0 0 2rem;
+}
+
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px solid var(--text);
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.hero-chip::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+
+/* The 01 · 02 · 03 indicator: active is tangerine and gently
+   pulses; clicking jumps to that state and resets the dwell. */
+.hero-dots {
+  position: relative;
+  display: flex;
+  gap: 1.1rem;
+  margin-top: 2.2rem;
+}
+
+.hero-dot {
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  opacity: 0.35;
+  cursor: pointer;
+  padding: 0.2rem 0.1rem;
+}
+
+.hero-dot.is-active {
+  opacity: 1;
+  color: var(--accent);
+  animation: hero-dot-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes hero-dot-pulse {
   0%,
   100% {
-    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: scale(1.006);
-  }
-}
-
-.hero .hero-pill {
-  animation: hero-pill-glow 7s ease-in-out infinite;
-}
-
-@keyframes hero-pill-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0);
-  }
-  50% {
-    box-shadow: 0 0 0 7px rgba(255, 107, 0, 0.14);
+    opacity: 0.55;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-ring,
-  .hero-content,
-  .hero .hero-pill {
+  .hero-pulse-field,
+  .hero-block.is-exiting,
+  .hero-block.is-entering,
+  .hero-dot.is-active {
     animation: none;
   }
 }
@@ -667,41 +770,11 @@ form button,
   margin: 1.4rem 0 1.2rem;
 }
 
-.hero-rot {
-  color: var(--accent);
-  display: block;
-  transform-origin: left center;
-  animation: hero-pulse 0.6s ease both;
-}
-
-/* The Altitude pulse (James, 2026-11-10): each focus word lands
-   with a soft pop - fades in, swells just past full size, settles. */
-@keyframes hero-pulse {
-  0% {
-    opacity: 0;
-    transform: scale(0.94);
-  }
-  55% {
-    opacity: 1;
-    transform: scale(1.045);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-rot {
-    animation: none;
-  }
-}
-
 .hero-support {
   font-size: 1.18rem;
   line-height: 1.6;
   max-width: 36rem;
-  margin: 0 0 2rem;
+  margin: 0 0 1.3rem;
 }
 
 .hero-ctas {
