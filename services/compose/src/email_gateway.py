@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import base64
 
+import proforma
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from fpdf import FPDF
@@ -392,6 +393,40 @@ def ingest_multiyear(payload: MultiYearIngest):
 
 @router.post("/email")
 def ingest_email(payload: EmailIngest):
+    # Pro forma workbooks route to the REAL parser (2026-11-12):
+    # an attachment whose bytes are a ZIP (every .xlsx is) is
+    # tried as an institutional pro forma before any subject
+    # routing. A readable workbook that is missing required
+    # sheets/assumptions gets the parser's exact error, not the
+    # mock extraction. Non-workbook attachments fall through to
+    # the established flow untouched.
+    try:
+        _raw = base64.b64decode(payload.attachment_base64, validate=True)
+    except Exception:
+        _raw = b""
+    _is_xlsx = False
+    if _raw[:2] == b"PK":
+        try:
+            import io as _io
+            import zipfile as _zipfile
+
+            with _zipfile.ZipFile(_io.BytesIO(_raw)) as _zf:
+                _is_xlsx = "xl/workbook.xml" in _zf.namelist()
+        except Exception:
+            _is_xlsx = False
+    if _is_xlsx:
+        try:
+            _assumptions, _report = proforma.parse_with_report(_raw)
+        except ValueError as e:
+            return JSONResponse(
+                status_code=422,
+                content={"error": str(e), "routedTo": "UZE Underwrite pro forma parser"},
+            )
+        _result = proforma.compute_proforma(_assumptions)
+        _result["routedTo"] = "UZE Underwrite pro forma parser"
+        _result["parse_report"] = _report
+        return _result
+
     if is_anrd_subject(payload.subject):
         # Scope narrowing (2026-11-10): UZE Underwrite is HiCRE
         # only. ANRD subjects are declined politely, before any

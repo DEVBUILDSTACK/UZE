@@ -259,6 +259,37 @@ def compute_proforma(a: dict[str, Any], cap_rate: float = DEFAULT_CAP_RATE) -> d
 
 # ---------------------------------------------------------------- parser
 
+MAX_XLSX_BYTES = 10_000_000
+
+_RECOGNIZED_LABELS = {
+    "property", "location", "total units", "annual rent growth rate",
+    "initial occupancy at purchase", "stabilized vacancy rate (yr 2+)",
+    "commercial income ($/yr)", "commercial vacancy",
+    "utility reimbursements ($/unit/yr)", "credit loss / bad debt",
+    "fee income ($/unit/yr)", "other income ($/unit/yr)",
+    "other income growth rate", "management (% of egi)",
+    "expense growth rate", "tax growth rate",
+} | {label.lower() for _k, label, _o in _EXPENSE_LINES}
+
+
+def _coerce_number(v: Any) -> float | None:
+    """Numbers as real-world files carry them: 1615, 1615.0,
+    "1,615", "$1,615", "3%" (-> 0.03). Anything else: None."""
+    if isinstance(v, (int, float)):
+        return float(v)
+    if isinstance(v, str):
+        t = v.strip().replace("$", "").replace(",", "").replace(" ", "")
+        if not t:
+            return None
+        try:
+            if t.endswith("%"):
+                return float(t[:-1]) / 100
+            return float(t)
+        except ValueError:
+            return None
+    return None
+
+
 def _label_map(ws) -> dict[str, Any]:
     """First-column label -> value in column B, normalized keys."""
     out: dict[str, Any] = {}
@@ -269,8 +300,12 @@ def _label_map(ws) -> dict[str, Any]:
     return out
 
 
-def parse_proforma_xlsx(data: bytes) -> dict[str, Any]:
-    """Extract the assumptions dict from a 4-sheet pro forma file."""
+def _parse(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Parse + a blind-test report: what defaulted, what was
+    present but unmapped, and what looks off. Required fields
+    that are missing fail ONCE, listing all of them."""
+    if len(data) > MAX_XLSX_BYTES:
+        raise ValueError(f"workbook too large: {len(data)} bytes (limit {MAX_XLSX_BYTES})")
     try:
         import openpyxl
     except ImportError as e:  # pragma: no cover
@@ -284,14 +319,18 @@ def parse_proforma_xlsx(data: bytes) -> dict[str, Any]:
             raise ValueError(f"missing required sheet: {sheet}")
     ws = wb["Assumptions"]
     labels = _label_map(ws)
+    report: dict[str, Any] = {"defaulted": [], "unmapped_labels": [], "warnings": []}
+    missing: list[str] = []
 
     def num(label: str, default: float | None = None) -> float:
-        v = labels.get(label.lower())
+        v = _coerce_number(labels.get(label.lower()))
         if v is None:
             if default is not None:
+                report["defaulted"].append(label)
                 return default
-            raise ValueError(f"missing assumption: {label}")
-        return float(v)
+            missing.append(label)
+            return 0.0
+        return v
 
     a: dict[str, Any] = {
         "property": labels.get("property"),
@@ -312,6 +351,11 @@ def parse_proforma_xlsx(data: bytes) -> dict[str, Any]:
     }
     for key, label, _out in _EXPENSE_LINES:
         a[key] = num(label)
+    if missing:
+        raise ValueError(
+            "missing required assumptions on sheet 'Assumptions': "
+            + ", ".join(missing)
+        )
 
     # Unit mix: rows under 'UNIT MIX' — col D type, E existing,
     # F market rent, G value-add, H va rent, I delivery month.
@@ -320,10 +364,10 @@ def parse_proforma_xlsx(data: bytes) -> dict[str, Any]:
         t = row[0].value
         if isinstance(t, str) and t.strip().lower().startswith("total"):
             break  # the mix table ends at its Total / Blended row
-        existing = row[1].value
-        if isinstance(t, str) and t.strip() and isinstance(existing, (int, float)) and existing:
+        existing = _coerce_number(row[1].value)
+        if isinstance(t, str) and t.strip() and existing:
             def _num(v: Any) -> float:
-                return float(v) if isinstance(v, (int, float)) else 0.0
+                return _coerce_number(v) or 0.0
 
             mix.append({
                 "type": t.strip(),
@@ -336,25 +380,57 @@ def parse_proforma_xlsx(data: bytes) -> dict[str, Any]:
     if not mix:
         raise ValueError("no unit-mix rows found on the Assumptions tab")
     a["unit_mix"] = mix
+    mix_units = sum(m["existing"] + m["value_add"] for m in mix)
+    if mix_units != a["total_units"]:
+        report["warnings"].append(
+            f"unit mix sums to {mix_units} units but Total Units says {a['total_units']}"
+        )
 
     # Lease-up: the vertical month table (col D month, col E new leases).
     leases: dict[int, int] = {}
     for row in ws.iter_rows(min_col=4, max_col=5):
-        m, n = row[0].value, row[1].value
-        if isinstance(m, (int, float)) and 1 <= int(m) <= 12 and isinstance(n, (int, float)):
+        m = _coerce_number(row[0].value)
+        n = _coerce_number(row[1].value)
+        if m is not None and 1 <= int(m) <= 12 and n is not None:
             leases[int(m)] = int(n)
     a["lease_up_new_leases"] = [leases.get(m, 0) for m in range(1, 13)]
+    if not any(a["lease_up_new_leases"]):
+        report["warnings"].append(
+            "no lease-up leases filed — Year 1 runs at initial occupancy all year"
+        )
 
     # Replacement reserves: 'Reserve — Year N' labels in col G, values col H.
     reserves: dict[int, float] = {}
     for row in ws.iter_rows(min_col=7, max_col=8):
-        label, v = row[0].value, row[1].value
-        if isinstance(label, str) and "reserve" in label.lower() and isinstance(v, (int, float)):
+        label, v = row[0].value, _coerce_number(row[1].value)
+        if isinstance(label, str) and "reserve" in label.lower() and v is not None:
             for n in range(1, 10):
                 if f"year {n}" in label.lower():
-                    reserves[n] = float(v)
+                    reserves[n] = v
     a["replacement_reserve_per_unit"] = [reserves.get(n, 0.0) for n in range(1, 6)]
+    if len(reserves) < 5:
+        report["warnings"].append(
+            f"replacement reserve filed for {len(reserves)} of 5 years — missing years are computed at 0"
+        )
+
+    report["unmapped_labels"] = sorted(
+        k for k, v in labels.items()
+        if k not in _RECOGNIZED_LABELS and _coerce_number(v) is not None
+    )
+    return a, report
+
+
+def parse_proforma_xlsx(data: bytes) -> dict[str, Any]:
+    """Extract the assumptions dict from a 4-sheet pro forma file."""
+    a, _report = _parse(data)
     return a
+
+
+def parse_with_report(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
+    """parse_proforma_xlsx + the blind-test report (defaulted /
+    unmapped / warnings). Raises ValueError on unreadable files
+    and on missing REQUIRED assumptions, listing all of them."""
+    return _parse(data)
 
 
 # ---------------------------------------------------------------- routes
@@ -378,8 +454,10 @@ def ingest_proforma(body: ProformaFileIn) -> dict[str, Any]:
     except Exception:
         raise HTTPException(422, "file_base64 is not valid base64")
     try:
-        assumptions = parse_proforma_xlsx(raw)
-        return compute_proforma(assumptions, body.cap_rate or DEFAULT_CAP_RATE)
+        assumptions, report = parse_with_report(raw)
+        out = compute_proforma(assumptions, body.cap_rate or DEFAULT_CAP_RATE)
+        out["parse_report"] = report
+        return out
     except ValueError as e:
         raise HTTPException(422, str(e))
 

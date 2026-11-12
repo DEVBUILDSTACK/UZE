@@ -140,3 +140,95 @@ def test_api_sample_and_file_ingest(client):
         json={"file_base64": base64.b64encode(b"junk").decode()},
     )
     assert r.status_code == 422
+
+
+def test_blind_hardening_messy_workbook_reports_and_parses():
+    """An unseen, messy file: numbers as "$1,615" strings, an
+    extra unrecognized numeric label, an optional field absent.
+    The parser must parse what it can, default what is optional,
+    and REPORT both — not crash."""
+    import openpyxl
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Assumptions"
+    rows = [
+        ("Property", "Messy Arms"), ("Total Units", "10"), ("Location", "Test, PA"),
+        ("Annual Rent Growth Rate", "2%"), ("Initial Occupancy at Purchase", 0.9),
+        ("Stabilized Vacancy Rate (Yr 2+)", 0.05), ("Credit Loss / Bad Debt", 0.01),
+        ("Other Income ($/unit/yr)", 100), ("Other Income Growth Rate", 0.02),
+        ("Management (% of EGI)", 0.03), ("Expense Growth Rate", 0.02),
+        ("Payroll / Unit", "$1,000"), ("Utilities / Unit", 500),
+        ("Building & Mechanical / Unit", 10), ("Repairs & Maintenance / Unit", 100),
+        ("Interior Improvements / Unit", 10), ("Materials & Supplies / Unit", 10),
+        ("Marketing / Unit", 10), ("General & Admin / Unit", 10),
+        ("Professional Fees / Unit", 10), ("Insurance / Unit", 100),
+        ("Taxes / Unit", "$200"), ("Syndication Fee / Unit", 25),
+        # Utility Reimbursements deliberately absent -> defaulted
+    ]
+    for i, (k, v) in enumerate(rows, start=1):
+        ws.cell(row=i, column=1, value=k)
+        ws.cell(row=i, column=2, value=v)
+    ws.cell(row=1, column=4, value="2 BR")
+    ws.cell(row=1, column=5, value=10)
+    ws.cell(row=1, column=6, value=1000)
+    ws.cell(row=2, column=4, value="Total / Blended Avg Rent")
+    for n in range(1, 6):
+        ws.cell(row=14 + n, column=7, value=f"Reserve — Year {n}")
+        ws.cell(row=14 + n, column=8, value=100 * n)
+    wb.create_sheet("Pro Forma")
+    buf = io.BytesIO()
+    wb.save(buf)
+
+    a, report = proforma.parse_with_report(buf.getvalue())
+    assert a["total_units"] == 10
+    assert a["taxes_per_unit"] == 200          # "$200" coerced
+    assert a["payroll_per_unit"] == 1000       # "$1,000" coerced
+    assert a["rent_growth"] == 0.02            # "2%" coerced
+    assert "Utility Reimbursements ($/unit/yr)" in report["defaulted"]
+    assert "syndication fee / unit" in report["unmapped_labels"]
+    out = proforma.compute_proforma(a)
+    assert out["years"][0]["noi"] > 0
+
+
+def test_blind_missing_required_lists_everything_missing():
+    import openpyxl
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Assumptions"
+    ws.cell(row=1, column=1, value="Total Units")
+    ws.cell(row=1, column=2, value=10)
+    ws.cell(row=1, column=4, value="2 BR")
+    ws.cell(row=1, column=5, value=10)
+    ws.cell(row=1, column=6, value=1000)
+    wb.create_sheet("Pro Forma")
+    buf = io.BytesIO()
+    wb.save(buf)
+    with pytest.raises(ValueError) as e:
+        proforma.parse_with_report(buf.getvalue())
+    msg = str(e.value)
+    # one error naming several missing labels, not first-failure only
+    assert "Credit Loss / Bad Debt" in msg and "Taxes / Unit" in msg
+
+
+def test_gateway_routes_xlsx_attachments_to_the_parser(client):
+    payload = {
+        "subject": "HiCRE proforma for review",
+        "sender": "analyst@example.com",
+        "attachment_base64": base64.b64encode(_mini_workbook_bytes()).decode(),
+    }
+    r = client.post("/api/v1/ingest/email", json=payload)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["routedTo"] == "UZE Underwrite pro forma parser"
+    assert body["units"] == 10
+    assert len(body["years"]) == 5
+    assert "parse_report" in body
+
+    # a non-workbook attachment keeps the established mock flow
+    payload["attachment_base64"] = base64.b64encode(b"%PDF-1.4 fake").decode()
+    payload["subject"] = "HiCRE T-12 for the Brickell hotel"
+    r = client.post("/api/v1/ingest/email", json=payload)
+    assert r.status_code == 200
+    assert r.json()["agent"] == "SURA"
