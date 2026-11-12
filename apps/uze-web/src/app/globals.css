@@ -679,9 +679,15 @@ form button,
 /* Circular bullets: one row of round chips per state, each with
    a filled tangerine dot. */
 .hero-chips {
+  /* Stacked, one capsule per row in every state (James,
+     2026-11-12): the short state-02 labels wrapped 2-up/1-down
+     under flex-row, breaking conformity with states 01 and 03,
+     whose longer labels stack. Column layout makes all three
+     states identical in form. */
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 0.6rem;
-  flex-wrap: wrap;
   margin: 0 0 2rem;
 }
 
