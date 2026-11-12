@@ -339,5 +339,30 @@ at 312.
 
 Still true after the unfreeze: extraction is mocked (§1), comps
 are synthetic (§5), the GPR→EGI and departmental/undistributed
-chains do not exist (§2), and there is no Price/Unit-vs-SqFt
-prioritization rule (§5).
+chains do not exist on the historical surfaces (§2 — but see
+§8: the pro forma ingestion module implements the GPR→EGI
+chain for its own format), and there is no
+Price/Unit-vs-SqFt prioritization rule (§5).
+
+## 8. The GPR→EGI chain now exists — for the pro forma format (2026-11-12)
+
+`services/compose/src/proforma.py` (owner's unfreeze tap,
+2026-11-12) ingests the institutional multifamily pro forma
+format — the Graham Hill workbook (152 units, Mechanicsburg
+PA) is the filed reference — and computes the full chain:
+GPR → vacancy → credit loss → Net Rental Income → + other
+income → EGI → itemized expenses → Replacement Reserve → NOI,
+Years 1–5, with Year 1 run through a monthly lease-up. The
+engine reproduces the workbook's own cached GPR/EGI/OpEx/NOI
+for all five years to the cent (acceptance figures pinned in
+`tests/test_proforma.py`; suite 319). Conventions: taxes and
+insurance remain separate lines/buckets (the module also
+reports the workbook's combined expense total so its NOI
+reconciles); the Replacement Reserve follows the workbook —
+its own line above NOI; valuation applies a cap-rate parameter
+to Year 1 NOI (the workbook carries none). Endpoints:
+`POST /api/v1/ingest/proforma` (base64 .xlsx),
+`POST /api/v1/ingest/proforma/from-assumptions`,
+`GET /api/v1/ingest/proforma/sample`. The email/historical
+surfaces are unchanged — this chain serves pro forma
+ingestion, not T-12 analysis.

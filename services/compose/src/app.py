@@ -38,6 +38,7 @@ import auctions
 import builders
 import alpha
 import ticketing
+import proforma
 import matrix
 import contributions
 import costar
@@ -93,6 +94,7 @@ def create_app() -> FastAPI:
     app.include_router(builders.router)
     app.include_router(alpha.router)
     app.include_router(ticketing.router)
+    app.include_router(proforma.router)
     app.include_router(matrix.router)
     app.include_router(contributions.router)
     app.include_router(costar.router)
