@@ -74,6 +74,17 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   partner equity." NOTE: the $199.99 lane threshold in this
   copy IS Directive 1's compliance posture — copy and code
   settle together, on the owner's own confirmation.
+- **Three-tier refinement (relayed 2026-11-11 ~19:12,
+  candidate copy — settles with Directive 1):** tiers
+  <$29.99 x402-only / $30–$199.99 x401+x402 / >$199.99
+  x401+x402+Entity KYB; diagram 49 filed as PROPOSAL with a
+  boundary defect noted ($29.99 claimed by both tier text
+  and pseudo-logic). Candidate copy: "We scale compliance
+  with the size of the transaction. Under $30, agents pay
+  with x402 for frictionless inference. Between $30 and
+  $199, we enforce x401 identity verification, ensuring the
+  agent is a registered UZE Builder. Above $200, we enforce
+  full Entity KYB for syndicate auctions."
 - **Directive 1 (entity-only KYB onboarding + $199.99 agent-
   transaction threshold): relayed approval recorded 2026-11-11,
   NOT implemented.** Implementing it pre-recording would break
