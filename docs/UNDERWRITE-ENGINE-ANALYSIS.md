@@ -288,3 +288,56 @@ departmental/undistributed chains do not exist — bucket-level only
 Resolved the day this document was filed, on the owner's tap: the
 post-interest "NOI" label (§3) and the missing vacancy-loss /
 credit-loss variants (§1).
+
+---
+
+## 7. The three-tier engine (built later the same day)
+
+After this analysis was filed, the owner unfroze the build on his
+own tap and the three-tier engine was built in
+`services/compose/src/underwrite_engine.py`, with the SURA analysis
+directive in `agents.py` extended to match. Endpoints:
+`POST /api/v1/underwrite/projection`, `/verify-projection`,
+`/valuation`, `/anrd-valuation`. Ten new tests; the suite stands
+at 312.
+
+- **Tier 1 — Historicals.** §1–§3 of this document, plus
+  plain-language per-bucket trends for the most recent
+  year-over-year step ("Insurance(s) costs have risen 50.0%
+  year-over-year").
+- **Tier 2 — Projections.** `generate_projection()` rolls the
+  latest historical year forward 12 months. Default growth per
+  bucket is that bucket's most recent historical YoY rate;
+  revenue growth and per-bucket growth accept explicit overrides;
+  known shocks (e.g. a tax reassessment) apply as labelled
+  absolute adjustments after growth. **Every assumption is
+  labelled by source in the output.** Projected NOI is unlevered;
+  the post-interest figure is `projected_levered_cash_flow`. The
+  projected cap rate is the underwriting cap rate plus an
+  optional basis-point shift (default 0 — held, and labelled).
+- **Tier 3 — Verification.** `verify_projection()` scores a
+  projection against the actual that arrived for the same period:
+  signed variance % and an accuracy score (100 − |variance %|,
+  floored at 0). Within threshold: a Precedent Index event (+1)
+  is returned. Beyond it: `UNDERWRITING_METHODOLOGY_FLAGGED` for
+  the Juror Team. **The threshold is a policy default of 10%,
+  set as a named constant and a per-call parameter** — the
+  commissioning directive left it as "X%"; 10% is the shipped
+  default, adjustable without code changes. Honest limits: the
+  Precedent Index is a returned event record, not a persisted
+  score, and the flag is a computed status — no live juror run is
+  triggered by this module.
+- **Tier 4 — Valuation.** `income_valuation()` takes the
+  verified unlevered NOI by name; levered cash flow cannot be
+  passed as the basis without misusing the API.
+- **Tier 5 — ANRD (GIRA).** `gira_yield_valuation()`: net
+  agricultural income (projected crop revenue − input costs)
+  valued on an income multiple — **20× shipped as the labelled
+  default** (`multiple_is_default` is stated in the output) —
+  with a raw-acreage comp value alongside when acres and a
+  per-acre price are supplied.
+
+Still true after the unfreeze: extraction is mocked (§1), comps
+are synthetic (§5), the GPR→EGI and departmental/undistributed
+chains do not exist (§2), and there is no Price/Unit-vs-SqFt
+prioritization rule (§5).

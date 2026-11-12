@@ -41,6 +41,7 @@ import ticketing
 import matrix
 import contributions
 import costar
+import underwrite_engine
 import treasury
 import treasury_router
 
@@ -95,6 +96,7 @@ def create_app() -> FastAPI:
     app.include_router(matrix.router)
     app.include_router(contributions.router)
     app.include_router(costar.router)
+    app.include_router(underwrite_engine.router)
     app.include_router(assuraties.router)
     app.include_router(email_gateway.router)
     return app

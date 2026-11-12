@@ -225,7 +225,18 @@ SURA_ANALYSIS_DIRECTIVE = (
     "provided micro-region sales comps. Highlight any anomalous "
     "line items or unexplained expense fluctuations (any bucket "
     "moving more than 15% year-over-year is flagged). Judge "
-    "only against same-micro-region benchmarks."
+    "only against same-micro-region benchmarks. Work in three "
+    "tiers: (1) historicals — multi-year T-12s normalized into "
+    "the seven buckets, unlevered NOI, year-over-year bucket "
+    "trends stated plainly; (2) projections — a 12-month "
+    "forward NOI whose every growth assumption and known shock "
+    "is labelled by source, projected NOI reported separately "
+    "from projected levered cash flow; (3) verification — when "
+    "actuals arrive, score the projection's variance against "
+    "them and treat a miss beyond the threshold as a "
+    "methodology flag, not a rounding error. Value on verified "
+    "unlevered NOI only — levered cash flow is never a "
+    "valuation basis."
 )
 
 
