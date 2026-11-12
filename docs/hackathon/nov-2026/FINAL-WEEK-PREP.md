@@ -64,6 +64,16 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
 - **Demo 402 beat LOCKED (standing plan, re-affirmed via relay
   2026-11-11):** no inference fix attempt before the recording;
   the honest 402 is the scripted beat.
+- **Two Lanes of Capital copy (relayed 2026-11-11 ~19:11,
+  candidate for the Agent Economy text — James to confirm or
+  replace at merge):** "We separate capital by risk.
+  Micro-agents onboard as UZE Builders with just an email and
+  x401 wallet for sub-$200 inference. But when a syndicate
+  wants to pool $500k for an Arcium auction, we enforce strict
+  Entity KYB and use fractional contribution receipts to track
+  partner equity." NOTE: the $199.99 lane threshold in this
+  copy IS Directive 1's compliance posture — copy and code
+  settle together, on the owner's own confirmation.
 - **Directive 1 (entity-only KYB onboarding + $199.99 agent-
   transaction threshold): relayed approval recorded 2026-11-11,
   NOT implemented.** Implementing it pre-recording would break
