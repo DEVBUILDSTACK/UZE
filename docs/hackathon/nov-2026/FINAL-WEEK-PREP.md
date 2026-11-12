@@ -95,6 +95,12 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   Corrected variant for the merge, if the owner adopts the
   tiers: drop "routed through Circle/Arc" -> "tied to an
   Entity."
+- **X THREAD CONFIRMING TAP — RECEIVED (owner's own words,
+  2026-11-11 ~19:51 ET):** the locked X thread text (v3,
+  filed in the 2026-11-10 daily log) with the 'Underwriting
+  Super Intelligence' framing is CONFIRMED. This is the
+  Confirming Tap only — the Go Public Tap is scheduled by
+  the owner for Nov 14. Nothing posts before that tap.
 - **DIRECTIVE-1 FAMILY SETTLED (owner's own tap,
   2026-11-11 ~19:31 ET):** build D1 (three-tier gate in
   metering.py), D2 (Builder register), D3 (opaque welcome
