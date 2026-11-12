@@ -232,3 +232,146 @@ def test_gateway_routes_xlsx_attachments_to_the_parser(client):
     r = client.post("/api/v1/ingest/email", json=payload)
     assert r.status_code == 200
     assert r.json()["agent"] == "SURA"
+
+
+# ------------------------------------------------ universal formats
+# The same mini assumptions laid out four ways must produce the
+# IDENTICAL computed output — that is the universal-parser proof.
+
+_MINI_LABELS = [
+    ("Property", "Mini Court"), ("Total Units", 10), ("Location", "Test, PA"),
+    ("Annual Rent Growth Rate", 0.02), ("Initial Occupancy at Purchase", 0.9),
+    ("Stabilized Vacancy Rate (Yr 2+)", 0.05), ("Credit Loss / Bad Debt", 0.01),
+    ("Other Income ($/unit/yr)", 100), ("Other Income Growth Rate", 0.02),
+    ("Management (% of EGI)", 0.03), ("Expense Growth Rate", 0.02),
+    ("Payroll / Unit", 1000), ("Utilities / Unit", 500),
+    ("Building & Mechanical / Unit", 10), ("Repairs & Maintenance / Unit", 100),
+    ("Interior Improvements / Unit", 10), ("Materials & Supplies / Unit", 10),
+    ("Marketing / Unit", 10), ("General & Admin / Unit", 10),
+    ("Professional Fees / Unit", 10), ("Insurance / Unit", 100),
+    ("Taxes / Unit", 200), ("Utility Reimbursements ($/unit/yr)", 50),
+]
+
+
+def _mini_grid() -> list[list]:
+    grid = [[""] * 9 for _ in range(24)]
+    for i, (k, v) in enumerate(_MINI_LABELS):
+        grid[i][0], grid[i][1] = k, v
+    grid[0][3], grid[0][4], grid[0][5] = "2 BR", 10, 1000
+    grid[1][3] = "Total / Blended Avg Rent"
+    for n in range(1, 6):
+        grid[13 + n][6] = f"Reserve — Year {n}"
+        grid[13 + n][7] = 100 * n
+    return grid
+
+
+def _mini_xls_bytes() -> bytes:
+    import xlwt
+
+    wb = xlwt.Workbook()
+    ws = wb.add_sheet("Assumptions")
+    for r, row in enumerate(_mini_grid()):
+        for c, v in enumerate(row):
+            if v != "":
+                ws.write(r, c, v)
+    wb.add_sheet("Pro Forma")
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def _mini_csv_bytes() -> bytes:
+    import csv as _csv
+
+    buf = io.StringIO()
+    w = _csv.writer(buf)
+    for row in _mini_grid():
+        w.writerow(row)
+    return buf.getvalue().encode()
+
+
+def test_all_formats_produce_identical_math():
+    outs = {}
+    for name, blob in (
+        ("xlsx", _mini_workbook_bytes()),
+        ("xls", _mini_xls_bytes()),
+        ("csv", _mini_csv_bytes()),
+    ):
+        a, _report, fmt = proforma.parse_any_with_report(blob)
+        assert fmt == name
+        outs[name] = proforma.compute_proforma(a)
+    assert outs["xlsx"] == outs["xls"] == outs["csv"]
+
+
+def test_detect_format():
+    assert proforma.detect_format(_mini_workbook_bytes()) == "xlsx"
+    assert proforma.detect_format(_mini_xls_bytes()) == "xls"
+    assert proforma.detect_format(_mini_csv_bytes()) == "csv"
+    assert proforma.detect_format(b"%PDF-1.4 fake") is None
+    assert proforma.detect_format(b"plain text with no labels") is None
+
+
+def test_google_sheets_url_rules():
+    url = proforma.google_sheet_export_url(
+        "https://docs.google.com/spreadsheets/d/AbC-123_xYz/edit#gid=0"
+    )
+    assert url == "https://docs.google.com/spreadsheets/d/AbC-123_xYz/export?format=xlsx"
+    for bad in (
+        "http://docs.google.com/spreadsheets/d/AbC-123_xYz",       # not https
+        "https://evil.example.com/spreadsheets/d/AbC-123_xYz",     # not Google
+        "https://docs.google.com/document/d/AbC-123_xYz",          # not a sheet
+        "https://docs.google.com/spreadsheets/d/",                 # no id
+    ):
+        with pytest.raises(ValueError):
+            proforma.google_sheet_export_url(bad)
+
+
+def test_google_sheets_fetch_paths(client, monkeypatch):
+    # link-shared sheet: the export returns real xlsx bytes
+    monkeypatch.setattr(
+        proforma, "_fetch_url_bytes",
+        lambda url: (_mini_workbook_bytes(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    )
+    r = client.post(
+        "/api/v1/ingest/proforma",
+        json={"source_url": "https://docs.google.com/spreadsheets/d/AbC-123_xYz/edit"},
+    )
+    assert r.status_code == 200
+    assert r.json()["input_format"] == "xlsx"
+    assert r.json()["units"] == 10
+
+    # private sheet: Google answers with an HTML login page
+    monkeypatch.setattr(
+        proforma, "_fetch_url_bytes",
+        lambda url: (b"<!doctype html><title>Sign in</title>", "text/html"),
+    )
+    r = client.post(
+        "/api/v1/ingest/proforma",
+        json={"source_url": "https://docs.google.com/spreadsheets/d/AbC-123_xYz/edit"},
+    )
+    assert r.status_code == 422
+    assert "anyone with the link" in r.json()["detail"]
+
+    # a non-Google URL never reaches the fetcher
+    r = client.post(
+        "/api/v1/ingest/proforma",
+        json={"source_url": "https://evil.example.com/spreadsheets/d/AbC"},
+    )
+    assert r.status_code == 422
+
+
+def test_gateway_routes_xls_and_csv_too(client):
+    for blob in (_mini_xls_bytes(), _mini_csv_bytes()):
+        r = client.post(
+            "/api/v1/ingest/email",
+            json={
+                "subject": "HiCRE proforma attached",
+                "sender": "analyst@example.com",
+                "attachment_base64": base64.b64encode(blob).decode(),
+            },
+        )
+        assert r.status_code == 200
+        body = r.json()
+        assert body["routedTo"] == "UZE Underwrite pro forma parser"
+        assert body["units"] == 10
+        assert body["input_format"] in ("xls", "csv")

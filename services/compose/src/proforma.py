@@ -1,9 +1,13 @@
 """Institutional multifamily pro forma ingestion (the Graham Hill
-format) — owner's unfreeze tap, 2026-11-12.
+format) — owner's unfreeze tap, 2026-11-12; universal format
+support added the same day on the owner's follow-up tap.
 
-Parses the 4-sheet institutional pro forma structure (Comps /
-Assumptions / Lease-Up Schedule / Pro Forma) and replicates its
-math exactly:
+Parses the institutional pro forma structure (Assumptions /
+Lease-Up Schedule / Pro Forma) from .xlsx, .xlsm, legacy .xls,
+CSV, or a link-shared Google Sheets URL — every format is
+normalized to row/column grids and run through ONE extractor,
+so the parse report and the math are identical across formats
+— and replicates the workbook math exactly:
 
     GPR -> vacancy -> credit loss -> Net Rental Income
         -> + other income -> EGI -> operating expenses
@@ -41,8 +45,13 @@ the workbook's own cached results (done in test_proforma.py).
 from __future__ import annotations
 
 import base64
+import csv
 import io
+import re
+import zipfile
 from typing import Any
+
+import httpx
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -257,9 +266,14 @@ def compute_proforma(a: dict[str, Any], cap_rate: float = DEFAULT_CAP_RATE) -> d
     }
 
 
-# ---------------------------------------------------------------- parser
+# ------------------------------------------------------- format layer
+#
+# Every input format is normalized to grids (sheet name -> rows of
+# cell values) and extracted by ONE code path, so a Graham Hill
+# file produces identical assumptions — and identical math — as
+# .xlsx, .xls, .csv, or a Google Sheets export.
 
-MAX_XLSX_BYTES = 10_000_000
+MAX_FILE_BYTES = 10_000_000
 
 _RECOGNIZED_LABELS = {
     "property", "location", "total units", "annual rent growth rate",
@@ -271,6 +285,96 @@ _RECOGNIZED_LABELS = {
     "expense growth rate", "tax growth rate",
 } | {label.lower() for _k, label, _o in _EXPENSE_LINES}
 
+_OLE2_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+
+
+def detect_format(data: bytes) -> str | None:
+    """'xlsx' (also .xlsm — same container), 'xls', 'csv', or None."""
+    if data[:4] == b"PK\x03\x04":
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as zf:
+                if "xl/workbook.xml" in zf.namelist():
+                    return "xlsx"
+        except Exception:
+            return None
+        return None
+    if data[:8] == _OLE2_MAGIC:
+        return "xls"
+    for enc in ("utf-8-sig", "latin-1"):
+        try:
+            text = data[:8192].decode(enc)
+            break
+        except (UnicodeDecodeError, LookupError):
+            continue
+    else:
+        return None
+    if "total units" in text.lower():
+        return "csv"
+    return None
+
+
+def _grids_from_openpyxl(data: bytes) -> dict[str, list[list[Any]]]:
+    try:
+        import openpyxl
+    except ImportError as e:  # pragma: no cover
+        raise ValueError("openpyxl is not installed") from e
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(data), data_only=True)
+    except Exception as e:
+        raise ValueError(f"not a readable Excel workbook: {e}") from e
+    return {
+        name: [list(row) for row in wb[name].iter_rows(values_only=True)]
+        for name in wb.sheetnames
+    }
+
+
+def _grids_from_xlrd(data: bytes) -> dict[str, list[list[Any]]]:
+    try:
+        import xlrd
+    except ImportError as e:  # pragma: no cover
+        raise ValueError("xlrd is not installed") from e
+    try:
+        wb = xlrd.open_workbook(file_contents=data)
+    except Exception as e:
+        raise ValueError(f"not a readable legacy .xls workbook: {e}") from e
+    grids: dict[str, list[list[Any]]] = {}
+    for name in wb.sheet_names():
+        sh = wb.sheet_by_name(name)
+        grids[name] = [
+            [sh.cell_value(r, c) for c in range(sh.ncols)]
+            for r in range(sh.nrows)
+        ]
+    return grids
+
+
+def _grid_from_csv(data: bytes) -> list[list[Any]]:
+    text = None
+    for enc in ("utf-8-sig", "latin-1"):
+        try:
+            text = data.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    if text is None:
+        raise ValueError("CSV is not decodable text")
+    try:
+        dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
+    except csv.Error:
+        dialect = csv.excel
+    return [row for row in csv.reader(io.StringIO(text), dialect)]
+
+
+def _assumptions_grid(data: bytes, fmt: str) -> list[list[Any]]:
+    if fmt == "csv":
+        return _grid_from_csv(data)
+    grids = _grids_from_openpyxl(data) if fmt == "xlsx" else _grids_from_xlrd(data)
+    for sheet in ("Assumptions", "Pro Forma"):
+        if sheet not in grids:
+            raise ValueError(f"missing required sheet: {sheet}")
+    return grids["Assumptions"]
+
+
+# ------------------------------------------------------------- extractor
 
 def _coerce_number(v: Any) -> float | None:
     """Numbers as real-world files carry them: 1615, 1615.0,
@@ -290,35 +394,19 @@ def _coerce_number(v: Any) -> float | None:
     return None
 
 
-def _label_map(ws) -> dict[str, Any]:
-    """First-column label -> value in column B, normalized keys."""
-    out: dict[str, Any] = {}
-    for row in ws.iter_rows(min_col=1, max_col=2):
-        label, value = row[0].value, row[1].value
+def _cell(row: list[Any], idx: int) -> Any:
+    return row[idx] if idx < len(row) else None
+
+
+def _extract(grid: list[list[Any]]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """The one extractor. Required fields missing -> ONE error
+    listing all of them; optional fields default and are reported;
+    unrecognized numeric labels are reported, never fatal."""
+    labels: dict[str, Any] = {}
+    for row in grid:
+        label = _cell(row, 0)
         if isinstance(label, str) and label.strip():
-            out[" ".join(label.strip().lower().split())] = value
-    return out
-
-
-def _parse(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Parse + a blind-test report: what defaulted, what was
-    present but unmapped, and what looks off. Required fields
-    that are missing fail ONCE, listing all of them."""
-    if len(data) > MAX_XLSX_BYTES:
-        raise ValueError(f"workbook too large: {len(data)} bytes (limit {MAX_XLSX_BYTES})")
-    try:
-        import openpyxl
-    except ImportError as e:  # pragma: no cover
-        raise ValueError("openpyxl is not installed") from e
-    try:
-        wb = openpyxl.load_workbook(io.BytesIO(data), data_only=True)
-    except Exception as e:
-        raise ValueError(f"not a readable .xlsx workbook: {e}") from e
-    for sheet in ("Assumptions", "Pro Forma"):
-        if sheet not in wb.sheetnames:
-            raise ValueError(f"missing required sheet: {sheet}")
-    ws = wb["Assumptions"]
-    labels = _label_map(ws)
+            labels[" ".join(label.strip().lower().split())] = _cell(row, 1)
     report: dict[str, Any] = {"defaulted": [], "unmapped_labels": [], "warnings": []}
     missing: list[str] = []
 
@@ -353,18 +441,18 @@ def _parse(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
         a[key] = num(label)
     if missing:
         raise ValueError(
-            "missing required assumptions on sheet 'Assumptions': "
+            "missing required assumptions on the Assumptions sheet: "
             + ", ".join(missing)
         )
 
-    # Unit mix: rows under 'UNIT MIX' — col D type, E existing,
-    # F market rent, G value-add, H va rent, I delivery month.
+    # Unit mix: col D type, E existing, F market rent, G value-add,
+    # H va rent, I delivery month; the table ends at its Total row.
     mix: list[dict[str, Any]] = []
-    for row in ws.iter_rows(min_col=4, max_col=9):
-        t = row[0].value
+    for row in grid:
+        t = _cell(row, 3)
         if isinstance(t, str) and t.strip().lower().startswith("total"):
-            break  # the mix table ends at its Total / Blended row
-        existing = _coerce_number(row[1].value)
+            break
+        existing = _coerce_number(_cell(row, 4))
         if isinstance(t, str) and t.strip() and existing:
             def _num(v: Any) -> float:
                 return _coerce_number(v) or 0.0
@@ -372,13 +460,13 @@ def _parse(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
             mix.append({
                 "type": t.strip(),
                 "existing": int(existing),
-                "market_rent": _num(row[2].value),
-                "value_add": int(_num(row[3].value)),
-                "value_add_rent": _num(row[4].value),
-                "delivery_month": int(_num(row[5].value)),
+                "market_rent": _num(_cell(row, 5)),
+                "value_add": int(_num(_cell(row, 6))),
+                "value_add_rent": _num(_cell(row, 7)),
+                "delivery_month": int(_num(_cell(row, 8))),
             })
     if not mix:
-        raise ValueError("no unit-mix rows found on the Assumptions tab")
+        raise ValueError("no unit-mix rows found on the Assumptions sheet")
     a["unit_mix"] = mix
     mix_units = sum(m["existing"] + m["value_add"] for m in mix)
     if mix_units != a["total_units"]:
@@ -388,9 +476,9 @@ def _parse(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
 
     # Lease-up: the vertical month table (col D month, col E new leases).
     leases: dict[int, int] = {}
-    for row in ws.iter_rows(min_col=4, max_col=5):
-        m = _coerce_number(row[0].value)
-        n = _coerce_number(row[1].value)
+    for row in grid:
+        m = _coerce_number(_cell(row, 3))
+        n = _coerce_number(_cell(row, 4))
         if m is not None and 1 <= int(m) <= 12 and n is not None:
             leases[int(m)] = int(n)
     a["lease_up_new_leases"] = [leases.get(m, 0) for m in range(1, 13)]
@@ -401,8 +489,8 @@ def _parse(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
 
     # Replacement reserves: 'Reserve — Year N' labels in col G, values col H.
     reserves: dict[int, float] = {}
-    for row in ws.iter_rows(min_col=7, max_col=8):
-        label, v = row[0].value, _coerce_number(row[1].value)
+    for row in grid:
+        label, v = _cell(row, 6), _coerce_number(_cell(row, 7))
         if isinstance(label, str) and "reserve" in label.lower() and v is not None:
             for n in range(1, 10):
                 if f"year {n}" in label.lower():
@@ -420,23 +508,84 @@ def _parse(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
     return a, report
 
 
+def parse_any_with_report(data: bytes) -> tuple[dict[str, Any], dict[str, Any], str]:
+    """Universal entry point: any supported spreadsheet bytes ->
+    (assumptions, parse_report, format)."""
+    if len(data) > MAX_FILE_BYTES:
+        raise ValueError(f"file too large: {len(data)} bytes (limit {MAX_FILE_BYTES})")
+    fmt = detect_format(data)
+    if fmt is None:
+        raise ValueError(
+            "unrecognized spreadsheet format — expected .xlsx, .xlsm, .xls, or a pro forma CSV"
+        )
+    a, report = _extract(_assumptions_grid(data, fmt))
+    return a, report, fmt
+
+
 def parse_proforma_xlsx(data: bytes) -> dict[str, Any]:
-    """Extract the assumptions dict from a 4-sheet pro forma file."""
-    a, _report = _parse(data)
+    """Backward-compatible name: extracts assumptions from any
+    supported spreadsheet format (originally .xlsx only)."""
+    a, _report, _fmt = parse_any_with_report(data)
     return a
 
 
 def parse_with_report(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
-    """parse_proforma_xlsx + the blind-test report (defaulted /
-    unmapped / warnings). Raises ValueError on unreadable files
-    and on missing REQUIRED assumptions, listing all of them."""
-    return _parse(data)
+    """parse + the blind-test report (defaulted / unmapped /
+    warnings). Raises ValueError on unreadable files and on
+    missing REQUIRED assumptions, listing all of them."""
+    a, report, _fmt = parse_any_with_report(data)
+    return a, report
+
+
+# ------------------------------------------------------- Google Sheets
+
+_SHEETS_URL_RE = re.compile(
+    r"^https://docs\.google\.com/spreadsheets/d/([A-Za-z0-9_-]+)(?:[/?#].*)?$"
+)
+
+
+def google_sheet_export_url(url: str) -> str:
+    """A docs.google.com spreadsheet URL -> its xlsx export URL.
+    Anything else is rejected: the fetcher only ever talks to
+    Google's export endpoint (no arbitrary-URL fetching)."""
+    m = _SHEETS_URL_RE.match((url or "").strip())
+    if not m:
+        raise ValueError(
+            "not a Google Sheets URL — expected https://docs.google.com/spreadsheets/d/..."
+        )
+    return f"https://docs.google.com/spreadsheets/d/{m.group(1)}/export?format=xlsx"
+
+
+def _fetch_url_bytes(url: str) -> tuple[bytes, str]:
+    resp = httpx.get(url, follow_redirects=True, timeout=15.0)
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("content-type", "")
+
+
+def fetch_google_sheet(url: str) -> bytes:
+    """Fetch a LINK-SHARED Google Sheet as .xlsx bytes. A private
+    sheet returns Google's HTML login page instead of data —
+    detected and reported, never parsed as a spreadsheet."""
+    export_url = google_sheet_export_url(url)
+    try:
+        content, content_type = _fetch_url_bytes(export_url)
+    except Exception as e:
+        raise ValueError(f"could not fetch the Google Sheet: {e}") from e
+    if len(content) > MAX_FILE_BYTES:
+        raise ValueError(f"sheet too large: {len(content)} bytes (limit {MAX_FILE_BYTES})")
+    if "text/html" in content_type or content[:15].lower().startswith(b"<!doctype html"):
+        raise ValueError(
+            "Google returned a web page, not spreadsheet data — the sheet is "
+            "not shared as 'anyone with the link'. Share it that way and retry."
+        )
+    return content
 
 
 # ---------------------------------------------------------------- routes
 
 class ProformaFileIn(BaseModel):
-    file_base64: str
+    file_base64: str = ""
+    source_url: str | None = None
     cap_rate: float | None = None
 
 
@@ -447,15 +596,25 @@ class ProformaAssumptionsIn(BaseModel):
 
 @router.post("/api/v1/ingest/proforma")
 def ingest_proforma(body: ProformaFileIn) -> dict[str, Any]:
-    """Parse a base64-encoded 4-sheet pro forma .xlsx and compute
-    its Years 1-5 EGI/NOI exactly as the workbook does."""
+    """Parse a pro forma spreadsheet (.xlsx / .xlsm / .xls / .csv,
+    base64) or a link-shared Google Sheets URL, and compute its
+    Years 1-5 EGI/NOI exactly as the workbook does."""
+    if body.source_url:
+        try:
+            raw = fetch_google_sheet(body.source_url)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+    elif body.file_base64:
+        try:
+            raw = base64.b64decode(body.file_base64, validate=True)
+        except Exception:
+            raise HTTPException(422, "file_base64 is not valid base64")
+    else:
+        raise HTTPException(422, "provide file_base64 or source_url")
     try:
-        raw = base64.b64decode(body.file_base64, validate=True)
-    except Exception:
-        raise HTTPException(422, "file_base64 is not valid base64")
-    try:
-        assumptions, report = parse_with_report(raw)
+        assumptions, report, fmt = parse_any_with_report(raw)
         out = compute_proforma(assumptions, body.cap_rate or DEFAULT_CAP_RATE)
+        out["input_format"] = fmt
         out["parse_report"] = report
         return out
     except ValueError as e:

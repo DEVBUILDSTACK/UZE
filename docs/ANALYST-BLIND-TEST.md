@@ -48,11 +48,20 @@ curl -s -X POST http://127.0.0.1:8100/api/v1/ingest/email \
 
 ## What to send
 
-A multifamily pro forma in the institutional 4-sheet format
-(sheets: **Assumptions**, **Lease-Up Schedule**, **Pro Forma**,
-Comps optional for this test). The parser reads the
-Assumptions tab **by label**, so rows may move — labels may
-not be renamed. Required labels include: Total Units · Annual
+A multifamily pro forma in the institutional format, as any
+of: **.xlsx / .xlsm**, **legacy .xls**, **.csv** (a single
+sheet laid out like the Assumptions tab), or a **Google
+Sheets link** shared as "anyone with the link" (pass it as
+`source_url` — private sheets return Google's login page and
+are reported as such, never parsed). Workbook formats carry
+the **Assumptions**, **Lease-Up Schedule** and **Pro Forma**
+sheets (Comps optional for this test). Every format runs
+through the same extractor: identical file, identical math,
+whatever the container. The parser reads the Assumptions tab
+**by label**, so rows may move — labels may not be renamed.
+Note: a raw T-12 export (line items × months) is a different
+input shape — that goes through the multiyear endpoint, not
+this parser. PDFs are not supported (no OCR layer yet). Required labels include: Total Units · Annual
 Rent Growth Rate · Initial Occupancy at Purchase · Stabilized
 Vacancy Rate (Yr 2+) · Credit Loss / Bad Debt · Management
 (% of EGI) · Expense Growth Rate · the per-unit expense lines
@@ -62,7 +71,7 @@ Marketing / General & Admin / Professional Fees / Insurance /
 Taxes, each "/ Unit") · a unit-mix table (type, units, market
 rent) · the Reserve — Year N schedule. Numbers may be plain,
 "$1,615"-style strings, or "3%" strings — all are coerced.
-File limit 10 MB, .xlsx only.
+File limit 10 MB.
 
 ## What comes back
 

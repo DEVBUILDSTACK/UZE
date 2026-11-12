@@ -393,30 +393,19 @@ def ingest_multiyear(payload: MultiYearIngest):
 
 @router.post("/email")
 def ingest_email(payload: EmailIngest):
-    # Pro forma workbooks route to the REAL parser (2026-11-12):
-    # an attachment whose bytes are a ZIP (every .xlsx is) is
-    # tried as an institutional pro forma before any subject
-    # routing. A readable workbook that is missing required
-    # sheets/assumptions gets the parser's exact error, not the
-    # mock extraction. Non-workbook attachments fall through to
-    # the established flow untouched.
+    # Pro forma spreadsheets route to the REAL parser
+    # (2026-11-12): an attachment detected as .xlsx/.xlsm/.xls/
+    # pro forma CSV is parsed before any subject routing. A
+    # readable spreadsheet missing required sheets/assumptions
+    # gets the parser's exact error, not the mock extraction.
+    # Non-spreadsheet attachments fall through untouched.
     try:
         _raw = base64.b64decode(payload.attachment_base64, validate=True)
     except Exception:
         _raw = b""
-    _is_xlsx = False
-    if _raw[:2] == b"PK":
+    if proforma.detect_format(_raw) is not None:
         try:
-            import io as _io
-            import zipfile as _zipfile
-
-            with _zipfile.ZipFile(_io.BytesIO(_raw)) as _zf:
-                _is_xlsx = "xl/workbook.xml" in _zf.namelist()
-        except Exception:
-            _is_xlsx = False
-    if _is_xlsx:
-        try:
-            _assumptions, _report = proforma.parse_with_report(_raw)
+            _assumptions, _report, _fmt = proforma.parse_any_with_report(_raw)
         except ValueError as e:
             return JSONResponse(
                 status_code=422,
@@ -424,6 +413,7 @@ def ingest_email(payload: EmailIngest):
             )
         _result = proforma.compute_proforma(_assumptions)
         _result["routedTo"] = "UZE Underwrite pro forma parser"
+        _result["input_format"] = _fmt
         _result["parse_report"] = _report
         return _result
 
