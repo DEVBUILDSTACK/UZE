@@ -16,7 +16,6 @@ interface Experience {
   title: string;
   category: (typeof CATEGORIES)[number];
   city: string;
-  price: string;
   blurb: string;
 }
 
@@ -25,56 +24,48 @@ const EXPERIENCES: Experience[] = [
     title: "Rooftop Cinema Night",
     category: "Tickets",
     city: "Miami",
-    price: "From $25",
     blurb: "Open-air screening above the city, doors at sunset.",
   },
   {
     title: "Open Mic & Producers Showcase",
     category: "Talent",
     city: "Washington DC",
-    price: "Free entry",
     blurb: "New artists on a real stage, scouted by local bookers.",
   },
   {
     title: "Old Town Walking Tour with a Local Host",
     category: "Touring",
     city: "Barcelona",
-    price: "From $40",
     blurb: "Two hours, small group, the streets the guidebooks skip.",
   },
   {
     title: "Beachfront Stay — 2 Nights",
     category: "Stay",
     city: "Rio de Janeiro",
-    price: "From $180",
     blurb: "Wake up on the sand, breakfast included.",
   },
   {
     title: "Sunrise Surf Session (All Levels)",
     category: "Tickets",
     city: "Costa Rica",
-    price: "From $60",
     blurb: "Board, instructor, and the best hour of the day.",
   },
   {
     title: "Boutique Stay near the Venue District",
     category: "Stay",
     city: "Ibiza",
-    price: "From $140",
     blurb: "Walk to the show, sleep somewhere quiet afterwards.",
   },
   {
     title: "Gallery Night: Local Artists",
     category: "Talent",
     city: "Miami",
-    price: "Free entry",
     blurb: "Meet the artists, see new work first.",
   },
   {
     title: "Food Market Crawl with a Chef",
     category: "Touring",
     city: "São Paulo",
-    price: "From $55",
     blurb: "Eat your way through the market with someone who knows it.",
   },
 ];
@@ -172,12 +163,34 @@ export default function GuidancePage() {
           <li key={e.title} className="card">
             <h3>{e.title}</h3>
             <p className="meta">
-              {e.category} · {e.city} · {e.price}
+              {e.category} · {e.city}
             </p>
             <p>{e.blurb}</p>
           </li>
         ))}
       </ul>
+
+      <section aria-label="UZEguidance priced markets">
+        <h2>UZEguidance priced markets</h2>
+        <p>
+          No posted prices — not here, not anywhere on UZEmarkets. The
+          levels for <strong>UZEBuilder</strong>, <strong>UZEaffiliate</strong>{" "}
+          and <strong>UZEaffiliate actively onramped uzing TradeLayer or
+          SigLayer</strong> are set by an autonomous guidance market: the
+          market bids the levels, and we honor them prospectively — only
+          for KYB entities and KYC partner agents, and only for signups
+          between <strong>November 15, 2026</strong> and{" "}
+          <strong>January 12, 2027 at 10:59 PM PST</strong>.
+        </p>
+        <p>
+          Signing up whitelists one self-custodial wallet — Solana, NEAR,
+          Robinhood, Ink or LightLink — for the 2027 B2B and B2C event
+          offerings, the secondary UZEticket tech offerings, and the
+          music festival Frontier NFT collectibles paired as payment tech
+          innovation from the L2Launch Launchpad.{" "}
+          <Link href="/alpha">Join the alpha signup list</Link>.
+        </p>
+      </section>
 
       <section className="ask" aria-label="Ask GIRA">
         <h2>Ask GIRA</h2>
