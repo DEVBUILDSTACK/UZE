@@ -53,6 +53,21 @@ _VARIANTS: dict[str, str] = {
     "rental income": "Revenue",
     "rent income": "Revenue",
     "gross potential rent": "Revenue",
+    # Contra-revenue (owner tap, 2026-11-12): vacancy and credit
+    # losses are revenue deductions, filed as negative amounts or
+    # deduction lines — sign is the caller's convention and is
+    # preserved, so they net against Revenue rather than inflating
+    # an expense bucket or surfacing as unmapped.
+    "vacancy loss": "Revenue",
+    "vacancy losses": "Revenue",
+    "vacancy credit loss": "Revenue",
+    "vacancy and credit loss": "Revenue",
+    "credit loss": "Revenue",
+    "credit losses": "Revenue",
+    "credit loss bad debt": "Revenue",
+    "vacancy loss credit loss": "Revenue",
+    "bad debt": "Revenue",
+    "bad debt expense": "Revenue",
     "other income": "Revenue",
     "total revenue": "Revenue",
     "total income": "Revenue",

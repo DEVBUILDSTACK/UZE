@@ -47,3 +47,18 @@ def test_amounts_sum_per_bucket():
     )
     assert out["buckets"]["Operating Expenses"] == 150
     assert out["buckets"]["Taxes"] == 30
+
+
+def test_vacancy_and_credit_loss_are_contra_revenue():
+    # Owner tap 2026-11-12: vacancy / credit loss / bad debt are
+    # revenue deductions — they bucket to Revenue (amounts filed
+    # as negatives net against it), never to an expense bucket
+    # and never to unmapped.
+    for label in ("Vacancy Loss", "Credit Loss", "Bad Debt",
+                  "Bad Debt Expense", "Vacancy & Credit Loss"):
+        assert coa.bucket_for(label) == "Revenue", label
+    out = coa.normalize_line_items(
+        {"Gross Potential Rent": 1000, "Vacancy Loss": -60, "Credit Loss": -15}
+    )
+    assert out["buckets"]["Revenue"] == 925
+    assert out["unmapped"] == []

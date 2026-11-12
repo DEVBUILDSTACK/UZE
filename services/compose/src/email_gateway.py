@@ -316,12 +316,17 @@ def analyze_multiyear(years: list[dict]) -> dict:
     """Multi-year T-12 analysis (2026-11-11): each year's raw
     line items are normalized through the StandardChartOfAccounts
     into the seven ratified buckets, NOI is derived per year
-    (Revenue minus OpEx, Taxes, Insurance, Interest, Misc —
-    Profit bucket lines are NOT double-counted), historical NOI
-    growth is computed first-to-last year, and any bucket moving
-    more than 15% year-over-year is flagged as an expense/revenue
+    (Revenue minus OpEx, Taxes, Insurance, Misc — Profit bucket
+    lines are NOT double-counted), historical NOI growth is
+    computed first-to-last year, and any bucket moving more than
+    15% year-over-year is flagged as an expense/revenue
     fluctuation for analyst review. Unmapped labels are surfaced,
-    never guessed."""
+    never guessed.
+
+    NOI is UNLEVERED (analyst correction, owner tap 2026-11-12):
+    Interest is never subtracted into NOI. The post-interest
+    figure is reported separately per year as levered_cash_flow
+    (= NOI minus the Interest Expense/Income bucket)."""
     import chart_of_accounts as coa
 
     ordered = sorted(years, key=lambda y: y.get("period", ""))
@@ -334,14 +339,15 @@ def analyze_multiyear(years: list[dict]) -> dict:
             - b["Operating Expenses"]
             - b["Taxes"]
             - b["Insurance(s)"]
-            - b["Interest Expense/Income"]
             - b["Miscellaneous Net Expenses/Income"]
         )
+        levered_cash_flow = noi - b["Interest Expense/Income"]
         periods.append(
             {
                 "period": entry.get("period"),
                 "buckets": b,
                 "noi": round(noi, 2),
+                "levered_cash_flow": round(levered_cash_flow, 2),
                 "unmapped": normalized["unmapped"],
             }
         )
@@ -368,7 +374,7 @@ def analyze_multiyear(years: list[dict]) -> dict:
         "periods": periods,
         "noi_growth_rate": growth,
         "fluctuation_flags": flags,
-        "taxonomy": "seven-bucket P&L (Spec 07 §2.2); OpEx excludes Taxes/Insurance/Interest",
+        "taxonomy": "seven-bucket P&L (Spec 07 §2.2); OpEx excludes Taxes/Insurance/Interest; NOI is unlevered — interest appears only in levered_cash_flow",
         "mock": True,
     }
 

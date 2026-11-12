@@ -120,3 +120,21 @@ def test_distressed_valuation_modifier(client):
     assert body["intent"] == "valuation"
     assert body["modifier"] == "distressed_sale"
     assert body["focus"] == "rapid liquidity"
+
+
+def test_multiyear_noi_is_unlevered_and_levered_figure_is_separate():
+    # Analyst correction (owner tap 2026-11-12): NOI is
+    # pre-interest. The post-interest figure is reported as
+    # levered_cash_flow, never labelled NOI.
+    from email_gateway import analyze_multiyear
+
+    out = analyze_multiyear([
+        {"period": "2025", "line_items": {
+            "Rental Income": 1000000, "Repairs & Maintenance": 120000,
+            "Property Taxes": 90000, "Insurance": 40000,
+            "Interest Expense": 150000,
+        }},
+    ])
+    period = out["periods"][0]
+    assert period["noi"] == 750000  # interest NOT subtracted
+    assert period["levered_cash_flow"] == 600000  # NOI - interest

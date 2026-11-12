@@ -83,10 +83,11 @@ Expenses/Income · Profit (Net Income)**. Mechanics:
   (`tests/test_chart_of_accounts.py`):
   `test_taxes_insurance_interest_never_land_in_opex`,
   `test_unmapped_labels_are_reported_not_guessed`, and three more.
-- **Known gap for the analyst:** the variant table has no
-  vacancy-loss or credit-loss labels today. A T-12 filing those lines
-  would return them as `unmapped` — surfaced, not lost, but not yet
-  bucketed.
+- **Gap closed the same day (owner's tap, 2026-11-12):** vacancy-loss
+  and credit-loss / bad-debt labels were added to the variant table as
+  **contra-revenue** — they bucket to Revenue, so amounts filed as
+  negatives net against it instead of surfacing as `unmapped`. Pinned
+  by `test_vacancy_and_credit_loss_are_contra_revenue`.
 
 ---
 
@@ -96,12 +97,14 @@ There is one derivation, in `analyze_multiyear()`, applied per year
 after normalization:
 
 ```
-derived NOI  =  Revenue
-              − Operating Expenses
-              − Taxes
-              − Insurance(s)
-              − Interest Expense/Income
-              − Miscellaneous Net Expenses/Income
+NOI (unlevered)    =  Revenue
+                    − Operating Expenses
+                    − Taxes
+                    − Insurance(s)
+                    − Miscellaneous Net Expenses/Income
+
+levered cash flow  =  NOI − Interest Expense/Income
+                      (reported separately per year, never as NOI)
 ```
 
 - Taxes and Insurance are **their own subtractions**, never inside
@@ -132,8 +135,11 @@ two filing years, labels deliberately inconsistent across years):
 | Interest Expense | 150,000 | 150,000 |
 | Mystery Line | 5,000 → **unmapped** | — |
 
-Derived: NOI 600,000 (2024) → 645,000 (2025); growth **+7.5%**;
-flags raised on Operating Expenses (+25%) and Insurance (+50%).
+Derived: NOI 750,000 (2024) → 795,000 (2025); growth **+6.0%** on
+the unlevered figure; levered cash flow 600,000 → 645,000; flags
+raised on Operating Expenses (+25%) and Insurance (+50%). (This
+example was re-executed after the §3 fix; before the fix the same
+filings reported the levered figures under the NOI label.)
 
 The email-gateway SURA fixture, for reference (hotel, trailing 12):
 Revenue 1,842,500 − OpEx 1,093,800 − Taxes 148,200 − Insurance 96,400
@@ -142,7 +148,7 @@ miscellaneous lines.
 
 ---
 
-## 3. The NOI & Interest rule — stated exactly, with one open item
+## 3. The NOI & Interest rule — stated exactly, and the flaw it exposed (fixed)
 
 What the code guarantees:
 
@@ -155,17 +161,18 @@ What the code guarantees:
   insurance, or interest as if they were operating expenses," judging
   taxes and insurance only against the claim's own micro-region.
 
-**Open item — flagged for the analyst's ruling, not papered over:**
-in the §2 derivation, the Interest bucket is one of the subtractions
-*on the way to* the figure the code labels `noi`. So when a filing
-carries an interest line, the derived figure is **post-interest**
-(levered), despite the NOI label. In the worked example: pre-interest
-the property derives 750,000; the endpoint reports 600,000. The
-email fixture is unaffected (it files no interest line, so its
-504,100 is unlevered as presented). The fix is small — report both a
-pre-interest NOI and a post-interest levered figure, or rename the
-output — but it changes the API's vocabulary, so it waits for the
-analyst's word.
+**The flaw this section originally flagged — FIXED the same day
+(owner's tap, 2026-11-12):** as first built, the Interest bucket was
+one of the subtractions *on the way to* the figure the code labelled
+`noi`, so a filing carrying an interest line produced a post-interest
+(levered) figure under an NOI label — in the worked example, 600,000
+reported where the unlevered NOI is 750,000. The derivation now
+excludes Interest from NOI entirely and reports the post-interest
+figure separately as `levered_cash_flow` per year; historical growth
+is computed on the unlevered figure. Pinned by
+`test_multiyear_noi_is_unlevered_and_levered_figure_is_separate`.
+(The email fixture was never affected — it files no interest line,
+so its 504,100 was always unlevered as presented.)
 
 ---
 
@@ -275,8 +282,9 @@ market-derived figure; the placement alert (recorded, not sent);
 the endpoint's authentication (demo scope, unauthenticated by
 design).
 
-**Open items for the analyst:** (1) the post-interest "NOI" label in
-the multi-year derivation (§3); (2) vacancy-loss / credit-loss
-variants absent from the chart of accounts (§1); (3) the GPR→EGI and
+**Open items for the analyst:** (1) the GPR→EGI and
 departmental/undistributed chains do not exist — bucket-level only
-(§2); (4) no Price/Unit vs Price/SqFt prioritization rule (§5).
+(§2); (2) no Price/Unit vs Price/SqFt prioritization rule (§5).
+Resolved the day this document was filed, on the owner's tap: the
+post-interest "NOI" label (§3) and the missing vacancy-loss /
+credit-loss variants (§1).

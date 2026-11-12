@@ -42,9 +42,16 @@ def test_multiyear_normalization_growth_and_flags(client):
     # Every label in the fixture maps — inconsistent spellings
     # across years are the whole point of the layer.
     assert all(p["unmapped"] == [] for p in periods)
-    assert periods[0]["noi"] == 612100
-    assert periods[-1]["noi"] == 634200
-    assert body["noi_growth_rate"] == round((634200 - 612100) / 612100, 4)
+    # NOI is UNLEVERED (analyst correction, owner tap 2026-11-12):
+    # interest is never subtracted into it. The figures this test
+    # previously asserted as "noi" (612100 / 634200) are exactly
+    # the post-interest amounts — they now live under
+    # levered_cash_flow, which is where they always belonged.
+    assert periods[0]["noi"] == 652300
+    assert periods[-1]["noi"] == 673600
+    assert periods[0]["levered_cash_flow"] == 612100
+    assert periods[-1]["levered_cash_flow"] == 634200
+    assert body["noi_growth_rate"] == round((673600 - 652300) / 652300, 4)
     # The 2026 insurance spike (+44%) must be flagged; taxes
     # (+6%/yr) must not be.
     flagged = {(f["bucket"], f["to_period"]) for f in body["fluctuation_flags"]}
