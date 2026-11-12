@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import SiteNav from "@/components/site-nav";
 import SiteFooter from "@/components/site-footer";
+import Providers from "@/components/providers";
 import "./globals.css";
 
 export const metadata = {
@@ -36,9 +37,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <SiteNav />
-        {children}
-        <SiteFooter />
+        <Providers>
+          <SiteNav />
+          {children}
+          <SiteFooter />
+        </Providers>
       </body>
     </html>
   );

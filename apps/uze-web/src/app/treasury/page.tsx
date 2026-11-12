@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import TreasuryPanel from "@/components/treasury-panel";
+import TreasuryTabs from "@/components/treasury-tabs";
 
 export const metadata: Metadata = {
   title: "Treasury | UZEmarkets",
@@ -30,13 +30,16 @@ export default function TreasuryPage() {
         into the user&apos;s wallet — UZEmarkets never touches fiat —
         and from there, everything moves by Send &amp; Receive.
       </p>
-      <TreasuryPanel />
+      <TreasuryTabs />
       <p className="note">
-        Demonstration build — the on-ramp ladder and routing logic are
-        the live specification (compose API:{" "}
-        <code>POST /api/v1/treasury/onramp/config</code> and{" "}
-        <code>POST /api/v1/treasury/send-receive</code>); funding and
-        swap execution are simulated and no funds move.
+        Demonstration build — three journeys: Fund (Coinbase Onramp,
+        activates when the owner configures CDP keys), Move (Wormhole
+        Connect with the route set pinned to CCTP), and Swap (the
+        compose treasury: on-ramp ladder + Send &amp; Receive + live
+        1Click quotes — <code>POST /api/v1/treasury/onramp/config</code>,{" "}
+        <code>POST /api/v1/treasury/send-receive</code>,{" "}
+        <code>POST /api/v1/treasury/swap</code>). Swap execution against
+        the compose API is simulated; no funds move from this page.
       </p>
     </main>
   );
