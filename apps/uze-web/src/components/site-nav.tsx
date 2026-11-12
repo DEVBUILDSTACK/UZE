@@ -11,18 +11,20 @@ import { usePathname } from "next/navigation";
 // Active Markets — the Hospitality & Income CRE markets. Each link
 // lands on the Content Desk index filtered to that market's
 // micro-regions; micro-regions exist only in the active markets.
+// The desk canonically lives on the apex (James, 2026-11-11):
+// uzemarkets.com/micro-regions — never the podcast subdomain.
 const ACTIVE_MARKETS = [
   {
     label: "South Florida / Miami",
-    href: "https://podcast.uzemarkets.com/micro-regions?market=south-florida",
+    href: "https://uzemarkets.com/micro-regions?market=south-florida",
   },
   {
     label: "Washington DC / Baltimore",
-    href: "https://podcast.uzemarkets.com/micro-regions?market=mid-atlantic",
+    href: "https://uzemarkets.com/micro-regions?market=mid-atlantic",
   },
   {
     label: "Costa Rica",
-    href: "https://podcast.uzemarkets.com/micro-regions?market=costa-rica",
+    href: "https://uzemarkets.com/micro-regions?market=costa-rica",
   },
 ];
 
@@ -103,7 +105,7 @@ export default function SiteNav() {
         <h3>Active Markets</h3>
         <ul className="markets active">
           <li>
-            <a href="https://podcast.uzemarkets.com/micro-regions" onClick={close}>
+            <a href="https://uzemarkets.com/micro-regions" onClick={close}>
               Hospitality &amp; Income CRE
             </a>
           </li>

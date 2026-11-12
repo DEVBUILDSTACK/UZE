@@ -62,6 +62,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Micro-regions live on the apex (James, 2026-11-11): the Content
+  // Desk is a marketplace surface, not podcast content. The podcast
+  // host permanently redirects its /micro-regions paths to the same
+  // paths on uzemarkets.com; the podcast root stays the POD index.
+  if (
+    host.startsWith("podcast.") &&
+    (pathname === "/micro-regions" || pathname.startsWith("/micro-regions/"))
+  ) {
+    return NextResponse.redirect(
+      new URL(pathname + search, "https://uzemarkets.com"),
+      308,
+    );
+  }
+
   if (host.startsWith("podcast.")) {
     if (pathname === "/") {
       const url = request.nextUrl.clone();
