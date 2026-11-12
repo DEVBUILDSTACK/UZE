@@ -197,8 +197,25 @@ h3 {
   color: #fff;
   font-weight: 700;
   text-decoration: none;
-  padding: 0.55rem 1rem;
-  border-radius: 10px;
+  padding: 0.85rem 1.9rem;
+  border-radius: 999px;
+  font-size: 1.05rem;
+  transition: background 0.2s ease;
+}
+
+/* The invisible-label bug (James, 2026-11-12): the micro-regions
+   pages wrap everything in .mk, whose link rule (.mk a, class +
+   element) outranks .uw-btn (single class) and repainted the
+   button's white label tangerine — on its own tangerine fill.
+   The label was there all along, painted invisible. Stated here
+   at banner specificity so the cascade cannot repeat it. */
+.mk a.uw-btn {
+  color: #fff;
+}
+
+.mk a.uw-btn:hover {
+  background: #e05f00;
+  color: #fff;
 }
 
 .gateway-sub {
