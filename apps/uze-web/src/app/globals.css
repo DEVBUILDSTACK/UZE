@@ -562,6 +562,91 @@ form button,
 /* Landing hero (James, 2026-11-10) — Altitude grammar, POD coloration. */
 .hero {
   padding: 3.2rem 0 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The Altitude loop (James, 2026-11-11): the whole hero
+   vertical pulses — concentric rings emanate behind the
+   statement on a smooth 7s loop, and the content breathes on
+   the same cycle, so the section reads as one living pulse
+   rather than one animated word. */
+.hero-pulse-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-ring {
+  position: absolute;
+  top: 50%;
+  left: 68%;
+  width: 36rem;
+  height: 36rem;
+  margin: -18rem 0 0 -18rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: hero-ring 7s linear infinite;
+}
+
+.hero-ring.r2 {
+  animation-delay: 2.33s;
+}
+
+.hero-ring.r3 {
+  animation-delay: 4.66s;
+}
+
+@keyframes hero-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.32);
+  }
+  18% {
+    opacity: 0.42;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+.hero-content {
+  position: relative;
+  animation: hero-breathe 7s ease-in-out infinite;
+}
+
+@keyframes hero-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.006);
+  }
+}
+
+.hero .hero-pill {
+  animation: hero-pill-glow 7s ease-in-out infinite;
+}
+
+@keyframes hero-pill-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(255, 107, 0, 0.14);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ring,
+  .hero-content,
+  .hero .hero-pill {
+    animation: none;
+  }
 }
 
 .hero-pill {
