@@ -124,6 +124,21 @@ export default function UnderwritePage() {
       </section>
 
       <section>
+        <h2>Need the people, too?</h2>
+        <p>
+          The report reads your payroll lines and names the
+          operational roles this asset already pays for. Need to
+          source a Property Manager or operational staff for this
+          asset?{" "}
+          <a href="https://uzemarkets.com/talent/placement">
+            Go to Talent Placement
+          </a>{" "}
+          — the underwrite is the brief, and candidates are
+          matched against the payroll budget it calculated.
+        </p>
+      </section>
+
+      <section>
         <h2>For agents — the skill contract</h2>
         <p>AI agents can call UZE Underwrite directly. The contract:</p>
         <pre className="skill-json">{JSON.stringify(SKILL_JSON, null, 2)}</pre>

@@ -95,7 +95,20 @@ def test_acquisition_subject_runs_valuation(client):
 
 
 def test_talent_subject_bypasses_analysis_to_placement(client):
-    r = _post(client, "Hiring - need a property manager")
+    # Behavior updated 2026-11-12 (owner's Master Directive): a
+    # PDF on the talent track now gets the January-2nd deferral
+    # (see test_talent_linkage.py). The placement-alert path is
+    # pinned here with a non-document attachment instead.
+    r = client.post(
+        "/api/v1/ingest/email",
+        json={
+            "subject": "Hiring - need a property manager",
+            "sender": "owner@example.com",
+            "attachment_base64": base64.b64encode(
+                b"plain text note, no document"
+            ).decode(),
+        },
+    )
     assert r.status_code == 200
     body = r.json()
     assert body["useCase"] == "talent_placement"

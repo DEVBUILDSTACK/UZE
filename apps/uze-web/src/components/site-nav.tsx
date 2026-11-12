@@ -92,6 +92,9 @@ export default function SiteNav() {
           <a className="underwrite" href="https://uzemarkets.com/underwrite" onClick={close}>
             UZE Underwrite
           </a>
+          <a href="https://uzemarkets.com/talent/placement" onClick={close}>
+            Talent Placement
+          </a>
           <a href="https://devpartner.uzemarkets.com" onClick={close}>
             Dev Docs
           </a>

@@ -24,3 +24,13 @@ The human surface is read-only for the hackathon; the agent surface (JSON API) i
 - Spec detail: /specs/{id} — the specification with budget, asset context, availability, and its bids; carries schema.org JSON-LD (Demand).
 - Talent profile: /talent/{near-account} — a human or agent bidder's bids across specs.
 - Agent API (same data as JSON): GET /api/v1/specs/{id}, GET /api/v1/specs/{id}/bids, GET /api/v1/micro-regions, GET /api/v1/micro-regions/{slug}, GET /api/v1/talent/{near-account}.
+
+## UZE Underwrite — SKU menu (commercial spec, 2026-11-12)
+
+Standardized underwriting reports over one engine. Execution is stateless (documents supplied per call). Prices are market-bid via UZEguidance priced markets — no static prices; the honored price for each SKU is published in this file at read time when set. Every response carries a provenance block citing source lines; an uncomputable request returns INSUFFICIENT_DATA with a JSON array of missing field names. Benchmark comps come from a CoStar-shaped synthetic adapter, license pending, and are labelled synthetic in every payload.
+
+- UZ-W-001 Full T-12 Underwriting (built) · UZ-W-002 Multi-Year Historical Baseline (built) · UZ-W-003 12-Month Pro Forma (partial) · UZ-W-004 5-Year Projection (built) · UZ-W-005 Rent Roll Audit (proposed) · UZ-W-006 OpEx Benchmark (built) · UZ-W-007 Tax & Insurance Isolation (built) · UZ-W-008 Variance Analysis (proposed) · UZ-W-009 Projection Verification (built) · UZ-W-010 Full Underwriting Package (built).
+- Contract: POST /api/v1/underwrite/{sku} — spec: docs/specifications/underwrite-sku-menu.md in the UZE repository.
+- Custom analysis: POST /api/v1/analyze/custom (specified, not yet built) — every figure cites source lines or the response is INSUFFICIENT_DATA.
+- Valuation: POST /api/v1/evaluate (specified; the income-approach math is built) — verified unlevered NOI / cap rate.
+- Talent bridge: every underwrite response carries talent_placement (roles the asset's payroll funds + the placement CTA). Talent submits a TalentProfile JSON via the gateway's talent track; PDF/Word resume parsing is deferred to the January 2nd update.

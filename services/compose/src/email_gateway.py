@@ -36,8 +36,10 @@ PDF carries a demonstration footer saying exactly this.
 from __future__ import annotations
 
 import base64
+import json
 
 import proforma
+import talent_profile
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from fpdf import FPDF
@@ -377,6 +379,10 @@ def analyze_multiyear(years: list[dict]) -> dict:
         "fluctuation_flags": flags,
         "taxonomy": "seven-bucket P&L (Spec 07 §2.2); OpEx excludes Taxes/Insurance/Interest; NOI is unlevered — interest appears only in levered_cash_flow",
         "mock": True,
+        # B2B -> B2C bridge (owner tap, 2026-11-12): the roles
+        # this asset's payroll already pays for, linked to
+        # Talent Placement.
+        "talent_placement": talent_profile.derive_talent_placement(years),
     }
 
 
@@ -429,6 +435,46 @@ def ingest_email(payload: EmailIngest):
     use_case = detect_use_case(payload.subject)
 
     if use_case == "talent_placement":
+        # Talent ingestion (owner tap, 2026-11-12): a JSON
+        # attachment is validated against the TalentProfile
+        # schema and recorded; a PDF/Word resume gets the clean
+        # deferral (parsing layer lands January 2nd); anything
+        # else keeps the established placement-alert behavior.
+        if talent_profile.is_pdf(_raw) or talent_profile.is_docx(_raw):
+            return JSONResponse(
+                status_code=422,
+                content={"error": talent_profile.PDF_DEFERRAL_MESSAGE},
+            )
+        _profile_data = None
+        try:
+            _parsed = json.loads(_raw) if _raw else None
+            if isinstance(_parsed, dict):
+                _profile_data = _parsed
+        except Exception:
+            _profile_data = None
+        if _profile_data is not None:
+            _profile, _problems = talent_profile.validate_profile(_profile_data)
+            if _profile is None:
+                return JSONResponse(
+                    status_code=422,
+                    content={
+                        "error": "INSUFFICIENT_DATA",
+                        "missing_fields": _problems,
+                    },
+                )
+            talent_profile.record_profile(_profile, payload.sender)
+            return {
+                "status": "success",
+                "useCase": use_case,
+                "routedTo": "Talent Placement — profile validated",
+                "agent": None,
+                "profile": _profile,
+                "message": (
+                    "TalentProfile validated and recorded. The "
+                    "placement team matches validated profiles "
+                    "against underwritten assets."
+                ),
+            }
         # Use Case C: bypass the AI P&L analysis entirely; record
         # the placement alert (demo scope: recorded, not sent).
         return {
