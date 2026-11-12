@@ -16,11 +16,12 @@ design law is DESIGN-RULES.md in DEVBUILDSTACK/uze-venue-ticketing:
   - price calls require holding a primary-market purchase for the
     event (sybil resistance).
 
-Ticket minting defaults to LightLink per the design law. The global
-directive's alternative topology (NEAR-native mint with OmniBridge
-spokes) is recorded in docs/GENSYN-BRIDGE-SPEC.md as an open
-reconciliation item for the owner; this module keeps `mintChain` as
-data so no topology is baked into code.
+Ticket minting defaults to NEAR — the owner's final topology
+ruling of 2026-11-12, given in his own words and superseding the
+earlier LightLink-mint design law: NEAR is the primary mint and
+the matching layer; LightLink, Solana, Ink, Base and Robinhood
+are bridge destinations (the bridge intents below). `mintChain`
+is recorded as data on every ticket.
 
 The Delphi endpoints implement the transformation specified in
 docs/GENSYN-BRIDGE-SPEC.md: scalar holder calls -> empirical
@@ -166,7 +167,7 @@ def _mint(event: dict[str, Any], sector: str, ring: str, price: int, owner: str,
     t = {
         "id": tid, "eventId": event["id"], "sector": sector, "ring": ring,
         "row": row, "seat": seat, "price": price, "currency": event["currency"],
-        "owner": owner, "mintChain": "lightlink", "acquiredVia": acquired_via,
+        "owner": owner, "mintChain": "near", "acquiredVia": acquired_via,
         "listed": listed,
         "provenance": [{"from": ISSUER, "to": owner, "kind": "Primary mint"}],
     }

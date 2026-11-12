@@ -5,17 +5,23 @@ exactly as built: `services/compose/src/ticketing.py` (382 lines, one
 module — there is no `delphi.py`; the Delphi endpoints live in the same
 file). Every section separates **Real code** from **Mock / not built**.
 
-**Topology as built:** tickets carry `mintChain: "lightlink"` — the
-ratified design law in `DESIGN-RULES.md` (DEVBUILDSTACK/uze-venue-ticketing):
-LightLink mint, the original NFT transfers on resale, matching on NEAR.
-NEAR appears in this module in two places only: as a permitted
-bridge-intent destination, and as the named resolution source for
-solver clearing prices. `mintChain` is stored as data on each ticket;
-no alternative topology is implemented.
+**Topology as built:** tickets carry `mintChain: "near"` — **NEAR is
+the primary mint** under the owner's final topology ruling of
+2026-11-12 (given in his own words, superseding the earlier
+LightLink-mint design law in `DESIGN-RULES.md`,
+DEVBUILDSTACK/uze-venue-ticketing; the module originally integrated
+in `2a952bb` defaulted to LightLink, and the owner's forward fix
+flipped the default the same day). The original NFT still transfers
+on resale — the provenance invariant is unchanged. LightLink, Solana,
+Ink, Base and Robinhood are bridge destinations. NEAR appears in this
+module as the mint chain of record, as a permitted bridge-intent
+destination, and as the named resolution source for solver clearing
+prices (the matching layer). `mintChain` is stored as data on each
+ticket.
 
 ---
 
-## 1. The NFT stack (LightLink & bridging)
+## 1. The NFT stack (NEAR mint & bridging)
 
 ### The ticket record — Real code, in-memory
 
@@ -33,7 +39,7 @@ alpha-signups table.)
 | `row` / `seat` | Per-seat identity: `row` from the request, `seat = seat_start + i` for seat *i* of the order |
 | `price` / `currency` | Unit price actually paid; event currency (`R$` / `$`) |
 | `owner` | Current holder wallet string |
-| `mintChain` | `"lightlink"` on every minted record |
+| `mintChain` | `"near"` on every minted record (owner's topology ruling, 2026-11-12) |
 | `acquiredVia` | `"primary"` (mint endpoint), `"secondary"` (transfer), `"prize"` reserved |
 | `listed` | Resale ask price, or `null` when not listed |
 | `provenance` | Ordered list of `{"from", "to", "kind"}` entries — the fraud check |
@@ -53,10 +59,10 @@ the unit price, each with its own provenance chain seeded with one entry:
 {"from": "UZEmarkets (issuer)", "to": "<buyer wallet>", "kind": "Primary mint"}
 ```
 
-**Mock boundary:** the "LightLink attestation" is not simulated
-cryptographically. The endpoint stamps `mintChain: "lightlink"` as data
-and records the issuer as the first provenance entry. No LightLink RPC
-call, no contract, no signature exists in this module. (The REE receipt
+**Mock boundary:** the "NEAR mint attestation" is not simulated
+cryptographically. The endpoint stamps `mintChain: "near"` as data
+and records the issuer as the first provenance entry. No NEAR or
+LightLink RPC call, no contract, no signature exists in this module. (The REE receipt
 and attestation badges in the partner demo are front-end presentation in
 the venue repo, not backend cryptography.)
 
@@ -84,7 +90,7 @@ The request names a ticket and a `to_chain` from the closed set
 appends one record to an in-memory list:
 
 ```json
-{"id": 1, "ticketId": 1042, "fromChain": "lightlink", "toChain": "solana", "status": "mock_recorded"}
+{"id": 1, "ticketId": 1042, "fromChain": "near", "toChain": "solana", "status": "mock_recorded"}
 ```
 
 **Mock boundary:** that is the entire implementation. No NEAR Intents
@@ -221,8 +227,8 @@ calls on the soccer focus subject `{488, 540, 588, 645, 701}`.
 
 - **Persistence.** In-memory dicts and lists. There are no database
   tables for ticketing or calls; a restart reseeds the demo state.
-- **Every blockchain interaction.** No LightLink mint, no NEAR call, no
-  bridge execution, no USDC settlement. `mintChain` is a data field;
+- **Every blockchain interaction.** No on-chain mint on NEAR or any
+  other chain, no bridge execution, no USDC settlement. `mintChain` is a data field;
   bridge intents are records with status `"mock_recorded"`.
 - **The Gensyn/Delphi integration.** No SDK, no network call. The
   transformation above is a local function implementing the filed

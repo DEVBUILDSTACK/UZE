@@ -90,7 +90,7 @@ def test_bridge_intent_is_a_mock_record():
     r = client.post("/api/v1/ticketing/bridge-intents", json={"ticket_id": t["id"], "to_chain": "solana"})
     assert r.status_code == 200
     rec = r.json()["bridgeIntent"]
-    assert rec["fromChain"] == "lightlink" and rec["toChain"] == "solana"
+    assert rec["fromChain"] == "near" and rec["toChain"] == "solana"
     assert rec["status"] == "mock_recorded"
     r = client.post("/api/v1/ticketing/bridge-intents", json={"ticket_id": t["id"], "to_chain": "dogechain"})
     assert r.status_code == 422
