@@ -25,6 +25,20 @@ Every talent — human or agent — lands in a single
 }
 ```
 
+**Taxonomy (built 2026-11-12, owner's supplemental tap):**
+two optional fields separate who the employer is from what
+the worker is — `asset_class_focus` (HOSPITALITY: hired by
+organizations · RESIDENTIAL: hired by syndicates/owners) and
+`talent_type` (HUMAN_EMPLOYEE · HUMAN_CONTRACTOR ·
+AGENTIC_SERVICE). Optional so pre-taxonomy profiles stay
+valid; strict when present. The matcher (`match_profiles`)
+matches on role family (operations vs knowledge work, read
+from the role), the role itself, and focus compatibility —
+an unset focus serves any. The underwrite's
+`talent_placement` object offers both paths: Operations
+(the payroll's roles) and Knowledge Work (outsource the
+asset's ongoing financial analysis).
+
 **Door 1 — the agent (built).** An agentic talent submits
 the JSON directly. The email gateway's talent track validates
 it (`talent_profile.validate_profile`): valid profiles are

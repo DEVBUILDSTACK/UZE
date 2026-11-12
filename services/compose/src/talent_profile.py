@@ -35,6 +35,18 @@ REQUIRED_FIELDS: tuple[str, ...] = (
     "expected_rate_usd",
 )
 
+# Talent taxonomy (owner tap, 2026-11-12): who the employer is
+# and what the worker is are different axes. Both fields are
+# OPTIONAL — profiles validated before the taxonomy existed
+# stay valid — but when present they must be exact enum values
+# (accepted case-insensitively, stored canonical).
+ASSET_CLASS_FOCUS: tuple[str, ...] = ("HOSPITALITY", "RESIDENTIAL")
+TALENT_TYPES: tuple[str, ...] = (
+    "HUMAN_EMPLOYEE",
+    "HUMAN_CONTRACTOR",
+    "AGENTIC_SERVICE",
+)
+
 PDF_DEFERRAL_MESSAGE = (
     "PDF/Word resume parsing is deferred to our January 2nd "
     "update. Please provide your resume in JSON format."
@@ -79,6 +91,18 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
         isinstance(c, str) for c in certs
     ):
         problems.append("certifications")
+    focus = data.get("asset_class_focus")
+    if focus is not None and (
+        not isinstance(focus, str)
+        or focus.strip().upper() not in ASSET_CLASS_FOCUS
+    ):
+        problems.append("asset_class_focus")
+    ttype = data.get("talent_type")
+    if ttype is not None and (
+        not isinstance(ttype, str)
+        or ttype.strip().upper() not in TALENT_TYPES
+    ):
+        problems.append("talent_type")
 
     if problems:
         return None, problems
@@ -90,6 +114,12 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
             "skills": [s.strip() for s in skills],
             "expected_rate_usd": rate,
             "certifications": list(certs),
+            "asset_class_focus": (
+                focus.strip().upper() if isinstance(focus, str) else None
+            ),
+            "talent_type": (
+                ttype.strip().upper() if isinstance(ttype, str) else None
+            ),
         },
         [],
     )
@@ -157,4 +187,60 @@ def derive_talent_placement(years: list[dict]) -> dict[str, Any]:
         "roles": roles,
         "payroll_budget_annual": round(payroll_total, 2) if payroll_total else None,
         "cta_url": "/talent/placement?source=underwrite",
+        # Two paths (owner tap, 2026-11-12): Operations hires
+        # the roles the payroll names; Knowledge Work is the
+        # standing offer to outsource the asset's ongoing
+        # financial analysis — to a human contractor or an
+        # agentic service.
+        "paths": [
+            {
+                "kind": "operations",
+                "label": "Hire operational staff for this asset",
+                "roles": roles,
+                "cta_url": "/talent/placement?source=underwrite&path=operations",
+            },
+            {
+                "kind": "knowledge_work",
+                "label": "Outsource the ongoing Financial Analysis of this asset",
+                "service": "Financial Analysis",
+                "cta_url": "/talent/placement?source=underwrite&path=knowledge",
+            },
+        ],
     }
+
+
+def role_family(profile: dict[str, Any]) -> str:
+    """Which side of the marketplace a profile serves:
+    'knowledge_work' for financial-analysis roles, else
+    'operations'."""
+    role = str(profile.get("role", "")).lower()
+    if "analyst" in role or "financial analysis" in role:
+        return "knowledge_work"
+    return "operations"
+
+
+def match_profiles(
+    need: dict[str, Any], profiles: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """The matcher (mock logic, deterministic): a profile
+    matches a need when the role family agrees, the role
+    matches (for operations needs that name one), and the
+    asset-class focus is compatible — a profile with no focus
+    serves any focus; a need with no focus accepts any.
+    Input order is preserved."""
+    out: list[dict[str, Any]] = []
+    want_family = need.get("role_family", "operations")
+    want_role = str(need.get("role", "")).lower().strip()
+    want_focus = need.get("asset_class_focus")
+    for p in profiles:
+        if role_family(p) != want_family:
+            continue
+        if want_role:
+            have_role = str(p.get("role", "")).lower()
+            if want_role not in have_role and have_role not in want_role:
+                continue
+        p_focus = p.get("asset_class_focus")
+        if want_focus and p_focus and p_focus != want_focus:
+            continue
+        out.append(p)
+    return out

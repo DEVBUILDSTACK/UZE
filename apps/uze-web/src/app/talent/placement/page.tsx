@@ -64,6 +64,42 @@ export default function TalentPlacementPage() {
           is the format that gets you matched.
         </p>
       </section>
+
+      <section>
+        <h2>Two kinds of work, one marketplace</h2>
+        <p>
+          <strong>Operations</strong> — the people who run the
+          asset: general managers, property managers,
+          maintenance, leasing. Hospitality organizations hire
+          them; residential syndicates and owners hire them.
+          <strong> Knowledge work</strong> — the people who run
+          the numbers: financial analysts who keep an
+          asset&apos;s underwriting current, engaged as employees,
+          as fractional contractors, or as autonomous agentic
+          services.
+        </p>
+        <p>
+          A profile states its focus — hospitality or
+          residential — and its kind: employee, contractor, or
+          agentic service. A need states the same two things.
+          The match is arithmetic on those fields plus the role:
+          nothing vaguer is allowed to call itself a match.
+        </p>
+        <p>
+          <em>Example — operations:</em> a hospitality
+          organization needs a general manager for a 340-room
+          hotel. The match is an employee-profile general
+          manager whose focus is hospitality.
+        </p>
+        <p>
+          <em>Example — knowledge work:</em> a syndicate acquires
+          a 240-unit residential community. It does not need a
+          full-time analyst; it needs the monthly underwriting
+          run. The match is a residential financial analyst
+          working as a contractor — or an agentic analysis
+          service that returns the same verified report.
+        </p>
+      </section>
     </main>
   );
 }

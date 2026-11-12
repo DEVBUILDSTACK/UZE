@@ -117,3 +117,76 @@ def test_talent_placement_bridge_is_quiet_without_role_lines():
     tp = email_gateway.analyze_multiyear(years)["talent_placement"]
     assert tp["required"] is False
     assert tp["roles"] == []
+
+
+# --- Taxonomy + matcher (owner tap, 2026-11-12) ---
+
+import talent_profile as tp_mod
+
+PM_HOSPITALITY = {
+    "name": "Pat Morgan", "role": "General Manager",
+    "experience_years": 11, "skills": ["hotel operations", "P&L ownership"],
+    "expected_rate_usd": 118000, "certifications": [],
+    "asset_class_focus": "HOSPITALITY", "talent_type": "HUMAN_EMPLOYEE",
+}
+ANALYST_RESIDENTIAL = {
+    "name": "Jordan Lee", "role": "Financial Analyst",
+    "experience_years": 5, "skills": ["underwriting", "Yardi", "Argus"],
+    "expected_rate_usd": 95, "certifications": [],
+    "asset_class_focus": "RESIDENTIAL", "talent_type": "HUMAN_CONTRACTOR",
+}
+AGENTIC_ANALYSIS = {
+    "name": "LedgerAgent", "role": "Financial Analysis Service",
+    "experience_years": 0, "skills": ["t12-normalization", "noi-verification"],
+    "expected_rate_usd": 40, "certifications": [],
+    "talent_type": "AGENTIC_SERVICE",
+}
+FIXTURES = [PM_HOSPITALITY, ANALYST_RESIDENTIAL, AGENTIC_ANALYSIS]
+
+
+def test_taxonomy_fields_validate_and_canonicalize():
+    raw = dict(VALID_PROFILE, asset_class_focus="hospitality",
+               talent_type="human_contractor")
+    profile, problems = tp_mod.validate_profile(raw)
+    assert problems == []
+    assert profile["asset_class_focus"] == "HOSPITALITY"
+    assert profile["talent_type"] == "HUMAN_CONTRACTOR"
+
+
+def test_taxonomy_fields_are_optional_but_strict():
+    profile, problems = tp_mod.validate_profile(VALID_PROFILE)
+    assert problems == []
+    assert profile["asset_class_focus"] is None
+    bad = dict(VALID_PROFILE, asset_class_focus="MARITIME")
+    profile, problems = tp_mod.validate_profile(bad)
+    assert profile is None and problems == ["asset_class_focus"]
+
+
+def test_matcher_operations_hospitality_gm():
+    need = {"role_family": "operations", "role": "General Manager",
+            "asset_class_focus": "HOSPITALITY"}
+    hits = tp_mod.match_profiles(need, FIXTURES)
+    assert [h["name"] for h in hits] == ["Pat Morgan"]
+
+
+def test_matcher_knowledge_work_residential_takes_contractor_and_agent():
+    need = {"role_family": "knowledge_work",
+            "asset_class_focus": "RESIDENTIAL"}
+    hits = tp_mod.match_profiles(need, FIXTURES)
+    assert [h["name"] for h in hits] == ["Jordan Lee", "LedgerAgent"]
+
+
+def test_matcher_knowledge_work_hospitality_takes_only_the_agent():
+    need = {"role_family": "knowledge_work",
+            "asset_class_focus": "HOSPITALITY"}
+    hits = tp_mod.match_profiles(need, FIXTURES)
+    assert [h["name"] for h in hits] == ["LedgerAgent"]
+
+
+def test_talent_placement_offers_both_paths():
+    years = [{"period": "T-12", "line_items": {
+        "Rental Income": 1000.0, "Payroll - resid. manager": 500.0}}]
+    tp = email_gateway.analyze_multiyear(years)["talent_placement"]
+    kinds = [p["kind"] for p in tp["paths"]]
+    assert kinds == ["operations", "knowledge_work"]
+    assert tp["paths"][1]["service"] == "Financial Analysis"
