@@ -12,4 +12,8 @@ psycopg[binary]==3.3.6
 fastapi~=0.115.12
 uvicorn[standard]~=0.30.2
 httpx
+jsonschema
 pytest
+py-near==1.2.22
+nearai-inference-sdk==0.2.1
+solders==0.29.0

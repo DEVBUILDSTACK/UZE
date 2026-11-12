@@ -31,7 +31,7 @@ export default function Home() {
             <Link href="/guidance">See how GIRA guidance works</Link>
           </li>
           <li>
-            <a href="https://podcast.uzemarkets.com/micro-regions">
+            <a href="https://uzemarkets.com/micro-regions">
               The Content Desk — micro-regions, pulses and specs
             </a>
           </li>

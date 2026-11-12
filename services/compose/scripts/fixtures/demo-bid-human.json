@@ -1,0 +1,11 @@
+{
+  "amountUsdc": 22500,
+  "bidderAccount": "treasury.uzemarkets-talent.testnet",
+  "bidderKind": "human",
+  "etaHours": 1440,
+  "onSiteDays": 25,
+  "payload": {
+    "narrative": "Human CRE analyst: on-site walkthrough plus remote modeling, 60 days end to end."
+  },
+  "remoteDays": 35
+}

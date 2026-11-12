@@ -177,6 +177,30 @@ h3 {
   border-color: #ff6b00;
 }
 
+.uw-banner {
+  border: 1px solid #ff6b00;
+  background: #fff4ec;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.uw-banner p {
+  margin: 0;
+}
+
+.uw-btn {
+  justify-self: start;
+  background: #ff6b00;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+}
+
 .gateway-sub {
   font-size: 1.05rem;
   font-weight: 600;
@@ -356,6 +380,138 @@ form button,
   background: var(--panel-strong);
 }
 
+/* Sprint 1.5 marketplace read-only surface (specs / talent /
+   micro-regions). Uses the site variables above; additive only. */
+.mk {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+.mk h1 {
+  font-size: 1.85rem;
+  line-height: 1.25;
+}
+.mk h2 {
+  margin-top: 2rem;
+}
+.mk .lede {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+.mk .note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.mk .card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+}
+.mk dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+}
+.mk dt {
+  color: var(--muted);
+}
+.mk dd {
+  margin: 0;
+}
+.mk table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.mk th,
+.mk td {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.mk a {
+  color: #ff6b00;
+}
+.mk code {
+  font-size: 0.85em;
+}
+
+/* DevPartner portal (additive) */
+.dp-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.dp-langs {
+  font-size: 0.9rem;
+}
+.dp-tiers {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.dp-tier {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+.dp-partner {
+  margin-bottom: 1.5rem;
+}
+.dp-code {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.dp-cta {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+}
+
+/* AgentPanel — dual-surface agent guidance (additive) */
+.agent-panel {
+  border: 1px solid var(--border);
+  border-left: 4px solid #ff6b00;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.agent-panel.sura {
+  border-left-color: #ff6b00;
+}
+.agent-panel h2 {
+  margin-top: 0;
+}
+.agent-tracks {
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+/* DevPortal self-serve widgets (additive) */
+.dg { margin: 1rem 0; }
+.dg figcaption { font-weight: 600; margin-bottom: 0.5rem; }
+.dg-svg svg { max-width: 100%; height: auto; }
+.dg-src { overflow-x: auto; font-size: 0.8rem; }
+.gen-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem; margin: 1rem 0; }
+.gen-form label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; }
+.gen-form input, .gen-form select, .gen-form textarea { padding: 0.4rem; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: inherit; }
+.gen-wide { grid-column: 1 / -1; }
+.gen-out { overflow-x: auto; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+.dbg textarea { width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: inherit; font-family: monospace; font-size: 0.82rem; margin: 0.75rem 0; }
+.dbg-out pre { overflow-x: auto; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+.dbg-err { color: #d64545; }
+.swagger-wrap { margin: 1.5rem 0; }
+
 /* Site footer — page bottom: social symbols + © line (Altitude pattern). */
 .site-footer {
   margin-top: 4rem;
@@ -406,6 +562,91 @@ form button,
 /* Landing hero (James, 2026-11-10) — Altitude grammar, POD coloration. */
 .hero {
   padding: 3.2rem 0 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The Altitude loop (James, 2026-11-11): the whole hero
+   vertical pulses — concentric rings emanate behind the
+   statement on a smooth 7s loop, and the content breathes on
+   the same cycle, so the section reads as one living pulse
+   rather than one animated word. */
+.hero-pulse-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-ring {
+  position: absolute;
+  top: 50%;
+  left: 68%;
+  width: 36rem;
+  height: 36rem;
+  margin: -18rem 0 0 -18rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: hero-ring 7s linear infinite;
+}
+
+.hero-ring.r2 {
+  animation-delay: 2.33s;
+}
+
+.hero-ring.r3 {
+  animation-delay: 4.66s;
+}
+
+@keyframes hero-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.32);
+  }
+  18% {
+    opacity: 0.42;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+.hero-content {
+  position: relative;
+  animation: hero-breathe 7s ease-in-out infinite;
+}
+
+@keyframes hero-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.006);
+  }
+}
+
+.hero .hero-pill {
+  animation: hero-pill-glow 7s ease-in-out infinite;
+}
+
+@keyframes hero-pill-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(255, 107, 0, 0.14);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ring,
+  .hero-content,
+  .hero .hero-pill {
+    animation: none;
+  }
 }
 
 .hero-pill {

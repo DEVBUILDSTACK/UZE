@@ -1267,3 +1267,814 @@ class HealthAttribute(Base):
     consent_record: Mapped["ConsentRecord"] = relationship(
         back_populates="health_attributes"
     )
+
+
+# ---------------------------------------------------------------------------
+# Sprint 1.5 (NEAR Hackathon, Nov 2026) — the CRE intent marketplace.
+# Additive only: four new tables + their enums; no Sprint 0/1 table is
+# touched. Authored from docs/hackathon/nov-2026/intent-schema.md and
+# the ratified decisions D1–D3 (04-DECISIONS-LOG.md): income commercial
+# real estate, two service lines (advisory, then placement against the
+# advisory's spec), micro-region as the analytical unit. IntentStatus
+# carries Diagram 4's lifecycle states (docs/diagrams/
+# 04-intent-lifecycle.md); the NEAR contract enforces the same states.
+# ---------------------------------------------------------------------------
+
+
+class IntentKind(enum.Enum):
+    AVAILABILITY = "availability"
+    DEMAND = "demand"
+
+
+class PosterKind(enum.Enum):
+    HUMAN = "human"
+    AGENT = "agent"
+    INTERNAL_AGENT = "internal_agent"
+    PARTNER = "partner"
+
+
+class IntentDomain(enum.Enum):
+    CRE_EXPENSE_ANALYSIS = "cre_expense_analysis"
+    CRE_PROPERTY_MANAGEMENT = "cre_property_management"
+    CRE_MARKET_SURVEY = "cre_market_survey"
+    CRE_INCOME_ANALYSIS = "cre_income_analysis"
+
+
+class WorkProduct(enum.Enum):
+    OPERATING_BUDGET = "operating_budget"
+    PM_SPEC = "pm_spec"
+    COST_MODEL = "cost_model"
+    BENCHMARK_ANALYSIS = "benchmark_analysis"
+    PLACEMENT = "placement"
+
+
+class PropertyType(enum.Enum):
+    BRANDED_HOTEL = "branded_hotel"
+    RESIDENTIAL_RENTAL = "residential_rental"
+    RESIDENTIAL_CONDO = "residential_condo"
+    HOSPITALITY = "hospitality"
+    MEDICAL_RECOVERY = "medical_recovery"
+
+
+class AcquisitionStage(enum.Enum):
+    UNDERWRITING = "underwriting"
+    POST_CLOSE = "post_close"
+    OPERATING = "operating"
+
+
+class IntentTier(enum.Enum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    ANY = "ANY"
+
+
+class IntentStatus(enum.Enum):
+    POSTED = "POSTED"
+    BIDDING = "BIDDING"
+    SELECTED = "SELECTED"
+    SETTLING = "SETTLING"
+    SETTLED = "SETTLED"
+    SETTLE_FAILED = "SETTLE_FAILED"
+    DELIVERED = "DELIVERED"
+    EXPIRED = "EXPIRED"
+
+
+class BidStatus(enum.Enum):
+    SUBMITTED = "SUBMITTED"
+    SELECTED = "SELECTED"
+    NOT_SELECTED = "NOT_SELECTED"
+    WITHDRAWN = "WITHDRAWN"
+
+
+class AssetSubclass(enum.Enum):
+    """The HIADR taxonomy (Addendum A, ratified 2026-11-08 via
+    DeepSeek, relayed by James): the marketplace's five tracks.
+    H/I are operating CRE — target area may be a radius or a
+    polygon. A/D/R are raw land / subterranean — a GeoJSON polygon
+    is required, and subterranean context is mandatory for A, D
+    and R (Addendum A §§2-3; the D inclusion resolved by DeepSeek
+    2026-11-08 — data centers need water rights and soil/bedrock
+    data to be underwritable). Enforcement lives in intents.py."""
+
+    H = "H"  # Hospitality (resorts, hotels)
+    I = "I"  # Income (multifamily, residential, condos)
+    A = "A"  # Agriculture (farms, agricultural raw land)
+    D = "D"  # Development (industrial, data centers, raw land)
+    R = "R"  # Resource (subterranean exploration / extraction)
+
+
+class AgReferralState(enum.Enum):
+    """The evidence-gated ladder for Tracks A/D/R
+    (docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md).
+    Transitions are evidence- and consent-gated; no state is
+    reached automatically beyond INPUT_VALIDATED at intake."""
+
+    INTENT_RECEIVED = "intent_received"
+    INPUT_VALIDATED = "input_validated"
+    SPATIAL_ASSESSMENT_PENDING = "spatial_assessment_pending"
+    SPATIAL_ASSESSMENT_COMPLETED = "spatial_assessment_completed"
+    PROVIDER_ELIGIBILITY_PENDING = "provider_eligibility_pending"
+    PROVIDER_PROPOSAL_RECEIVED = "provider_proposal_received"
+    FARMER_APPROVAL_PENDING = "farmer_approval_pending"
+    SERVICE_AUTHORIZED = "service_authorized"
+    SERVICE_REPORTED_ACTIVE = "service_reported_active"
+    OBSERVATIONS_COLLECTED = "observations_collected"
+    OUTCOME_ASSESSED = "outcome_assessed"
+    FINANCING_REVIEW = "financing_review"
+    SALE_ELIGIBILITY_REVIEW = "sale_eligibility_review"
+    LISTING_APPROVAL_PENDING = "listing_approval_pending"
+    AUCTION_ADAPTER = "auction_adapter"
+
+
+class CountryCode(enum.Enum):
+    """The intent's country — the dynamic-extension axis
+    (2026-11-08, Paraguay extension): new markets are added as
+    enum members, not new schemas. PY enters first alongside the
+    founding BR/US footprint and UY."""
+
+    BR = "BR"
+    PY = "PY"
+    UY = "UY"
+    US = "US"
+
+
+class ExecutionEnvironment(enum.Enum):
+    """Where an intent's execution runs (James's stack clarification,
+    2026-11-08): NEAR intents / multi-party matching, or Arcium
+    sealed-bid auctions (TEE/REE)."""
+
+    NEAR_INTENTS = "near_intents"
+    ARCIUM_AUCTION = "arcium_auction"
+
+
+class AgentAttestation(enum.Enum):
+    """How the acting party's identity is attested on an intent:
+    a human (trust-layer attestation), or an agent acting on behalf
+    of an Entity under x401 (James's stack clarification,
+    2026-11-08; the x401 stub lives in metering.py, the real
+    verification path is the trust-layer work mapped in
+    docs/audit/assurative-v2-gap-analysis.md)."""
+
+    HUMAN = "human"
+    AGENT_X401 = "agent_x401"
+
+
+class MicroRegion(Base):
+    """Reference table: the analytical unit of the CRE marketplace
+    (D3). Ids are authored slugs (\"miami-brickell\", \"bethesda-cbd\",
+    \"baltimore-nw\"); every Intent benchmarks against exactly one."""
+
+    __tablename__ = "micro_region"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True)
+    label: Mapped[str] = mapped_column("label", String, nullable=False)
+    metro: Mapped[str] = mapped_column("metro", String, nullable=False)
+    region: Mapped[str] = mapped_column("region", String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+    # Addendum A §4: the HIADR Content Desk data layer — period
+    # aggregates the Desk publishes (prior 30d / 90d, 18m / 36m
+    # lookbacks). Null until the data pipeline populates it; the
+    # /pulse endpoint serves what is real and says so.
+    pulse_data: Mapped[dict | None] = mapped_column(
+        "pulseData", JSON, nullable=True
+    )
+
+    intents: Mapped[list["Intent"]] = relationship(back_populates="micro_region")
+
+
+class Intent(Base):
+    """A posted specification (kind=demand) or availability offer
+    (kind=availability) on the CRE marketplace. The compose row is the
+    system of record; `chainIntentRef` records the NEAR contract's
+    reference for the same intent — a chain reference, never a FK
+    (the R4 rule: references out of this database are plain strings)."""
+
+    __tablename__ = "intent"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    kind: Mapped[IntentKind] = mapped_column(
+        "kind", SAEnum(IntentKind, name="intent_kind"), nullable=False
+    )
+    poster_kind: Mapped[PosterKind] = mapped_column(
+        "posterKind", SAEnum(PosterKind, name="poster_kind"), nullable=False
+    )
+    poster_account: Mapped[str] = mapped_column(
+        "posterAccount", String, nullable=False
+    )
+    domain: Mapped[IntentDomain] = mapped_column(
+        "domain", SAEnum(IntentDomain, name="intent_domain"), nullable=False
+    )
+    work_product: Mapped[WorkProduct] = mapped_column(
+        "workProduct", SAEnum(WorkProduct, name="work_product"), nullable=False
+    )
+    deliverable: Mapped[dict] = mapped_column("deliverable", JSON, nullable=False)
+    micro_region_id: Mapped[str] = mapped_column(
+        "microRegionId",
+        String,
+        ForeignKey("micro_region.id"),
+        nullable=False,
+    )
+    asset_context: Mapped[dict] = mapped_column(
+        "assetContext", JSON, nullable=False
+    )
+    # Addendum A (HIADR): the track, its spatial target, and — for
+    # the land/resource tracks — the subterranean data layer. All
+    # nullable: pre-HIADR rows stay valid (additive only); the API
+    # enforces the track rules on new specs (see intents.py).
+    asset_subclass: Mapped[AssetSubclass | None] = mapped_column(
+        "assetSubclass", SAEnum(AssetSubclass, name="asset_subclass"),
+        nullable=True,
+    )
+    target_area: Mapped[dict | None] = mapped_column(
+        "targetArea", JSON, nullable=True
+    )
+    subterranean_context: Mapped[dict | None] = mapped_column(
+        "subterraneanContext", JSON, nullable=True
+    )
+    # Trust-layer references (James's stack clarification,
+    # 2026-11-08): the Assurative V2 Entity this intent belongs to
+    # and the Affiliate acting within it. Plain strings carrying
+    # UUID values — NEVER foreign keys: Assurative is a separate
+    # database (Scope Tenet 01), and cross-database references are
+    # plain strings under the filed R4 rule (the chainIntentRef
+    # precedent). Resolution lives in the trust layer; the gap
+    # analysis is docs/audit/assurative-v2-gap-analysis.md.
+    entity_id: Mapped[str | None] = mapped_column(
+        "entityId", String, nullable=True
+    )
+    affiliate_id: Mapped[str | None] = mapped_column(
+        "affiliateId", String, nullable=True
+    )
+    execution_environment: Mapped[ExecutionEnvironment | None] = mapped_column(
+        "executionEnvironment",
+        SAEnum(ExecutionEnvironment, name="execution_environment"),
+        nullable=True,
+    )
+    agent_attestation: Mapped[AgentAttestation | None] = mapped_column(
+        "agentAttestation",
+        SAEnum(AgentAttestation, name="agent_attestation"),
+        nullable=True,
+    )
+    # Market extension (Paraguay, 2026-11-08): the intent's
+    # country, and the dual-track macro-distress flag — the owner
+    # is simultaneously optimizing the asset (the Hold) and
+    # preparing its liquidation route (the Exit: Arcium sealed-bid
+    # auction into USDC). The routing rules these fields drive are
+    # filed in the HIADR addenda; the data-science router that
+    # acts on them is Sprint 2 work, not built here.
+    country_code: Mapped[CountryCode | None] = mapped_column(
+        "countryCode",
+        SAEnum(CountryCode, name="country_code"),
+        nullable=True,
+    )
+    macro_distress_exit: Mapped[bool | None] = mapped_column(
+        "macroDistressExit", Boolean, nullable=True
+    )
+    on_site_days: Mapped[int | None] = mapped_column(
+        "onSiteDays", Integer, nullable=True
+    )
+    remote_days: Mapped[int | None] = mapped_column(
+        "remoteDays", Integer, nullable=True
+    )
+    budget_min_usdc: Mapped[int] = mapped_column(
+        "budgetMinUsdc", BigInteger, nullable=False
+    )
+    budget_max_usdc: Mapped[int] = mapped_column(
+        "budgetMaxUsdc", BigInteger, nullable=False
+    )
+    available_from: Mapped[int] = mapped_column(
+        "availableFrom", BigInteger, nullable=False
+    )
+    available_until: Mapped[int] = mapped_column(
+        "availableUntil", BigInteger, nullable=False
+    )
+    tier: Mapped[IntentTier] = mapped_column(
+        "tier", SAEnum(IntentTier, name="intent_tier"), nullable=False
+    )
+    referring_partner: Mapped[str | None] = mapped_column(
+        "referringPartner", String, nullable=True
+    )
+    status: Mapped[IntentStatus] = mapped_column(
+        "status",
+        SAEnum(IntentStatus, name="intent_status"),
+        nullable=False,
+        default=IntentStatus.POSTED,
+    )
+    chain_intent_ref: Mapped[str | None] = mapped_column(
+        "chainIntentRef", String, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+
+    micro_region: Mapped["MicroRegion"] = relationship(back_populates="intents")
+    bids: Mapped[list["Bid"]] = relationship(back_populates="intent")
+    matches: Mapped[list["Match"]] = relationship(back_populates="intent")
+
+
+class Bid(Base):
+    """One executor's bid against an Intent — human specialist or AI
+    agent, competing on the same specification (D2). `payload` is
+    free-form by design (narrative, terms; from Day 4, the NEAR AI
+    attestation receipt for agent bids)."""
+
+    __tablename__ = "bid"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    intent_id: Mapped[str] = mapped_column(
+        "intentId", String, ForeignKey("intent.id"), nullable=False
+    )
+    bidder_account: Mapped[str] = mapped_column(
+        "bidderAccount", String, nullable=False
+    )
+    bidder_kind: Mapped[PosterKind] = mapped_column(
+        "bidderKind", SAEnum(PosterKind, name="poster_kind"), nullable=False
+    )
+    amount_usdc: Mapped[int] = mapped_column(
+        "amountUsdc", BigInteger, nullable=False
+    )
+    eta_hours: Mapped[int | None] = mapped_column(
+        "etaHours", Integer, nullable=True
+    )
+    on_site_days: Mapped[int | None] = mapped_column(
+        "onSiteDays", Integer, nullable=True
+    )
+    remote_days: Mapped[int | None] = mapped_column(
+        "remoteDays", Integer, nullable=True
+    )
+    payload: Mapped[dict] = mapped_column("payload", JSON, nullable=False)
+    status: Mapped[BidStatus] = mapped_column(
+        "status",
+        SAEnum(BidStatus, name="bid_status"),
+        nullable=False,
+        default=BidStatus.SUBMITTED,
+    )
+    chain_bid_ref: Mapped[str | None] = mapped_column(
+        "chainBidRef", String, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+
+    intent: Mapped["Intent"] = relationship(back_populates="bids")
+    matches: Mapped[list["Match"]] = relationship(back_populates="bid")
+
+
+class Match(Base):
+    """The pairing record: one Intent, one selected Bid. Created at
+    selection (Day 3's settle flow); `state` follows the Commitment
+    precedent (plain string, values documented here): SELECTED ->
+    SETTLING -> SETTLED -> DELIVERED, SETTLE_FAILED on failure.
+    `settlementRef` records the settlement receipt reference (a chain
+    reference, never a FK)."""
+
+    __tablename__ = "match"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    intent_id: Mapped[str] = mapped_column(
+        "intentId", String, ForeignKey("intent.id"), nullable=False
+    )
+    bid_id: Mapped[str] = mapped_column(
+        "bidId", String, ForeignKey("bid.id"), nullable=False
+    )
+    matched_by: Mapped[str] = mapped_column("matchedBy", String, nullable=False)
+    state: Mapped[str] = mapped_column(
+        "state", String, nullable=False, default="SELECTED"
+    )
+    settlement_ref: Mapped[str | None] = mapped_column(
+        "settlementRef", String, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        "createdAt", DateTime(timezone=True), nullable=False, default=_now
+    )
+
+    intent: Mapped["Intent"] = relationship(back_populates="matches")
+    bid: Mapped["Bid"] = relationship(back_populates="matches")
+
+
+class AgReferral(Base):
+    """An agriculture referral intake (Tracks A/D/R) under the
+    evidence-gated architecture
+    (docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md).
+
+    Deliberately NOT an Intent: the Intent table summarizes
+    marketplace requests; a referral enters its own state ladder
+    and accumulates evidence in linked records (SpatialAssessment /
+    ProviderProposal / Observation / AIAssessment). The webhook
+    creates the referral and validates its input — and stops.
+    No provider is called, nothing is authorized, and a macro
+    signal recorded here (macroDistressExit) is a flag, never a
+    trigger (the Iron Rule).
+
+    The idempotency key is unique: a replayed webhook returns the
+    original referral instead of creating a duplicate.
+    """
+
+    __tablename__ = "ag_referral"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    idempotency_key: Mapped[str] = mapped_column(
+        "idempotencyKey", String, nullable=False, unique=True, index=True
+    )
+    state: Mapped[AgReferralState] = mapped_column(
+        "state",
+        SAEnum(AgReferralState, name="ag_referral_state"),
+        nullable=False,
+        default=AgReferralState.INTENT_RECEIVED,
+    )
+    payload: Mapped[dict] = mapped_column("payload", JSON, nullable=False)
+    country_code: Mapped[CountryCode | None] = mapped_column(
+        "countryCode",
+        SAEnum(CountryCode, name="country_code"),
+        nullable=True,
+    )
+    macro_distress_exit: Mapped[bool | None] = mapped_column(
+        "macroDistressExit", Boolean, nullable=True
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class SpatialAssessment(Base):
+    """Evidence record for a referral's spatial review.
+
+    Kept separate from AgReferral: a GeoJSON/CAR match is evidence,
+    not a state change by itself, and it never establishes land
+    ownership.
+    """
+
+    __tablename__ = "spatial_assessment"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    provider: Mapped[str] = mapped_column("provider", String, nullable=False)
+    status: Mapped[str] = mapped_column("status", String, nullable=False)
+    geometry: Mapped[dict] = mapped_column("geometry", JSON, nullable=False)
+    registry_matches: Mapped[list] = mapped_column(
+        "registryMatches", JSON, nullable=False, default=list
+    )
+    confidence_score: Mapped[float | None] = mapped_column(
+        "confidenceScore", Float, nullable=True
+    )
+    ownership_established: Mapped[bool] = mapped_column(
+        "ownershipEstablished", Boolean, nullable=False, default=False
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class ProviderProposal(Base):
+    """Evidence record for what a provider proposes.
+
+    A proposal can move a referral to FARMER_APPROVAL_PENDING; it
+    cannot authorize execution.
+    """
+
+    __tablename__ = "provider_proposal"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    provider: Mapped[str] = mapped_column("provider", String, nullable=False)
+    status: Mapped[str] = mapped_column("status", String, nullable=False)
+    proposal: Mapped[dict] = mapped_column("proposal", JSON, nullable=False)
+    execution_authorized: Mapped[bool] = mapped_column(
+        "executionAuthorized", Boolean, nullable=False, default=False
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class Observation(Base):
+    """Evidence record for an observed agricultural outcome."""
+
+    __tablename__ = "observation"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    metric: Mapped[str] = mapped_column("metric", String, nullable=False)
+    value: Mapped[float] = mapped_column("value", Float, nullable=False)
+    unit: Mapped[str] = mapped_column("unit", String, nullable=False)
+    method: Mapped[str] = mapped_column("method", String, nullable=False)
+    source: Mapped[str] = mapped_column("source", String, nullable=False)
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class AIAssessment(Base):
+    """AI calculation kept separate from scientific review.
+
+    `signed` records that an assessment was signed/attested. It is
+    deliberately independent from `scientifically_verified`: a
+    signature does not certify a yield result. `review_status`
+    carries the review state separately from both booleans.
+    """
+
+    __tablename__ = "ai_assessment"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    referral_id: Mapped[str] = mapped_column(
+        "referralId", String, ForeignKey("ag_referral.id"), nullable=False, index=True
+    )
+    model_version: Mapped[str] = mapped_column(
+        "modelVersion", String, nullable=False
+    )
+    input_evidence_refs: Mapped[list] = mapped_column(
+        "inputEvidenceRefs", JSON, nullable=False, default=list
+    )
+    calculation: Mapped[dict] = mapped_column(
+        "calculation", JSON, nullable=False
+    )
+    estimated_difference_value: Mapped[float | None] = mapped_column(
+        "estimatedDifferenceValue", Float, nullable=True
+    )
+    estimated_difference_unit: Mapped[str | None] = mapped_column(
+        "estimatedDifferenceUnit", String, nullable=True
+    )
+    signed: Mapped[bool] = mapped_column(
+        "signed", Boolean, nullable=False, default=False
+    )
+    scientifically_verified: Mapped[bool] = mapped_column(
+        "scientificallyVerified", Boolean, nullable=False, default=False
+    )
+    review_status: Mapped[str] = mapped_column(
+        "reviewStatus", String, nullable=False, default="PENDING_REVIEW"
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class ProviderSnapshot(Base):
+    """A partner data snapshot cached by the DevPartner ingestion API
+    (partners/README.md — the Snapshot Pattern).
+
+    A snapshot is partner-claimed data, stored verbatim after schema
+    validation, so downstream consumers query our database instead of
+    the partner's API. Under the Evidence-Gated Architecture every
+    partner is UNVERIFIED until an agreement is signed and its API is
+    reviewed, so provider_status is written "UNVERIFIED" by the
+    ingestion endpoint and a snapshot never triggers financing,
+    treatment, or auction execution.
+    """
+
+    __tablename__ = "provider_snapshot"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    partner_id: Mapped[str] = mapped_column(
+        "partnerId", String, nullable=False, index=True
+    )
+    data_category: Mapped[str] = mapped_column(
+        "dataCategory", String, nullable=False
+    )
+    raw_payload: Mapped[dict] = mapped_column(
+        "rawPayload", JSON, nullable=False
+    )
+    fetched_at: Mapped[int] = mapped_column(
+        "fetchedAt", BigInteger, nullable=False
+    )
+    cache_status: Mapped[str] = mapped_column(
+        "cacheStatus", String, nullable=False, default="LIVE"
+    )
+    provider_status: Mapped[str] = mapped_column(
+        "providerStatus", String, nullable=False, default="UNVERIFIED"
+    )
+
+
+class StagingProviderSnapshot(Base):
+    """A partner payload staged for review (the DevPartner onboarding
+    gate). POST /api/v1/partners/ingest writes here with
+    approval_status PENDING; an admin decision moves an APPROVED
+    payload into ProviderSnapshot (verbatim) or records REJECTED
+    with a rejection_reason. Approval gates consumption, not truth:
+    the payload stays partner-claimed data either way.
+    """
+
+    __tablename__ = "staging_provider_snapshot"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    partner_id: Mapped[str] = mapped_column(
+        "partnerId", String, nullable=False, index=True
+    )
+    data_category: Mapped[str] = mapped_column(
+        "dataCategory", String, nullable=False
+    )
+    raw_payload: Mapped[dict] = mapped_column(
+        "rawPayload", JSON, nullable=False
+    )
+    fetched_at: Mapped[int] = mapped_column(
+        "fetchedAt", BigInteger, nullable=False
+    )
+    approval_status: Mapped[str] = mapped_column(
+        "approvalStatus", String, nullable=False, default="PENDING"
+    )
+    rejection_reason: Mapped[str | None] = mapped_column(
+        "rejectionReason", String, nullable=True
+    )
+    reviewed_at: Mapped[int | None] = mapped_column(
+        "reviewedAt", BigInteger, nullable=True
+    )
+    reviewed_by: Mapped[str | None] = mapped_column(
+        "reviewedBy", String, nullable=True
+    )
+
+
+# ---------------------------------------------------------------------------
+# Sprint 1.5 extension — ASSURATIES: the claim > judge > resolved
+# pipeline over marketplace intents
+# (docs/specifications/07-ASSURATIES-CLAIM-RESOLUTION-EXTENSION.md).
+# Strictly additive: one new table + its enums; no existing table is
+# touched. The mechanism interprets Credence's claim markets for
+# HiCRE and ANR&D RWA (Credence: github.com/Paramchoudhary/Credence,
+# MIT License — see the spec for the attribution and the mapping).
+# ---------------------------------------------------------------------------
+
+
+class ClaimClass(enum.Enum):
+    """What a claim is about. HICRE_PERIOD claims are about one
+    accounting period of one HiCRE asset: its total operating
+    expenses (see ClaimPeriodKind)."""
+
+    RWA = "RWA"
+    HICRE_ASSET = "HICRE_ASSET"
+    HICRE_PERIOD = "HICRE_PERIOD"
+
+
+class ClaimPeriodKind(enum.Enum):
+    """The period a HICRE_PERIOD claim covers. Required on period
+    claims, forbidden on all others (enforced in assuraties.py).
+    HISTORICAL_TOTAL is the historicals-in-total claim: the asset's
+    total operating expenses over its recorded history."""
+
+    MONTHLY = "MONTHLY"
+    QUARTERLY = "QUARTERLY"
+    ANNUAL = "ANNUAL"
+    HISTORICAL_TOTAL = "HISTORICAL_TOTAL"
+
+
+class ClaimStatus(enum.Enum):
+    """The claim lifecycle (spec 07, §5). ASSURATIZED is the
+    terminal reliance grade: reached only from RESOLVED_TRUE
+    through the authorization-guarded finalize step.
+    RESOLVED_FALSE is terminal and can never become ASSURATIZED."""
+
+    ISSUED = "ISSUED"
+    CHALLENGED = "CHALLENGED"
+    UNDER_RESOLUTION = "UNDER_RESOLUTION"
+    RESOLVED_TRUE = "RESOLVED_TRUE"
+    RESOLVED_FALSE = "RESOLVED_FALSE"
+    ASSURATIZED = "ASSURATIZED"
+
+
+class ConfidentialTier(enum.Enum):
+    """Where a claim's evidence may live. STANDARD runs in the
+    REE/TEE environment of spec 07 §4 (NEAR AI attested juror +
+    NEAR ledger). ARCIUM marks the confidential tier — evidence
+    and judging under Arcium MPC, the "ASSURATIZED @ARCIUM" mark
+    once resolved. In this build ARCIUM is a data flag only: no
+    Arcium calls are made (the ParleySwap scaffold refuses; see
+    integrations/parleyswap/ and spec 07 §6)."""
+
+    STANDARD = "STANDARD"
+    ARCIUM = "ARCIUM"
+
+
+class Claim(Base):
+    """One attributable claim about an RWA, a HiCRE asset, or one
+    period of a HiCRE asset (its total operating expenses),
+    standing behind advisory or seller financials.
+
+    `intent_id` is a real FK: the claim hangs off a marketplace
+    Intent in THIS database (the Bid precedent). `claimant_entity_id`
+    is the opposite case — an AssurativeV2 trust-layer Entity id,
+    a plain string by the R4 rule (cross-database references are
+    never FKs; see Intent.entity_id).
+
+    `bond_amount` is the claimant's skin in the game in MOCK units:
+    recorded, never moved. No claim state transition executes a
+    financial transaction (the Iron Rule, spec 07 §7); settlement
+    stays USDC on Solana through the settle flow.
+
+    `juror_report` carries the juror's latest report verbatim —
+    inference outcome, model, completion id, and the verification
+    fields when genuinely present. An unavailable/error outcome is
+    recorded with its reason and does NOT resolve the claim.
+    `challenge` carries the single challenge record
+    (challengerEntityId, bondAmount, challengedAt; withstood is
+    added at finalize when a challenged claim is upheld).
+    """
+
+    __tablename__ = "claim"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    intent_id: Mapped[str] = mapped_column(
+        "intentId", String, ForeignKey("intent.id"), nullable=False, index=True
+    )
+    claim_class: Mapped[ClaimClass] = mapped_column(
+        "claimClass", SAEnum(ClaimClass, name="claim_class"), nullable=False
+    )
+    period_kind: Mapped[ClaimPeriodKind | None] = mapped_column(
+        "periodKind",
+        SAEnum(ClaimPeriodKind, name="claim_period_kind"),
+        nullable=True,
+    )
+    statement: Mapped[str] = mapped_column("statement", String, nullable=False)
+    claimed_value: Mapped[dict] = mapped_column(
+        "claimedValue", JSON, nullable=False
+    )
+    claimant_entity_id: Mapped[str] = mapped_column(
+        "claimantEntityId", String, nullable=False
+    )
+    bond_amount: Mapped[int] = mapped_column(
+        "bondAmount", BigInteger, nullable=False, default=0
+    )
+    status: Mapped[ClaimStatus] = mapped_column(
+        "status",
+        SAEnum(ClaimStatus, name="claim_status"),
+        nullable=False,
+        default=ClaimStatus.ISSUED,
+    )
+    confidential_tier: Mapped[ConfidentialTier] = mapped_column(
+        "confidentialTier",
+        SAEnum(ConfidentialTier, name="confidential_tier"),
+        nullable=False,
+        default=ConfidentialTier.STANDARD,
+    )
+    juror_report: Mapped[dict | None] = mapped_column(
+        "jurorReport", JSON, nullable=True
+    )
+    challenge: Mapped[dict | None] = mapped_column(
+        "challenge", JSON, nullable=True
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+    resolved_at: Mapped[int | None] = mapped_column(
+        "resolvedAt", BigInteger, nullable=True
+    )
+
+
+# ---------------------------------------------------------------------------
+# Attestation anchors — spec 08 §10 (DeepSeek audit directive,
+# item 4). When a panel reaches a verdict, each verdict-returning
+# seat's report is hashed (sha256 of its canonical JSON) and an
+# anchor attempt is recorded here: the pattern worth taking from
+# the field is an attestation hash anchored next to the artifact
+# it attests. The anchor attempt NEVER blocks the judgment:
+#   SUBMITTED  — a chain transaction carries the hash (nearTxRef)
+#   DISABLED   — the chain gate (COMPOSE_NEAR_CHAIN) was off
+#   UNAVAILABLE — the gate was on but anchoring could not happen;
+#                `reason` says why, in plain terms
+# The row is the record of the attempt and its honest outcome.
+# ---------------------------------------------------------------------------
+
+
+class AnchorStatus(enum.Enum):
+    SUBMITTED = "SUBMITTED"
+    DISABLED = "DISABLED"
+    UNAVAILABLE = "UNAVAILABLE"
+
+
+class AttestationAnchor(Base):
+    __tablename__ = "attestation_anchor"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    claim_id: Mapped[str] = mapped_column(
+        "claimId",
+        String,
+        ForeignKey("claim.id"),
+        nullable=False,
+        index=True,
+    )
+    juror: Mapped[str] = mapped_column("juror", String, nullable=False)
+    attestation_hash: Mapped[str] = mapped_column(
+        "attestationHash", String, nullable=False
+    )
+    near_tx_ref: Mapped[str | None] = mapped_column(
+        "nearTxRef", String, nullable=True
+    )
+    anchor_status: Mapped[AnchorStatus] = mapped_column(
+        "anchorStatus",
+        SAEnum(AnchorStatus, name="anchor_status"),
+        nullable=False,
+    )
+    reason: Mapped[str | None] = mapped_column(
+        "reason", String, nullable=True
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )

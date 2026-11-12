@@ -1,0 +1,17 @@
+[package]
+name = "sealed_bid_auction"
+version = "0.1.0"
+edition = "2021"
+
+# SCAFFOLD — Nithin's sealed_bid_auction Anchor program lands
+# here in Sprint 2. See ../README.md for the plug-in contract.
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+
+[dependencies]

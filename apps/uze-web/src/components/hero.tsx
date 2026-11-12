@@ -13,22 +13,35 @@ import Wordmark from "@/components/wordmark";
 export default function Hero() {
   return (
     <section className="hero">
-      <span className="hero-pill">
-        <Wordmark tone="white" />
-      </span>
-      <h1>Prove your property&apos;s P&amp;L. Get financed faster.</h1>
-      <p className="hero-support">
-        UZEmarkets is the information market where revenue, operating
-        expenses, and net income are verified by AI, challenged on
-        evidence, and trusted by lenders.
-      </p>
-      <div className="hero-ctas">
-        <Link className="cta-primary" href="/onboard">
-          Verify Your Property
-        </Link>
-        <a className="cta-quiet" href="https://podcast.uzemarkets.com">
-          See our podcast
-        </a>
+      {/* The Altitude loop (James, 2026-11-11): not a single
+          rotating word — the entire hero vertical carries the
+          motion: concentric tangerine rings pulse outward in a
+          smooth, endless loop behind the statement while the
+          content breathes on the same cycle. Pure CSS; stilled
+          under prefers-reduced-motion. */}
+      <div className="hero-pulse-field" aria-hidden="true">
+        <span className="hero-ring" />
+        <span className="hero-ring r2" />
+        <span className="hero-ring r3" />
+      </div>
+      <div className="hero-content">
+        <span className="hero-pill">
+          <Wordmark tone="white" />
+        </span>
+        <h1>Prove your property&apos;s P&amp;L. Get financed faster.</h1>
+        <p className="hero-support">
+          UZEmarkets is the information market where revenue, operating
+          expenses, and net income are verified by AI, challenged on
+          evidence, and trusted by lenders.
+        </p>
+        <div className="hero-ctas">
+          <Link className="cta-primary" href="/onboard">
+            Verify Your Property
+          </Link>
+          <a className="cta-quiet" href="https://podcast.uzemarkets.com">
+            See our podcast
+          </a>
+        </div>
       </div>
     </section>
   );

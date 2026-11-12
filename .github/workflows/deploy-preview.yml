@@ -1,0 +1,102 @@
+name: Deploy Preview
+
+# Manual or branch-push triggered: deploys apps/uze-web from the
+# hackathon branch as a Vercel PREVIEW deployment (never production
+# — production stays push-to-main via deploy.yml). Used to put a
+# branch build on a live public URL ahead of a merge (e.g. the
+# DevPartner portal for partner review). Required GitHub secrets:
+# VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID (same as deploy.yml).
+# Note: workflow_dispatch only becomes callable once this file also
+# exists on the default branch (post-merge); until then the push
+# trigger below is the firing mechanism.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [hackathon/nov-2026]
+    paths:
+      - "apps/uze-web/**"
+      - "partners/**"
+      - ".github/workflows/deploy-preview.yml"
+
+concurrency:
+  group: deploy-preview-hackathon
+  cancel-in-progress: true
+
+jobs:
+  web-vercel-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull Vercel project settings (preview)
+        working-directory: ./apps/uze-web
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build (verify compile)
+        working-directory: ./apps/uze-web
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      # Same git-free staging as deploy.yml: Vercel blocks deployments
+      # whose embedded git author isn't a team member.
+      - name: Stage deploy copy outside git tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/uze-web-deploy"
+          tar --exclude=node_modules --exclude=.next -cf - . | (cd "$RUNNER_TEMP/uze-web-deploy" && tar xf -)
+        working-directory: ./apps/uze-web
+      - name: Deploy preview
+        id: deploy
+        working-directory: ${{ runner.temp }}/uze-web-deploy
+        run: |
+          URL=$(vercel deploy --token=${{ secrets.VERCEL_TOKEN }} | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1)
+          echo "Preview URL: $URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Preview deployment"
+            echo "$URL"
+          } >> "$GITHUB_STEP_SUMMARY"
+      # One stable partner-facing URL that always serves the latest
+      # preview build — per-deployment URLs change on every push,
+      # which broke the shared partner link once already.
+      - name: Point the stable partner alias at this deployment
+        working-directory: ${{ runner.temp }}/uze-web-deploy
+        run: |
+          for ALIAS in uzemarkets-devpartner.vercel.app uze-devpartner-portal.vercel.app; do
+            if vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" --token=${{ secrets.VERCEL_TOKEN }}; then
+              echo "Stable alias live: https://$ALIAS"
+              echo "Stable alias: https://$ALIAS" >> "$GITHUB_STEP_SUMMARY"
+              break
+            else
+              echo "Alias $ALIAS unavailable, trying next candidate"
+            fi
+          done
+
+      # The custom subdomains ride the same alias mechanism (NOT Vercel
+      # gitBranch domains: CLI deployments carry no git metadata, so
+      # branch domains resolve to DEPLOYMENT_NOT_FOUND). The subdomains
+      # serve their surfaces via the app's host-routing middleware
+      # (devpartner: the portal; podcast: the POD + Content Desk;
+      # dealfi: the DealFi page; blog: the DealFi mirror; demo: the demo
+# page — bound 2026-11-10 at James's direction, ahead of the Nov 12 pin).
+      - name: Point the custom subdomains at this deployment
+        working-directory: ${{ runner.temp }}/uze-web-deploy
+        run: |
+          for ALIAS in blog.uzemarkets.com devpartner.uzemarkets.com podcast.uzemarkets.com dealfi.uzemarkets.com demo.uzemarkets.com; do
+            if vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" --token=${{ secrets.VERCEL_TOKEN }}; then
+              echo "Custom domain live: https://$ALIAS" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "Alias $ALIAS failed — check whether it is still registered as a project domain"
+            fi
+          done
+
+# 2026-11-10: custom subdomains are deployment aliases (see above), not
+# gitBranch domains — deployments here carry no git metadata.

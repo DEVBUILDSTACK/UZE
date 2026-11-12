@@ -1,0 +1,334 @@
+<!--
+  DRAFT — Sprint 1.5 Day 7 deliverable, drafted early (Nov 8) per
+  DeepSeek's unblocked-work directive. Follows Diagram 3
+  (docs/diagrams/03-end-to-end-sequence.md) phase for phase, in the
+  Day 6 walkthrough order. Target runtime 3-5 minutes. Refresh the
+  [STATE] notes at recording time (Nov 12).
+-->
+
+# DEMO SCRIPT — UZEMARKETS Sprint 1.5 (3–5 minutes)
+
+## Setup (before recording)
+
+- Compose API running on :8100 against the demo database
+  (`scripts/seed_demo.py` for the read-only beats; the live flow
+  below posts its own spec, so no seed is required for Beats 2–5).
+- Web surface running on :3000.
+- Browser tabs open: (1) the spec page after Beat 2, (2) Solana
+  Explorer on **Devnet** for the payer address
+  `5za47wLNFUJyqXhT2eTjeTNC1NsuJpnqLbvHBLBjG8Fy`, (3) NEAR Explorer
+  on testnet for `uzemarkets-talent.testnet`.
+- Terminal with the compose venv active; `$SPEC_ID` set from
+  Beat 2's output.
+- [STATE] The funded settlement broadcast EXECUTED 2026-11-08:
+  Solana tx
+  `3VXVoKq9pwrMZpQcuNBf6woFKLJm8mfXjNpUByLH9TA5H22j6RC7qFDdmy21KoqbTwdKhrKEyircqgvvj2ihSMJR`
+  (20.0 USDC, payer → winning bidder, SETTLED) — Beat 5 shows
+  this real receipt. The live inference run is still pending
+  NEAR AI org credits; Beat 3 keeps its honest fallback until
+  then. Fallbacks are written into each beat and are honest —
+  use them rather than staging anything.
+
+## Beat 1 — The thesis (0:00–0:35)
+
+**On screen:** the micro-regions index page (`/micro-regions`).
+
+**Say:** "Real estate analysis is priced by relationship and takes
+weeks. UZEMARKETS makes it a market — and the unit of analysis is
+the micro-region. Not Miami: Brickell. Every property analyzed here
+becomes a comparable that makes the next benchmark in that
+neighborhood better."
+
+## Beat 2 — Phase 1: the spec (0:35–1:20)
+
+**Action (terminal):** post the demo spec through the agent API:
+
+```
+curl -s -X POST localhost:8100/api/v1/specs -H 'Content-Type: application/json' -d @scripts/fixtures/demo-spec.json
+```
+
+**On screen:** the returned JSON (note the NEAR chain ref), then
+cut to the browser: the same spec as a rendered page at
+`/specs/$SPEC_ID`. View source for one beat on the
+`application/ld+json` block.
+
+**Say:** "A syndicate acquiring a 340-room Aloft in Brickell posts
+its specification. In the Assurative trust layer the syndicate is
+an **Entity** — the human analysts who will bid are its
+**Affiliates**, and the spec carries that Entity reference.
+Filed under H, hospitality, one of the five HIADR tracks, with a
+radius target area; the land and resource tracks file by polygon
+instead. One backend, two projections: agents get JSON, humans
+get this page — same fields, with schema.org markup so search
+engines and other agents can read the market too."
+
+## Beat 3 — Phase 2: bidding, with proof of work (1:20–2:20)
+
+**Action (terminal):** post the human bid, then the agent bid:
+
+```
+curl -s -X POST localhost:8100/api/v1/bids -H 'Content-Type: application/json' -d "$(jq --arg id "$SPEC_ID" '. + {intentId: $id}' scripts/fixtures/demo-bid-human.json)"
+curl -s -X POST localhost:8100/api/v1/bids -H 'Content-Type: application/json' -d "$(jq --arg id "$SPEC_ID" '. + {intentId: $id}' scripts/fixtures/demo-bid-agent.json)"
+curl -s localhost:8100/api/v1/specs/$SPEC_ID/bids
+```
+
+**On screen:** the bids JSON — $22,500 / 60 days (human) against
+$4,200 / 48 hours (agent), and the agent bid's `payload.inference`:
+the analysis and its attestation receipt.
+
+**Say:** "The agent's bid is not a promise. Before it was submitted,
+the spec was rendered to a prompt and analyzed inside NEAR AI
+Cloud's attested enclave; the receipt is attached to the bid and
+verified. And the agent itself is attested via **x401** — its
+identity is cryptographically bound to the Entity it acts on
+behalf of, the same trust layer that attests the human
+Affiliates. [Production note: x401 verification is real in the
+Assurative trust layer (Ed25519 against the agent's NEAR account
+keys, built 2026-11-08); the marketplace's tier gate still
+exercises the local stub until the Sprint 2 swap.] [STATE fallback if the key is not yet live: the bid
+carries inference status 'unavailable' — say exactly that: the
+marketplace never fabricates an attestation.] [Transport note,
+only if the live run used the REST route (the bid's inference
+carries `transport: rest-proxy-route` with a `transportNote`):
+say exactly: "The HTTP transport traversed a proxy, but the
+attestation receipt and response signature were verified
+locally." — ruling C-4, 2026-11-08.]"
+
+**Presenter note — the x402 beat (added 2026-11-08, DeepSeek
+directive):** if the live inference run is still credit-blocked
+at recording time, do not skip the beat — land it: "When we
+tried to run this agent inference, we hit an HTTP 402 error:
+'No spending limit configured.' This is exactly the Web2
+billing friction that kills agent autonomy. This is why
+UZEmarkets uses x402. We route metered micro-payments directly
+from the agent's wallet to the compute provider, bypassing
+enterprise billing accounts entirely." (The 402 is real: it is
+the response NEAR AI Cloud returned to our first live run on
+2026-11-08, before hackathon credits were provisioned.)
+
+## Beat 4 — Phase 3: selection (2:20–2:45)
+
+**Action (browser):** the talent page for the agent
+(`/talent/recon.uzemarkets-talent.testnet`), then the terminal:
+
+```
+curl -s -X POST localhost:8100/api/v1/settle -H 'Content-Type: application/json' -d '{"intentId": "$SPEC_ID", "bidId": "$AGENT_BID_ID"}'
+```
+
+**Say:** "The syndicate compares both bids — and the agent's
+profile — and selects. Selection is recorded as a match; the
+client's choice is preserved through every later state."
+
+## Beat 5 — Phase 4: cross-chain settlement (2:45–4:05)
+
+**On screen:** the settle response (match SETTLED, settlementRef =
+the Solana transaction). Cut to Solana Explorer (Devnet): the USDC
+transfer from the derived payer address to the agent's derived
+address. Cut to NEAR Explorer: the contract's settle call and the
+Chain Signatures request.
+
+**Say:** "Settlement is authorized on NEAR and paid on Solana — and
+no one holds a Solana private key. The address that just paid is
+derived from the NEAR contract account; the MPC signer network
+signed the transfer. NEAR decides, Solana settles, USDC is the
+rail."
+
+[STATE fallback if the payer is still unfunded at recording: show
+the settle response resting at SELECTED with settlement 'signed' —
+the transfer fully built and MPC-signed, broadcast held for funds —
+and the Chain Signatures dry-run evidence (NEAR tx
+B27pKQG5…). Narrate it as exactly that.]
+
+## Beat 6 — Phase 5 + the pulse: the comparable, published (4:05–4:40)
+
+**Action (browser):** refresh the Brickell micro-region page —
+comparable count now 1. Then (terminal):
+
+```
+curl -s localhost:8100/api/v1/micro-regions/miami-brickell/pulse
+```
+
+**On screen:** the schema.org Dataset JSON — comparable_count 1,
+the settled volume, and `agent_action: POST /api/v1/specs`.
+
+**Say:** "And the business compounds: at settlement, this property
+was written into the Brickell dataset as a comparable. The next
+spec in Brickell is benchmarked against real, settled work. This
+pulse is also what the HIADR Content Desk publishes — human
+analysis on top, this JSON at the bottom — so the next agent that
+comes looking for Brickell data finds the endpoint to transact.
+That's UZEMARKETS — Learn2Launch builds it, Assurative makes it
+trustworthy, and the market is where it's tested and used."
+
+*[Presenter note — if Track A / Paraguay comes up: "Because of
+the recent macroeconomic distress and fiat collapse in Paraguay,
+UZEmarkets offers a dual-track solution for farmers. First, we
+route their polygons into an evidence-gated AgTech referral
+pipeline to assess whether partners can help optimize corn and
+sorghum yields and maximize cash flow. The partner adapters are
+unverified mocks today: a proposal reaches
+FARMER_APPROVAL_PENDING and stops unless the farmer or entity
+explicitly consents. Second, if the farm cannot be saved, the
+exit is separately authorized — never automatic. After the
+outcome is assessed, the owner must explicitly instruct a
+sale-eligibility review and listing approval before the Arcium
+sealed-bid auction adapter can liquidate the RWA into USDC,
+protecting capital from fiat devaluation. The macro-distress
+flag records the posture; it never triggers financing or a sale
+by itself."]*
+
+## Beat 8 — Assuraties + the Juror Team (4:40–5:15)
+
+**Action (terminal):** issue a claim on the Brickell spec from
+the SAME claimant entity whose claim already stands Assuratized
+in this micro-region, and judge it; then issue a second claim
+from a DIFFERENT claimant and judge that:
+
+```
+curl -s -X POST localhost:8100/api/v1/claims -d '{...}'
+curl -s -X POST localhost:8100/api/v1/claims/<id>/judge
+```
+
+**On screen:** the first judge response — the claimant's own
+precedent is NOT in `precedentsUsed`, and
+`precedentsExcludedSelfDealing` reads 1. The second response —
+the same precedent IS used (`precedentsUsed` carries its id,
+excluded 0). Then `GET /api/v1/jurors`: the public scorecards.
+
+**Say:** "Markets run on claims — about an asset, about its
+numbers. Assuraties are the claims standing in this market; the
+ones that survive judgment become Assuratized, and lenders rely
+on those through the Reliance API. Watch the first judgment: the
+claimant's own settled record is excluded from judging their new
+claim. A single operator being writer, moderator, and juror is
+the pattern we refused. The second judgment uses that same
+precedent — precedent is shared, self-dealing is not. Contested
+claims are judged by a panel of models, every seat scored in
+public. Price tells you what the crowd believes. Precedent
+tells you what this micro-region has already settled. The
+lender needs the second."
+
+*[STATE: the exclusion is demonstrable live on this recording —
+precedent selection is our deterministic code, so
+`precedentsExcludedSelfDealing` shows in the judge response
+regardless. The demo dry run executes this entire beat
+(BEAT8_EXCLUSION_OK / BEAT8_PRECEDENT_OK / BEAT8_READS_OK). The
+juror VERDICTS themselves record `unavailable` until the NEAR AI
+org credits land (key authenticates; org spending limit unset —
+HTTP 402). Anchoring: the talent contract's `anchor_attestation`
+method was added 2026-11-09 and panel anchoring is LIVE-PROVEN
+on testnet — a 2–1 panel verdict anchored all three seat hashes
+on-chain, each verified equal to the canonical digest (spec 08
+§10 carries the transactions). In the deterministic local dry
+run the chain gate is off, so anchors record DISABLED there by
+design.]*
+
+## Beat 9 — The autonomous treasury: the agent funds its own compute (5:15–5:40)
+
+**Action (terminal):** read SURA's NEAR compute balance, then
+trigger the pre-task compute check:
+
+```
+curl -s localhost:8100/api/v1/treasury/balance/SURA
+curl -s -X POST localhost:8100/api/v1/treasury/ensure-compute -d '{"agent":"SURA","rail":"SOLANA_USDC"}'
+curl -s localhost:8100/api/v1/treasury/balance/SURA
+```
+
+**On screen:** the balance starts BELOW the inference threshold
+(`funded: false`); the ensure-compute response shows
+`swap_executed: true` — source SOLANA_USDC, target NEAR — and
+the balance then reads funded. The swap is read back from the
+append-only EventLog (`agent.treasury.swap_executed`).
+
+**Say:** "An autonomous agent cannot be chained to a corporate
+credit card. Before SURA runs, the treasury checks her NEAR
+compute balance — and when it runs low, she does not ask a human
+for money. The engine swaps from her settlement rails — Solana
+USDC, Base ETH, Robinhood USDG, Ink — into native NEAR, and the
+swap is written to the same append-only log as everything else
+she does. The agent funds its own intelligence."
+
+*[STATE: swap EXECUTION is mocked for the hackathon — balances
+are mock state, the swap is a simulation labelled `mock: true`
+in every payload, and no funds move (no keys are held; custody
+gate A5 is open). The check, the rail table, the pre-task
+trigger on the x402-gated agent surface, and the EventLog
+record are the real mechanism; a live CDP swap replaces the
+simulation at the marked seam in treasury_router.py. The demo
+dry run executes this beat (BEAT9_TREASURY_OK). Built
+2026-11-11 on the owner's override of the UZEmarkets/SigLayer
+boundary for this module.]*
+
+## Beat 10 — The treasury around the agent (5:40–6:05)
+
+**Action (terminal + /treasury page):** a human configures an
+on-ramp amount; the ladder refuses what it must. Then the
+agent's Send/Receive move that funded Beat 9 is shown as a
+treasury operation:
+
+```
+curl -s -X POST localhost:8100/api/v1/treasury/onramp/config -d '{"amount":250}'
+curl -s -X POST localhost:8100/api/v1/treasury/onramp/config -d '{"amount":107}'   # 422
+curl -s -X POST localhost:8100/api/v1/treasury/send-receive -d '{"amount":10,"source_chain":"SOLANA","target_chain":"NEAR","agent":"GIRA"}'
+```
+
+**Say:** "The same treasury serves the syndicate. Fiat arrives
+through a third-party provider, straight into the user's own
+wallet — we never touch it, which is why no money-transmitter
+license stands between a syndicate and its own funds. Amounts
+move on a fixed ladder — five to a hundred by fives, then tens,
+then fifties, capped at seventeen-fifty — and there is no
+off-ramp: funds move by Send and Receive, between Solana, Base,
+Ink, Robinhood, Arc and NEAR. Identity rides x401; payments
+ride x402."
+
+*[STATE: the ladder validation is real and enforced by the API
+(422s as shown). Funding and swap execution are mocked — no
+funds move. x401 in this build is the identity stub at the
+metering seam; the real protocol is Proof's (draft 0.2.0), and
+its integration design is filed as research note 18. The demo
+dry run executes this beat (Beat 10 OK line).]*
+
+## Optional Beat 11 — Assign + contribution receipts (only if runtime allows; +~25s, Close shifts)
+
+**Action (terminal):** the Assign category vocabulary (nine
+categories, closed set — an unknown category is refused), a
+mock BANKRUPTCY_ESTATE listing with a recorded bid; then three
+partners' agents contribute 100k each to the demo syndicate's
+mock escrow pool, receipts show the 33.3% shares, and the
+true-up to a 50/25/25 legal split computes B and C each sending
+A 25k — as mock instructions, executed nowhere. *[STATE: UZE
+Assign and the receipts are MOCK builds from 2026-11-11 (the
+owner's tap); no custody, no funds. Deliberately absent from
+SUBMISSION.md under the 2026-11-10 narrative scope ruling;
+the dry run executes this beat (Beat 11 OK line).]*
+
+
+## Optional Beat 12 — Institutional underwrite (only if runtime allows; +~25s)
+
+**Action (terminal):** three years of the same hotel's T-12s —
+with deliberately inconsistent labels across years ("Repairs &
+Maintenance" / "R&M" / "Maintenance Expense") — normalize
+through the Standard Chart of Accounts into the seven-bucket
+P&L; NOI growth computes across the years; the 2026 insurance
+spike (+44%) is flagged for review while taxes sit in their
+own bucket throughout. The valuation carries price per unit
+and price per square foot beside the cap rate, read against
+micro-region comps served by the CoStar-shaped adapter.
+
+**Say:** "Institutional underwriting is a normalization
+problem before it is a math problem. The comps adapter is
+CoStar-shaped, built to the interface, license pending — the
+demo figures are synthetic and labelled synthetic."
+*[STATE: chart mapping + metrics + multi-year analysis BUILT
+2026-11-11 (owner's tap); CoStar provider is a MOCK with
+synthetic data; the dry run executes this beat (Beat 12 OK
+line).]*
+
+## Close (6:05–6:25)
+
+**On screen:** repo + contract address card.
+
+**Say:** "Built in Sprint 1.5 on the filed Assurative V2 stack —
+Rust on NEAR, Python at the core, USDC on Solana. Sprint 2 takes it
+from here."

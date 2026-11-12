@@ -1,0 +1,41 @@
+{
+  "note": "SYNTHETIC multi-year T-12 fixture (demo). The same hotel, three years, deliberately inconsistent line-item labels across years — the normalization problem the StandardChartOfAccounts solves. Insurance spikes in 2026 to exercise the fluctuation flag.",
+  "years": [
+    {
+      "period": "2024",
+      "line_items": {
+        "Room Revenue": 1690000,
+        "Repairs & Maintenance": 148000,
+        "Payroll": 512000,
+        "Utilities": 168500,
+        "Real Estate Taxes": 131000,
+        "Insurance": 78200,
+        "Interest Expense": 40200
+      }
+    },
+    {
+      "period": "2025",
+      "line_items": {
+        "Rooms Revenue": 1775000,
+        "R&M": 155400,
+        "Salaries & Wages": 534000,
+        "Utilities": 175200,
+        "Property Tax": 139800,
+        "Hazard Insurance": 84100,
+        "Mortgage Interest": 39800
+      }
+    },
+    {
+      "period": "2026",
+      "line_items": {
+        "Total Revenue": 1842500,
+        "Maintenance Expense": 161900,
+        "Payroll": 556300,
+        "Utilities": 181200,
+        "Property Taxes": 148200,
+        "Property Insurance": 121300,
+        "Interest Expense": 39400
+      }
+    }
+  ]
+}

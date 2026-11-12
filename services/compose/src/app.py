@@ -19,11 +19,28 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+import agtech
 import approvals
+import assuraties
+import email_gateway
 import commitments
 import db
 import intakes
+import intents
+import metering
+import partners
+import agents
+import pulse
+import settle
 import snapshots
+import assign
+import auctions
+import builders
+import matrix
+import contributions
+import costar
+import treasury
+import treasury_router
 
 
 def create_app() -> FastAPI:
@@ -58,6 +75,24 @@ def create_app() -> FastAPI:
     app.include_router(snapshots.router)
     app.include_router(approvals.router)
     app.include_router(commitments.router)
+    app.include_router(intents.router)
+    app.include_router(settle.router)
+    app.include_router(metering.router)
+    app.include_router(pulse.router)
+    app.include_router(agtech.router)
+    app.include_router(partners.router)
+    app.include_router(partners.admin_router)
+    app.include_router(agents.router)
+    app.include_router(treasury_router.router)
+    app.include_router(treasury.router)
+    app.include_router(assign.router)
+    app.include_router(auctions.router)
+    app.include_router(builders.router)
+    app.include_router(matrix.router)
+    app.include_router(contributions.router)
+    app.include_router(costar.router)
+    app.include_router(assuraties.router)
+    app.include_router(email_gateway.router)
     return app
 
 

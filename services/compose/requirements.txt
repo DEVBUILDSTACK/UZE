@@ -11,3 +11,4 @@ psycopg[binary]==3.3.6
 # TypeScript compiler (for `make check-ts`) is a pinned external install, NOT npx:
 #   npm install --prefix ~/workspace/tools/ts-tools typescript@5   (used: 5.9.3)
 # Toolchain venv: ~/workspace/tools/codegenvenv (see Makefile header).
+fpdf2==2.9.0

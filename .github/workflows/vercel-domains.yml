@@ -10,7 +10,9 @@ name: vercel-domains (manual ops)
 # re-pointed by deploy-preview.yml on each preview build — the same
 # mechanism as the stable partner alias. This job therefore REMOVES the
 # branch-domain entries so the names are free for aliasing.
-# demo.uzemarkets.com stays unassigned (reserved).
+# demo.uzemarkets.com was unassigned (reserved) until 2026-11-10,
+# when James directed it bound; it is now a deployment alias like the
+# others, re-pointed by deploy-preview.yml.
 
 on:
   workflow_dispatch:

@@ -8,8 +8,11 @@ import type { NextRequest } from "next/server";
  *
  *    devpartner.uzemarkets.com  -> the DevPartner portal
  *                                  (/devpartner, locale-aware root)
- *    blog.uzemarkets.com        -> the HIADR Content Desk surface
- *                                  (micro-region pulses)
+ *    dealfi.uzemarkets.com      -> DealFi, the regional market
+ *                                  deal and financing page
+ *                                  (James's rename, 2026-11-10)
+ *    blog.uzemarkets.com        -> the same DealFi page, for as
+ *                                  long as the blog CNAME remains
  *    podcast.uzemarkets.com     -> the Saturday POD editions index
  *                                  (James, 2026-11-10)
  *    demo.uzemarkets.com        -> the demo / sandbox environment
@@ -50,13 +53,27 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (host.startsWith("blog.")) {
+  if (host.startsWith("dealfi.") || host.startsWith("blog.")) {
     if (pathname === "/") {
       const url = request.nextUrl.clone();
-      url.pathname = "/micro-regions";
+      url.pathname = "/dealfi";
       return NextResponse.rewrite(url);
     }
     return NextResponse.next();
+  }
+
+  // Micro-regions live on the apex (James, 2026-11-11): the Content
+  // Desk is a marketplace surface, not podcast content. The podcast
+  // host permanently redirects its /micro-regions paths to the same
+  // paths on uzemarkets.com; the podcast root stays the POD index.
+  if (
+    host.startsWith("podcast.") &&
+    (pathname === "/micro-regions" || pathname.startsWith("/micro-regions/"))
+  ) {
+    return NextResponse.redirect(
+      new URL(pathname + search, "https://uzemarkets.com"),
+      308,
+    );
   }
 
   if (host.startsWith("podcast.")) {

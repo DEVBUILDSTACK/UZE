@@ -1,0 +1,540 @@
+<!--
+  DRAFT — Sprint 1.5 Day 7 deliverable, drafted early (Nov 8) per
+  DeepSeek's unblocked-work directive. Bracketed [STATE] notes must
+  be refreshed against the live build at filing (Nov 13-14) before
+  this text is submitted anywhere.
+-->
+
+# UZEMARKETS — a multi-asset spatial finance engine (HIADR)
+
+**An information market for real-estate work across five tracks —
+Hospitality, Income, Agriculture, Development, Resource — where a
+specification is priced competitively by human specialists and
+attested AI agents, and settlement is authorized on NEAR and paid
+in USDC on Solana.**
+
+## The Brand Promise
+
+**We are the Truth Layer.** We do not take your clients, we do
+not broker your deals, and we do not give legal or tax advice.
+We empower you — the broker, the lawyer, the accountant — with
+verified, micro-region-specific financial truth.
+
+But make no mistake: **we are an RWA auction house.** If your
+client wants to liquidate an asset via a sealed-bid auction, we
+will take that listing. Advisors, beware. Your clients belong to
+you for advice; their assets belong to the market for execution.
+
+## The Covenant — a dual-sided talent marketplace
+
+**UZEmarkets is a dual-sided talent marketplace for the
+Americas** — human and agentic: the human talent that operates
+the assets, and the agentic talent (GIRA and SURA) that
+underwrites, prices, and verifies them.
+
+> UZEmarkets is a dual-sided talent marketplace for the
+> Americas. We do not take your brokerage or legal clients. We
+> empower you with verified data. But we do take your auction
+> listings, and we do place the human and agentic talent
+> required to manage the asset.
+
+- **We do not take advisory clients** — no brokerage
+  commissions, no legal retainers, no tax advisory fees. We
+  provide verified data to empower the broker, the lawyer, and
+  the accountant.
+- **We do take auction listings** — the RWA auction house takes
+  direct listings from owners and syndicates, regardless of who
+  advises them.
+- **We do take property management & operations** — we place
+  general managers, maintenance staff, and operational teams
+  for hospitality, resorts, motels, mobile home parks, and
+  syndicate-owned properties: our own sourced human talent in
+  active and pilot markets, and outstaffing through human
+  property-management partners outside them.
+- **The agentic side** — we place agentic talent (GIRA and
+  SURA) to underwrite, price, and verify the assets.
+
+## The HIADR taxonomy
+
+The marketplace is organized as five tracks (schema-enforced —
+Addendum A, shipped in this sprint):
+
+- **H — Hospitality & I — Income:** operating assets, evaluated by
+  micro-region expense analysis (the demo's 340-room Aloft is
+  Track H). A target area may be a 37.5-mile radius or a polygon.
+- **A — Agriculture & D — Development:** raw land, evaluated by
+  polygon spatial underwriting (soil, zoning, financing). A
+  GeoJSON polygon is required — radius is invalid for land.
+  **Paraguay extension (2026-11-08):** because of the recent
+  macroeconomic distress and fiat collapse in Paraguay,
+  UZEmarkets offers a dual-track solution for farmers. First, we
+  route their polygons into an evidence-gated AgTech referral
+  pipeline to assess whether software stack partners — integrated
+  via API, extending the reach of landowners and business owners
+  through WhatsApp and messaging-based sources — can help
+  optimize corn and sorghum yields and maximize cash flow.
+  Partner access is behind unverified mock adapters; a proposal
+  reaches **FARMER_APPROVAL_PENDING** and stops there unless the
+  farmer/entity explicitly consents to authorize the service.
+  Second, if the farm cannot be saved, the exit is separately
+  authorized — never automatic. Only after the outcome is
+  assessed may the owner explicitly instruct a sale-eligibility
+  review and listing approval before the Arcium sealed-bid
+  auction adapter can liquidate the RWA into USDC, protecting
+  capital from fiat devaluation. The schema carries this today: a `countryCode`
+  (BR/PY/UY/US — new markets are new enum members, not new
+  schemas) and a `macroDistressExit` flag marking the dual-track
+  posture. The intake and state-gated workflow are built here;
+  live partner integrations remain unverified adapters/mock
+  boundaries until agreements and APIs are signed and reviewed.
+- **R — Resource:** subterranean assets, evaluated on subsurface
+  rights and geology (water, minerals, oil/gas). Polygon required,
+  plus a mandatory subterranean context: soil depth, resource
+  types, water source and rights, and the jurisdiction that
+  determines the legal split (e.g. Brazil's mineral regime). The
+  subterranean context is mandatory across A, D and R — a data
+  center cannot be underwritten without its cooling-water rights
+  and bedrock data.
+
+By design, each track routes to its capital: H/I to operating
+lenders, A/D to land and development funds, R to resource
+extraction financiers.
+
+## The problem
+
+Acquiring or operating an income property starts with analysis: an
+operating budget, a property-manager specification, benchmarked
+against the immediate surroundings. Today that work is slow,
+opaque, and priced by relationship — a human analyst quotes weeks
+and five figures, and the buyer has no competitive tension and no
+verifiable provenance for the numbers.
+
+## The micro-region thesis
+
+Real estate value is local at a granularity the industry talks past:
+not "Miami" but **Brickell**; not "DC metro" but **Bethesda**,
+**Arlington**, **Northwest Baltimore**. UZEMARKETS makes the
+micro-region the analytical unit. Every analyzed property, once
+settled, is written back as a comparable in its micro-region
+dataset — so the marketplace compounds: each engagement makes the
+next benchmark in that neighborhood better.
+
+## Markets
+
+UZEMARKETS launches into paired US primary HiCRE markets:
+
+- **Market 1 — Mid-Atlantic:** Baltimore, MD + the Washington,
+  DC metro.
+- **Market 2 — South & Central Florida:** Miami, Fort
+  Lauderdale, Tampa, Orlando.
+
+Around them, the geographic hierarchy:
+
+- **Tier 1 (US)** — the paired primary markets above.
+- **Tier 2 (US Diaspora)** — the East Coast corridor,
+  Boston→Miami: Portuguese-speaking (primarily Brazilian)
+  entrepreneurs, high-net-worth individuals, and cross-border
+  real-estate investors.
+- **Tier 3 (South America)** — Brazil, extending immediately
+  into Paraguay and Uruguay.
+
+The demo's micro-regions sit inside this map: Brickell and
+Aventura (Miami), Fort Lauderdale, Bethesda and Arlington (DC
+metro), Northwest Baltimore, Baltimore City and Towson,
+Kissimmee (Orlando), and Tampa.
+
+UZEmarkets' Mid-Atlantic focus is anchored by Dugan's Wharf in Baltimore — the historic Pratt Street wharf, now Pier 4 of the Inner Harbor, home to the National Aquarium's Marine Mammal Pavilion and a marked Network to Freedom site.
+
+## What it is
+
+One marketplace, two service lines (the second feeds on the first):
+
+1. **Assessment & Advisory** — a client posts a specification
+   (property, micro-region, budget range, availability). Human
+   specialists and AI agents bid competitively. The deliverable is
+   an operating budget plus a property-manager specification,
+   micro-region benchmarked and verifiably produced.
+2. **Talent Placement** — the marketplace places the property
+   manager / management company / operating talent against that
+   specification. The advisory output is the hiring blueprint.
+
+Two surfaces, one backend (a field on one surface and not the
+other is a defect):
+
+- **Agent surface** — a fully interactive JSON API.
+- **Human surface** — read-only rendered HTML with schema.org
+  JSON-LD, built for search and agent discovery (SEO/GEO).
+  Interactive human UI lands in Sprint 2.
+
+## How it works (the demo)
+
+A syndicate acquiring a **340-room Aloft in Miami-Brickell** posts
+its spec. A human CRE analyst bids **$22,500 / 60 days**. An AI
+agent bids **$4,200 / 48 hours** — and its bid is not a promise: it
+is backed by an executed NEAR AI Cloud inference (the spec rendered
+to a prompt, analyzed inside an attested enclave), with the
+attestation receipt attached to the bid and verified before
+submission. [STATE: the inference module is integrated against
+the real SDK; the live attested run waits on NEARAI_API_KEY
+provisioning — until it lands, the agent bid carries inference
+status "unavailable", never a fabricated receipt, exactly as the
+demo rehearsal shows.] The syndicate selects the agent. Settlement is
+authorized by the NEAR contract and executed through **Chain
+Signatures**: the MPC signer signs for a Solana address derived
+from the NEAR account, and USDC moves on Solana devnet to the
+winning bidder's derived address. The 4,200 USDC figure is the
+modeled syndicate scenario; the live settlement receipt
+demonstrates the settlement primitive at balance size (the
+funded devnet amount) — the Chain Signatures cryptography, MPC
+signing, and settlement path proven are identical at either
+size (ruling C-2, 2026-11-08). At settlement, the analyzed
+property is recorded as a comparable in the Brickell dataset.
+
+Five phases: spec posted → bidding → selection → cross-chain
+settlement → delivery + comparable written.
+
+## The Assurative V2 Foundation vs. UZEmarkets
+
+The stack separates trust from transactions:
+
+- **Everything is an Entity** — the top of the hierarchy. Human
+  partners within a syndicate are its **Affiliates**.
+- **Assurative V2 (the Foundation)** is the trust layer: it handles
+  entity-level authentication, human attestation, attribution, and
+  provenance (for fractional rights and licensing). It is the
+  system of record for who an Entity is and who gets credited.
+- **UZEmarkets (the Marketplace)** sits on top of Assurative V2,
+  consuming Entity/Affiliate identities. It handles the intents,
+  bidding, and multi-party matching — its own transaction state
+  machine, in its own database, carrying trust-layer references
+  on every intent (`entityId`, `affiliateId`,
+  `executionEnvironment`, `agentAttestation` — shipped in this
+  sprint).
+- **Execution (TEE / REE)** is powered by Arcium (sealed-bid
+  auctions) or NEAR (intents and matching). An agent's identity is
+  attested via **x401**: the agent acts on behalf of an Entity,
+  and that attestation travels with its bids.
+
+[STATE: a forensic audit of the Assurative V2 repo is filed at
+docs/audit/assurative-v2-gap-analysis.md, and the trust layer it
+specified is now BUILT (assurative-v2, branch feat/trust-layer):
+Entity / Affiliate / ExternalAccount / AgentCredential tables,
+the /api/v1/trust endpoints, and real Ed25519 x401 verification
+against the agent's NEAR account keys. Compose resolves poster
+accounts against it live — verified end to end on 2026-11-08:
+a spec posted with no entityId was stamped with the trust
+layer's Entity by resolution. The x401 tier gate in compose
+still uses the local stub until the Sprint 2 swap to the trust
+call.]
+
+## Architecture
+
+- **NEAR** — the intent, identity and agent-control plane: a Rust
+  smart contract (`uzemarkets-talent.testnet`) holds intents, bids
+  and settlement authorization; Chain Signatures (v1.signer) is the
+  hinge that lets NEAR identities direct Solana addresses.
+- **Solana** — settlement of record. USDC only; the marketplace
+  never holds a Solana key — the MPC network signs for derived
+  addresses (client-side Ed25519 derivation cross-verified against
+  the contract's own `derived_public_key` view).
+- **NEAR AI Cloud** — attested inference for agent bids: the
+  analysis runs in a TEE enclave; completion id, verification
+  result and parsed analysis are captured onto the bid. If
+  inference is unavailable, the bid carries that honest state —
+  never a fabricated receipt.
+- **Assurative V2 compose core** — Python/FastAPI + PostgreSQL:
+  specs, bids, matches, an append-only event log, and the Diagram 4
+  intent lifecycle (POSTED → BIDDING → SELECTED → SETTLING →
+  SETTLED → DELIVERED; SETTLE_FAILED is a resting state whose retry
+  preserves the client's choice).
+- **Metering stubs** — the x402 payment flow (402 → mock
+  authorization → retry → proceeds, mock transfer logged as a mock)
+  and the x401 identity stub for tier C+ engagements, ahead of
+  Sprint 2's real facilitation and identity work.
+
+## The WhatsApp Funnel
+
+The distribution channel for the Markets geography above is
+messaging. Brazil is the second-largest WhatsApp market globally. We leverage the Meta-Business API through our Messaging & Intelligence VPS to ingest deals directly from 80,000 Brazilian business owners and the US East Coast diaspora (Boston to Miami), routing them via NEAR Intents to GIRA and SURA.
+
+The technical architecture is filed as **Diagram 08**
+(`docs/diagrams/08-hermes-near-architecture.md` — Multi-Agentic
+Team & MIV Technical Architecture, the MIV version superseding
+the earlier Diagram 08); the business flow is **Diagram 09**
+(`docs/diagrams/09-whatsapp-business-flow.md` — WhatsApp
+Outreach & Americas Diaspora Flow). Spec 10 §8 records the same
+architecture: Meta-Business API (WhatsApp) → MIV Hermes Harness
+→ UZE Core (GIRA/SURA) → NEAR AI inference & underwriting.
+
+[STATE: the funnel is the Sprint 2+ channel architecture —
+designed and diagrammed, not yet a live channel. Nothing in
+this section is running today; the hackathon build is the
+marketplace, the juror team, and the surfaces above.]
+
+## What was built in the hackathon window
+
+[STATE — refresh at filing]
+
+- NEAR contract scaffolded, deployed to testnet, and called
+  end-to-end (post_intent / submit_bid / settle / get_matches).
+- Marketplace schema (micro-regions, intents, bids, matches) as an
+  additive migration with a from-empty replay; full API for specs
+  and bids; automated tests green (full compose suite: 196,
+  including the C-3/C-4 inference transport tests — the
+  governance pass below closed at 136).
+- HIADR taxonomy extension (Addendum A): the AssetSubclass enum,
+  radius/polygon target areas with track enforcement at ingestion,
+  the subterranean context layer, and micro-region pulse data —
+  additive migration `851420c2adc4`, from-empty replay verified
+  (schema demo 12/12), plus the Content Desk's `/pulse` endpoint
+  serving schema.org Dataset JSON computed from real records.
+- Trust-layer linkage: Intent carries the Assurative V2 references
+  (`entityId`, `affiliateId`, `executionEnvironment`,
+  `agentAttestation`) as an additive migration (`4efec7ad31a2`),
+  and a forensic gap analysis of the Assurative V2 repo is filed
+  (docs/audit/) mapping the Entity/Affiliate build the references
+  resolve against.
+- Assurative V2 trust layer built (assurative-v2, feat/trust-layer):
+  the four trust tables + migration, the /api/v1/trust endpoints
+  (entity / affiliate / bind / agent / resolve / verify-x401 with
+  real Ed25519 verification), admin-gated issuance in the app's
+  existing middleware pattern. Compose consumes it: poster
+  resolution stamps Entity IDs on intents, settlements attribute
+  the bidder's Entity in the EventLog — proven live, two
+  processes over HTTP, on 2026-11-08.
+- Paraguay extension: `countryCode` (BR/PY/UY/US) +
+  `macroDistressExit` on the Intent (migration `85fe8850a6f9`) —
+  the dual-track optimize-or-exit posture for distressed
+  markets, with the routing rules filed as Sprint 2 spec and the
+  Ag-Cattle stack diagrammed (docs/diagrams/05). Suite at the
+  Day 7 draft refresh: 122 tests.
+- Evidence-gated AgTech governance: the mandatory spec is filed
+  at docs/specifications/06-EVIDENCE-GATED-ARCHITECTURE.md and
+  implemented in compose (migration `e8048229faab`). The
+  agriculture webhook is authenticated and idempotent and can
+  advance a referral only from INTENT_RECEIVED to
+  INPUT_VALIDATED. A single-step workflow guard enforces the
+  full A/D/R ladder; software stack partners sit behind
+  ISpatialProvider / IAgTechProvider interfaces with local mock
+  adapters that fabricate no live result and authorize nothing.
+  SpatialAssessment, ProviderProposal, Observation, and
+  AIAssessment are separate linked evidence records. In the AI
+  record, calculation, signed, scientifically_verified, and
+  review_status are separate fields — a signed calculation is
+  not a scientifically verified yield gain. A mock proposal can
+  reach FARMER_APPROVAL_PENDING only; financing and sale remain
+  separately authorized branches. Full compose suite after
+  this pass: 136 passed; from-empty schema demo 12/12 at head
+  `e8048229faab`. The integrated demo rehearsal
+  (scripts/demo_dryrun.sh) runs **14/14**, including its Beat 7
+  approval-gate walk: webhook → mock partner proposal
+  (PROVIDER_PROPOSAL_RECEIVED) → FARMER_APPROVAL_PENDING →
+  entity consent record → SERVICE_AUTHORIZED.
+- Chain Signatures proven end-to-end (MPC signature verified under
+  the derived key); the mocked-settlement fallback was retired.
+- Settlement endpoint: selection, match state machine, the exact
+  devnet USDC transfer built and MPC-signed. [STATE — EXECUTED
+  2026-11-08: the live broadcast fired on funding. Solana tx
+  `3VXVoKq9pwrMZpQcuNBf6woFKLJm8mfXjNpUByLH9TA5H22j6RC7qFDdmy21KoqbTwdKhrKEyircqgvvj2ihSMJR`
+  (devnet, slot 520159103, verified on-chain): 20.0 USDC moved
+  from the payer to the winning bidder's derived address; the
+  match rests at SETTLED. Per ruling C-2 (2026-11-08), the live
+  receipt demonstrates the settlement primitive at balance size;
+  the 4,200 USDC figure is the modeled syndicate scenario — the
+  $4,200 run rests at SELECTED + signed, its transfer built and
+  MPC-signed, not broadcast.]
+- NEAR AI inference module integrated against the real SDK, with
+  attestation capture on agent bids. [STATE: the NEAR AI key is
+  provisioned and authenticates; the live attested run is blocked
+  on NEAR AI org credits / a spending limit in the console —
+  update with the completion id + verification kind once run.]
+- x402/x401 mock flow with an agent retry helper and a dry-run
+  script proving the protocol end-to-end.
+- Autonomous treasury (2026-11-11): the NEAR compute-balance
+  check + autonomous mock swap on the agent surface, the
+  on-ramp increment ladder enforced by API, Send/Receive
+  routing across six networks, the /treasury page, and demo
+  beats 9–10 in the integrated dry run. Full compose suite
+  after this pass: see the filing refresh.
+- Read-only human surface: spec, talent and micro-region pages
+  with JSON-LD, indexes, sitemap, robots and llms.txt — verified
+  rendering against the live API.
+
+## Assuraties + the Juror Team
+
+Claims are the market's other currency. A claim about an RWA, a
+HiCRE asset, or an asset period — issued by an owner, broker, or
+advisor/agent — stands as one of the **Assuraties**; a claim
+confirmed through judgment is **Assuratized**, and those are the
+claims financing partners rely on through the Reliance API
+(confidential claims carry the ASSURATIZED @ARCIUM mark).
+
+Judgment is precedent-aware and team-shaped: before the juror
+runs, Assuratized claims in the same micro-region are rendered
+into its prompt as precedents — with a hard self-dealing
+exclusion (a claimant's own record never judges their own
+claims, and the exclusion is counted in the response). Contested
+claims are judged by a panel of up to three models, strict
+majority, dissents recorded. Every juror's scorecard is public
+and event-sourced from the append-only log — attempts included,
+nothing laundered by re-judging. The juror path strips
+invisible Unicode from claim text at issue and again at render,
+and every judgment carries a canary trap for framing leaks.
+Panel verdicts record per-seat attestation anchors (sha256 of
+each seat's report): the contract's `anchor_attestation`
+method stores each hash on NEAR testnet under the claim, and
+with the chain gate on the anchors record SUBMITTED with their
+transaction hashes — live-proven 2026-11-09, the on-chain
+read-back matching the recorded digests hash for hash (spec
+08 §10). With the gate off they record DISABLED. Because
+price tells you what the crowd believes, but precedent tells
+you what this micro-region has already settled — and the lender
+needs the second.
+
+[STATE: juror verdicts record `unavailable` until the NEAR AI
+org credits land (key authenticates; spending limit unset —
+HTTP 402). Bonds are mock units; no claim transition moves
+money.]
+
+## The Autonomous Treasury — agents that fund their own intelligence
+
+An autonomous agent chained to a corporate credit card is not
+autonomous. UZEmarkets' treasury is permissionless and
+self-custodial, for human syndicates and agents alike:
+
+- **Fiat on-ramp without custody.** A third-party provider
+  (debit / ACH / bank) routes fiat directly into the user's
+  self-custodial wallet — UZEmarkets never touches fiat, which
+  is the whole money-transmitter posture. Default target: USDC
+  on Solana; alternatives on Base, Robinhood Chain, Ink, and
+  Arc. Amounts follow a fixed ladder: $5–$100 by $5, $101–$250
+  by $10, $251–$1,750 by $50 — enforced by the API
+  (`POST /api/v1/treasury/onramp/config`, 422 outside the ladder).
+- **Send & Receive — no off-ramp.** Funds move P2P and
+  cross-chain through the swap router between Solana, Base,
+  Ink, Robinhood Chain, Arc, and native NEAR
+  (`POST /api/v1/treasury/send-receive`). Payments ride x402
+  rails; identity rides x401, with Arc a supported network for
+  x401 identity routing. Plus POST /api/v1/treasury/swap quoting LIVE
+  against NEAR Intents' 1Click API — asset map pulled from the live
+  registry; a live Base ETH -> wNEAR quote returned a real deposit
+  address on 2026-11-11 (quote-only; no funds sent).
+- **The autonomous swap.** Before any agent task on the
+  x402-gated surface, the treasury checks the agent's NEAR
+  compute balance. Below the inference threshold, the agent
+  does not ask a human for money: the engine swaps from its
+  settlement rails (Solana USDC, Base ETH, Robinhood USDG, Ink)
+  into native NEAR, and the swap is written to the append-only
+  EventLog (`agent.treasury.swap_executed`) — the agent funds
+  its own compute to underwrite RWAs.
+
+[STATE: built 2026-11-11 on the owner's override; demo beats 9
+and 10 execute it end to end. Execution is MOCKED in the
+hackathon build in the same register as the x402 mock tariff:
+balances are mock state, swaps are simulations labelled
+`mock: true`, no funds move and no keys are held (custody gate
+A5 is open). The ladder validation, the pre-task trigger, the
+rail table, and the EventLog records are the real mechanism; a
+live CDP swap replaces the simulation at the marked seam.
+Sourcing, verified by code read: the Fundio repo contributes
+its CDP onramp session pattern; there is no AgentKit or swap
+module in Fundio to extract (AgentKit integration is a Sprint 2
+item). Real x401 is Proof's open protocol (draft 0.2.0) —
+verification design filed in research note 18; this build's
+identity gate remains the metering stub. Cross-chain USDC in
+production rides CCTP **V2** — V1 contracts pause December 1,
+2026; no CCTP code exists in this stack today.]
+
+## The HIADR Content Desk — the organic growth engine
+
+Distribution is built into the data layer. Every micro-region
+carries a pulse: period aggregates (30/90-day, 18/36-month
+lookbacks) served as a schema.org Dataset at
+`GET /api/v1/micro-regions/{id}/pulse` — computed from the
+marketplace's own specs, settled comparables and volume.
+
+The Desk publishes on a fixed cadence: a **daily** micro-region
+pulse (7×/week), a **Sunday** deep-dive spatial analysis (e.g.
+aquifer depletion inside a specific agricultural polygon), and a
+**Tuesday** X thread distilling the blog. Every post is
+dual-surface by construction: a human-readable analysis on top,
+the machine-readable JSON payload at the bottom. When an AI
+crawler ingests the post it doesn't just read text — it receives
+the exact endpoints (`agent_action: POST /api/v1/specs`) to
+transact. That is the GEO (Generative Engine Optimization) play:
+the content is the API's discovery layer, for humans and agents
+alike. [STATE: the data layer — pulse storage + the /pulse
+endpoint — ships in this sprint; the publishing Desk runs on it
+next, per the filed sequence.]
+
+## What's next
+
+Sprint 2 (already filed): interactive human UI, real x402
+facilitation, the redemption writer, Intent Gateway and Tag
+Registry, solver policy with pre-settlement screening — the filed
+series continues exactly as planned; the hackathon is a bounded
+pull-forward (Sprint 1.5), not a fork. Scaffolding is already in
+place so Sprint 2 starts from sockets, not boilerplate: the
+Intent Gateway package (envelope/receipt shapes + a refusing
+implementation, not yet wired in) and the ParleySwap integration
+scaffold under `integrations/parleyswap/` (the
+`ISealedBidAuctionAdapter` interface plus a Rust workspace
+mirroring Nithin Mengani's `parleySwap` layout — his
+`sealed_bid_auction` program and `encrypted-ixs` crates plug in
+behind the interface; the scaffold itself executes nothing).
+
+## Track submissions (owner's decision, 2026-11-11)
+
+The owner submits to exactly two tracks. No other track texts
+exist or will be filed.
+
+### Unstoppable DeFi
+
+An autonomous treasury that moves real value across chains
+without a custodian. A live NEAR Intents 1Click route quotes
+cross-chain swaps against the production registry — during
+the build, a wet quote priced 0.01 Base ETH into ~5.64 wNEAR
+and returned a real deposit address. Around that rail, the
+treasury surface runs three journeys: Fund (a Coinbase
+Onramp session-token route, CDP-JWT authenticated, that
+answers an honest 503 until the owner configures keys —
+never a dummy secret), Move (Wormhole Connect with the
+route set pinned in code to Circle's CCTP, so USDC moves as
+native USDC between Solana, Base and Ethereum), and Swap
+(the compose treasury: a fixed-increment fiat on-ramp
+ladder, Send & Receive only, and agents that check their own
+NEAR compute balance and fund it autonomously before a task).
+Settlement of record is USDC on Solana; the demo's settle
+broadcast is on-chain and verifiable.
+
+### Agent Economy
+
+We scale compliance with transaction size. Under $30,
+agents pay with x402 for frictionless inference. Between
+$30 and $199, we enforce x401 identity verification tied to
+an Entity. Above $200, we enforce full Entity KYB for
+syndicate auctions. This bridges low-friction agentic
+capital with high-value institutional syndication.
+Autonomous agents onboard as UZE Builders with just an
+email and an x401 wallet — workflows render compute credits
+when network capacity allows, abstracting the underlying
+infrastructure — while syndicates pool capital through
+fractional contribution receipts (basis points, true-up
+against legal equity) and a Commitment Ladder that locks
+30% at T-7 days, 90% at T-72 hours and 100% at T-12 hours
+before any sealed-bid auction, whose execution always waits
+for a human click. The tier gate, the Builder registry, the
+ladder and the auction trigger are built and tested in the
+compose service (metering, builders, auctions modules);
+execution layers are protocol-shape mocks, labelled as such
+in every payload.
+
+## Submission fields
+
+- **Repository:** https://github.com/DEVBUILDSTACK/UZE (public;
+  branch `hackathon/nov-2026`, merges to main Nov 13)
+- **Contract:** `uzemarkets-talent.testnet` (NEAR testnet)
+- **Demo video:** [LINK — 3–5 min recording, script in DEMO-SCRIPT.md]
+- **X demo post:** [JAMES — post URL]
+- **Team lead email:** uzemarket@uzemarkets.com
+- **NEAR payout address:** [JAMES — address]
