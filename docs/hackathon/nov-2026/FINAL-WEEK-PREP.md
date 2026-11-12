@@ -85,6 +85,16 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   $199, we enforce x401 identity verification, ensuring the
   agent is a registered UZE Builder. Above $200, we enforce
   full Entity KYB for syndicate auctions."
+- **Three-tier CONSOLIDATED copy (relayed 2026-11-11
+  ~19:17, supersedes the ~19:12 candidate; settles with
+  Directive 1):** as the candidate above, with boundaries
+  made exact and Tier 2 identity "tied to an Entity, routed
+  through Circle/Arc." DO NOT SHIP AS WRITTEN: the
+  Circle/Arc identity-routing claim is a failed premise
+  (note 18 — x401 is Proof's; Arc is settlement-only).
+  Corrected variant for the merge, if the owner adopts the
+  tiers: drop "routed through Circle/Arc" -> "tied to an
+  Entity."
 - **Directive 1 (entity-only KYB onboarding + $199.99 agent-
   transaction threshold): relayed approval recorded 2026-11-11,
   NOT implemented.** Implementing it pre-recording would break
