@@ -237,6 +237,7 @@ export default function VenueSelector() {
           {receipt && (
             <p style={{ marginTop: 12, border: "1px dashed #ff6b00", borderRadius: 9, padding: 10 }}>
               <strong>Mock order {receipt}</strong> — {qty} × {selected.name} · {ring.name} — €{price * qty}.<br />
+              Event: Internacional vs São Paulo FC · January 2027 (demo fixture).<br />
               <em>Mock settlement:</em> in production this settles in USDC on Solana with GIRAx attestation of the ticket. No funds move in this demo.
             </p>
           )}

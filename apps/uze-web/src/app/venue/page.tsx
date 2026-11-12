@@ -25,6 +25,12 @@ export default function VenuePage() {
       <p style={{ fontFamily: "Helvetica, Arial, sans-serif", fontSize: 12, background: "#1a1a1a", color: "#f5f2ee", display: "inline-block", padding: "6px 11px", borderRadius: 999, letterSpacing: ".1em" }}>
         🟡 DEMO — MOCK INVENTORY · MOCK PRICES · NO REAL SETTLEMENT
       </p>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", margin: "14px 0", fontFamily: "Helvetica, Arial, sans-serif" }}>
+        <span style={{ background: "#e30613", color: "#fff", padding: "8px 14px", borderRadius: 9, fontWeight: 700, letterSpacing: ".06em" }}>INTER — Internacional</span>
+        <strong>vs · JAN 2027</strong>
+        <span style={{ background: "#fff", padding: "8px 14px", borderRadius: 9, borderTop: "5px solid #e30613", borderBottom: "5px solid #1a1a1a", fontWeight: 700, letterSpacing: ".06em" }}>SPFC — São Paulo FC</span>
+        <span style={{ opacity: 0.65, fontSize: 13 }}>Demo fixture — not on sale</span>
+      </div>
       <VenueSelector />
     </main>
   );

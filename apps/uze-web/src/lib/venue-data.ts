@@ -16,8 +16,8 @@ export interface Ring { id: string; name: string; d0: number; d1: number; h0: nu
 
 export const VENUE = {
   id: "bcn-pilot-01",
-  name: "Barcelona Pilot Venue",
-  city: "Barcelona",
+  name: "Estádio Beira-Rio — Demo Survey",
+  city: "Porto Alegre",
   eventTypes: ["football", "concert", "spectator-events"],
   currency: "EUR",
 };
