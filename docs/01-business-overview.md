@@ -10,7 +10,7 @@ UZEmarkets solves this through **UZE Underwrite**, a dual-track, AI-driven under
 
 To prove the viability of this engine, we built our initial mock data infrastructure around the Mid-Atlantic market (Baltimore–Washington Metro). This data model was structurally verified by a practicing real estate financial analyst in that market, ensuring our AI generates institutional-grade metrics.
 
-> **Status:** UZE Underwrite is BUILT — the engine, the P&L normalization, and the valuation metrics below are implemented in `services/compose` and covered by the test suite. The market data feeding the demo is a CoStar-shaped adapter returning synthetic figures, labelled synthetic in every payload; a commercial data license is pending (see the [Underwrite Spec](./specifications/underwrite.md)).
+> **Status:** UZE Underwrite is BUILT — the engine, the P&L normalization, and the valuation metrics below are implemented in `services/compose` and covered by the test suite. The market data feeding the demo is a CoStar-shaped adapter returning synthetic figures, labelled synthetic in every payload; a commercial data license is pending (see the [Underwrite Spec](./specifications/underwrite/README.md)).
 
 ---
 

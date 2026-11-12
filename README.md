@@ -26,21 +26,21 @@ Please select the appropriate track below for a deep dive into the architecture 
 
 For developers and auditors looking for the actual implementation details:
 
-*   [**UZE Underwrite Spec**](./docs/specifications/underwrite.md) — The 7-bucket P&L taxonomy, multi-year T-12 normalization, and the CoStar-shaped adapter (synthetic data, license pending).
-*   [**UZE Assign Spec**](./docs/specifications/assign.md) — The assignment marketplace surface, fractional syndicate contribution receipts, and the Commitment Ladder.
-*   [**UZE Auction Spec**](./docs/specifications/auction.md) — The confidential auction design, the Commitment Ladder schedule, and the Temporal Trigger with its human execution gate.
+*   [**UZE Underwrite Spec**](./docs/specifications/underwrite/README.md) — The 7-bucket P&L taxonomy, multi-year T-12 normalization, and the CoStar-shaped adapter (synthetic data, license pending).
+*   [**UZE Assign Spec**](./docs/specifications/assign/README.md) — The assignment marketplace surface, fractional syndicate contribution receipts, and the Commitment Ladder.
+*   [**UZE Auction Spec**](./docs/specifications/auction/README.md) — The confidential auction design, the Commitment Ladder schedule, and the Temporal Trigger with its human execution gate.
 
 ---
 
-### Status key — how to read this repository
+### Status legend — truth in documentation
 
 UZEmarkets labels the state of every surface honestly, in the docs and in the code:
 
-* **BUILT** — implemented and covered by the test suite (`services/compose`, 286 tests passing at the Sprint 1.5 close).
-* **BUILT AS MOCK** — the surface, vocabulary, and audit trail are real; execution is simulated and every payload says so (`mock: true`). No funds move, no custody is taken.
-* **DESIGN / ROADMAP** — filed architecture and sequenced plans, not yet implemented.
+* 🟢 **VERIFIED BUILT** — code is live, tested, and passing in the current branch (`services/compose`, 286 tests passing at the Sprint 1.5 close).
+* 🟡 **BUILT AS MOCK** — code structure and API endpoints exist and are tested, but execution or external integrations are mocked (e.g., the CoStar-shaped adapter's synthetic data; UZE Assign and UZE Auction, whose payloads carry `mock: true` — no funds move, no custody is taken).
+* 🔴 **PROPOSAL / ROADMAP** — architecture and design are finalized, but code is held for future sprints (e.g., the Yield Matrix database build, live confidential auction execution).
 
-Where a page describes a mechanism that is BUILT AS MOCK or DESIGN, the page says so at the point of description.
+Where a page describes a 🟡 or 🔴 mechanism, the page says so at the point of description.
 
 ---
 
