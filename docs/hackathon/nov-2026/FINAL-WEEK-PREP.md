@@ -95,6 +95,17 @@ relayed and approved by James. Submission deadline: **Nov 14, 23:59 UTC**.
   Corrected variant for the merge, if the owner adopts the
   tiers: drop "routed through Circle/Arc" -> "tied to an
   Entity."
+- **DIRECTIVE-1 FAMILY SETTLED (owner's own tap,
+  2026-11-11 ~19:31 ET):** build D1 (three-tier gate in
+  metering.py), D2 (Builder register), D3 (opaque welcome
+  copy UI), D5 (matrix subscribe/preferred-yield), D7
+  (Commitment Ladder), D8 (Arcium auction mock, human
+  Execute) — AS MOCKS, tonight. DEFERRED post-demo by the
+  owner: D4 (Yield Matrix table + cron), D6 (escrow DB
+  migration). D9 scoped by the owner: submissions to
+  Unstoppable DeFi + Agent Economy ONLY — no Autonomous
+  Business or AI Swarms texts. Track texts are now in
+  SUBMISSION.md ("Track submissions" section).
 - **Directive 1 (entity-only KYB onboarding + $199.99 agent-
   transaction threshold): relayed approval recorded 2026-11-11,
   NOT implemented.** Implementing it pre-recording would break

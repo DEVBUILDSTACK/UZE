@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import TreasuryTabs from "@/components/treasury-tabs";
+import BuilderPanel from "@/components/builder-panel";
 
 export const metadata: Metadata = {
   title: "Treasury | UZEmarkets",
@@ -31,6 +32,7 @@ export default function TreasuryPage() {
         and from there, everything moves by Send &amp; Receive.
       </p>
       <TreasuryTabs />
+      <BuilderPanel />
       <p className="note">
         Demonstration build — three journeys: Fund (Coinbase Onramp,
         activates when the owner configures CDP keys), Move (Wormhole

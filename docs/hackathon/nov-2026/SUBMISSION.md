@@ -483,6 +483,52 @@ mirroring Nithin Mengani's `parleySwap` layout — his
 `sealed_bid_auction` program and `encrypted-ixs` crates plug in
 behind the interface; the scaffold itself executes nothing).
 
+## Track submissions (owner's decision, 2026-11-11)
+
+The owner submits to exactly two tracks. No other track texts
+exist or will be filed.
+
+### Unstoppable DeFi
+
+An autonomous treasury that moves real value across chains
+without a custodian. A live NEAR Intents 1Click route quotes
+cross-chain swaps against the production registry — during
+the build, a wet quote priced 0.01 Base ETH into ~5.64 wNEAR
+and returned a real deposit address. Around that rail, the
+treasury surface runs three journeys: Fund (a Coinbase
+Onramp session-token route, CDP-JWT authenticated, that
+answers an honest 503 until the owner configures keys —
+never a dummy secret), Move (Wormhole Connect with the
+route set pinned in code to Circle's CCTP, so USDC moves as
+native USDC between Solana, Base and Ethereum), and Swap
+(the compose treasury: a fixed-increment fiat on-ramp
+ladder, Send & Receive only, and agents that check their own
+NEAR compute balance and fund it autonomously before a task).
+Settlement of record is USDC on Solana; the demo's settle
+broadcast is on-chain and verifiable.
+
+### Agent Economy
+
+We scale compliance with transaction size. Under $30,
+agents pay with x402 for frictionless inference. Between
+$30 and $199, we enforce x401 identity verification tied to
+an Entity. Above $200, we enforce full Entity KYB for
+syndicate auctions. This bridges low-friction agentic
+capital with high-value institutional syndication.
+Autonomous agents onboard as UZE Builders with just an
+email and an x401 wallet — workflows render compute credits
+when network capacity allows, abstracting the underlying
+infrastructure — while syndicates pool capital through
+fractional contribution receipts (basis points, true-up
+against legal equity) and a Commitment Ladder that locks
+30% at T-7 days, 90% at T-72 hours and 100% at T-12 hours
+before any sealed-bid auction, whose execution always waits
+for a human click. The tier gate, the Builder registry, the
+ladder and the auction trigger are built and tested in the
+compose service (metering, builders, auctions modules);
+execution layers are protocol-shape mocks, labelled as such
+in every payload.
+
 ## Submission fields
 
 - **Repository:** https://github.com/DEVBUILDSTACK/UZE (public;

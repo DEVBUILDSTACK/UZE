@@ -293,3 +293,115 @@ def call_metered_analyze(client, spec_id: str, payer: str) -> Any:
             },
         )
     return resp
+
+
+# ------------------------------------------------------------------
+# Three-tier amount compliance (owner's tap, 2026-11-11 ~19:31 ET —
+# the Directive-1 family, built as a protocol-shape mock in the
+# same discipline as the rest of this module).
+#
+#   Tier 1  amount <  $30.00   x402 payment only. No x401, no KYB.
+#   Tier 2  $30.00 – $199.99   x402 + x401 identity, and the
+#                              identity must be tied to an Entity
+#                              (entityId on the credential).
+#   Tier 3  amount >= $200.00  x402 + x401 + full Entity KYB.
+#
+# Boundaries are exact: $29.999 is the largest Tier-1 amount at
+# three-decimal precision; $30.00 opens Tier 2; $199.99 is the
+# largest Tier-2 amount; $200.00 opens Tier 3. Identity here is
+# Proof's x401 shape judged by this module's stub verifier —
+# identity verification does NOT route through Circle or Arc
+# (research note 18: Arc is settlement-side only). Enforcement
+# failures: Tier 2 -> HTTP 401, Tier 3 -> HTTP 403, per spec.
+# ------------------------------------------------------------------
+
+TIER2_MIN_USD = 30.00
+TIER3_MIN_USD = 200.00
+
+
+def classify_amount_tier(amount_usd: float) -> int:
+    """1 / 2 / 3 by the exact ratified boundaries."""
+    if amount_usd < TIER2_MIN_USD:
+        return 1
+    if amount_usd < TIER3_MIN_USD:
+        return 2
+    return 3
+
+
+def enforce_amount_tier(
+    amount_usd: float,
+    identity_payload: Any = None,
+    entity_kyb: bool = False,
+) -> tuple[bool, int, dict[str, Any]]:
+    """Judge one transaction against its amount tier.
+
+    Returns (allowed, http_status, detail). `identity_payload`
+    is an x401 credential payload judged by the same stub
+    verifier as /identity/verify; Tier 2 additionally requires
+    its `entityId` (the credential tied to an Entity). Tier 3
+    requires `entity_kyb` (the Entity's KYB standing, asserted
+    by the caller in this mock; the real KYB provider check is
+    Sprint 2, like every real verifier in this module)."""
+    tier = classify_amount_tier(amount_usd)
+    base = {"tier": tier, "amount_usd": amount_usd, "mock": True}
+    if tier == 1:
+        return True, 200, {**base, "requirements": ["x402"], "allowed": True}
+    ok, cred = verify_identity_payload(identity_payload)
+    if not ok:
+        return False, 401, {
+            **base,
+            "allowed": False,
+            "requirements": ["x402", "x401"],
+            "error": "x401 identity required for this amount tier",
+            "identity_challenge": cred,
+        }
+    if tier == 2:
+        entity_id = (
+            identity_payload.get("entityId")
+            if isinstance(identity_payload, dict)
+            else None
+        )
+        if not entity_id:
+            return False, 401, {
+                **base,
+                "allowed": False,
+                "requirements": ["x402", "x401", "entity-link"],
+                "error": "x401 identity must be tied to an Entity for Tier 2",
+            }
+        return True, 200, {
+            **base,
+            "allowed": True,
+            "requirements": ["x402", "x401", "entity-link"],
+            "entity_id": entity_id,
+        }
+    # Tier 3
+    if not entity_kyb:
+        return False, 403, {
+            **base,
+            "allowed": False,
+            "requirements": ["x402", "x401", "entity-kyb"],
+            "error": "full Entity KYB required for Tier 3 amounts",
+        }
+    return True, 200, {
+        **base,
+        "allowed": True,
+        "requirements": ["x402", "x401", "entity-kyb"],
+    }
+
+
+class TierCheckIn(BaseModel):
+    amount_usd: float
+    identity: dict[str, Any] | None = None
+    entity_kyb: bool = False
+
+
+@router.post("/metering/tier-check")
+def metering_tier_check(body: TierCheckIn):
+    """The three-tier gate as an endpoint: what a transaction of
+    this size must present before x402 settlement proceeds."""
+    allowed, status, detail = enforce_amount_tier(
+        body.amount_usd, body.identity, body.entity_kyb
+    )
+    if not allowed:
+        return JSONResponse(status_code=status, content=detail)
+    return detail
