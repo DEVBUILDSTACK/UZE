@@ -103,7 +103,7 @@ export default function SiteNav() {
         <h3>Active Markets</h3>
         <ul className="markets active">
           <li>
-            <a href="https://podcast.uzemarkets.com" onClick={close}>
+            <a href="https://podcast.uzemarkets.com/micro-regions" onClick={close}>
               Hospitality &amp; Income CRE
             </a>
           </li>
