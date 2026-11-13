@@ -12,6 +12,7 @@ psycopg[binary]==3.3.6
 fastapi~=0.115.12
 uvicorn[standard]~=0.30.2
 httpx
+fpdf2==2.9.0  # email gateway PDF reports (from fpdf import FPDF); missing pre-2026-11-13 — Render first deploy crash
 openpyxl
 xlrd
 xlwt  # test fixtures only (.xls generation)
