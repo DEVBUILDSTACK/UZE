@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata = {
   metadataBase: new URL("https://uzemarkets.com"),
-  title: "UZE",
+  title: "UZEmarkets — Information Markets",
   description:
     "UZEmarkets — the information market where offerings are tested and used.",
   openGraph: {

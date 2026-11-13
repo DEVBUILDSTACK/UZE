@@ -11,7 +11,7 @@ function required(name: string): string {
 }
 
 export const ENV = {
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
+  baseUrl: process.env.NEXT_PUBLIC_BASE_URL ?? "https://uzemarkets.com",
   // Required in every deployed env; falls back to local API for `pnpm dev`.
   apiBaseUrl:
     process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000",
