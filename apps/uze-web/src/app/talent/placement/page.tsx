@@ -100,6 +100,43 @@ export default function TalentPlacementPage() {
           service that returns the same verified report.
         </p>
       </section>
+
+      <section>
+        <h2>Development &amp; Design — the project team</h2>
+        <p>
+          A third kind of work builds the asset in the first
+          place. A developer who has secured the land needs a
+          project team to turn a development into a hospitality
+          asset: an <strong>architect</strong>, an{" "}
+          <strong>interior designer</strong> (furnishings,
+          appointments, wallcoverings, flooring), a{" "}
+          <strong>lighting technology integrator</strong>, a{" "}
+          <strong>wellness spa consultant</strong>, a{" "}
+          <strong>CAD drafter</strong>, and a{" "}
+          <strong>pre-sales broker</strong>.
+        </p>
+        <p>
+          These profiles declare their category and their design
+          domain — commercial architecture, luxury residential,
+          hospitality resort design, wellness infrastructure —
+          alongside the same focus as every other profile:
+          hospitality or residential. A development need filters
+          on that focus, and the team assembles category by
+          category from independent contractors and agentic
+          services alike. Project members refer each other: the
+          architect refers the interior designer, who refers the
+          spa consultant, and the referral chain is recorded.
+        </p>
+        <p>
+          <em>Example — development:</em> a developer holds raw
+          coastal land and a resort plan. The need is hospitality
+          focus, resort design domain. The assembled team is a
+          resort architect, an interior designer whose skills are
+          flooring and wallcoverings, and a wellness spa
+          consultant — staffed before the first operating role
+          exists.
+        </p>
+      </section>
     </main>
   );
 }

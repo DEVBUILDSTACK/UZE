@@ -188,5 +188,10 @@ def test_talent_placement_offers_both_paths():
         "Rental Income": 1000.0, "Payroll - resid. manager": 500.0}}]
     tp = email_gateway.analyze_multiyear(years)["talent_placement"]
     kinds = [p["kind"] for p in tp["paths"]]
-    assert kinds == ["operations", "knowledge_work"]
+    # Deliberate re-pin (owner tap, 2026-11-13): the
+    # Development & Design standing offer joins the two
+    # original paths as a third.
+    assert kinds == ["operations", "knowledge_work", "development_design"]
     assert tp["paths"][1]["service"] == "Financial Analysis"
+    assert "Architect" in tp["paths"][2]["roles"]
+    assert "Wellness Spa Consultant" in tp["paths"][2]["roles"]

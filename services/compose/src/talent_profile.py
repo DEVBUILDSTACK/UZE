@@ -47,6 +47,44 @@ TALENT_TYPES: tuple[str, ...] = (
     "AGENTIC_SERVICE",
 )
 
+# Development, Design & Wellness taxonomy (owner tap,
+# 2026-11-13 — standby + hackathon scope override, James's own
+# words). The D (Development) side of the marketplace connects
+# to H&I (Hospitality & Income): a developer who secures land
+# and builds needs the project team that turns it into a
+# hospitality asset. `role` stays FREE TEXT — a closed role
+# enum would break every profile validated before this
+# taxonomy existed. Instead, two OPTIONAL fields carry the
+# taxonomy, strict-when-present like the fields above:
+# `role_category` (what the profile does on a project) and
+# `domain_focus` (the design domain it serves). Neither
+# replaces asset_class_focus — that axis still says which
+# asset class the employer runs.
+ROLE_CATEGORIES: tuple[str, ...] = (
+    "ARCHITECT",
+    "INTERIOR_DESIGNER",
+    "LIGHTING_TECHNOLOGY_INTEGRATOR",
+    "WELLNESS_SPA_CONSULTANT",
+    "CAD_DRAFTER",
+    "PRE_SALES_BROKER",
+)
+DOMAIN_FOCUS: tuple[str, ...] = (
+    "COMMERCIAL_ARCHITECTURE",
+    "LUXURY_RESIDENTIAL",
+    "HOSPITALITY_RESORT_DESIGN",
+    "WELLNESS_INFRASTRUCTURE",
+)
+# The standing project team a development routes to, by
+# category: display names for surfaces, categories for code.
+PROJECT_TEAM_ROLES: tuple[tuple[str, str], ...] = (
+    ("ARCHITECT", "Architect"),
+    ("INTERIOR_DESIGNER", "Interior Designer"),
+    ("LIGHTING_TECHNOLOGY_INTEGRATOR", "Lighting Technology Integrator"),
+    ("WELLNESS_SPA_CONSULTANT", "Wellness Spa Consultant"),
+    ("CAD_DRAFTER", "CAD Drafter"),
+    ("PRE_SALES_BROKER", "Pre-Sales Broker"),
+)
+
 PDF_DEFERRAL_MESSAGE = (
     "PDF/Word resume parsing is deferred to our January 2nd "
     "update. Please provide your resume in JSON format."
@@ -103,6 +141,18 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
         or ttype.strip().upper() not in TALENT_TYPES
     ):
         problems.append("talent_type")
+    category = data.get("role_category")
+    if category is not None and (
+        not isinstance(category, str)
+        or category.strip().upper() not in ROLE_CATEGORIES
+    ):
+        problems.append("role_category")
+    domain = data.get("domain_focus")
+    if domain is not None and (
+        not isinstance(domain, str)
+        or domain.strip().upper() not in DOMAIN_FOCUS
+    ):
+        problems.append("domain_focus")
 
     if problems:
         return None, problems
@@ -119,6 +169,14 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
             ),
             "talent_type": (
                 ttype.strip().upper() if isinstance(ttype, str) else None
+            ),
+            "role_category": (
+                category.strip().upper()
+                if isinstance(category, str) else None
+            ),
+            "domain_focus": (
+                domain.strip().upper()
+                if isinstance(domain, str) else None
             ),
         },
         [],
@@ -205,17 +263,40 @@ def derive_talent_placement(years: list[dict]) -> dict[str, Any]:
                 "service": "Financial Analysis",
                 "cta_url": "/talent/placement?source=underwrite&path=knowledge",
             },
+            {
+                # Third path (owner tap, 2026-11-13): the
+                # Development & Design standing offer — the
+                # project team that turns a development into a
+                # hospitality asset. Like knowledge_work this is
+                # a standing offer, not a payroll derivation:
+                # the roles are the platform's project team,
+                # never read off the asset's own lines.
+                "kind": "development_design",
+                "label": "Assemble the Development & Design project team",
+                "roles": [display for _, display in PROJECT_TEAM_ROLES],
+                "cta_url": "/talent/placement?source=underwrite&path=development",
+            },
         ],
     }
 
 
 def role_family(profile: dict[str, Any]) -> str:
     """Which side of the marketplace a profile serves:
-    'knowledge_work' for financial-analysis roles, else
-    'operations'."""
+    'knowledge_work' for financial-analysis roles,
+    'development_design' for the Development & Design
+    taxonomy (by declared role_category, or by the role text
+    itself), else 'operations'."""
+    if profile.get("role_category") in ROLE_CATEGORIES:
+        return "development_design"
     role = str(profile.get("role", "")).lower()
     if "analyst" in role or "financial analysis" in role:
         return "knowledge_work"
+    for needle in (
+        "architect", "interior", "lighting", "spa", "wellness",
+        "cad drafter", "cad_drafter", "pre-sales", "pre sales",
+    ):
+        if needle in role:
+            return "development_design"
     return "operations"
 
 
@@ -232,6 +313,8 @@ def match_profiles(
     want_family = need.get("role_family", "operations")
     want_role = str(need.get("role", "")).lower().strip()
     want_focus = need.get("asset_class_focus")
+    want_domain = need.get("domain_focus")
+    want_category = need.get("role_category")
     for p in profiles:
         if role_family(p) != want_family:
             continue
@@ -239,8 +322,140 @@ def match_profiles(
             have_role = str(p.get("role", "")).lower()
             if want_role not in have_role and have_role not in want_role:
                 continue
+        if want_category and p.get("role_category") != want_category:
+            continue
         p_focus = p.get("asset_class_focus")
         if want_focus and p_focus and p_focus != want_focus:
             continue
+        # Domain compatibility follows the focus rule: a
+        # profile with no domain serves any domain; a need
+        # with no domain accepts any.
+        p_domain = p.get("domain_focus")
+        if want_domain and p_domain and p_domain != want_domain:
+            continue
         out.append(p)
     return out
+
+
+def assemble_project_team(
+    need: dict[str, Any], profiles: list[dict[str, Any]]
+) -> dict[str, list[dict[str, Any]]]:
+    """Assemble a Development & Design project team: for each
+    standing role category, the profiles that match the need
+    (family, asset-class focus, and domain all applied by the
+    matcher). Categories with no match are omitted — the team
+    shows what the marketplace can actually staff, never a
+    padded roster. Keyed by role_category, in the standing
+    PROJECT_TEAM_ROLES order."""
+    team: dict[str, list[dict[str, Any]]] = {}
+    for category, _display in PROJECT_TEAM_ROLES:
+        hits = match_profiles(
+            {**need, "role_family": "development_design",
+             "role_category": category},
+            profiles,
+        )
+        if hits:
+            team[category] = hits
+    return team
+
+
+# --- Referral edges (v1, mock storage) ---
+#
+# The dual-plane referral: a hired project member refers the
+# next one — the Architect refers the Interior Designer, who
+# refers the Spa Consultant. An edge is a record, not a
+# payout: economics and standing-confirmation are the
+# strategic audit's later sequencing, not this build. Storage
+# follows the profiles pattern — append-only JSONL (env
+# TALENT_REFERRALS_PATH); a database table is a later
+# migration.
+
+REFERRAL_FIELDS: tuple[str, ...] = (
+    "referrer_name",
+    "referred_name",
+)
+
+
+def validate_referral(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
+    """Validate one referral edge. Returns (edge, []) or
+    (None, [field, ...]) naming every missing/invalid field.
+    A self-referral names 'referred_name' as the problem."""
+    if not isinstance(data, dict):
+        return None, list(REFERRAL_FIELDS)
+    problems: list[str] = []
+    referrer = data.get("referrer_name")
+    if not isinstance(referrer, str) or not referrer.strip():
+        problems.append("referrer_name")
+    referred = data.get("referred_name")
+    if not isinstance(referred, str) or not referred.strip():
+        problems.append("referred_name")
+    if (
+        isinstance(referrer, str) and isinstance(referred, str)
+        and referrer.strip() and referred.strip()
+        and referrer.strip().lower() == referred.strip().lower()
+    ):
+        problems.append("referred_name")
+    category = data.get("referred_role_category")
+    if category is not None and (
+        not isinstance(category, str)
+        or category.strip().upper() not in ROLE_CATEGORIES
+    ):
+        problems.append("referred_role_category")
+    context_ref = data.get("context_ref")
+    if context_ref is not None and not isinstance(context_ref, str):
+        problems.append("context_ref")
+    if problems:
+        return None, problems
+    return (
+        {
+            "referrer_name": referrer.strip(),
+            "referred_name": referred.strip(),
+            "referred_role_category": (
+                category.strip().upper()
+                if isinstance(category, str) else None
+            ),
+            "context_ref": context_ref,
+        },
+        [],
+    )
+
+
+def _referrals_path() -> Path:
+    return Path(
+        os.environ.get(
+            "TALENT_REFERRALS_PATH", "./data/talent-referrals.jsonl"
+        )
+    )
+
+
+def record_referral(edge: dict[str, Any]) -> None:
+    """Append one validated referral edge to the v1 store."""
+    path = _referrals_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"edge": edge}) + "\n")
+
+
+def referral_chain(
+    edges: list[dict[str, Any]], start_name: str
+) -> list[str]:
+    """Walk a referral chain from a starting name: the names
+    in referral order, following each person's outgoing edge
+    (first edge wins), stopping at the end of the chain or
+    before a repeat. The start name is not included."""
+    by_referrer: dict[str, str] = {}
+    for e in edges:
+        by_referrer.setdefault(
+            str(e.get("referrer_name", "")).lower(),
+            str(e.get("referred_name", "")),
+        )
+    chain: list[str] = []
+    seen = {start_name.lower()}
+    current = start_name
+    while True:
+        nxt = by_referrer.get(current.lower())
+        if not nxt or nxt.lower() in seen:
+            return chain
+        chain.append(nxt)
+        seen.add(nxt.lower())
+        current = nxt

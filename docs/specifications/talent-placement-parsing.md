@@ -92,3 +92,46 @@ Not an automated hiring system, not a credential verifier —
 certifications are recorded as claimed, and any verification
 regime (the later-phase credential work) bolts onto the
 schema without changing it.
+
+## Development, Design & Wellness taxonomy (built 2026-11-13)
+
+Owner tap, 2026-11-13 (James's own override of recording
+standby and the hackathon scope ruling). The D (Development)
+side connects to H&I: a developer who secures land and builds
+needs the project team that makes it a hospitality asset.
+
+- **Two new OPTIONAL fields** on TalentProfile, validated
+  strictly-when-present and stored canonical, exactly like
+  `asset_class_focus` / `talent_type`: `role_category` ∈
+  ARCHITECT · INTERIOR_DESIGNER ·
+  LIGHTING_TECHNOLOGY_INTEGRATOR · WELLNESS_SPA_CONSULTANT ·
+  CAD_DRAFTER · PRE_SALES_BROKER, and `domain_focus` ∈
+  COMMERCIAL_ARCHITECTURE · LUXURY_RESIDENTIAL ·
+  HOSPITALITY_RESORT_DESIGN · WELLNESS_INFRASTRUCTURE.
+- **`role` stays free text.** No closed role enum was added —
+  one would have invalidated every previously validated
+  profile (Property Manager, General Manager, Financial
+  Analyst are not project categories).
+- **Matcher:** a third role family, `development_design`,
+  recognized by declared `role_category` or by role text.
+  `match_profiles` additionally accepts `role_category` and
+  `domain_focus` on the need, with domain compatibility
+  following the focus rule (unset serves any).
+  `assemble_project_team(need, profiles)` returns matches
+  grouped by category in standing team order, omitting
+  categories the marketplace cannot staff.
+- **Bridge:** `talent_placement.paths` gains a third entry,
+  `development_design` — a standing offer (like knowledge
+  work), not a payroll derivation; its roles are the
+  platform's project team.
+- **Referral edges (v1):** `validate_referral` /
+  `record_referral` / `referral_chain` — an edge records who
+  referred whom (with the referred profile's role category
+  and an optional context ref), stored append-only JSONL
+  like the profiles. An edge is a record, not a payout;
+  referral economics remain the strategic audit's later
+  sequencing.
+- **Page:** /talent/placement carries a "Development &
+  Design — the project team" section with an invented
+  example; filtering is by the same `asset_class_focus`
+  (Hospitality / Residential) as the rest of the desk.
