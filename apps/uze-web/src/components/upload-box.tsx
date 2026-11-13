@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 /** Drag-and-drop intake box for the UZE Underwrite page.
  *  DEMO SCOPE, stated on the box itself: public intake activates
  *  with the public API launch; today the working intake is the
- *  email gateway (forward financials to uzemarket@uzemarkets.com).
+ *  email gateway (forward financials to desk@uzemarkets.com).
  *  The box accepts and identifies the file locally — it does not
  *  pretend an upload happened. */
 export default function UploadBox() {
@@ -68,7 +68,7 @@ export default function UploadBox() {
       <p className="note">
         Public intake activates with the API launch. Today, forward
         your financials to{" "}
-        <a href="mailto:uzemarket@uzemarkets.com">uzemarket@uzemarkets.com</a>{" "}
+        <a href="mailto:desk@uzemarkets.com">desk@uzemarkets.com</a>{" "}
         and UZE Underwrite returns the verified PDF report.
       </p>
     </div>

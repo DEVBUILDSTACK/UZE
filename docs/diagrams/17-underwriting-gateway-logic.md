@@ -8,7 +8,7 @@ SURA's analysis. Expected to evolve as use cases are added.
 ```mermaid
 flowchart TD
     subgraph INPUT["Inbound (Email or API)"]
-        EMAIL["Forward to ingest@uzemarkets.com<br/>(T-12 PDF, P&L, Rent Roll)"]
+        EMAIL["Forward to desk@uzemarkets.com<br/>(T-12 PDF, P&L, Rent Roll)"]
         SUBJECT["Subject Line Parsing<br/>(Intent + Use Case)"]
     end
 

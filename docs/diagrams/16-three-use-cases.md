@@ -13,7 +13,7 @@ flowchart TD
     end
 
     subgraph GATEWAY["Single Email Gateway"]
-        EMAIL["ingest@uzemarkets.com"]
+        EMAIL["desk@uzemarkets.com"]
         ROUTER{"Subject Keyword Router"}
     end
 
