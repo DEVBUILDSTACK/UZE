@@ -135,3 +135,32 @@ needs the project team that makes it a hospitality asset.
   Design — the project team" section with an invented
   example; filtering is by the same `asset_class_focus`
   (Hospitality / Residential) as the rest of the desk.
+
+## Platform extensions (built 2026-11-13, owner's "build it all" tap)
+
+- **Embedded expertise.** ROLE_CATEGORIES gains the Project
+  Side (DEVELOPMENT_MANAGER · GENERAL_CONTRACTOR ·
+  CONSTRUCTION_PROJECT_MANAGER · ENTITLEMENT_CONSULTANT ·
+  DEVELOPMENT_FINANCE_ANALYST), traditional software
+  (GRAPHIC_DESIGNER · WEB_DEVELOPER · SOFTWARE_ENGINEER),
+  and creative services (ANIMATOR · DRONE_OPERATOR ·
+  FINE_ARTIST · CREATIVE_INTELLIGENCE_ADVISOR · FILMMAKER);
+  DOMAIN_FOCUS gains TRADITIONAL_SOFTWARE_STACK ·
+  VISUAL_ASSETS · PROJECT_INCUBATION. `role_family` routes
+  them as `project_side`, `software_development`, and
+  `creative_services`. Capabilities only — no firm or
+  affiliate name attaches on any surface.
+- **Lifecycle axis.** `project_lifecycle_stage` (optional,
+  strict-when-present): ACQUISITION_ENTITLEMENT ·
+  DESIGN_ARCHITECTURE · CONSTRUCTION_EXECUTION ·
+  OPERATIONS_STABILIZATION. The matcher applies it with the
+  usual rule (unset serves any). `assemble_project_side`
+  builds the execution roster like the project team.
+- **Project bids (mock).** `POST /api/v1/talent/project-bid`
+  + `evaluate_project_bids`: bids ranked by amount against a
+  stated budget, lowest in-budget bid named, every response
+  labelled mock. A budget check only — no yield-on-cost
+  calculation exists in the underwrite engine and none is
+  claimed here; nothing is awarded or recorded.
+- **Affiliate onboarding.** See
+  `docs/specifications/affiliate-onboarding.md`.

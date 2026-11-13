@@ -137,6 +137,28 @@ export default function TalentPlacementPage() {
           exists.
         </p>
       </section>
+
+      <section>
+        <h2>Software &amp; creative services</h2>
+        <p>
+          The same taxonomy carries two more kinds of expertise,
+          embedded invisibly — the platform provides the
+          capability; no firm&apos;s name is attached to it.
+          When a project team adds{" "}
+          <strong>graphic design &amp; web development</strong>,
+          the matcher routes to the traditional software stack:
+          graphic designers, web developers, software
+          engineers. When it adds{" "}
+          <strong>project visualization</strong>, it routes to
+          visual assets: animators, drone operators, fine
+          artists, filmmakers, creative intelligence advisors.
+        </p>
+        <p>
+          <a href="https://uzemarkets.com/development-stack">
+            See the full Development Stack
+          </a>
+        </p>
+      </section>
     </main>
   );
 }

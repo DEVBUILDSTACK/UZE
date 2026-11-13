@@ -60,7 +60,7 @@ TALENT_TYPES: tuple[str, ...] = (
 # `domain_focus` (the design domain it serves). Neither
 # replaces asset_class_focus — that axis still says which
 # asset class the employer runs.
-ROLE_CATEGORIES: tuple[str, ...] = (
+DEV_DESIGN_CATEGORIES: tuple[str, ...] = (
     "ARCHITECT",
     "INTERIOR_DESIGNER",
     "LIGHTING_TECHNOLOGY_INTEGRATOR",
@@ -68,11 +68,62 @@ ROLE_CATEGORIES: tuple[str, ...] = (
     "CAD_DRAFTER",
     "PRE_SALES_BROKER",
 )
+# Project Side categories (owner tap, 2026-11-13): the
+# execution roles of a development — where money meets the
+# build.
+PROJECT_SIDE_CATEGORIES: tuple[str, ...] = (
+    "DEVELOPMENT_MANAGER",
+    "GENERAL_CONTRACTOR",
+    "CONSTRUCTION_PROJECT_MANAGER",
+    "ENTITLEMENT_CONSULTANT",
+    "DEVELOPMENT_FINANCE_ANALYST",
+)
+# Embedded-expertise categories (owner tap, 2026-11-13):
+# traditional software and creative-intelligence capabilities
+# carried invisibly in the taxonomy — no firm or affiliate
+# name attaches to them on any surface.
+SOFTWARE_CATEGORIES: tuple[str, ...] = (
+    "GRAPHIC_DESIGNER",
+    "WEB_DEVELOPER",
+    "SOFTWARE_ENGINEER",
+)
+CREATIVE_CATEGORIES: tuple[str, ...] = (
+    "ANIMATOR",
+    "DRONE_OPERATOR",
+    "FINE_ARTIST",
+    "CREATIVE_INTELLIGENCE_ADVISOR",
+    "FILMMAKER",
+)
+ROLE_CATEGORIES: tuple[str, ...] = (
+    DEV_DESIGN_CATEGORIES
+    + PROJECT_SIDE_CATEGORIES
+    + SOFTWARE_CATEGORIES
+    + CREATIVE_CATEGORIES
+)
 DOMAIN_FOCUS: tuple[str, ...] = (
     "COMMERCIAL_ARCHITECTURE",
     "LUXURY_RESIDENTIAL",
     "HOSPITALITY_RESORT_DESIGN",
     "WELLNESS_INFRASTRUCTURE",
+    "TRADITIONAL_SOFTWARE_STACK",
+    "VISUAL_ASSETS",
+    "PROJECT_INCUBATION",
+)
+# The project lifecycle axis (owner tap, 2026-11-13): which
+# phase of a development a profile serves. Optional,
+# strict-when-present, like every taxonomy field here.
+PROJECT_LIFECYCLE_STAGES: tuple[str, ...] = (
+    "ACQUISITION_ENTITLEMENT",
+    "DESIGN_ARCHITECTURE",
+    "CONSTRUCTION_EXECUTION",
+    "OPERATIONS_STABILIZATION",
+)
+PROJECT_SIDE_ROLES: tuple[tuple[str, str], ...] = (
+    ("DEVELOPMENT_MANAGER", "Development Manager"),
+    ("GENERAL_CONTRACTOR", "General Contractor"),
+    ("CONSTRUCTION_PROJECT_MANAGER", "Construction Project Manager"),
+    ("ENTITLEMENT_CONSULTANT", "Entitlement Consultant"),
+    ("DEVELOPMENT_FINANCE_ANALYST", "Development Finance Analyst"),
 )
 # The standing project team a development routes to, by
 # category: display names for surfaces, categories for code.
@@ -153,6 +204,12 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
         or domain.strip().upper() not in DOMAIN_FOCUS
     ):
         problems.append("domain_focus")
+    stage = data.get("project_lifecycle_stage")
+    if stage is not None and (
+        not isinstance(stage, str)
+        or stage.strip().upper() not in PROJECT_LIFECYCLE_STAGES
+    ):
+        problems.append("project_lifecycle_stage")
 
     if problems:
         return None, problems
@@ -177,6 +234,10 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
             "domain_focus": (
                 domain.strip().upper()
                 if isinstance(domain, str) else None
+            ),
+            "project_lifecycle_stage": (
+                stage.strip().upper()
+                if isinstance(stage, str) else None
             ),
         },
         [],
@@ -281,13 +342,22 @@ def derive_talent_placement(years: list[dict]) -> dict[str, Any]:
 
 
 def role_family(profile: dict[str, Any]) -> str:
-    """Which side of the marketplace a profile serves:
-    'knowledge_work' for financial-analysis roles,
-    'development_design' for the Development & Design
-    taxonomy (by declared role_category, or by the role text
-    itself), else 'operations'."""
-    if profile.get("role_category") in ROLE_CATEGORIES:
+    """Which side of the marketplace a profile serves, by
+    declared role_category first, then by the role text:
+    'knowledge_work' (financial analysis), 'development_design'
+    (the D→H&I project team), 'project_side' (development
+    execution roles), 'software_development' (traditional
+    software stack), 'creative_services' (visual assets and
+    creative intelligence), else 'operations'."""
+    category = profile.get("role_category")
+    if category in DEV_DESIGN_CATEGORIES:
         return "development_design"
+    if category in PROJECT_SIDE_CATEGORIES:
+        return "project_side"
+    if category in SOFTWARE_CATEGORIES:
+        return "software_development"
+    if category in CREATIVE_CATEGORIES:
+        return "creative_services"
     role = str(profile.get("role", "")).lower()
     if "analyst" in role or "financial analysis" in role:
         return "knowledge_work"
@@ -297,6 +367,20 @@ def role_family(profile: dict[str, Any]) -> str:
     ):
         if needle in role:
             return "development_design"
+    for needle in (
+        "general contractor", "construction project manager",
+        "development manager", "entitlement",
+    ):
+        if needle in role:
+            return "project_side"
+    for needle in (
+        "web developer", "software engineer", "graphic design",
+    ):
+        if needle in role:
+            return "software_development"
+    for needle in ("animator", "drone", "filmmaker", "fine artist"):
+        if needle in role:
+            return "creative_services"
     return "operations"
 
 
@@ -315,6 +399,7 @@ def match_profiles(
     want_focus = need.get("asset_class_focus")
     want_domain = need.get("domain_focus")
     want_category = need.get("role_category")
+    want_stage = need.get("project_lifecycle_stage")
     for p in profiles:
         if role_family(p) != want_family:
             continue
@@ -332,6 +417,11 @@ def match_profiles(
         # with no domain accepts any.
         p_domain = p.get("domain_focus")
         if want_domain and p_domain and p_domain != want_domain:
+            continue
+        # Lifecycle-stage compatibility follows the same
+        # rule: a profile with no stage serves any stage.
+        p_stage = p.get("project_lifecycle_stage")
+        if want_stage and p_stage and p_stage != want_stage:
             continue
         out.append(p)
     return out
@@ -357,6 +447,107 @@ def assemble_project_team(
         if hits:
             team[category] = hits
     return team
+
+
+def assemble_project_side(
+    need: dict[str, Any], profiles: list[dict[str, Any]]
+) -> dict[str, list[dict[str, Any]]]:
+    """Assemble the Project Side roster for a development:
+    for each execution role category, the profiles matching
+    the need — including its project_lifecycle_stage, when
+    the need names one. Same honesty rule as the project
+    team: unstaffable categories are omitted, never padded."""
+    roster: dict[str, list[dict[str, Any]]] = {}
+    for category, _display in PROJECT_SIDE_ROLES:
+        hits = match_profiles(
+            {**need, "role_family": "project_side",
+             "role_category": category},
+            profiles,
+        )
+        if hits:
+            roster[category] = hits
+    return roster
+
+
+def evaluate_project_bids(
+    brief: str, budget_usd: Any, bids: Any
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """The agentic bidding mock (owner tap, 2026-11-13):
+    evaluate design bids against a stated development
+    budget. This is a MOCK budget check only — bids are
+    ranked by amount, flagged against the budget, and the
+    lowest in-budget bid is named. It is NOT an underwrite:
+    no yield-on-cost or development appraisal is computed,
+    and nothing is awarded. Returns (evaluation, []) or
+    (None, [problem, ...])."""
+    problems: list[str] = []
+    if not isinstance(brief, str) or not brief.strip():
+        problems.append("brief")
+    if (
+        not isinstance(budget_usd, (int, float))
+        or isinstance(budget_usd, bool) or budget_usd <= 0
+    ):
+        problems.append("budget_usd")
+    clean: list[dict[str, Any]] = []
+    if not isinstance(bids, list) or not bids:
+        problems.append("bids")
+    else:
+        for i, b in enumerate(bids):
+            if not isinstance(b, dict):
+                problems.append(f"bids[{i}]")
+                continue
+            bidder = b.get("bidder")
+            amount = b.get("amount_usd")
+            category = b.get("role_category")
+            ok = True
+            if not isinstance(bidder, str) or not bidder.strip():
+                problems.append(f"bids[{i}].bidder")
+                ok = False
+            if (
+                not isinstance(amount, (int, float))
+                or isinstance(amount, bool) or amount <= 0
+            ):
+                problems.append(f"bids[{i}].amount_usd")
+                ok = False
+            if category is not None and (
+                not isinstance(category, str)
+                or category.strip().upper() not in ROLE_CATEGORIES
+            ):
+                problems.append(f"bids[{i}].role_category")
+                ok = False
+            if ok:
+                clean.append({
+                    "bidder": bidder.strip(),
+                    "amount_usd": amount,
+                    "role_category": (
+                        category.strip().upper()
+                        if isinstance(category, str) else None
+                    ),
+                })
+    if problems:
+        return None, problems
+    ranked = sorted(clean, key=lambda b: b["amount_usd"])
+    for b in ranked:
+        b["within_budget"] = b["amount_usd"] <= budget_usd
+    recommended = next(
+        (b["bidder"] for b in ranked if b["within_budget"]), None
+    )
+    return (
+        {
+            "status": "mock_recorded",
+            "mock": True,
+            "brief": brief.strip(),
+            "budget_usd": budget_usd,
+            "ranked_bids": ranked,
+            "recommended_bidder": recommended,
+            "evaluation_basis": (
+                "mock budget check only — ranked by amount "
+                "against the stated budget; not an underwrite, "
+                "no yield-on-cost calculation, nothing awarded"
+            ),
+        },
+        [],
+    )
 
 
 # --- Referral edges (v1, mock storage) ---
