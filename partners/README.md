@@ -118,3 +118,10 @@ partners/
     ├── bdcs.json
     └── effatha.json
 ```
+
+## Software Stack Implementations
+
+The providers the stack itself runs on — search, financial data, and
+other metered capabilities — are registered separately from data
+partners, in [`software-stack-implementations/`](software-stack-implementations/README.md),
+with their developer documentation links.
