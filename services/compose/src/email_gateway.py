@@ -38,7 +38,9 @@ from __future__ import annotations
 import base64
 import json
 
+import db
 import proforma
+import research
 import talent_profile
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
@@ -431,6 +433,50 @@ def ingest_email(payload: EmailIngest):
         _result["routedTo"] = "UZE Underwrite pro forma parser"
         _result["input_format"] = _fmt
         _result["parse_report"] = _report
+        return _result
+
+    if "research" in payload.subject.lower():
+        # Research door (owner directive, 2026-11-13): the
+        # subject carries the question after the keyword —
+        # "Research: <question>". Runs the same provider
+        # functions and writes the same event log as the API
+        # door (research.py); the gateway demo profile is
+        # unmetered and the log row records that profile.
+        _idx = payload.subject.lower().find("research")
+        _query = payload.subject[_idx + len("research"):].strip(" :-").strip()
+        if not _query:
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "error": "research request needs a question: "
+                    "put it in the subject after 'Research:'",
+                    "routedTo": "UZE Research",
+                },
+            )
+        _session = db.session()
+        try:
+            _result = research.run_via_gateway(
+                _session, query=_query, sender=payload.sender
+            )
+        except research.ResearchNotConfigured:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "error": "RESEARCH_NOT_CONFIGURED",
+                    "routedTo": "UZE Research",
+                },
+            )
+        except research.ResearchUpstreamError:
+            return JSONResponse(
+                status_code=502,
+                content={
+                    "error": "RESEARCH_UPSTREAM_ERROR",
+                    "routedTo": "UZE Research",
+                },
+            )
+        finally:
+            _session.close()
+        _result["routedTo"] = "UZE Research"
         return _result
 
     if is_anrd_subject(payload.subject):

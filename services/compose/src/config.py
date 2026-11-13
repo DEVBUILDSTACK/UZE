@@ -28,4 +28,12 @@ _DEFAULT_URL = (
 
 def database_url() -> str:
     """The composition layer's database URL (env override wins)."""
-    return os.environ.get("COMPOSE_DATABASE_URL", _DEFAULT_URL)
+    url = os.environ.get("COMPOSE_DATABASE_URL", _DEFAULT_URL)
+    # Hosted Postgres providers (Render and peers) hand out
+    # driver-less postgresql:// URLs; the runtime driver is
+    # psycopg v3, so name it explicitly when no driver is set.
+    if url.startswith("postgresql://"):
+        url = "postgresql+psycopg://" + url[len("postgresql://"):]
+    elif url.startswith("postgres://"):
+        url = "postgresql+psycopg://" + url[len("postgres://"):]
+    return url

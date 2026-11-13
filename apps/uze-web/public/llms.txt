@@ -35,3 +35,14 @@ Standardized underwriting reports over one engine. Execution is stateless (docum
 - Custom analysis: POST /api/v1/analyze/custom (specified, not yet built) — every figure cites source lines or the response is INSUFFICIENT_DATA.
 - Valuation: POST /api/v1/evaluate (specified; the income-approach math is built) — verified unlevered NOI / cap rate.
 - Talent bridge: every underwrite response carries talent_placement (roles the asset's payroll funds + the placement CTA). Talent submits a TalentProfile JSON via the gateway's talent track; PDF/Word resume parsing is deferred to the January 2nd update.
+
+## UZE Research — the research channel
+
+White-labeled research as a metered tool call: web search, page contents, and financial data search (earnings transcripts, SEC filings, analyst estimates, economic releases). The channel is vanilla behind the wall — responses carry UZE service naming only, and the provider behind it can be swapped without changing this surface.
+
+- Search: POST /api/v1/research/search with {"query": "...", "num_results": 5, "include_text": false} — normalized results (title, url, published date, author, score, optional text).
+- Financial: POST /api/v1/research/financial with {"query": "..."} — the financial data surface: filings, transcripts, estimates.
+- Contents: POST /api/v1/research/contents with {"urls": ["https://..."]} — extracted page text.
+- Paying (x402): same flow as the underwrite SKUs — HTTP 402 with a PAYMENT-REQUIRED header quoting the per-request amount on Base (eip155:8453) or Solana; retry with PAYMENT-SIGNATURE. No static price list. Current deployment validates in mock profile (no funds move).
+- Email door: the same search is reachable through the email gateway — a subject of "Research: <question>" returns the same normalized results.
+- Validation precedes payment: an empty query returns 422 MISSING_FIELD naming the field and the accepted shape, before any payment is requested.

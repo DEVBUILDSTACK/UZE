@@ -1,0 +1,61 @@
+# UZE compose API — Render blueprint (prepared 2026-11-13).
+#
+# Owner deploy steps (the only manual part):
+#   1. Render dashboard -> New -> Blueprint -> connect
+#      DEVBUILDSTACK/UZE -> Apply. This creates the Postgres
+#      database and the API web service below.
+#   2. On the uze-compose-api service, fill the sync:false
+#      env vars when prompted (values come from the owner's
+#      own records — never from this repository):
+#        EXA_API_KEY            the research channel key
+#        X402_SKU_AMOUNT_ATOMIC quoted per-request amount,
+#                               USDC atomic units (6 decimals)
+#        X402_PAYTO_BASE        Base payTo for x402 quotes
+#        X402_PAYTO_SOLANA      Solana payTo for x402 quotes
+#        NEARAI_API_KEY         optional; attested inference
+#   3. In Vercel (uze-web project), set COMPOSE_API_URL to
+#      this service's https URL and redeploy. The website's
+#      server-side client (apps/uze-web/src/lib/compose.ts)
+#      reads that one variable; setting it brings the /alpha
+#      intake, micro-regions, and every compose-backed page
+#      live at once.
+#
+# Notes: the start command migrates to head before serving
+# (config.py normalizes the provider's driver-less
+# postgresql:// URL to the psycopg v3 driver). The free
+# Postgres plan expires 30 days after creation — move the
+# database to a paid plan before then to keep the service.
+
+databases:
+  - name: uze-compose-db
+    databaseName: uzemarkets-compose
+    plan: free
+    region: virginia
+
+services:
+  - type: web
+    name: uze-compose-api
+    runtime: python
+    region: virginia
+    plan: starter
+    rootDir: services/compose
+    buildCommand: pip install -r requirements-runtime.txt
+    startCommand: "PYTHONPATH=src alembic upgrade head && PYTHONPATH=src uvicorn app:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: COMPOSE_DATABASE_URL
+        fromDatabase:
+          name: uze-compose-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: EXA_API_KEY
+        sync: false
+      - key: X402_SKU_AMOUNT_ATOMIC
+        sync: false
+      - key: X402_PAYTO_BASE
+        sync: false
+      - key: X402_PAYTO_SOLANA
+        sync: false
+      - key: NEARAI_API_KEY
+        sync: false
