@@ -245,6 +245,37 @@ def _money(value) -> str:
     return f"${value:,.2f}" if isinstance(value, float) else f"${value:,}"
 
 
+# fpdf2 core fonts are latin-1: punctuation outside latin-1
+# (em/en dashes, curly quotes) raises at render time, and
+# caller-supplied labels can carry any of it. The PDF layer
+# transliterates to plain ASCII — presentation only; the
+# underlying data is never altered.
+_PDF_TRANSLATE = str.maketrans(
+    {
+        "—": "-",
+        "–": "-",
+        "‘": "'",
+        "’": "'",
+        "“": '"',
+        "”": '"',
+        "•": "-",
+        "…": "...",
+    }
+)
+
+
+def _pdf_safe(text) -> str:
+    return str(text).translate(_PDF_TRANSLATE).encode("latin-1", "replace").decode("latin-1")
+
+
+def _pdf_multi(pdf: FPDF, text, h: int = 6) -> None:
+    """Full-width wrapped text that returns the cursor to the
+    left margin: fpdf2's multi_cell default leaves it at the
+    right edge, where the next full-width cell has zero width
+    to render into."""
+    pdf.multi_cell(0, h, _pdf_safe(text), new_x="LMARGIN", new_y="NEXT")
+
+
 def render_pdf(payload: EmailIngest, agent: str, data: dict, cross_sell: str | None) -> bytes:
     """One-page PDF assessment report (fpdf2, no OS dependencies)."""
     pdf = FPDF()
@@ -313,6 +344,180 @@ def render_pdf(payload: EmailIngest, agent: str, data: dict, cross_sell: str | N
         "Demonstration build - document extraction is simulated "
         "pending production OCR. Routing, metering, and report "
         "generation are live.",
+    )
+    return bytes(pdf.output())
+
+
+_CLASSIFICATION_LABELS = {
+    "revenue_opportunity": "Revenue opportunity",
+    "expense_opportunity": "Expense opportunity",
+    "irregularity": "Irregularity",
+}
+
+
+def _comp_pdf_sections(pdf: FPDF, section: dict) -> None:
+    """Render an analyze_multiyear comp_benchmark section into
+    an open report (PDF follow-on, 2026-11-13). Everything
+    printed comes from the section dict itself — its findings,
+    its plan, and, in the labelled no-comp-set state, its own
+    note. States with nothing to report print nothing."""
+    if section.get("status") == "NO_COMP_SET_SUPPLIED":
+        pdf.ln(4)
+        pdf.set_font("helvetica", "B", 12)
+        pdf.cell(0, 8, "Comparable Benchmarking", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("helvetica", "", 11)
+        _pdf_multi(pdf, section.get("note") or (
+            "No comparable set was supplied with this request, "
+            "so no benchmarking was performed."
+        ))
+        return
+    findings = section.get("findings") or []
+    plan = section.get("value_creation_plan") or []
+    if findings:
+        pdf.ln(4)
+        pdf.set_font("helvetica", "B", 12)
+        pdf.cell(
+            0, 8, "Comparable Benchmarking - Findings",
+            new_x="LMARGIN", new_y="NEXT",
+        )
+        pdf.set_font("helvetica", "", 11)
+        _pdf_multi(pdf,
+            "Per-unit medians of the supplied comp set. Findings "
+            f"are lines varying from the benchmark by more than "
+            f"{section.get('threshold_pct', 10)}%."
+        )
+        for f in findings:
+            pdf.ln(2)
+            pdf.set_font("helvetica", "B", 11)
+            pdf.cell(0, 7, _pdf_safe(
+                f"{f['line']} ({f['bucket']}) - "
+                f"{_CLASSIFICATION_LABELS.get(f.get('classification'), f.get('classification'))}"
+            ), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", "", 11)
+            variance_pct = f.get("variance_pct")
+            pct_text = (
+                f"{variance_pct:+.2f}%" if isinstance(variance_pct, (int, float))
+                else "n/a"
+            )
+            _pdf_multi(pdf,
+                f"Subject {_money(float(f['subject_per_unit']))}/unit vs "
+                f"benchmark {_money(float(f['benchmark_per_unit']))}/unit; "
+                f"variance {_money(float(f['variance_per_unit']))}/unit "
+                f"({pct_text}); annualized impact "
+                f"{_money(float(f['annualized_impact_usd']))}."
+            )
+            evidence = f.get("evidence") or {}
+            _pdf_multi(pdf,
+                f"Basis: {evidence.get('comp_count', f.get('comp_count'))} "
+                f"comp(s), {evidence.get('match_basis', f.get('match_basis'))}. "
+                f"{f.get('note', 'for further analysis')}."
+            )
+    if plan:
+        pdf.ln(4)
+        pdf.set_font("helvetica", "B", 12)
+        pdf.cell(0, 8, "Value-Creation Plan", new_x="LMARGIN", new_y="NEXT")
+        for entry in plan:
+            pdf.ln(2)
+            pdf.set_font("helvetica", "B", 11)
+            pdf.cell(0, 7, _pdf_safe(
+                f"{entry['line']} - "
+                f"{_money(float(entry['annualized_value_at_stake_usd']))} "
+                "per year at stake"
+            ), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", "", 11)
+            _pdf_multi(pdf, entry["evidence_basis"])
+            _pdf_multi(pdf, f"Action: {entry['action']}")
+
+
+def render_multiyear_pdf(result: dict, subject: str | None = None) -> bytes:
+    """Human-facing PDF report for a multi-year underwrite
+    (PDF follow-on, 2026-11-13). The /multiyear endpoint and
+    the paid SKU surface return analyze_multiyear results as
+    JSON only; render_pdf above serves the single-document
+    email flow. This renderer is the multiyear counterpart:
+    period buckets, NOI and levered cash flow per period, NOI
+    growth, fluctuation flags, and — when the result carries
+    one — the comp_benchmark section's findings and
+    value-creation plan. Absent that section the report is the
+    period analysis alone. Content comes only from the result
+    dict; nothing is sourced or invented here."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", "B", 16)
+    pdf.cell(
+        0, 10, "UZEmarkets - Multi-Year Underwrite Report",
+        new_x="LMARGIN", new_y="NEXT",
+    )
+    if subject:
+        pdf.set_font("helvetica", "", 11)
+        pdf.cell(
+            0, 7, _pdf_safe(f"Subject: {subject}"),
+            new_x="LMARGIN", new_y="NEXT",
+        )
+    pdf.ln(2)
+    pdf.set_font("helvetica", "B", 12)
+    pdf.cell(0, 8, "Period analysis", new_x="LMARGIN", new_y="NEXT")
+    for period in result.get("periods", []):
+        pdf.set_font("helvetica", "B", 11)
+        pdf.cell(
+            0, 7, _pdf_safe(f"Period {period.get('period')}"),
+            new_x="LMARGIN", new_y="NEXT",
+        )
+        pdf.set_font("helvetica", "", 11)
+        for bucket, value in (period.get("buckets") or {}).items():
+            pdf.cell(70, 7, _pdf_safe(bucket))
+            pdf.cell(
+                0, 7, _money(float(value)),
+                new_x="LMARGIN", new_y="NEXT",
+            )
+        pdf.cell(70, 7, "Net Operating Income (unlevered)")
+        pdf.cell(
+            0, 7, _money(float(period["noi"])),
+            new_x="LMARGIN", new_y="NEXT",
+        )
+        pdf.cell(70, 7, "Levered Cash Flow")
+        pdf.cell(
+            0, 7, _money(float(period["levered_cash_flow"])),
+            new_x="LMARGIN", new_y="NEXT",
+        )
+        if period.get("unmapped"):
+            pdf.set_font("helvetica", "I", 9)
+            _pdf_multi(pdf,
+                "Unmapped labels (surfaced, not classified): "
+                + ", ".join(period["unmapped"])
+            )
+            pdf.set_font("helvetica", "", 11)
+        pdf.ln(2)
+    growth = result.get("noi_growth_rate")
+    if growth is not None:
+        pdf.set_font("helvetica", "", 11)
+        pdf.cell(
+            0, 7,
+            f"NOI growth, first to last period: {growth:+.1%}",
+            new_x="LMARGIN", new_y="NEXT",
+        )
+    flags = result.get("fluctuation_flags") or []
+    if flags:
+        pdf.ln(2)
+        pdf.set_font("helvetica", "B", 12)
+        pdf.cell(0, 8, "Fluctuation flags", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("helvetica", "", 11)
+        for flag in flags:
+            _pdf_multi(pdf,
+                f"{flag['bucket']}: {flag['from_period']} to "
+                f"{flag['to_period']}, {flag['change_pct']:+.1%} - "
+                f"{flag['note']}"
+            )
+    section = result.get("comp_benchmark")
+    if section is not None:
+        _comp_pdf_sections(pdf, section)
+    pdf.ln(6)
+    pdf.set_font("helvetica", "I", 8)
+    _pdf_multi(pdf,
+        "Demonstration build - generated from the supplied "
+        "statements and comparable set. No market database is "
+        "consulted; benchmarks are per-unit medians of the "
+        "supplied comps.",
     )
     return bytes(pdf.output())
 
