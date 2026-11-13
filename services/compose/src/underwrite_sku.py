@@ -43,6 +43,11 @@ class SkuIngest(BaseModel):
     years: list[dict]
     context: dict | None = None
     context_run_id: str | None = None
+    # Optional comp-set benchmarking inputs (D5 directive,
+    # 2026-11-13), passed through to analyze_multiyear.
+    subject_profile: dict | None = None
+    comps: list[dict] | None = None
+    comp_threshold_pct: float | None = None
 
 
 @router.post("/{sku}")
@@ -141,7 +146,16 @@ def underwrite_sku(
                 for r in stored.get("results", [])
             ],
         }
-    result = analyze_multiyear(body.years, body.context)
+    try:
+        result = analyze_multiyear(
+            body.years,
+            body.context,
+            subject_profile=body.subject_profile,
+            comps=body.comps,
+            comp_threshold_pct=body.comp_threshold_pct,
+        )
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"error": str(exc)})
     if research_context is not None:
         result["research_context"] = research_context
     # Logged as a MOCK settlement in the append-only audit

@@ -318,7 +318,11 @@ def render_pdf(payload: EmailIngest, agent: str, data: dict, cross_sell: str | N
 
 
 def analyze_multiyear(
-    years: list[dict], context: dict | None = None
+    years: list[dict],
+    context: dict | None = None,
+    subject_profile: dict | None = None,
+    comps: list[dict] | None = None,
+    comp_threshold_pct: float | None = None,
 ) -> dict:
     """Multi-year T-12 analysis (2026-11-11): each year's raw
     line items are normalized through the StandardChartOfAccounts
@@ -333,7 +337,16 @@ def analyze_multiyear(
     NOI is UNLEVERED (analyst correction, owner tap 2026-11-12):
     Interest is never subtracted into NOI. The post-interest
     figure is reported separately per year as levered_cash_flow
-    (= NOI minus the Interest Expense/Income bucket)."""
+    (= NOI minus the Interest Expense/Income bucket).
+
+    Comp-set benchmarking (D5 directive, 2026-11-13): when the
+    caller declares a subject_profile and/or supplies comps,
+    the result gains a "comp_benchmark" section from
+    comp_benchmark.analyze_comp_set over the latest period's
+    line items — per-unit revenue/expense benchmarking by
+    property type, vintage, and class, findings, and a
+    value-creation plan. Absent both inputs the section is
+    omitted entirely (existing consumers unchanged)."""
     import chart_of_accounts as coa
 
     ordered = sorted(years, key=lambda y: y.get("period", ""))
@@ -377,7 +390,7 @@ def analyze_multiyear(
         growth = round(
             (periods[-1]["noi"] - periods[0]["noi"]) / abs(periods[0]["noi"]), 4
         )
-    return {
+    result = {
         "periods": periods,
         "noi_growth_rate": growth,
         "fluctuation_flags": flags,
@@ -390,6 +403,23 @@ def analyze_multiyear(
             years, context
         ),
     }
+    if subject_profile is not None or comps is not None:
+        # Comp-set benchmarking (D5 directive, 2026-11-13):
+        # additive section over the LATEST period's line items.
+        # Runs only when the caller declares a subject profile
+        # or supplies comps; with no comp set the section
+        # carries the labelled NO_COMP_SET_SUPPLIED state
+        # rather than implying a benchmark exists.
+        import comp_benchmark
+
+        latest_items = ordered[-1].get("line_items", {}) if ordered else {}
+        kwargs = {}
+        if comp_threshold_pct is not None:
+            kwargs["threshold_pct"] = comp_threshold_pct
+        result["comp_benchmark"] = comp_benchmark.analyze_comp_set(
+            subject_profile, latest_items, comps, **kwargs
+        )
+    return result
 
 
 class MultiYearIngest(BaseModel):
@@ -398,15 +428,30 @@ class MultiYearIngest(BaseModel):
     # routing (owner tap, 2026-11-13): lifecycle stage,
     # domain focus, asset-class focus. Never inferred.
     context: dict | None = None
+    # Optional comp-set benchmarking inputs (D5 directive,
+    # 2026-11-13): the subject property's profile and the
+    # caller-supplied comps. Declared, never inferred; absent
+    # both, the result carries no comp_benchmark section.
+    subject_profile: dict | None = None
+    comps: list[dict] | None = None
+    comp_threshold_pct: float | None = None
 
 
 @router.post("/multiyear")
 def ingest_multiyear(payload: MultiYearIngest):
     if not payload.years:
         raise HTTPException(status_code=422, detail="at least one year is required")
-    return JSONResponse(
-        content=analyze_multiyear(payload.years, payload.context)
-    )
+    try:
+        result = analyze_multiyear(
+            payload.years,
+            payload.context,
+            subject_profile=payload.subject_profile,
+            comps=payload.comps,
+            comp_threshold_pct=payload.comp_threshold_pct,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return JSONResponse(content=result)
 
 
 @router.post("/email")

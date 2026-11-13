@@ -236,7 +236,15 @@ SURA_ANALYSIS_DIRECTIVE = (
     "them and treat a miss beyond the threshold as a "
     "methodology flag, not a rounding error. Value on verified "
     "unlevered NOI only — levered cash flow is never a "
-    "valuation basis."
+    "valuation basis. When a comparable set is supplied, "
+    "benchmark every revenue and operating-expense line "
+    "against it per unit — properties matched within the "
+    "micro-region by multifamily type, vintage (year built), "
+    "and class — flag the divergences as revenue or expense "
+    "improvement opportunities or as irregularities for "
+    "further analysis, and state the value-creation plan each "
+    "flag supports, with the comp-set evidence as its basis. "
+    "Never benchmark against a market you were not given."
 )
 
 

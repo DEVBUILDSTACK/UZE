@@ -34,6 +34,15 @@ plus two valuation paths:
   valuation basis; income_valuation() takes the verified
   unlevered figure by name.
 
+  Comp-set benchmarking (D5 directive, 2026-11-13) —
+  POST /comp-benchmark runs comp_benchmark.analyze_comp_set:
+  the subject's revenue and operating-expense lines against a
+  caller-supplied comp set matched by micro-region, property
+  type, vintage band, and class, per unit, with ranked
+  findings and a value-creation plan. The comp set is an
+  input, never a database lookup; no comps supplied returns
+  the labelled NO_COMP_SET_SUPPLIED state.
+
   ANRD (GIRA) — land is not valued on a CRE cap rate. Net
   agricultural income (projected crop revenue minus input
   costs) is valued on an income multiple (labelled default
@@ -54,6 +63,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 import chart_of_accounts as coa
+import comp_benchmark
 from email_gateway import analyze_multiyear
 
 router = APIRouter(prefix="/api/v1/underwrite", tags=["underwrite-engine"])
@@ -308,6 +318,17 @@ class AnrdValuationIn(BaseModel):
     price_per_acre: float | None = None
 
 
+class CompBenchmarkIn(BaseModel):
+    subject_profile: dict
+    # Subject financials: a single period's raw line items, or
+    # a years list (the latest period is used — the same
+    # convention as analyze_multiyear's comp section).
+    line_items: dict | None = None
+    years: list[dict] | None = None
+    comps: list[dict] | None = None
+    threshold_pct: float = comp_benchmark.DEFAULT_FLAG_THRESHOLD_PCT
+
+
 @router.post("/projection")
 def projection(body: ProjectionIn):
     if not body.years:
@@ -353,3 +374,25 @@ def anrd_valuation(body: AnrdValuationIn):
         acres=body.acres,
         price_per_acre=body.price_per_acre,
     )
+
+
+@router.post("/comp-benchmark")
+def comp_benchmark_endpoint(body: CompBenchmarkIn):
+    line_items = body.line_items
+    if line_items is None and body.years:
+        ordered = sorted(body.years, key=lambda y: y.get("period", ""))
+        line_items = ordered[-1].get("line_items", {})
+    if line_items is None:
+        raise HTTPException(
+            status_code=422,
+            detail="line_items or years is required for the subject",
+        )
+    try:
+        return comp_benchmark.analyze_comp_set(
+            body.subject_profile,
+            line_items,
+            body.comps,
+            threshold_pct=body.threshold_pct,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
