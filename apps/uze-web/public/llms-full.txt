@@ -1,0 +1,98 @@
+# UZEmarkets — full agent map
+
+> UZEmarkets is an information market for utility and usefulness — an autonomous financial intelligence desk for income commercial real estate. Offerings are tested and used; claims are normalized and benchmarked by micro-region; human specialists and attested AI agents work the same surfaces. The Desk's services are UZE Underwrite, UZE Assign, and UZE Auction. UZE Research is the metered research channel, and the Talent marketplace supplies the people and agents.
+
+This is the extended map. The short map is https://uzemarkets.com/llms.txt — same structure, fewer details. Human pages live on https://uzemarkets.com; the JSON API lives on the composition API at https://uze-compose-api.onrender.com, and every /api/v1 path below is relative to that base unless a full URL is given. The Desk's address, for people and agents alike, is desk@uzemarkets.com.
+
+UZE Assign and UZE Auction are Desk services. Their agent contracts are published here as they are served; no endpoints are documented for them yet, and any surface claiming otherwise is not the Desk.
+
+## UZE Underwrite — SKU menu (commercial spec, 2026-11-12)
+
+Standardized underwriting reports over one engine. Execution is stateless (documents supplied per call). Prices are market-bid via UZEguidance priced markets — no static prices; the honored price for each SKU is published in this file at read time when set. Every response carries a provenance block citing source lines; an uncomputable request returns INSUFFICIENT_DATA with a JSON array of missing field names. Benchmark comps come from a CoStar-shaped synthetic adapter, license pending, and are labelled synthetic in every payload.
+
+Human surface: https://uzemarkets.com/underwrite — the service description, the skill contract, and an upload box. A person can also forward a T-12 or P&L to desk@uzemarkets.com and receive the verified PDF report by return email.
+
+SKU menu — one engine, ten standardized reports:
+
+- UZ-W-001 Full T-12 Underwriting — built, served.
+- UZ-W-002 Multi-Year Historical Baseline — built, served.
+- UZ-W-003 12-Month Pro Forma — partial.
+- UZ-W-004 5-Year Projection — built.
+- UZ-W-005 Rent Roll Audit — proposed.
+- UZ-W-006 OpEx Benchmark — built.
+- UZ-W-007 Tax & Insurance Isolation — built.
+- UZ-W-008 Variance Analysis — proposed.
+- UZ-W-009 Projection Verification — built.
+- UZ-W-010 Full Underwriting Package — built.
+
+Endpoints:
+
+- Contract: POST /api/v1/underwrite/{sku} — spec: docs/specifications/underwrite-sku-menu.md in the UZE repository. Served today: UZ-W-001 and UZ-W-002; other SKUs return SKU_NOT_SERVED.
+- Email ingest: POST /api/v1/ingest/email — the skill contract published at https://uzemarkets.com/underwrite. The subject line directs the analysis: include the HiCRE track keyword (HiCRE | Hotel), plus intent keywords (P&L verification, or valuation — Acquisition | Due Diligence | Valuation) and use-case keywords (Urgent P&L | Replacement | Immediate for emergency replacement; Talent | Management | Hiring for talent placement). Refinancing, Distressed, and Cost Recovery modifiers steer the run. Responses: 200 with the analysis object (or the talent-placement routing object for placement subjects); 422 when the asset track cannot be determined, or when the subject is land/agriculture — UZE Underwrite currently processes Hospitality & Income CRE only.
+- Valuation: POST /api/v1/evaluate (specified; the income-approach math is built) — verified unlevered NOI / cap rate.
+- Custom analysis: POST /api/v1/analyze/custom (specified, not yet built) — every figure cites source lines or the response is INSUFFICIENT_DATA.
+
+Paying (x402): POST /api/v1/underwrite/UZ-W-001 or UZ-W-002 with a JSON body of {"years": [...]}. If payment is required you receive HTTP 402 with a PAYMENT-REQUIRED header (base64 JSON, x402Version 2) quoting the current amount and the accepted networks — USDC on Solana by default, or Base (eip155:8453). Sign the USDC payment and retry the same request with a PAYMENT-SIGNATURE header (base64 JSON). A settled response carries a PAYMENT-RESPONSE header. Amounts are quoted in the 402 response itself, per request — no price list exists. Current deployment validates the protocol flow in mock profile (no funds move) while facilitator settlement is finalized. Until pricing and the receiving wallets are configured, a paid call answers 503 PRICING_NOT_CONFIGURED.
+
+Financial structure doctrine: claims about financial performance use exactly seven buckets — Revenue; Operating Expenses; Taxes (local/state/federal); Insurance(s); Interest Expense/Income; Miscellaneous Net Expenses/Income; Profit (Net Income). Operating Expenses never absorb Taxes, Insurance, or Interest. NOI is unlevered. Benchmarking is against the same micro-region only.
+
+Talent bridge: every underwrite response carries talent_placement (roles the asset's payroll funds + the placement CTA). Talent submits a TalentProfile JSON via the gateway's talent track; PDF/Word resume parsing is deferred to the January 2nd update. Human surface: https://uzemarkets.com/talent/placement.
+
+## UZE Research — the research channel
+
+White-labeled research as a metered tool call: web search, page contents, and financial data search (earnings transcripts, SEC filings, analyst estimates, economic releases). The channel is vanilla behind the wall — responses carry UZE service naming only, and the provider behind it can be swapped without changing this surface.
+
+- Search: POST /api/v1/research/search with {"query": "...", "num_results": 5, "include_text": false} — normalized results (title, url, published date, author, score, optional text).
+- Financial: POST /api/v1/research/financial with {"query": "..."} — the financial data surface: filings, transcripts, estimates.
+- Contents: POST /api/v1/research/contents with {"urls": ["https://..."]} — extracted page text.
+- MCP: POST /api/v1/mcp on the composition API base — tools/list returns the served tools (currently UZE_Research_Query); tools/call invokes a tool by name with its arguments. An unpaid tools/call enters the same x402 flow as the REST endpoints.
+- Email door: the same search is reachable through the email gateway — a subject of "Research: <question>" sent to the Desk returns the same normalized results.
+
+Paying (x402): same flow as the underwrite SKUs — HTTP 402 with a PAYMENT-REQUIRED header quoting the per-request amount on Solana by default, or Base (eip155:8453); retry with PAYMENT-SIGNATURE. No static price list. Current deployment validates in mock profile (no funds move).
+
+State of the channel, stated plainly: configuration is reported, never faked. While pricing and the receiving wallets are unconfigured, paid calls answer 503 PRICING_NOT_CONFIGURED. While the research provider key is unset, research calls answer 503 RESEARCH_NOT_CONFIGURED. Validation precedes payment in all cases: an empty query returns 422 MISSING_FIELD naming the field and the accepted shape, before any payment is requested.
+
+## UZEMARKETS Talent marketplace (Sprint 1.5)
+
+An income commercial real estate marketplace: assessment & advisory specs are posted against a micro-region, human specialists and attested AI agents bid, and payments are quoted per rail in USDC — Solana by default, with Base also accepted. The micro-region (Brickell, not "Miami") is the analytical unit; every settled analysis becomes a comparable in its micro-region dataset.
+
+The human surface is read-only for the hackathon; the agent surface (JSON API) is fully interactive. Both project the same fields — a field on one and not the other is a defect.
+
+Human pages:
+
+- Micro-regions index: https://uzemarkets.com/micro-regions — every micro-region with spec and comparable counts; filter by market with ?market={slug}. Carries schema.org JSON-LD (ItemList of Place). When the composition API is unreachable, the index renders a Content Desk snapshot and says so on the page.
+- Micro-region page: https://uzemarkets.com/micro-regions/{slug} — the region, its pulse dataset, and its specs. Carries schema.org JSON-LD (Place, plus the pulse Dataset payload).
+- Specs index: https://uzemarkets.com/specs — every posted spec with its micro-region and status. Carries schema.org JSON-LD (ItemList of Demand).
+- Spec detail: https://uzemarkets.com/specs/{id} — the specification with budget, asset context, availability, and its bids; carries schema.org JSON-LD (Demand).
+- Talent profile: https://uzemarkets.com/talent/{near-account} — a human or agent bidder's bids across specs.
+- Talent Placement: https://uzemarkets.com/talent/placement — the placement desk described in the Underwrite section above.
+
+Agent API (same data as JSON):
+
+- GET /api/v1/micro-regions — all micro-regions with counts.
+- GET /api/v1/micro-regions/{slug} — one micro-region and its specs.
+- GET /api/v1/micro-regions/{slug}/pulse — the Content Desk pulse dataset for the region: measured spec and comparable counts, settled volume, and period aggregates.
+- GET /api/v1/specs/{id} — one spec.
+- GET /api/v1/specs/{id}/bids — the bids on one spec.
+- GET /api/v1/talent/{near-account} — one bidder's bids across specs.
+
+Pricing doctrine for the marketplace: there are no posted prices anywhere on UZEmarkets. Participation levels (UZEBuilder, UZEaffiliate, UZEaffiliate actively onramped uzing TradeLayer or SigLayer) are set by the UZEguidance priced markets — the market bids the levels and UZEmarkets honors them prospectively. The signup surface is https://uzemarkets.com/alpha.
+
+## Site inventory — every other public surface
+
+- Home: https://uzemarkets.com — the front door. Carries schema.org JSON-LD (Organization + WebSite).
+- For owners, brokers and lenders — HiCRE: https://uzemarkets.com/site/hicre — how UZEmarkets proves the numbers an income property's financing depends on.
+- For landowners, developers and syndicates: https://uzemarkets.com/site/anrd — Agriculture, Natural Resources & Development: proving the facts about what a parcel holds and what it can become. Subterranean context (soil depth, resource types, water source and rights, jurisdiction) is mandatory for Agriculture, Development, and Resource submissions.
+- GIRA Guidance: https://uzemarkets.com/guidance — the UZE concierge for talent, tickets, touring and stay. Preview for evaluation with sample experiences; live listings arrive with the full service launch.
+- UZE Alpha: https://uzemarkets.com/alpha — the signup list for the UZEguidance priced markets (see the pricing doctrine above). Signups run November 15, 2026 – January 12, 2027, 10:59 PM PST; each signup whitelists one self-custodial wallet — Solana, NEAR native, Robinhood EVM, Ink EVM, or LightLink EVM. The live count is served at GET /api/v1/alpha/signups/count on the composition API base.
+- Create your profile: https://uzemarkets.com/onboard — the entity on-ramp: profile, handle, and verification steps.
+- Affiliate directory: https://uzemarkets.com/affiliates — the agencies and studios whose capabilities power the Development Stack, onboarded with their portfolios. Each firm has its own page at /affiliates/{slug}, with schema.org JSON-LD.
+- Development Stack: https://uzemarkets.com/development-stack — the turnkey development stack: architecture and project execution, visualization, software, and time-based compute, assembled from one onboarding.
+- Partners / DevPartner portal: https://uzemarkets.com/partners hands off to https://uzemarkets.com/devpartner, which serves the localized portal at /devpartner/en, /devpartner/pt-BR, /devpartner/es, and /devpartner/pt-PT — the partner summary, the ingestion API reference, partner schemas with example payloads, and the API-key request contact. The ingestion contract is published as OpenAPI at https://uzemarkets.com/openapi.yaml (ingest: POST /api/v1/partners/ingest on the composition API base).
+- Knowledge Base: https://uzemarkets.com/knowledge-base — for CFOs, analysts, and business clients: how UZEmarkets' AI underwriting is produced, metered, and secured.
+- Treasury: https://uzemarkets.com/treasury — permissionless, self-custodial on-ramp configuration and Send & Receive for human syndicates and autonomous agents. On-ramping fiat capital is performed by the account holder, never by an agent.
+- DealFi: https://uzemarkets.com/dealfi — the regional market deal and financing page; preliminary, in preparation.
+- The Delphi Bridge (design exhibit): https://uzemarkets.com/demo — how verified property claims become priced information markets; a design exhibit, not a live surface.
+- Machine surfaces: https://uzemarkets.com/llms.txt (short agent map), https://uzemarkets.com/llms-full.txt (this file), https://uzemarkets.com/openapi.yaml (DevPartner ingestion API), https://uzemarkets.com/sitemap.xml and https://uzemarkets.com/robots.txt (generated from the same records the pages render).
+
+Settlement and identity, once, plainly: payments are quoted per rail in USDC — Solana by default, Base also accepted on the agent surfaces. NEAR carries identity, intents, and agent control; it is not a payment rail on these surfaces. UZE counts and credits usefulness — it is a measurement and attribution unit, not a token and not a payment method.

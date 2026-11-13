@@ -70,6 +70,20 @@ const EXPERIENCES: Experience[] = [
   },
 ];
 
+const PAGE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "GIRA Guidance",
+  url: "https://uzemarkets.com/guidance",
+  description:
+    "GIRA Guidance: the UZE concierge for talent, tickets, touring and stay — browse experiences by category and ask GIRA. Preview for evaluation; live listings arrive with the full service launch.",
+  isPartOf: {
+    "@type": "WebSite",
+    name: "UZEmarkets",
+    url: "https://uzemarkets.com",
+  },
+};
+
 const SUGGESTIONS = [
   "What's on in Miami?",
   "Find me a stay near the beach",
@@ -135,6 +149,10 @@ export default function GuidancePage() {
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(PAGE_JSON_LD) }}
+      />
       <h1>GIRA Guidance</h1>
       <p>
         Concierge guidance for your next experience — talent, tickets,

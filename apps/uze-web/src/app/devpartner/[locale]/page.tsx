@@ -41,8 +41,40 @@ export default async function DevPartnerLocalePage({
   if (!isLocale(locale)) notFound();
   const c = CONTENT[locale];
 
+  // /partners and /devpartner are redirect stubs; this locale page is
+  // the rendered partners surface, so the partners JSON-LD lives here.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        name: "UZEmarkets",
+        url: "https://uzemarkets.com",
+        email: "desk@uzemarkets.com",
+        description:
+          "UZEmarkets — the information market where offerings are tested and used.",
+      },
+      {
+        "@type": "WebPage",
+        name: c.title,
+        url: `https://uzemarkets.com/devpartner/${locale}`,
+        inLanguage: locale,
+        isPartOf: {
+          "@type": "WebSite",
+          name: "UZEmarkets",
+          url: "https://uzemarkets.com",
+        },
+        about: { "@type": "Organization", name: "UZEmarkets" },
+      },
+    ],
+  };
+
   return (
     <main className="mk dp">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <p className="dp-kicker">{c.kicker}</p>
       <h1>{c.h1}</h1>
       <p>{c.intro}</p>

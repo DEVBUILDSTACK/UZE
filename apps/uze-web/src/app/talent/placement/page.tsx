@@ -6,6 +6,34 @@ export const metadata: Metadata = {
     "UZEmarkets Talent Placement: the underwrite identifies the operational roles an asset already pays for — placement sources the people.",
 };
 
+const PAGE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      name: "Talent Placement",
+      url: "https://uzemarkets.com/talent/placement",
+      description:
+        "UZEmarkets Talent Placement: the underwrite identifies the operational roles an asset already pays for — placement sources the people.",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "UZEmarkets",
+        url: "https://uzemarkets.com",
+      },
+    },
+    {
+      "@type": "Service",
+      name: "UZEmarkets Talent Placement",
+      serviceType:
+        "Talent placement for hospitality and income commercial real estate",
+      description:
+        "The UZE Underwrite report reads an asset's payroll lines and identifies the operational roles the property already pays for; Talent Placement sources vetted people for flagged roles, matched against the payroll budget the underwrite calculated. Talent submits a TalentProfile as JSON through the underwriting gateway; matching in the current demonstration is run by the placement team.",
+      url: "https://uzemarkets.com/talent/placement",
+      provider: { "@type": "Organization", name: "UZEmarkets" },
+    },
+  ],
+};
+
 /** Talent Placement (owner tap, 2026-11-12): the B2C side of
  *  the underwrite bridge. The underwrite's talent_placement
  *  object names the roles an asset's payroll already funds;
@@ -17,6 +45,10 @@ export const metadata: Metadata = {
 export default function TalentPlacementPage() {
   return (
     <main className="mk">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(PAGE_JSON_LD) }}
+      />
       <p className="note" role="note">
         <strong>Demonstration Environment:</strong> this page is
         backed by synthetic fixtures. The live API is pending
