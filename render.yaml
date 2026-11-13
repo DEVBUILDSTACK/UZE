@@ -40,7 +40,7 @@ services:
     plan: starter
     rootDir: services/compose
     buildCommand: pip install -r requirements-runtime.txt
-    startCommand: "PYTHONPATH=src alembic upgrade head && PYTHONPATH=src uvicorn app:app --host 0.0.0.0 --port $PORT"
+    startCommand: "PYTHONPATH=src:src/generated alembic upgrade head && PYTHONPATH=src:src/generated uvicorn app:app --host 0.0.0.0 --port $PORT"
     healthCheckPath: /health
     envVars:
       - key: COMPOSE_DATABASE_URL
