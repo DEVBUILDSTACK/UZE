@@ -47,6 +47,7 @@ import treasury
 import treasury_router
 import talent_bids
 import gateway
+import underwrite_sku
 
 
 def create_app() -> FastAPI:
@@ -105,6 +106,7 @@ def create_app() -> FastAPI:
     app.include_router(email_gateway.router)
     app.include_router(talent_bids.router)
     app.include_router(gateway.router)
+    app.include_router(underwrite_sku.router)
     return app
 
 
