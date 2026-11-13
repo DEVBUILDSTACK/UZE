@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import TreasuryTabs from "@/components/treasury-tabs";
 import BuilderPanel from "@/components/builder-panel";
+import PrivateAiToggle from "@/components/private-ai-toggle";
 
 export const metadata: Metadata = {
   title: "Treasury | UZEmarkets",
@@ -33,6 +34,7 @@ export default function TreasuryPage() {
       </p>
       <TreasuryTabs />
       <BuilderPanel />
+      <PrivateAiToggle />
       <p className="note">
         Demonstration build — three journeys: Fund (Coinbase Onramp,
         activates when the owner configures CDP keys), Move (Wormhole

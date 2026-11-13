@@ -46,6 +46,7 @@ import underwrite_engine
 import treasury
 import treasury_router
 import talent_bids
+import gateway
 
 
 def create_app() -> FastAPI:
@@ -103,6 +104,7 @@ def create_app() -> FastAPI:
     app.include_router(assuraties.router)
     app.include_router(email_gateway.router)
     app.include_router(talent_bids.router)
+    app.include_router(gateway.router)
     return app
 
 

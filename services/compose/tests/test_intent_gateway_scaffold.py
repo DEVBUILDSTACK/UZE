@@ -39,4 +39,11 @@ def test_gateway_is_not_wired_into_the_app(market_client):
     from app import create_app
 
     paths = {route.path for route in create_app().routes}
-    assert not any("gateway" in path for path in paths)
+    # Scope narrowed 2026-11-13 (owner tap): the word "gateway"
+    # now legitimately names a different surface — the NEAR AI
+    # Gateway trace opt-in mock at /api/v1/gateway/*. This pin's
+    # subject is the INTENT gateway scaffold: it stays unwired.
+    # Its refusal contract is pinned by
+    # test_disabled_gateway_refuses_everything above.
+    assert not any("intent-gateway" in path for path in paths)
+    assert not any("intent_gateway" in path for path in paths)
