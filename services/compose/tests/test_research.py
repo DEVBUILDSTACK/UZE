@@ -156,7 +156,7 @@ def test_paid_search_is_white_labeled_and_logged(client, monkeypatch):
     r = client.post(
         "/api/v1/research/search",
         json={"query": "hotel REIT earnings", "include_text": True},
-        headers={"PAYMENT-SIGNATURE": _pay_header()},
+        headers={"PAYMENT-SIGNATURE": _pay_header("paidsearch@uze.test")},
     )
     assert r.status_code == 200
     body = r.json()
@@ -190,7 +190,7 @@ def test_financial_forces_the_financial_category(client, monkeypatch):
     r = client.post(
         "/api/v1/research/financial",
         json={"query": "ASHFORD HOSPITALITY earnings"},
-        headers={"PAYMENT-SIGNATURE": _pay_header()},
+        headers={"PAYMENT-SIGNATURE": _pay_header("financial@uze.test")},
     )
     assert r.status_code == 200
     assert captured["payload"]["category"] == "financial report"
@@ -206,7 +206,7 @@ def test_contents_requires_urls(client, monkeypatch):
     r = client.post(
         "/api/v1/research/contents",
         json={"urls": ["https://cdn.sample.test/a"]},
-        headers={"PAYMENT-SIGNATURE": _pay_header()},
+        headers={"PAYMENT-SIGNATURE": _pay_header("contents@uze.test")},
     )
     assert r.status_code == 200
     assert r.json()["kind"] == "contents"
@@ -250,3 +250,178 @@ def test_email_gateway_research_needs_a_question(client, monkeypatch):
     )
     assert r.status_code == 422
     assert "Research:" in r.json()["error"]
+
+
+# ------------------------------------------------------- run contract (B/C)
+
+
+def _stub_raising(monkeypatch, exc):
+    def fake_post(path, payload):
+        raise exc
+
+    monkeypatch.setattr(research, "_provider_post", fake_post)
+
+
+def _events_of(event_type):
+    session = db.session()
+    try:
+        rows = (
+            session.query(models.EventLog)
+            .filter(models.EventLog.event_type == event_type)
+            .all()
+        )
+        return [r.payload for r in rows]
+    finally:
+        session.close()
+
+
+def _pay_header_for(payer):
+    return x402.build_mock_signature_header(
+        payer=payer,
+        network=x402.BASE_NETWORK,
+        amount=ENV["X402_SKU_AMOUNT_ATOMIC"],
+        pay_to=ENV["X402_PAYTO_BASE"],
+    )
+
+
+def test_failure_after_payment_logs_failed_and_retires_signature(
+    client, monkeypatch
+):
+    _configure(monkeypatch)
+    _stub_raising(monkeypatch, research.ResearchUpstreamError(503))
+    header = _pay_header_for("failcase@uze.test")
+    r = client.post(
+        "/api/v1/research/search",
+        json={"query": "hotels"},
+        headers={"PAYMENT-SIGNATURE": header},
+    )
+    assert r.status_code == 502
+    body = r.json()
+    assert body["error_code"] == "provider_error"
+    assert body["run_id"].startswith("UZE-RES-")
+    assert "credit" in body["credit_note"]
+    failed = [
+        p
+        for p in _events_of("research.run_failed")
+        if p["run_id"] == body["run_id"]
+    ]
+    assert len(failed) == 1
+    assert failed[0]["status"] == "failed"
+    assert failed[0]["error_code"] == "provider_error"
+    assert failed[0]["credit_note"] == body["credit_note"]
+
+    # The paid signature is retired: replaying it is refused
+    # as payment_invalid naming the failed run.
+    r2 = client.post(
+        "/api/v1/research/search",
+        json={"query": "hotels"},
+        headers={"PAYMENT-SIGNATURE": header},
+    )
+    assert r2.status_code == 402
+    assert r2.json()["error_code"] == "payment_invalid"
+    assert r2.json()["run_id"] == body["run_id"]
+
+    # A fresh payment runs under a NEW run id.
+    _stub_provider(monkeypatch)
+    r3 = client.post(
+        "/api/v1/research/search",
+        json={"query": "hotels"},
+        headers={"PAYMENT-SIGNATURE": _pay_header_for("failcase2@uze.test")},
+    )
+    assert r3.status_code == 200
+    assert r3.json()["run_id"] != body["run_id"]
+
+
+def test_provider_timeout_maps_to_provider_timeout(client, monkeypatch):
+    _configure(monkeypatch)
+    _stub_raising(monkeypatch, research.ResearchTimeout())
+    r = client.post(
+        "/api/v1/research/search",
+        json={"query": "hotels"},
+        headers={"PAYMENT-SIGNATURE": _pay_header_for("timeout@uze.test")},
+    )
+    assert r.status_code == 502
+    assert r.json()["error_code"] == "provider_timeout"
+
+
+def test_completed_signature_replays_the_same_run(client, monkeypatch):
+    _configure(monkeypatch)
+    calls = {"n": 0}
+
+    def counting_post(path, payload):
+        calls["n"] += 1
+        return RAW_SEARCH
+
+    monkeypatch.setattr(research, "_provider_post", counting_post)
+    header = _pay_header_for("replay@uze.test")
+    r1 = client.post(
+        "/api/v1/research/search",
+        json={"query": "hotels"},
+        headers={"PAYMENT-SIGNATURE": header},
+    )
+    assert r1.status_code == 200
+    r2 = client.post(
+        "/api/v1/research/search",
+        json={"query": "hotels"},
+        headers={"PAYMENT-SIGNATURE": header},
+    )
+    assert r2.status_code == 200
+    assert r2.json()["run_id"] == r1.json()["run_id"]
+    assert r2.json()["idempotent_replay"] is True
+    assert calls["n"] == 1  # never a second provider call / charge
+
+
+_YEARS = [{
+    "line_items": {
+        "Rental Revenue": 1_000_000,
+        "Payroll - Property Manager": -60_000,
+        "Property Taxes": -90_000,
+        "Insurance": -25_000,
+    }
+}]
+
+
+def test_composition_by_run_id(client, monkeypatch):
+    _configure(monkeypatch)
+    _stub_provider(monkeypatch)
+    payer = "compose@uze.test"
+    header = _pay_header_for(payer)
+    r = client.post(
+        "/api/v1/research/financial",
+        json={"query": "hotel REIT SEC filings"},
+        headers={"PAYMENT-SIGNATURE": header},
+    )
+    assert r.status_code == 200
+    run_id = r.json()["run_id"]
+
+    # The owner references the run on an underwrite: sources
+    # are cited, and the settlement log links the runs.
+    u = client.post(
+        "/api/v1/underwrite/UZ-W-001",
+        json={"years": _YEARS, "context_run_id": run_id},
+        headers={"PAYMENT-SIGNATURE": header},
+    )
+    assert u.status_code == 200
+    ctx = u.json()["result"]["research_context"]
+    assert ctx["run_id"] == run_id
+    assert len(ctx["sources"]) == 2
+    settlements = _events_of("x402.mock_settlement")
+    assert settlements[-1]["composed_from"] == run_id
+
+    # A different identity may not reference the run.
+    u2 = client.post(
+        "/api/v1/underwrite/UZ-W-001",
+        json={"years": _YEARS, "context_run_id": run_id},
+        headers={"PAYMENT-SIGNATURE": _pay_header_for("intruder@uze.test")},
+    )
+    assert u2.status_code == 422
+    assert u2.json()["error"] == "COMPOSITION_IDENTITY_MISMATCH"
+
+    # An unknown run is named as such.
+    u3 = client.post(
+        "/api/v1/underwrite/UZ-W-001",
+        json={"years": _YEARS, "context_run_id": "UZE-RES-DOESNOTEXIST"},
+        headers={"PAYMENT-SIGNATURE": header},
+    )
+    assert u3.status_code == 422
+    assert u3.json()["error"] == "RUN_NOT_FOUND"

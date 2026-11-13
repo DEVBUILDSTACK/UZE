@@ -26,6 +26,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 import models
+import research
 import x402
 from db import get_session
 from email_gateway import analyze_multiyear
@@ -41,6 +42,7 @@ SERVED_SKUS: dict[str, str] = {
 class SkuIngest(BaseModel):
     years: list[dict]
     context: dict | None = None
+    context_run_id: str | None = None
 
 
 @router.post("/{sku}")
@@ -102,7 +104,46 @@ def underwrite_sku(
             content=content,
             headers={"PAYMENT-REQUIRED": x402.encode_header(required)},
         )
+    research_context = None
+    if body.context_run_id:
+        # Composition by run ID (explainer section 7): a run
+        # may be referenced as this request's context only by
+        # the identity that owns it. The referenced run's
+        # sources are cited on the result; the years in this
+        # request remain the underwrite's input.
+        found = research.find_run(session, body.context_run_id)
+        if found is None:
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "error": "RUN_NOT_FOUND",
+                    "run_id": body.context_run_id,
+                },
+            )
+        run_payload, run_actor = found
+        if run_actor != auth["payer"]:
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "error": "COMPOSITION_IDENTITY_MISMATCH",
+                    "note": (
+                        "a run may only be referenced by the "
+                        "identity that owns it"
+                    ),
+                },
+            )
+        stored = run_payload.get("result") or {}
+        research_context = {
+            "run_id": body.context_run_id,
+            "kind": run_payload.get("kind"),
+            "sources": [
+                {"title": r.get("title"), "url": r.get("url")}
+                for r in stored.get("results", [])
+            ],
+        }
     result = analyze_multiyear(body.years, body.context)
+    if research_context is not None:
+        result["research_context"] = research_context
     # Logged as a MOCK settlement in the append-only audit
     # trail — flagged mock:true, moves no funds, exactly the
     # metering.mock_transfer convention.
@@ -121,6 +162,7 @@ def underwrite_sku(
                 "payer": auth["payer"],
                 "payTo": auth["payTo"],
                 "resource": resource_url,
+                "composed_from": body.context_run_id,
             },
         )
     )

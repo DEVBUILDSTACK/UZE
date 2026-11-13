@@ -49,6 +49,7 @@ import talent_bids
 import gateway
 import underwrite_sku
 import research
+import mcp_surface
 
 
 def create_app() -> FastAPI:
@@ -109,6 +110,7 @@ def create_app() -> FastAPI:
     app.include_router(gateway.router)
     app.include_router(underwrite_sku.router)
     app.include_router(research.router)
+    app.include_router(mcp_surface.router)
     return app
 
 

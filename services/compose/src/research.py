@@ -13,9 +13,20 @@ One capability, every door (door parity):
     the gateway's demo scope is unmetered for all its flows
     today (its module docstring says so), and the log row
     records that profile rather than pretending a charge.
-  - MCP: the manifest surface is specified in the D5
-    explainer section 7; no MCP server exists in this
-    codebase yet, so nothing is claimed for that door here.
+  - MCP: mcp_surface.py exposes UZE_Research_Query over a
+    minimal JSON-RPC surface, delegating to the same
+    execution core (_execute) with door="mcp".
+
+Run contract (explainer section 7, built for this channel
+2026-11-13): every accepted run gets a run ID
+(UZE-RES-<ulid>) carried in the response and the event log.
+A provider failure AFTER payment validation logs the run as
+failed with a machine-readable error_code (provider_error /
+provider_timeout) and a credit note, and RETIRES the paid
+signature: replaying it answers payment_invalid naming the
+failed run, and a retry pays a fresh quote under a new run
+ID. Replaying the signature of a COMPLETED run returns that
+run's result — the same run, never a second charge.
 
 Provider discipline (naming rule, 2026-11-13): the upstream
 provider is an internal implementation detail, registered
@@ -44,8 +55,11 @@ or a log row.
 
 from __future__ import annotations
 
+import hashlib
 import os
-from typing import Any
+import secrets
+import time
+from typing import Any, Callable
 
 import httpx
 from fastapi import APIRouter, Depends, Request
@@ -67,8 +81,36 @@ _TEXT_CAP = 20_000
 
 FINANCIAL_CATEGORY = "financial report"
 
+CREDIT_NOTE = (
+    "the validated payment is credited toward the payer's "
+    "next run; under the mock validation profile no funds "
+    "moved, and the failed run's signature is retired"
+)
+
+_CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+
+
+def _ulid() -> str:
+    """A minimal ULID: 48-bit millisecond timestamp + 80-bit
+    randomness, Crockford base32 — time-ordered and unique
+    across doors, per the run-ID contract."""
+    value = (int(time.time() * 1000) << 80) | secrets.randbits(80)
+    chars = []
+    for _ in range(26):
+        chars.append(_CROCKFORD[value & 0x1F])
+        value >>= 5
+    return "".join(reversed(chars))
+
+
+def new_run_id() -> str:
+    return f"UZE-RES-{_ulid()}"
+
 
 class ResearchNotConfigured(Exception):
+    pass
+
+
+class ResearchTimeout(Exception):
     pass
 
 
@@ -95,12 +137,18 @@ def _provider_post(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     key = _provider_key()
     if key is None:
         raise ResearchNotConfigured()
-    with httpx.Client(trust_env=False, timeout=30.0) as client:
-        resp = client.post(
-            f"{_provider_base()}{path}",
-            json=payload,
-            headers={"x-api-key": key, "Content-Type": "application/json"},
-        )
+    try:
+        with httpx.Client(trust_env=False, timeout=30.0) as client:
+            resp = client.post(
+                f"{_provider_base()}{path}",
+                json=payload,
+                headers={
+                    "x-api-key": key,
+                    "Content-Type": "application/json",
+                },
+            )
+    except httpx.TimeoutException as exc:
+        raise ResearchTimeout() from exc
     if resp.status_code != 200:
         raise ResearchUpstreamError(resp.status_code)
     return resp.json()
@@ -128,7 +176,8 @@ def search_web(
 ) -> dict[str, Any]:
     """The provider search call, normalized to the UZE
     Research shape. Raises ResearchNotConfigured /
-    ResearchUpstreamError; callers shape the HTTP answer."""
+    ResearchTimeout / ResearchUpstreamError; callers shape
+    the HTTP answer."""
     payload: dict[str, Any] = {
         "query": query,
         "numResults": max(1, min(num_results, _MAX_RESULTS)),
@@ -164,47 +213,208 @@ def _public(result: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in result.items() if not k.startswith("_")}
 
 
-def _log_call(
+# ------------------------------------------------------------- run records
+
+
+def _signature_hash(header_value: str) -> str:
+    return hashlib.sha256(header_value.encode()).hexdigest()
+
+
+def find_run(session: Session, run_id: str) -> tuple[dict[str, Any], str] | None:
+    """(payload, actor) for a research run ID, or None. Used
+    by cross-service composition: a run may be referenced by
+    the identity that owns it, and by no one else."""
+    row = (
+        session.query(models.EventLog)
+        .filter(models.EventLog.aggregate_type == "research")
+        .filter(models.EventLog.payload["run_id"].as_string() == run_id)
+        .order_by(models.EventLog.id.desc())
+        .first()
+    )
+    if row is None:
+        return None
+    return row.payload, row.actor
+
+
+def _prior_by_signature(
+    session: Session, signature_hash: str
+) -> dict[str, Any] | None:
+    row = (
+        session.query(models.EventLog)
+        .filter(models.EventLog.aggregate_type == "research")
+        .filter(
+            models.EventLog.payload["signature_hash"].as_string()
+            == signature_hash
+        )
+        .order_by(models.EventLog.id.desc())
+        .first()
+    )
+    return row.payload if row is not None else None
+
+
+def _log(
     session: Session,
     *,
+    event_type: str,
     kind: str,
     door: str,
     actor: str,
-    result: dict[str, Any],
+    run_id: str,
     payment: dict[str, Any],
+    extra: dict[str, Any],
 ) -> None:
+    payload: dict[str, Any] = {
+        "provider": "exa",  # internal audit only
+        "door": door,
+        "kind": kind,
+        "run_id": run_id,
+        "payment": payment,
+    }
+    payload.update(extra)
     session.add(
         models.EventLog(
             aggregate_type="research",
             aggregate_id=kind,
-            event_type="research.metered_call",
+            event_type=event_type,
             actor=actor,
-            payload={
-                "provider": "exa",  # internal audit only
-                "upstream_request_id": result.get("_upstream_request_id"),
-                "door": door,
-                "result_count": len(result.get("results", [])),
-                "payment": payment,
-            },
+            payload=payload,
         )
     )
     session.commit()
 
 
+def _receipt(auth: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "success": True,
+        "mock": True,
+        "network": auth["network"],
+        "transaction": "mock:" + auth["signature"].removeprefix("mock:")[:16],
+        "payer": auth["payer"],
+    }
+
+
+def _execute(
+    session: Session,
+    *,
+    door: str,
+    auth: dict[str, Any],
+    signature_hash: str,
+    kind_hint: str,
+    fn: Callable[[], dict[str, Any]],
+) -> tuple[int, dict[str, Any], dict[str, Any] | None]:
+    """The paid execution core shared by the API and MCP
+    doors. Returns (http_status, body, receipt_or_None).
+
+    Idempotency: a signature that already completed returns
+    its original run's result; a signature consumed by a
+    failed run is refused (payment_invalid) so a retry pays
+    a fresh quote under a new run ID."""
+    prior = _prior_by_signature(session, signature_hash)
+    if prior is not None:
+        if prior.get("status") == "completed":
+            body = dict(prior["result"])
+            body["run_id"] = prior["run_id"]
+            body["idempotent_replay"] = True
+            body["payment"] = prior["payment_receipt"]
+            return 200, body, prior["payment_receipt"]
+        return 402, {
+            "error": "PAYMENT_SIGNATURE_CONSUMED",
+            "error_code": "payment_invalid",
+            "run_id": prior["run_id"],
+            "note": (
+                "this payment signature was consumed by a "
+                "failed run and cannot be reused; pay a fresh "
+                "quote to retry — the failed run carries a "
+                "credit note"
+            ),
+        }, None
+
+    run_id = new_run_id()
+    receipt = _receipt(auth)
+    payment_log = {
+        "profile": "x402-mock",
+        "mock": True,
+        "network": auth["network"],
+        "asset": auth["asset"],
+        "amountAtomic": auth["amount"],
+    }
+    try:
+        result = fn()
+    except (ResearchTimeout, ResearchUpstreamError) as exc:
+        error_code = (
+            "provider_timeout"
+            if isinstance(exc, ResearchTimeout)
+            else "provider_error"
+        )
+        _log(
+            session,
+            event_type="research.run_failed",
+            kind=kind_hint,
+            door=door,
+            actor=auth["payer"],
+            run_id=run_id,
+            payment=payment_log,
+            extra={
+                "status": "failed",
+                "signature_hash": signature_hash,
+                "error_code": error_code,
+                "credit_note": CREDIT_NOTE,
+            },
+        )
+        return 502, {
+            "error": "RESEARCH_UPSTREAM_ERROR",
+            "error_code": error_code,
+            "run_id": run_id,
+            "credit_note": CREDIT_NOTE,
+        }, None
+    body = _public(result)
+    _log(
+        session,
+        event_type="research.metered_call",
+        kind=result["kind"],
+        door=door,
+        actor=auth["payer"],
+        run_id=run_id,
+        payment=payment_log,
+        extra={
+            "status": "completed",
+            "signature_hash": signature_hash,
+            "upstream_request_id": result.get("_upstream_request_id"),
+            "result_count": len(result.get("results", [])),
+            "result": body,
+            "payment_receipt": receipt,
+        },
+    )
+    body["run_id"] = run_id
+    body["payment"] = receipt
+    return 200, body, receipt
+
+
 def run_via_gateway(session: Session, *, query: str, sender: str) -> dict[str, Any]:
     """The email door's entry point: same provider function,
-    same event log; the gateway demo profile is unmetered
-    and the log row says so."""
+    same event log, its own run ID; the gateway demo profile
+    is unmetered and the log row says so."""
+    run_id = new_run_id()
     result = search_web(query)
-    _log_call(
+    body = _public(result)
+    _log(
         session,
+        event_type="research.metered_call",
         kind=result["kind"],
         door="email",
         actor=sender,
-        result=result,
+        run_id=run_id,
         payment={"profile": "gateway-demo-unmetered", "mock": True},
+        extra={
+            "status": "completed",
+            "signature_hash": None,
+            "upstream_request_id": result.get("_upstream_request_id"),
+            "result_count": len(result.get("results", [])),
+            "result": body,
+        },
     )
-    return _public(result)
+    body["run_id"] = run_id
+    return body
 
 
 # ---------------------------------------------------------------- API door
@@ -227,12 +437,12 @@ class ContentsIn(BaseModel):
 
 
 def _gate(request: Request, resource_url: str, description: str):
-    """The x402 gate, shared by the three endpoints.
-    Returns (config, auth, error_response): exactly one of
-    auth / error_response is set."""
+    """The x402 gate, shared by the API endpoints and the
+    MCP surface. Returns (auth, error_response): exactly one
+    of the two is set."""
     config = x402.pricing_config()
     if config is None:
-        return None, None, JSONResponse(
+        return None, JSONResponse(
             status_code=503,
             content={
                 "error": "PRICING_NOT_CONFIGURED",
@@ -245,7 +455,7 @@ def _gate(request: Request, resource_url: str, description: str):
             },
         )
     if _provider_key() is None:
-        return None, None, JSONResponse(
+        return None, JSONResponse(
             status_code=503,
             content={
                 "error": "RESEARCH_NOT_CONFIGURED",
@@ -258,7 +468,7 @@ def _gate(request: Request, resource_url: str, description: str):
     required = x402.build_payment_required(resource_url, description, config)
     header_value = request.headers.get("payment-signature")
     if not header_value:
-        return None, None, JSONResponse(
+        return None, JSONResponse(
             status_code=402,
             content=required,
             headers={"PAYMENT-REQUIRED": x402.encode_header(required)},
@@ -267,63 +477,30 @@ def _gate(request: Request, resource_url: str, description: str):
     if not ok:
         content = dict(required)
         content["error"] = f"invalid PAYMENT-SIGNATURE: {reason}"
-        return None, None, JSONResponse(
+        return None, JSONResponse(
             status_code=402,
             content=content,
             headers={"PAYMENT-REQUIRED": x402.encode_header(required)},
         )
-    return config, auth, None
-
-
-def _receipt(auth: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "success": True,
-        "mock": True,
-        "network": auth["network"],
-        "transaction": "mock:" + auth["signature"].removeprefix("mock:")[:16],
-        "payer": auth["payer"],
-    }
+    return auth, None
 
 
 def _run(request: Request, session: Session, kind: str, description: str, fn):
-    _config, auth, error = _gate(request, f"/api/v1/research/{kind}", description)
+    auth, error = _gate(request, f"/api/v1/research/{kind}", description)
     if error is not None:
         return error
-    try:
-        result = fn()
-    except ResearchNotConfigured:
-        return JSONResponse(
-            status_code=503, content={"error": "RESEARCH_NOT_CONFIGURED"}
-        )
-    except ResearchUpstreamError:
-        return JSONResponse(
-            status_code=502,
-            content={
-                "error": "RESEARCH_UPSTREAM_ERROR",
-                "note": "the research channel's provider did not answer",
-            },
-        )
-    receipt = _receipt(auth)
-    _log_call(
+    status, body, receipt = _execute(
         session,
-        kind=result["kind"],
         door="api",
-        actor=auth["payer"],
-        result=result,
-        payment={
-            "profile": "x402-mock",
-            "mock": True,
-            "network": auth["network"],
-            "asset": auth["asset"],
-            "amountAtomic": auth["amount"],
-        },
+        auth=auth,
+        signature_hash=_signature_hash(request.headers["payment-signature"]),
+        kind_hint=kind,
+        fn=fn,
     )
-    body = _public(result)
-    body["payment"] = receipt
-    return JSONResponse(
-        content=body,
-        headers={"PAYMENT-RESPONSE": x402.encode_header(receipt)},
-    )
+    headers = {}
+    if receipt is not None:
+        headers["PAYMENT-RESPONSE"] = x402.encode_header(receipt)
+    return JSONResponse(status_code=status, content=body, headers=headers)
 
 
 def _missing(field: str, shape: dict[str, Any]) -> JSONResponse:
