@@ -1,1 +1,326 @@
-{"bids":[{"amountUsdc":22500,"bidderAccount":"treasury.uzemarkets-talent.testnet","bidderKind":"human","bidderLabel":"treasury.sarah.testnet","etaHours":1440,"onSiteDays":25,"payload":{"narrative":"Human CRE analyst: on-site walkthrough plus remote modeling, 60 days end to end."},"remoteDays":35},{"amountUsdc":4200,"bidderAccount":"recon.uzemarkets-talent.testnet","bidderKind":"agent","bidderLabel":"recon.agent.testnet","etaHours":48,"onSiteDays":0,"payload":{"narrative":"AI agent: autonomous analysis in 48 hours, attested inference (attestation receipt attaches on Day 4)."},"remoteDays":2}],"comment":"Sprint 1.5 demo fixture (02-SPRINT-1.5-PLAN.md, Day 2). Labels are the narrative names from the packet; onChainAccount is the account that actually exists and signs. Per DeepSeek's directive (2026-11-07, relayed by James): sarah/agent names are fixture labels only, substitutes on-chain. The spec's entityId is a conceptual demo Entity reference for the Assurative trust layer (the acquiring syndicate is an Entity; its human analysts are Affiliates).","microRegions":[{"id":"miami-brickell","label":"Miami — Brickell","metro":"Miami","region":"FL"},{"id":"miami-aventura","label":"Miami — Aventura","metro":"Miami","region":"FL"},{"id":"fort-lauderdale","label":"Fort Lauderdale","metro":"Fort Lauderdale","region":"FL"},{"id":"bethesda-cbd","label":"Bethesda CBD","metro":"Washington DC","region":"MD"},{"id":"arlington-va","label":"Arlington","metro":"Washington DC","region":"VA"},{"id":"baltimore-nw","label":"Northwest Baltimore","metro":"Baltimore","region":"MD"},{"id":"baltimore-city","label":"Baltimore City","metro":"Baltimore","region":"MD"},{"id":"towson","label":"Towson","metro":"Baltimore","region":"MD"},{"id":"orlando-kissimmee","label":"Orlando — Kissimmee","metro":"Orlando","region":"FL"},{"id":"tampa-fl","label":"Tampa","metro":"Tampa","region":"FL"}],"spec":{"assetContext":{"acquisitionStage":"underwriting","brandAffiliation":"Aloft","doorCount":340,"propertyType":"branded_hotel"},"availableFrom":1794096000,"availableUntil":1796688000,"budgetMaxUsdc":25000,"budgetMinUsdc":4000,"deliverable":{"operatingBudget":"full-year operating budget, every role, every opex line A-Z, brand fees included","pmSpec":"property manager specification derived from the budget"},"domain":"cre_expense_analysis","kind":"demand","microRegionId":"miami-brickell","assetSubclass":"H","targetArea":{"type":"Radius","epicenterLat":25.7587,"epicenterLng":-80.1912,"radiusMiles":37.5},"entityId":"a380c150-1fb9-49fb-992a-1e3b89593472","executionEnvironment":"near_intents","agentAttestation":"human","onSiteDays":10,"posterAccount":"syndicate.acme.testnet","posterKind":"human","posterLabel":"Acquiring syndicate (conceptual — no account needed for the fixture)","referringPartner":null,"remoteDays":20,"tier":"ANY","workProduct":"operating_budget"}}
+{
+  "bids": [
+    {
+      "amountUsdc": 22500,
+      "bidderAccount": "treasury.uzemarkets-talent.testnet",
+      "bidderKind": "human",
+      "bidderLabel": "treasury.sarah.testnet",
+      "etaHours": 1440,
+      "onSiteDays": 25,
+      "payload": {
+        "narrative": "Human CRE analyst: on-site walkthrough plus remote modeling, 60 days end to end."
+      },
+      "remoteDays": 35
+    },
+    {
+      "amountUsdc": 4200,
+      "bidderAccount": "recon.uzemarkets-talent.testnet",
+      "bidderKind": "agent",
+      "bidderLabel": "recon.agent.testnet",
+      "etaHours": 48,
+      "onSiteDays": 0,
+      "payload": {
+        "narrative": "AI agent: autonomous analysis in 48 hours, attested inference (attestation receipt attaches on Day 4)."
+      },
+      "remoteDays": 2
+    }
+  ],
+  "comment": "Sprint 1.5 demo fixture (02-SPRINT-1.5-PLAN.md, Day 2). Labels are the narrative names from the packet; onChainAccount is the account that actually exists and signs. Per DeepSeek's directive (2026-11-07, relayed by James): sarah/agent names are fixture labels only, substitutes on-chain. The spec's entityId is a conceptual demo Entity reference for the Assurative trust layer (the acquiring syndicate is an Entity; its human analysts are Affiliates).",
+  "microRegions": [
+    {
+      "id": "miami-brickell",
+      "label": "Miami — Brickell",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "miami-aventura",
+      "label": "Miami — Aventura",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "fort-lauderdale",
+      "label": "Fort Lauderdale",
+      "metro": "Fort Lauderdale",
+      "region": "FL"
+    },
+    {
+      "id": "bethesda-cbd",
+      "label": "Bethesda CBD",
+      "metro": "Washington DC",
+      "region": "MD"
+    },
+    {
+      "id": "arlington-va",
+      "label": "Arlington",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "baltimore-nw",
+      "label": "Northwest Baltimore",
+      "metro": "Baltimore",
+      "region": "MD"
+    },
+    {
+      "id": "baltimore-city",
+      "label": "Baltimore City",
+      "metro": "Baltimore",
+      "region": "MD"
+    },
+    {
+      "id": "towson",
+      "label": "Towson",
+      "metro": "Baltimore",
+      "region": "MD"
+    },
+    {
+      "id": "orlando-kissimmee",
+      "label": "Orlando — Kissimmee",
+      "metro": "Orlando",
+      "region": "FL"
+    },
+    {
+      "id": "tampa-fl",
+      "label": "Tampa",
+      "metro": "Tampa",
+      "region": "FL"
+    },
+    {
+      "id": "dc-downtown",
+      "label": "Washington DC — Downtown",
+      "metro": "Washington DC",
+      "region": "DC"
+    },
+    {
+      "id": "dc-georgetown",
+      "label": "Washington DC — Georgetown",
+      "metro": "Washington DC",
+      "region": "DC"
+    },
+    {
+      "id": "dc-capitol-hill",
+      "label": "Washington DC — Capitol Hill & NoMa",
+      "metro": "Washington DC",
+      "region": "DC"
+    },
+    {
+      "id": "dc-navy-yard",
+      "label": "Washington DC — Navy Yard",
+      "metro": "Washington DC",
+      "region": "DC"
+    },
+    {
+      "id": "silver-spring",
+      "label": "Silver Spring",
+      "metro": "Washington DC",
+      "region": "MD"
+    },
+    {
+      "id": "rockville",
+      "label": "Rockville",
+      "metro": "Washington DC",
+      "region": "MD"
+    },
+    {
+      "id": "alexandria",
+      "label": "Alexandria — Old Town",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "tysons",
+      "label": "Tysons",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "national-harbor",
+      "label": "National Harbor",
+      "metro": "Washington DC",
+      "region": "MD"
+    },
+    {
+      "id": "annapolis",
+      "label": "Annapolis",
+      "metro": "Annapolis",
+      "region": "MD"
+    },
+    {
+      "id": "columbia-md",
+      "label": "Columbia",
+      "metro": "Baltimore",
+      "region": "MD"
+    },
+    {
+      "id": "bwi-linthicum",
+      "label": "BWI — Linthicum",
+      "metro": "Baltimore",
+      "region": "MD"
+    },
+    {
+      "id": "baltimore-canton",
+      "label": "Baltimore — Canton & Fells Point",
+      "metro": "Baltimore",
+      "region": "MD"
+    },
+    {
+      "id": "stuart-fl",
+      "label": "Stuart",
+      "metro": "Stuart",
+      "region": "FL"
+    },
+    {
+      "id": "jupiter-fl",
+      "label": "Jupiter",
+      "metro": "West Palm Beach",
+      "region": "FL"
+    },
+    {
+      "id": "palm-beach-gardens",
+      "label": "Palm Beach Gardens",
+      "metro": "West Palm Beach",
+      "region": "FL"
+    },
+    {
+      "id": "west-palm-beach",
+      "label": "West Palm Beach",
+      "metro": "West Palm Beach",
+      "region": "FL"
+    },
+    {
+      "id": "palm-beach-island",
+      "label": "Palm Beach Island",
+      "metro": "West Palm Beach",
+      "region": "FL"
+    },
+    {
+      "id": "delray-beach",
+      "label": "Delray Beach",
+      "metro": "Boca Raton",
+      "region": "FL"
+    },
+    {
+      "id": "boca-raton",
+      "label": "Boca Raton",
+      "metro": "Boca Raton",
+      "region": "FL"
+    },
+    {
+      "id": "pompano-beach",
+      "label": "Pompano Beach",
+      "metro": "Fort Lauderdale",
+      "region": "FL"
+    },
+    {
+      "id": "hollywood-fl",
+      "label": "Hollywood",
+      "metro": "Fort Lauderdale",
+      "region": "FL"
+    },
+    {
+      "id": "sunny-isles",
+      "label": "Sunny Isles Beach",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "miami-beach",
+      "label": "Miami Beach",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "miami-wynwood",
+      "label": "Miami — Wynwood & Midtown",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "coral-gables",
+      "label": "Coral Gables",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "coconut-grove",
+      "label": "Miami — Coconut Grove",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "doral",
+      "label": "Doral — Airport West",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "homestead-fl",
+      "label": "Homestead — Florida City",
+      "metro": "Miami",
+      "region": "FL"
+    },
+    {
+      "id": "key-largo",
+      "label": "Key Largo",
+      "metro": "Florida Keys",
+      "region": "FL"
+    },
+    {
+      "id": "islamorada",
+      "label": "Islamorada",
+      "metro": "Florida Keys",
+      "region": "FL"
+    },
+    {
+      "id": "marathon-fl",
+      "label": "Marathon",
+      "metro": "Florida Keys",
+      "region": "FL"
+    },
+    {
+      "id": "key-west",
+      "label": "Key West",
+      "metro": "Florida Keys",
+      "region": "FL"
+    }
+  ],
+  "spec": {
+    "assetContext": {
+      "acquisitionStage": "underwriting",
+      "brandAffiliation": "Aloft",
+      "doorCount": 340,
+      "propertyType": "branded_hotel"
+    },
+    "availableFrom": 1794096000,
+    "availableUntil": 1796688000,
+    "budgetMaxUsdc": 25000,
+    "budgetMinUsdc": 4000,
+    "deliverable": {
+      "operatingBudget": "full-year operating budget, every role, every opex line A-Z, brand fees included",
+      "pmSpec": "property manager specification derived from the budget"
+    },
+    "domain": "cre_expense_analysis",
+    "kind": "demand",
+    "microRegionId": "miami-brickell",
+    "assetSubclass": "H",
+    "targetArea": {
+      "type": "Radius",
+      "epicenterLat": 25.7587,
+      "epicenterLng": -80.1912,
+      "radiusMiles": 37.5
+    },
+    "entityId": "a380c150-1fb9-49fb-992a-1e3b89593472",
+    "executionEnvironment": "near_intents",
+    "agentAttestation": "human",
+    "onSiteDays": 10,
+    "posterAccount": "syndicate.acme.testnet",
+    "posterKind": "human",
+    "posterLabel": "Acquiring syndicate (conceptual — no account needed for the fixture)",
+    "referringPartner": null,
+    "remoteDays": 20,
+    "tier": "ANY",
+    "workProduct": "operating_budget"
+  }
+}

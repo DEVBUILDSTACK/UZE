@@ -27,6 +27,11 @@ export interface SpecView {
   };
   assetSubclass: string | null;
   entityId: string | null;
+  affiliateId: string | null;
+  executionEnvironment: string | null;
+  agentAttestation: string | null;
+  countryCode: string | null;
+  macroDistressExit: boolean | null;
   targetArea: { type: string; [key: string]: unknown } | null;
   subterraneanContext: Record<string, unknown> | null;
   onSiteDays: number | null;
