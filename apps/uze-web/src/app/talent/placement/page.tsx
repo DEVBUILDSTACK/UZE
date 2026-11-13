@@ -17,6 +17,11 @@ export const metadata: Metadata = {
 export default function TalentPlacementPage() {
   return (
     <main className="mk">
+      <p className="note" role="note">
+        <strong>Demonstration Environment:</strong> this page is
+        backed by synthetic fixtures. The live API is pending
+        deployment.
+      </p>
       <h1>Talent Placement</h1>
       <p className="lede">
         <strong>

@@ -315,7 +315,9 @@ def render_pdf(payload: EmailIngest, agent: str, data: dict, cross_sell: str | N
     return bytes(pdf.output())
 
 
-def analyze_multiyear(years: list[dict]) -> dict:
+def analyze_multiyear(
+    years: list[dict], context: dict | None = None
+) -> dict:
     """Multi-year T-12 analysis (2026-11-11): each year's raw
     line items are normalized through the StandardChartOfAccounts
     into the seven ratified buckets, NOI is derived per year
@@ -382,19 +384,27 @@ def analyze_multiyear(years: list[dict]) -> dict:
         # B2B -> B2C bridge (owner tap, 2026-11-12): the roles
         # this asset's payroll already pays for, linked to
         # Talent Placement.
-        "talent_placement": talent_profile.derive_talent_placement(years),
+        "talent_placement": talent_profile.derive_talent_placement(
+            years, context
+        ),
     }
 
 
 class MultiYearIngest(BaseModel):
     years: list[dict]
+    # Optional DECLARED project context for development
+    # routing (owner tap, 2026-11-13): lifecycle stage,
+    # domain focus, asset-class focus. Never inferred.
+    context: dict | None = None
 
 
 @router.post("/multiyear")
 def ingest_multiyear(payload: MultiYearIngest):
     if not payload.years:
         raise HTTPException(status_code=422, detail="at least one year is required")
-    return JSONResponse(content=analyze_multiyear(payload.years))
+    return JSONResponse(
+        content=analyze_multiyear(payload.years, payload.context)
+    )
 
 
 @router.post("/email")

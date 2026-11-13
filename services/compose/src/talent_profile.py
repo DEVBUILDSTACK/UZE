@@ -136,6 +136,70 @@ PROJECT_TEAM_ROLES: tuple[tuple[str, str], ...] = (
     ("PRE_SALES_BROKER", "Pre-Sales Broker"),
 )
 
+# Stage routing (owner tap, 2026-11-13): when a project
+# context is DECLARED — lifecycle stage, domain focus,
+# asset-class focus — the development path names the
+# categories that stage requires, instead of the generic
+# standing list. Rules over declared inputs only: nothing
+# about a development team is inferred from an asset's
+# financials.
+STAGE_REQUIREMENTS: dict[str, tuple[str, ...]] = {
+    "ACQUISITION_ENTITLEMENT": (
+        "ENTITLEMENT_CONSULTANT",
+        "DEVELOPMENT_FINANCE_ANALYST",
+        "DEVELOPMENT_MANAGER",
+    ),
+    "DESIGN_ARCHITECTURE": (
+        "ARCHITECT",
+        "INTERIOR_DESIGNER",
+        "LIGHTING_TECHNOLOGY_INTEGRATOR",
+        "CAD_DRAFTER",
+        "PRE_SALES_BROKER",
+    ),
+    "CONSTRUCTION_EXECUTION": (
+        "GENERAL_CONTRACTOR",
+        "CONSTRUCTION_PROJECT_MANAGER",
+        "DEVELOPMENT_MANAGER",
+    ),
+    "OPERATIONS_STABILIZATION": (),
+}
+_WELLNESS_DOMAINS: tuple[str, ...] = (
+    "HOSPITALITY_RESORT_DESIGN",
+    "WELLNESS_INFRASTRUCTURE",
+)
+_CATEGORY_DISPLAY: dict[str, str] = dict(
+    PROJECT_TEAM_ROLES + PROJECT_SIDE_ROLES
+)
+
+
+def development_requirements(
+    context: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """The development categories a DECLARED project context
+    requires, in team order. A resort/wellness design domain
+    adds the wellness spa consultant at the design stage.
+    No context (or an unrecognized stage) yields no
+    requirements — the caller then falls back to the
+    standing offer."""
+    ctx = context or {}
+    stage = str(ctx.get("project_lifecycle_stage") or "").upper()
+    domain = str(ctx.get("domain_focus") or "").upper()
+    focus = str(ctx.get("asset_class_focus") or "").upper()
+    cats = list(STAGE_REQUIREMENTS.get(stage, ()))
+    if stage == "DESIGN_ARCHITECTURE" and domain in _WELLNESS_DOMAINS:
+        cats.insert(3, "WELLNESS_SPA_CONSULTANT")
+    return [
+        {
+            "role_category": c,
+            "role": _CATEGORY_DISPLAY.get(c, c),
+            "domain_focus": domain or None,
+            "asset_class_focus": focus or None,
+            "project_lifecycle_stage": stage or None,
+        }
+        for c in cats
+    ]
+
+
 PDF_DEFERRAL_MESSAGE = (
     "PDF/Word resume parsing is deferred to our January 2nd "
     "update. Please provide your resume in JSON format."
@@ -274,12 +338,22 @@ def is_docx(data: bytes) -> bool:
         return False
 
 
-def derive_talent_placement(years: list[dict]) -> dict[str, Any]:
+def derive_talent_placement(
+    years: list[dict], context: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """The B2B -> B2C bridge (Master Directive Part 2): from an
     underwrite's own line items, name the operational roles the
     asset's payroll already pays for, and point at Talent
     Placement. Roles are read from payroll/role line labels —
     never invented: no role lines, no requirement.
+
+    Development routing (owner tap, 2026-11-13): when the
+    caller DECLARES a project context (lifecycle stage,
+    domain focus, asset-class focus), the development path
+    names the categories that stage requires
+    (development_requirements); without a context it remains
+    the standing offer. The context is declared input, never
+    inferred from the financials.
     """
     role_rules: tuple[tuple[str, str], ...] = (
         ("manager", "Property Manager"),
@@ -301,6 +375,11 @@ def derive_talent_placement(years: list[dict]) -> dict[str, Any]:
             for needle, role in role_rules:
                 if needle in low and role not in roles:
                     roles.append(role)
+    _dev_requirements = development_requirements(context)
+    _stage = str(
+        (context or {}).get("project_lifecycle_stage") or ""
+    ).upper()
+    _routed = _stage in STAGE_REQUIREMENTS
     return {
         "required": bool(roles),
         "roles": roles,
@@ -326,15 +405,24 @@ def derive_talent_placement(years: list[dict]) -> dict[str, Any]:
             },
             {
                 # Third path (owner tap, 2026-11-13): the
-                # Development & Design standing offer — the
-                # project team that turns a development into a
-                # hospitality asset. Like knowledge_work this is
-                # a standing offer, not a payroll derivation:
-                # the roles are the platform's project team,
-                # never read off the asset's own lines.
+                # Development & Design offer — the project team
+                # that turns a development into a hospitality
+                # asset. Not a payroll derivation: with a
+                # DECLARED project context it is context-routed
+                # (the categories the declared stage requires);
+                # without one it is the standing offer of the
+                # platform's project team.
                 "kind": "development_design",
                 "label": "Assemble the Development & Design project team",
-                "roles": [display for _, display in PROJECT_TEAM_ROLES],
+                "mode": (
+                    "context_routed" if _routed else "standing_offer"
+                ),
+                "requirements": _dev_requirements,
+                "roles": (
+                    [r["role"] for r in _dev_requirements]
+                    if _routed
+                    else [d for _, d in PROJECT_TEAM_ROLES]
+                ),
                 "cta_url": "/talent/placement?source=underwrite&path=development",
             },
         ],
