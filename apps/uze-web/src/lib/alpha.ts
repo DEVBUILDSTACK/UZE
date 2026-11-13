@@ -7,7 +7,7 @@
  * the caller must say so — a signup is never faked client-side. */
 
 const COMPOSE_API =
-  process.env.NEXT_PUBLIC_COMPOSE_API_URL ?? "http://localhost:8100";
+  process.env.NEXT_PUBLIC_COMPOSE_API_URL ?? "https://uze-compose-api.onrender.com";
 
 export type AlphaLevel = "builder" | "affiliate" | "affiliate_onramped";
 export type AlphaChain = "solana" | "near" | "robinhood" | "ink" | "lightlink";

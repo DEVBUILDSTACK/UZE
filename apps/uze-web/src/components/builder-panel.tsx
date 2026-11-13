@@ -12,7 +12,7 @@ import { useState } from "react";
  *  API is offline the panel says so and still shows the copy,
  *  because the copy is the published onboarding text. */
 const COMPOSE_API =
-  process.env.NEXT_PUBLIC_COMPOSE_API_URL ?? "http://localhost:8100";
+  process.env.NEXT_PUBLIC_COMPOSE_API_URL ?? "https://uze-compose-api.onrender.com";
 
 const WELCOME =
   "Welcome to UZE Builders. Your account is active. Workflows will render Compute Credits when available based on network capacity.";

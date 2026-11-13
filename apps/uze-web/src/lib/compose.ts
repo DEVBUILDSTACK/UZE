@@ -8,7 +8,7 @@
  *  Sprint 2; the agent surface is the interactive one today.
  */
 
-const COMPOSE_API = process.env.COMPOSE_API_URL ?? "http://127.0.0.1:8100";
+const COMPOSE_API = process.env.COMPOSE_API_URL ?? "https://uze-compose-api.onrender.com";
 
 export interface SpecView {
   id: string;
