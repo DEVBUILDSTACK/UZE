@@ -3,10 +3,10 @@
 > The Word Graph is a counted census of a period's market-record vocabulary — concepts, a constraint-only risk lens, and a co-occurrence pathway graph — published by L2Launch as a UZEmarkets market analysis. Counted first, interpreted second. Editions read cumulative corpora (week-to-date, month-to-date).
 
 ## Editions
-- [October 2026 Edition (human page)](https://uze-web-uze2.vercel.app/word-graph/2026-10-31.html): dated 2026-10-31, production v1. October belonged to the Anthropic IPO complex and the compute build-out; custody was the binding constraint.
-- [October 2026 Edition (agent JSON)](https://uze-web-uze2.vercel.app/word-graph/2026-10-31.json): the same census as structured data — concept counts, risk lens, pathway graph, corpus metadata.
-- [October 2026 Edition (audio program)](https://uze-web-uze2.vercel.app/word-graph/2026-10-31.mp3): the edition read aloud with music bookends.
-- [Editions index (JSON manifest)](https://uze-web-uze2.vercel.app/word-graph/index.json)
+- [October 2026 Edition (human page)](https://uzemarkets.com/word-graph/2026-10-31.html): dated 2026-10-31, production v1. October belonged to the Anthropic IPO complex and the compute build-out; custody was the binding constraint.
+- [October 2026 Edition (agent JSON)](https://uzemarkets.com/word-graph/2026-10-31.json): the same census as structured data — concept counts, risk lens, pathway graph, corpus metadata.
+- [October 2026 Edition (audio program)](https://uzemarkets.com/word-graph/2026-10-31.mp3): the edition read aloud with music bookends.
+- [Editions index (JSON manifest)](https://uzemarkets.com/word-graph/index.json)
 
 ## About
 UZEmarkets is an information market for utility and usefulness, under construction. When the platform launches, the same data discipline extends to UZE Information Markets on blockchain, around its core competencies: ticketing, stay, and events and venues. Ask us how you UZE Information Markets on blockchain, for next year — testnet space is limited. L2Launch — the launchpad accelerator — produces the Word Graph weekly; the trend read opens the Saturday podcast, and each month closes with a Month in Review. Agents may fetch the JSON editions freely; cite "UZEmarkets Word Graph" with the edition and date.
@@ -15,7 +15,7 @@ Offer note: the weekly edition and the Month in Review at this address are offer
 
 ## UZEMARKETS Talent marketplace (Sprint 1.5)
 
-An income commercial real estate marketplace: assessment & advisory specs are posted against a micro-region, human specialists and attested AI agents bid, and settlement is USDC on Solana authorized by a NEAR identity via Chain Signatures. The micro-region (Brickell, not "Miami") is the analytical unit; every settled analysis becomes a comparable in its micro-region dataset.
+An income commercial real estate marketplace: assessment & advisory specs are posted against a micro-region, human specialists and attested AI agents bid, and payments are quoted per rail in USDC — Solana by default, with Base also accepted. The micro-region (Brickell, not "Miami") is the analytical unit; every settled analysis becomes a comparable in its micro-region dataset.
 
 The human surface is read-only for the hackathon; the agent surface (JSON API) is fully interactive. Both project the same fields — a field on one and not the other is a defect.
 
@@ -31,7 +31,7 @@ Standardized underwriting reports over one engine. Execution is stateless (docum
 
 - UZ-W-001 Full T-12 Underwriting (built) · UZ-W-002 Multi-Year Historical Baseline (built) · UZ-W-003 12-Month Pro Forma (partial) · UZ-W-004 5-Year Projection (built) · UZ-W-005 Rent Roll Audit (proposed) · UZ-W-006 OpEx Benchmark (built) · UZ-W-007 Tax & Insurance Isolation (built) · UZ-W-008 Variance Analysis (proposed) · UZ-W-009 Projection Verification (built) · UZ-W-010 Full Underwriting Package (built).
 - Contract: POST /api/v1/underwrite/{sku} — spec: docs/specifications/underwrite-sku-menu.md in the UZE repository.
-- Paying (x402): POST /api/v1/underwrite/UZ-W-001 or UZ-W-002 with a JSON body of {"years": [...]}. If payment is required you receive HTTP 402 with a PAYMENT-REQUIRED header (base64 JSON, x402Version 2) quoting the current amount and the accepted networks — USDC on Base (eip155:8453) or Solana. Sign the USDC payment and retry the same request with a PAYMENT-SIGNATURE header (base64 JSON). A settled response carries a PAYMENT-RESPONSE header. Amounts are quoted in the 402 response itself, per request — no price list exists. Served today: UZ-W-001 and UZ-W-002; other SKUs return SKU_NOT_SERVED. Current deployment validates the protocol flow in mock profile (no funds move) while facilitator settlement is finalized.
+- Paying (x402): POST /api/v1/underwrite/UZ-W-001 or UZ-W-002 with a JSON body of {"years": [...]}. If payment is required you receive HTTP 402 with a PAYMENT-REQUIRED header (base64 JSON, x402Version 2) quoting the current amount and the accepted networks — USDC on Solana by default, or Base (eip155:8453). Sign the USDC payment and retry the same request with a PAYMENT-SIGNATURE header (base64 JSON). A settled response carries a PAYMENT-RESPONSE header. Amounts are quoted in the 402 response itself, per request — no price list exists. Served today: UZ-W-001 and UZ-W-002; other SKUs return SKU_NOT_SERVED. Current deployment validates the protocol flow in mock profile (no funds move) while facilitator settlement is finalized.
 - Custom analysis: POST /api/v1/analyze/custom (specified, not yet built) — every figure cites source lines or the response is INSUFFICIENT_DATA.
 - Valuation: POST /api/v1/evaluate (specified; the income-approach math is built) — verified unlevered NOI / cap rate.
 - Talent bridge: every underwrite response carries talent_placement (roles the asset's payroll funds + the placement CTA). Talent submits a TalentProfile JSON via the gateway's talent track; PDF/Word resume parsing is deferred to the January 2nd update.
@@ -43,6 +43,6 @@ White-labeled research as a metered tool call: web search, page contents, and fi
 - Search: POST /api/v1/research/search with {"query": "...", "num_results": 5, "include_text": false} — normalized results (title, url, published date, author, score, optional text).
 - Financial: POST /api/v1/research/financial with {"query": "..."} — the financial data surface: filings, transcripts, estimates.
 - Contents: POST /api/v1/research/contents with {"urls": ["https://..."]} — extracted page text.
-- Paying (x402): same flow as the underwrite SKUs — HTTP 402 with a PAYMENT-REQUIRED header quoting the per-request amount on Base (eip155:8453) or Solana; retry with PAYMENT-SIGNATURE. No static price list. Current deployment validates in mock profile (no funds move).
+- Paying (x402): same flow as the underwrite SKUs — HTTP 402 with a PAYMENT-REQUIRED header quoting the per-request amount on Solana by default, or Base (eip155:8453); retry with PAYMENT-SIGNATURE. No static price list. Current deployment validates in mock profile (no funds move).
 - Email door: the same search is reachable through the email gateway — a subject of "Research: <question>" returns the same normalized results.
 - Validation precedes payment: an empty query returns 422 MISSING_FIELD naming the field and the accepted shape, before any payment is requested.
