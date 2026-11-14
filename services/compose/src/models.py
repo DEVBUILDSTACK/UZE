@@ -62,6 +62,10 @@ def _uuid() -> str:
     return str(uuid.uuid4())
 
 
+def _uwr_id() -> str:
+    return "uwr_" + uuid.uuid4().hex
+
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -2074,6 +2078,136 @@ class AttestationAnchor(Base):
     )
     reason: Mapped[str | None] = mapped_column(
         "reason", String, nullable=True
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+# ---------------------------------------------------------------------------
+# UZE Underwrite reports (2026-11-13 night sprint) — the persisted
+# record of every multiyear / MCP / email-door underwrite run.
+# Strictly additive: three new tables; no existing table is touched.
+#
+# Honesty discipline carried in the schema itself:
+#   - a report's claim fields record what ACTUALLY happened with
+#     claim issuance (ISSUED / NOT_ISSUED / NOT_APPLICABLE +
+#     a plain-language note) — never an aspiration;
+#   - notifications are QUEUED records composed by the service,
+#     never a claim that email was sent;
+#   - the comp pool stores ONLY anonymized per-unit lines keyed
+#     by a hashed contributor reference — no property name, no
+#     raw totals, no sender string is ever written to it.
+# ---------------------------------------------------------------------------
+
+
+class UnderwriteReport(Base):
+    """One persisted UZE Underwrite run, whatever door it came
+    through (multiyear / mcp / email). `requestPayload` is the
+    caller's payload of record (attachment CONTENT is never
+    stored — the email door records only its byte count);
+    `result` is the engine's result dict verbatim; `inputHash`
+    is the sha256 of the payload's canonical JSON, so a receipt
+    can be re-verified against the exact input. `claimId` is a
+    real FK when (and only when) an NOI claim was issued off
+    this report."""
+
+    __tablename__ = "underwrite_report"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uwr_id)
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+    door: Mapped[str] = mapped_column("door", String, nullable=False)
+    sender: Mapped[str | None] = mapped_column("sender", String, nullable=True)
+    subject_profile: Mapped[dict | None] = mapped_column(
+        "subjectProfile", JSON, nullable=True
+    )
+    input_hash: Mapped[str] = mapped_column("inputHash", String, nullable=False)
+    engine_version: Mapped[str] = mapped_column(
+        "engineVersion", String, nullable=False
+    )
+    request_payload: Mapped[dict] = mapped_column(
+        "requestPayload", JSON, nullable=False
+    )
+    result: Mapped[dict] = mapped_column("result", JSON, nullable=False)
+    contribute_comps: Mapped[bool] = mapped_column(
+        "contributeComps", Boolean, nullable=False, default=False
+    )
+    claim_id: Mapped[str | None] = mapped_column(
+        "claimId", String, ForeignKey("claim.id"), nullable=True
+    )
+    claim_status: Mapped[str] = mapped_column(
+        "claimStatus", String, nullable=False, default="PENDING"
+    )
+    claim_note: Mapped[str | None] = mapped_column(
+        "claimNote", String, nullable=True
+    )
+
+
+class ReportNotification(Base):
+    """One composed notification beat for an underwrite report.
+    The service COMPOSES these records (status QUEUED); delivery
+    happens, if at all, on the operator's email rail outside
+    this service. A row here is never evidence an email was
+    sent — its status says exactly what it is."""
+
+    __tablename__ = "report_notification"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    report_id: Mapped[str] = mapped_column(
+        "reportId",
+        String,
+        ForeignKey("underwrite_report.id"),
+        nullable=False,
+        index=True,
+    )
+    beat: Mapped[int] = mapped_column("beat", Integer, nullable=False)
+    recipient: Mapped[str] = mapped_column("recipient", String, nullable=False)
+    subject: Mapped[str] = mapped_column("subject", String, nullable=False)
+    body: Mapped[str] = mapped_column("body", String, nullable=False)
+    status: Mapped[str] = mapped_column(
+        "status", String, nullable=False, default="QUEUED"
+    )
+    created_at: Mapped[int] = mapped_column(
+        "createdAt", BigInteger, nullable=False
+    )
+
+
+class CompPoolEntry(Base):
+    """One anonymized, opt-in contribution to the comp pool:
+    a property's Revenue / Operating-Expenses lines reduced to
+    PER-UNIT figures under their canonical names, keyed by
+    micro-region and normalized profile attributes.
+    `contributorRef` is the sha256 of the contributor's sender
+    identity — the raw identity is never stored. No property
+    name and no raw total appears anywhere in this row."""
+
+    __tablename__ = "comp_pool_entry"
+
+    id: Mapped[str] = mapped_column("id", String, primary_key=True, default=_uuid)
+    micro_region: Mapped[str] = mapped_column(
+        "microRegion", String, nullable=False, index=True
+    )
+    property_type: Mapped[str | None] = mapped_column(
+        "propertyType", String, nullable=True
+    )
+    property_class: Mapped[str | None] = mapped_column(
+        "propertyClass", String, nullable=True
+    )
+    vintage_band: Mapped[str | None] = mapped_column(
+        "vintageBand", String, nullable=True
+    )
+    unit_count: Mapped[int | None] = mapped_column(
+        "unitCount", Integer, nullable=True
+    )
+    period: Mapped[str | None] = mapped_column("period", String, nullable=True)
+    lines: Mapped[dict] = mapped_column("lines", JSON, nullable=False)
+    contributor_ref: Mapped[str] = mapped_column(
+        "contributorRef", String, nullable=False
+    )
+    credit_units: Mapped[int] = mapped_column(
+        "creditUnits", Integer, nullable=False, default=1
     )
     created_at: Mapped[int] = mapped_column(
         "createdAt", BigInteger, nullable=False
