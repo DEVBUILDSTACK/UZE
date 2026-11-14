@@ -11,17 +11,32 @@ The M2M half of the dual-surface architecture (composite directive,
       SURA — the HiCRE agent. Assesses a marketplace spec (Intent)
       from the compose market state.
 
-Both return structured JSON assessments — not chat. Both are gated
-the same way as the metered surface (src/metering.py, Sprint 1.5):
+Both return structured JSON assessments — not chat. Gating
+follows the ENGAGEMENT's tier, not the door (NoGate alignment,
+James's Tier-1 taxonomy, 2026-11-13 — see
+uzem-agentic/TREASURY-ARCHITECTURE.md):
 
-  - x401 identity: an X-IDENTITY header judged by the identity stub
-    verifier. Missing/invalid -> 401. (The stub is swapped for the
-    Assurative trust-layer verification in Sprint 2 — the same swap
-    the metered surface awaits.)
+  - Base builder band (UZEBuilder_NO_Entity): NoGate. Identity
+    is the agent's email address — an X-IDENTITY header carrying
+    the address itself, or a payload whose subject is the
+    address. The credential is the wallet payment signature
+    (here, the mock X-PAYMENT authorization). No attestation,
+    no KYC, no KYB, and no spend cap at this band: how much a
+    base builder spends is their own business. GIRA polygons
+    carry no IntentTier, so the GIRA door is always this band.
+  - Tier C+ engagements (IntentTier C, D, E): the x401
+    attestation payload is additionally required — metering's
+    Gate 2 condition, mirrored exactly. KYC/KYB live at the
+    entity tiers of the taxonomy and are not implemented on
+    these doors.
+  - Missing identity entirely -> 401 naming both lanes: no
+    identity at all is not an identity.
   - x402 metering: an X-PAYMENT header carrying a mock
     authorization. Missing/invalid -> 402 with the x402
-    requirements. The tariff is the Sprint 1.5 mock tariff and no
-    funds move; the call is logged as a mock metering event.
+    requirements. The tariff is the Sprint 1.5 mock tariff — a
+    per-call protocol stub with no cumulative or per-period
+    volume cap — and no funds move; the call is logged as a
+    mock metering event.
 
 Assessments are deterministic and computed from real records —
 partner payloads in the live cache and market state in compose.
@@ -31,6 +46,7 @@ call; see src/inference.py).
 from __future__ import annotations
 
 import copy
+import re
 import time
 from typing import Any
 
@@ -47,27 +63,115 @@ from db import get_session
 router = APIRouter(prefix="/api/v1/agents")
 
 
-def _gate(request: Request, resource: str):
-    """x401 then x402, in that order.
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _identity_requirements() -> dict[str, Any]:
+    """The 401 body for a missing or unusable identity. It
+    states both lanes plainly, because no identity at all is
+    not an identity — and the base builder lane is only an
+    email address (James's Tier-1 taxonomy, 2026-11-13)."""
+    return {
+        "error": "X-IDENTITY header is required (x401)",
+        "mock": True,
+        "identity": {
+            "base_builder": (
+                "Base builder band (UZEBuilder_NO_Entity — "
+                "NoGate): send X-IDENTITY carrying your email "
+                "address; your credential is your wallet "
+                "payment signature (X-PAYMENT). No attestation, "
+                "no KYC, no KYB, and no spend cap at this band."
+            ),
+            "tier_c_plus": (
+                "Engagements at IntentTier C, D or E additionally "
+                "require the attestation payload {subject, "
+                "credentialType, attestation} (x401), as on the "
+                "metered surface."
+            ),
+        },
+    }
+
+
+def _email_subject(header: str, decoded: Any) -> str | None:
+    """The caller's email address when the header carries one —
+    the raw header value itself, or the subject of a decoded
+    payload. Anything else is not an email identity."""
+    raw = header.strip()
+    if _EMAIL_RE.match(raw):
+        return raw
+    if isinstance(decoded, dict):
+        subject = decoded.get("subject")
+        if isinstance(subject, str) and _EMAIL_RE.match(subject.strip()):
+            return subject.strip()
+    return None
+
+
+def _base_builder_identity(email: str) -> dict[str, Any]:
+    """Identity at the base builder band: the email address AS
+    PRESENTED. It is not a verification and never claims to
+    be — `verified` stays False; the credential at this band
+    is the payment signature, judged by the x402 gate below."""
+    return {
+        "subject": email,
+        "lane": "base_builder",
+        "band": "UZEBuilder_NO_Entity",
+        "verified": False,
+        "mock": True,
+    }
+
+
+def _resolve_identity(request: Request, engagement_tier):
+    """Lane-aware x401 (NoGate alignment, James's correction
+    2026-11-13): the gate follows the ENGAGEMENT's tier, not
+    the door — the same condition as metering's Gate 2
+    (`intent.tier in TIER_C_PLUS`).
+
+    Returns (identity, None) or (None, 401 response)."""
+    header = request.headers.get("X-IDENTITY")
+    if not header:
+        return None, JSONResponse(
+            status_code=401, content=_identity_requirements()
+        )
+    decoded = metering._decode_header(header)
+    if engagement_tier in metering.TIER_C_PLUS:
+        ok, identity = metering.verify_identity_payload(decoded)
+        if not ok:
+            return None, JSONResponse(
+                status_code=401,
+                content={
+                    "error": identity.get(
+                        "error", "identity verification failed"
+                    ),
+                    "mock": True,
+                },
+            )
+        return identity, None
+    email = _email_subject(header, decoded)
+    if email is not None:
+        return _base_builder_identity(email), None
+    # Base band, non-email caller: an attestation-shaped payload
+    # still verifies, so pre-alignment callers keep working.
+    ok, identity = metering.verify_identity_payload(decoded)
+    if ok:
+        return identity, None
+    return None, JSONResponse(
+        status_code=401, content=_identity_requirements()
+    )
+
+
+def _gate(request: Request, resource: str, engagement_tier=None):
+    """x401 then x402, in that order. The identity gate is
+    lane-aware (see _resolve_identity); the payment gate is the
+    mock x402 tariff — a per-call protocol stub carrying no
+    cumulative or per-period cap at any band.
 
     Returns (identity, None) when both gates pass, or
     (None, response) with the 401/402 challenge to send back —
-    the 402 body is the x402 requirements document, exactly as the
-    metered surface issues it."""
-    identity_header = request.headers.get("X-IDENTITY")
-    if not identity_header:
-        return None, JSONResponse(
-            status_code=401,
-            content={"error": "X-IDENTITY header is required (x401)", "mock": True},
-        )
-    ok, identity = metering.verify_identity_payload(
-        metering._decode_header(identity_header)
-    )
-    if not ok:
-        return None, JSONResponse(
-            status_code=401,
-            content={"error": identity.get("error", "identity verification failed"), "mock": True},
-        )
+    the 402 body is the x402 requirements document, exactly as
+    the metered surface issues it."""
+    identity, challenge = _resolve_identity(request, engagement_tier)
+    if challenge is not None:
+        return None, challenge
 
     payment_header = request.headers.get("X-PAYMENT")
     if not payment_header:
@@ -198,7 +302,7 @@ async def gira_underwrite(
             "surface": "headless",
             "tracks": ["A", "D", "R"],
             "polygonId": polygon_id,
-            "identity": {"subject": identity.get("subject"), "verified": True, "mock": True},
+            "identity": {"subject": identity.get("subject"), "verified": identity.get("verified", False), "lane": identity.get("lane", "attested"), "mock": True},
             "metering": {"scheme": "mock-exact", "mock": True},
             "treasury": treasury,
             "assessment": assessment,
@@ -260,11 +364,18 @@ async def sura_underwrite(
     spec_id = (body or {}).get("specId")
     if not spec_id:
         raise HTTPException(status_code=422, detail="specId is required")
-    identity, challenge = _gate(request, spec_id)
+    # The identity gate follows the ENGAGEMENT's tier (metering
+    # Gate 2's condition), so the spec is loaded before gating.
+    # The 404 still answers only after the gates, as before.
+    intent = db.get(models.Intent, spec_id)
+    identity, challenge = _gate(
+        request,
+        spec_id,
+        engagement_tier=intent.tier if intent is not None else None,
+    )
     if challenge is not None:
         return challenge
 
-    intent = db.get(models.Intent, spec_id)
     if intent is None:
         raise HTTPException(status_code=404, detail="spec not found")
 
@@ -318,7 +429,7 @@ async def sura_underwrite(
             "surface": "headless",
             "tracks": ["H", "I"],
             "specId": spec_id,
-            "identity": {"subject": identity.get("subject"), "verified": True, "mock": True},
+            "identity": {"subject": identity.get("subject"), "verified": identity.get("verified", False), "lane": identity.get("lane", "attested"), "mock": True},
             "metering": {"scheme": "mock-exact", "mock": True},
             "treasury": treasury,
             "assessment": assessment,

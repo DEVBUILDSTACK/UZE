@@ -24,12 +24,14 @@ payment-required payload as its result content.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
+import metering
 import research
 from db import get_session
 
@@ -93,6 +95,31 @@ TOOL = {
     },
 }
 
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _base_lane_email(request: Request) -> str | None:
+    """Base-builder identity for the underwrite tool (NoGate
+    alignment, James's Tier-1 taxonomy, 2026-11-13): an
+    X-IDENTITY header carrying an email address — the raw
+    address, or the subject of a payload — is the caller's
+    identity at this band. No attestation is requested or
+    required here; the gate's credential is the x402 payment
+    signature, exactly as for UZE_Research_Query."""
+    header = request.headers.get("x-identity")
+    if not header:
+        return None
+    raw = header.strip()
+    if _EMAIL_RE.match(raw):
+        return raw
+    decoded = metering._decode_header(raw)
+    if isinstance(decoded, dict):
+        subject = decoded.get("subject")
+        if isinstance(subject, str) and _EMAIL_RE.match(subject.strip()):
+            return subject.strip()
+    return None
+
+
 UNDERWRITE_TOOL_NAME = "UZE_Underwrite"
 
 UNDERWRITE_TOOL = {
@@ -104,7 +131,11 @@ UNDERWRITE_TOOL = {
         "every call persists a report and returns its "
         "receipt; an NOI Assuratie is issued when the "
         "subject declares a micro-region in the reference "
-        "table."
+        "table. Base builder band (NoGate): identity is "
+        "your email address (sender_email, or an X-IDENTITY "
+        "header carrying it) and the credential is the "
+        "x402 payment signature — no attestation, no "
+        "spend cap at this band."
     ),
     "inputSchema": {
         "type": "object",
@@ -219,6 +250,11 @@ async def mcp_endpoint(
                 -32602,
                 "missing required field: years (non-empty array)",
             )
+        # The shared gate's only credential is the payment
+        # signature — there is no attestation step in it, at
+        # either tool. That IS the base-builder rule (NoGate
+        # alignment, 2026-11-13); the caller's email identity
+        # is resolved below, never gated on.
         auth, error = research._gate(
             request, "/api/v1/mcp", "UZE Underwrite — MCP"
         )
@@ -248,7 +284,8 @@ async def mcp_endpoint(
             "subject_profile": u_args.get("subject_profile"),
             "comps": u_args.get("comps"),
             "comp_threshold_pct": u_args.get("comp_threshold_pct"),
-            "sender_email": u_args.get("sender_email"),
+            "sender_email": u_args.get("sender_email")
+            or _base_lane_email(request),
             "prior_report_id": u_args.get("prior_report_id"),
             "contribute_comps": bool(u_args.get("contribute_comps", False)),
         }
