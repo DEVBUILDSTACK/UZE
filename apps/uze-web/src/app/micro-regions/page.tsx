@@ -25,13 +25,15 @@ export default async function MicroRegionsIndexPage({
   const market = marketSlug ? MARKET_BY_SLUG[marketSlug] : undefined;
 
   const live = await fetchMicroRegions();
-  const all = withPlaceholders(live ?? MICRO_REGIONS_SNAPSHOT);
+  const all = withPlaceholders(
+    live?.length ? live : MICRO_REGIONS_SNAPSHOT,
+  );
   const regions = market
     ? all.filter((r) => market.regionIds.includes(r.id))
     : all;
 
   // ItemList over exactly the rows rendered below — same source,
-  // same filter (live API when reachable, Content Desk snapshot
+  // same filter (live API records when present, Content Desk snapshot
   // otherwise); Place items mirror the /micro-regions/[id] JSON-LD.
   const base = ENV.baseUrl.replace(/\/$/, "");
   const jsonLd = {

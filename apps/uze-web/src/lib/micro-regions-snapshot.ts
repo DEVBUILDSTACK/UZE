@@ -1,9 +1,10 @@
 /**
  * Content Desk snapshot — the micro-region index, details and pulses
  * exactly as served by the composition API (demo dataset), captured
- * 2026-11-13. Served ONLY when the live composition API is
- * unreachable (e.g. a deployment without COMPOSE_API_URL configured);
- * the moment the API answers, live records replace this snapshot.
+ * 2026-11-13. Served ONLY when the live composition API has no
+ * records to serve — unreachable, unconfigured, or answering with an
+ * empty dataset (its database not yet seeded); the moment live
+ * records exist, they replace this snapshot.
  * Regenerate by re-capturing GET /api/v1/micro-regions (+ /{id} and
  * /{id}/pulse per region) from a running compose service.
  */

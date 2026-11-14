@@ -5,6 +5,10 @@ import {
   humanize,
 } from "@/lib/compose";
 import { ENV } from "@/lib/env";
+import {
+  MICRO_REGION_DETAILS_SNAPSHOT,
+  MICRO_REGIONS_SNAPSHOT,
+} from "@/lib/micro-regions-snapshot";
 
 export const metadata: Metadata = {
   title: "Specs | UZEmarkets",
@@ -15,9 +19,15 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SpecsIndexPage() {
-  const regions = (await fetchMicroRegions()) ?? [];
+  const liveRegions = await fetchMicroRegions();
+  const snapshotMode = !liveRegions?.length;
+  const regions = snapshotMode ? MICRO_REGIONS_SNAPSHOT : liveRegions;
   const details = await Promise.all(
-    regions.map((r) => fetchMicroRegion(r.id)),
+    regions.map(
+      async (r) =>
+        (await fetchMicroRegion(r.id)) ??
+        (snapshotMode ? MICRO_REGION_DETAILS_SNAPSHOT[r.id] ?? null : null),
+    ),
   );
   const specs = details.flatMap((d) => d?.specs ?? []);
 
