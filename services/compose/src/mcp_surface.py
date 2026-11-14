@@ -1,10 +1,12 @@
 """MCP surface for UZE Research (hardening build, 2026-11-13).
 
 POST /api/v1/mcp — a minimal MCP (JSON-RPC 2.0) surface
-exposing exactly one tool, UZE_Research_Query, delegating
+exposing UZE_Research_Query, delegating
 to research._execute so the MCP door shares the API door's
 provider functions, x402 gate, run contract, and event log
-(door="mcp"). Supported methods: initialize, ping,
+(door="mcp"). A second tool, UZE_Underwrite, exposes the
+persisted multi-year underwrite (underwrite_reports) through
+the same x402 gate. Supported methods: initialize, ping,
 tools/list, tools/call. Notifications (no id) are accepted
 and answered with an empty 202.
 
@@ -91,6 +93,56 @@ TOOL = {
     },
 }
 
+UNDERWRITE_TOOL_NAME = "UZE_Underwrite"
+
+UNDERWRITE_TOOL = {
+    "name": UNDERWRITE_TOOL_NAME,
+    "description": (
+        "UZE Underwrite — multi-year T-12 analysis through "
+        "the seven-bucket chart of accounts, per-unit comp "
+        "benchmarking, findings and a value-creation plan; "
+        "every call persists a report and returns its "
+        "receipt; an NOI Assuratie is issued when the "
+        "subject declares a micro-region in the reference "
+        "table."
+    ),
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "years": {
+                "type": "array",
+                "items": {"type": "object"},
+                "minItems": 1,
+            },
+            "context": {"type": "object"},
+            "subject_profile": {"type": "object"},
+            "comps": {"type": "array"},
+            "comp_threshold_pct": {"type": "number"},
+            "sender_email": {"type": "string"},
+            "prior_report_id": {"type": "string"},
+            "contribute_comps": {"type": "boolean", "default": False},
+        },
+        "required": ["years"],
+    },
+    "outputSchema": {
+        "type": "object",
+        "properties": {
+            "receipt": {"type": "object"},
+            "summary": {"type": "object"},
+        },
+        "required": ["receipt", "summary"],
+    },
+    "_meta": {
+        "tier_gate": "Tier 1",
+        "surface": "agentic",
+        "permitted_rails": ["Base", "Solana"],
+        "pricing_rule": (
+            "quoted per request in the x402 payment-required "
+            "response; no static price is posted"
+        ),
+    },
+}
+
 
 def _rpc_result(req_id: Any, result: dict[str, Any]) -> JSONResponse:
     return JSONResponse(
@@ -150,11 +202,95 @@ async def mcp_endpoint(
     if method == "ping":
         return _rpc_result(req_id, {})
     if method == "tools/list":
-        return _rpc_result(req_id, {"tools": [TOOL]})
+        return _rpc_result(req_id, {"tools": [TOOL, UNDERWRITE_TOOL]})
     if method != "tools/call":
         return _rpc_error(req_id, -32601, f"method not supported: {method}")
 
     params = rpc.get("params") or {}
+    if params.get("name") == UNDERWRITE_TOOL_NAME:
+        # UZE_Underwrite branch: validation precedes the
+        # gate, exactly as the research branch validates
+        # its query before gating.
+        u_args = params.get("arguments") or {}
+        u_years = u_args.get("years")
+        if not isinstance(u_years, list) or not u_years:
+            return _rpc_error(
+                req_id,
+                -32602,
+                "missing required field: years (non-empty array)",
+            )
+        auth, error = research._gate(
+            request, "/api/v1/mcp", "UZE Underwrite — MCP"
+        )
+        if error is not None:
+            # Same in-band shape as the research branch:
+            # the gate's answer becomes the tool result
+            # content so the calling agent sees the quote.
+            payload = json.loads(error.body)
+            return _rpc_result(
+                req_id,
+                {
+                    "content": [
+                        {"type": "text", "text": json.dumps(payload)}
+                    ],
+                    "isError": False,
+                    "_meta": {
+                        "http_status": error.status_code,
+                        "payment_required": error.status_code == 402,
+                    },
+                },
+            )
+        import underwrite_reports
+
+        u_payload = {
+            "years": u_years,
+            "context": u_args.get("context"),
+            "subject_profile": u_args.get("subject_profile"),
+            "comps": u_args.get("comps"),
+            "comp_threshold_pct": u_args.get("comp_threshold_pct"),
+            "sender_email": u_args.get("sender_email"),
+            "prior_report_id": u_args.get("prior_report_id"),
+            "contribute_comps": bool(u_args.get("contribute_comps", False)),
+        }
+        result = underwrite_reports.run_multiyear_ingest(
+            session, u_payload, door=underwrite_reports.DOOR_MCP
+        )
+        receipt = result["receipt"]
+        findings = (result.get("comp_benchmark") or {}).get(
+            "findings", []
+        )
+        top_findings = [
+            {
+                "line": f.get("line"),
+                "classification": f.get("classification"),
+                "annualized_impact_usd": f.get("annualized_impact_usd"),
+            }
+            for f in sorted(
+                findings,
+                key=lambda f: abs(f.get("annualized_impact_usd") or 0),
+                reverse=True,
+            )[:3]
+        ]
+        summary = {
+            "periods": [
+                {"period": p["period"], "noi": p["noi"]}
+                for p in result["periods"]
+            ],
+            "top_findings": top_findings,
+            "claim_id": receipt["claim_id"],
+            "delta_status": (result.get("delta") or {}).get("status"),
+        }
+        structured = {"receipt": receipt, "summary": summary}
+        return _rpc_result(
+            req_id,
+            {
+                "content": [
+                    {"type": "text", "text": json.dumps(structured)}
+                ],
+                "structuredContent": structured,
+                "isError": False,
+            },
+        )
     if params.get("name") != TOOL_NAME:
         return _rpc_error(
             req_id, -32602, f"unknown tool: {params.get('name')}"

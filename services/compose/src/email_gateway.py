@@ -640,22 +640,37 @@ class MultiYearIngest(BaseModel):
     subject_profile: dict | None = None
     comps: list[dict] | None = None
     comp_threshold_pct: float | None = None
+    # Optional report-persistence inputs (2026-11-13):
+    # the sender to notify, a prior report to delta
+    # against, and whether the supplied comps may be
+    # contributed to the shared pool. Declared, never
+    # inferred.
+    sender_email: str | None = None
+    prior_report_id: str | None = None
+    contribute_comps: bool = False
 
 
 @router.post("/multiyear")
 def ingest_multiyear(payload: MultiYearIngest):
     if not payload.years:
         raise HTTPException(status_code=422, detail="at least one year is required")
+    # Function-level import (the codebase's way): the
+    # reports module imports this module for
+    # analyze_multiyear / render_multiyear_pdf, so a
+    # top-level import here would be a cycle.
+    import underwrite_reports
+
+    _session = db.session()
     try:
-        result = analyze_multiyear(
-            payload.years,
-            payload.context,
-            subject_profile=payload.subject_profile,
-            comps=payload.comps,
-            comp_threshold_pct=payload.comp_threshold_pct,
+        result = underwrite_reports.run_multiyear_ingest(
+            _session,
+            payload.model_dump(),
+            door=underwrite_reports.DOOR_MULTIYEAR,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        _session.close()
     return JSONResponse(content=result)
 
 
@@ -825,4 +840,23 @@ def ingest_email(payload: EmailIngest):
     }
     if cross_sell:
         response["crossSell"] = cross_sell
+    # Persistence (2026-11-13): the SURA assessment success
+    # path — and only this path — persists an email-door
+    # report and queues its notification beats. A failure
+    # here is loud by design: it propagates, never swallowed.
+    import underwrite_reports
+
+    _usession = db.session()
+    try:
+        _outcome = underwrite_reports.persist_email_report(
+            _usession,
+            sender=payload.sender,
+            subject=payload.subject,
+            response=response,
+            attachment_bytes=len(_raw),
+        )
+    finally:
+        _usession.close()
+    response["receipt"] = _outcome["receipt"]
+    response["notification_beat1"] = _outcome["notification_beat1"]
     return response

@@ -34,7 +34,10 @@ def test_initialize_and_tools_list_manifest(client, monkeypatch):
 
     r = _rpc(client, "tools/list")
     tools = r.json()["result"]["tools"]
-    assert len(tools) == 1
+    # Two tools since the 2026-11-13 night sprint added
+    # UZE_Underwrite beside UZE_Research_Query (its own manifest
+    # is pinned in test_mcp_underwrite.py).
+    assert len(tools) == 2
     tool = tools[0]
     assert tool["name"] == "UZE_Research_Query"
     assert tool["inputSchema"]["required"] == ["query"]

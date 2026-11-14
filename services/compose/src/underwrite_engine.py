@@ -59,11 +59,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel
 
 import chart_of_accounts as coa
 import comp_benchmark
+import underwrite_reports
+from db import get_session
 from email_gateway import analyze_multiyear
 
 router = APIRouter(prefix="/api/v1/underwrite", tags=["underwrite-engine"])
@@ -374,6 +377,50 @@ def anrd_valuation(body: AnrdValuationIn):
         acres=body.acres,
         price_per_acre=body.price_per_acre,
     )
+
+
+@router.get("/reports/{report_id}")
+def get_underwrite_report(report_id: str, session=Depends(get_session)):
+    report = underwrite_reports.get_report(session, report_id)
+    if report is None:
+        raise HTTPException(
+            status_code=404,
+            detail="REPORT_NOT_FOUND: no underwrite report with this id",
+        )
+    return underwrite_reports.report_view(session, report)
+
+
+@router.get("/reports/{report_id}/pdf")
+def get_underwrite_report_pdf(report_id: str, session=Depends(get_session)):
+    report = underwrite_reports.get_report(session, report_id)
+    if report is None:
+        raise HTTPException(
+            status_code=404,
+            detail="REPORT_NOT_FOUND: no underwrite report with this id",
+        )
+    try:
+        pdf_bytes = underwrite_reports.render_report_pdf(session, report)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return Response(content=pdf_bytes, media_type="application/pdf")
+
+
+@router.get("/reports/{report_id}/notifications")
+def get_underwrite_report_notifications(
+    report_id: str, session=Depends(get_session)
+):
+    report = underwrite_reports.get_report(session, report_id)
+    if report is None:
+        raise HTTPException(
+            status_code=404,
+            detail="REPORT_NOT_FOUND: no underwrite report with this id",
+        )
+    return {
+        "report_id": report_id,
+        "notifications": underwrite_reports.list_notifications(
+            session, report_id
+        ),
+    }
 
 
 @router.post("/comp-benchmark")
