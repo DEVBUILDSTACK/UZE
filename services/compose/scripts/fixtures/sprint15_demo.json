@@ -284,6 +284,180 @@
       "label": "Key West",
       "metro": "Florida Keys",
       "region": "FL"
+    },
+    {
+      "id": "orlando-downtown",
+      "label": "Orlando — Downtown",
+      "metro": "Orlando",
+      "region": "FL"
+    },
+    {
+      "id": "ocala-fl",
+      "label": "Ocala",
+      "metro": "Ocala",
+      "region": "FL"
+    },
+    {
+      "id": "gainesville-fl",
+      "label": "Gainesville",
+      "metro": "Gainesville",
+      "region": "FL"
+    },
+    {
+      "id": "lakeland-fl",
+      "label": "Lakeland",
+      "metro": "Lakeland",
+      "region": "FL"
+    },
+    {
+      "id": "st-petersburg",
+      "label": "St. Petersburg",
+      "metro": "Tampa",
+      "region": "FL"
+    },
+    {
+      "id": "clearwater",
+      "label": "Clearwater — Clearwater Beach",
+      "metro": "Tampa",
+      "region": "FL"
+    },
+    {
+      "id": "bradenton",
+      "label": "Bradenton — Anna Maria",
+      "metro": "Sarasota",
+      "region": "FL"
+    },
+    {
+      "id": "sarasota",
+      "label": "Sarasota",
+      "metro": "Sarasota",
+      "region": "FL"
+    },
+    {
+      "id": "fort-myers",
+      "label": "Fort Myers — Sanibel & Captiva",
+      "metro": "Fort Myers",
+      "region": "FL"
+    },
+    {
+      "id": "naples-fl",
+      "label": "Naples",
+      "metro": "Naples",
+      "region": "FL"
+    },
+    {
+      "id": "marco-island",
+      "label": "Marco Island",
+      "metro": "Naples",
+      "region": "FL"
+    },
+    {
+      "id": "crystal-city",
+      "label": "Arlington — Crystal City & Pentagon City",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "falls-church",
+      "label": "Falls Church",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "fairfax",
+      "label": "Fairfax — Merrifield",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "reston-herndon",
+      "label": "Reston — Herndon",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "loudoun-ashburn",
+      "label": "Loudoun — Ashburn & Leesburg",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "manassas",
+      "label": "Manassas",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "fredericksburg",
+      "label": "Fredericksburg",
+      "metro": "Washington DC",
+      "region": "VA"
+    },
+    {
+      "id": "gaithersburg",
+      "label": "Gaithersburg",
+      "metro": "Washington DC",
+      "region": "MD"
+    },
+    {
+      "id": "college-park",
+      "label": "College Park — Greenbelt",
+      "metro": "Washington DC",
+      "region": "MD"
+    },
+    {
+      "id": "southern-maryland",
+      "label": "Southern Maryland — Waldorf & Lexington Park",
+      "metro": "Southern Maryland",
+      "region": "MD"
+    },
+    {
+      "id": "bel-air-aberdeen",
+      "label": "Bel Air — Aberdeen",
+      "metro": "Baltimore",
+      "region": "MD"
+    },
+    {
+      "id": "frederick",
+      "label": "Frederick",
+      "metro": "Frederick",
+      "region": "MD"
+    },
+    {
+      "id": "hagerstown",
+      "label": "Hagerstown",
+      "metro": "Hagerstown",
+      "region": "MD"
+    },
+    {
+      "id": "easton-md",
+      "label": "Easton — St. Michaels",
+      "metro": "Eastern Shore",
+      "region": "MD"
+    },
+    {
+      "id": "salisbury-md",
+      "label": "Salisbury",
+      "metro": "Eastern Shore",
+      "region": "MD"
+    },
+    {
+      "id": "ocean-city-md",
+      "label": "Ocean City",
+      "metro": "Eastern Shore",
+      "region": "MD"
+    },
+    {
+      "id": "cumberland-md",
+      "label": "Cumberland",
+      "metro": "Western Maryland",
+      "region": "MD"
+    },
+    {
+      "id": "deep-creek-lake",
+      "label": "Deep Creek Lake — Garrett County",
+      "metro": "Western Maryland",
+      "region": "MD"
     }
   ],
   "spec": {

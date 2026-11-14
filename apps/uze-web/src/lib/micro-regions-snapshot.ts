@@ -64,6 +64,14 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "bel-air-aberdeen",
+    "label": "Bel Air — Aberdeen",
+    "metro": "Baltimore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "bethesda-cbd",
     "label": "Bethesda CBD",
     "metro": "Washington DC",
@@ -80,6 +88,14 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "bradenton",
+    "label": "Bradenton — Anna Maria",
+    "metro": "Sarasota",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "bwi-linthicum",
     "label": "BWI — Linthicum",
     "metro": "Baltimore",
@@ -88,10 +104,26 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "clearwater",
+    "label": "Clearwater — Clearwater Beach",
+    "metro": "Tampa",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "coconut-grove",
     "label": "Miami — Coconut Grove",
     "metro": "Miami",
     "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "college-park",
+    "label": "College Park — Greenbelt",
+    "metro": "Washington DC",
+    "region": "MD",
     "specCount": 0,
     "comparableCount": 0
   },
@@ -108,6 +140,22 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "label": "Coral Gables",
     "metro": "Miami",
     "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "crystal-city",
+    "label": "Arlington — Crystal City & Pentagon City",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "cumberland-md",
+    "label": "Cumberland",
+    "metro": "Western Maryland",
+    "region": "MD",
     "specCount": 0,
     "comparableCount": 0
   },
@@ -144,6 +192,14 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "deep-creek-lake",
+    "label": "Deep Creek Lake — Garrett County",
+    "metro": "Western Maryland",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "delray-beach",
     "label": "Delray Beach",
     "metro": "Boca Raton",
@@ -160,10 +216,82 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "easton-md",
+    "label": "Easton — St. Michaels",
+    "metro": "Eastern Shore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "fairfax",
+    "label": "Fairfax — Merrifield",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "falls-church",
+    "label": "Falls Church",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "fort-lauderdale",
     "label": "Fort Lauderdale",
     "metro": "Fort Lauderdale",
     "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "fort-myers",
+    "label": "Fort Myers — Sanibel & Captiva",
+    "metro": "Fort Myers",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "frederick",
+    "label": "Frederick",
+    "metro": "Frederick",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "fredericksburg",
+    "label": "Fredericksburg",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "gainesville-fl",
+    "label": "Gainesville",
+    "metro": "Gainesville",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "gaithersburg",
+    "label": "Gaithersburg",
+    "metro": "Washington DC",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "hagerstown",
+    "label": "Hagerstown",
+    "metro": "Hagerstown",
+    "region": "MD",
     "specCount": 0,
     "comparableCount": 0
   },
@@ -216,9 +344,41 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "lakeland-fl",
+    "label": "Lakeland",
+    "metro": "Lakeland",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "loudoun-ashburn",
+    "label": "Loudoun — Ashburn & Leesburg",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "manassas",
+    "label": "Manassas",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "marathon-fl",
     "label": "Marathon",
     "metro": "Florida Keys",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "marco-island",
+    "label": "Marco Island",
+    "metro": "Naples",
     "region": "FL",
     "specCount": 0,
     "comparableCount": 0
@@ -256,10 +416,42 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "naples-fl",
+    "label": "Naples",
+    "metro": "Naples",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "national-harbor",
     "label": "National Harbor",
     "metro": "Washington DC",
     "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "ocala-fl",
+    "label": "Ocala",
+    "metro": "Ocala",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "ocean-city-md",
+    "label": "Ocean City",
+    "metro": "Eastern Shore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "orlando-downtown",
+    "label": "Orlando — Downtown",
+    "metro": "Orlando",
+    "region": "FL",
     "specCount": 0,
     "comparableCount": 0
   },
@@ -296,6 +488,14 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "reston-herndon",
+    "label": "Reston — Herndon",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "rockville",
     "label": "Rockville",
     "metro": "Washington DC",
@@ -304,10 +504,42 @@ export const MICRO_REGIONS_SNAPSHOT: MicroRegionView[] = [
     "comparableCount": 0
   },
   {
+    "id": "salisbury-md",
+    "label": "Salisbury",
+    "metro": "Eastern Shore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "sarasota",
+    "label": "Sarasota",
+    "metro": "Sarasota",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
     "id": "silver-spring",
     "label": "Silver Spring",
     "metro": "Washington DC",
     "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "southern-maryland",
+    "label": "Southern Maryland — Waldorf & Lexington Park",
+    "metro": "Southern Maryland",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0
+  },
+  {
+    "id": "st-petersburg",
+    "label": "St. Petersburg",
+    "metro": "Tampa",
+    "region": "FL",
     "specCount": 0,
     "comparableCount": 0
   },
@@ -419,6 +651,15 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "bel-air-aberdeen": {
+    "id": "bel-air-aberdeen",
+    "label": "Bel Air — Aberdeen",
+    "metro": "Baltimore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "bethesda-cbd": {
     "id": "bethesda-cbd",
     "label": "Bethesda CBD",
@@ -437,6 +678,15 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "bradenton": {
+    "id": "bradenton",
+    "label": "Bradenton — Anna Maria",
+    "metro": "Sarasota",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "bwi-linthicum": {
     "id": "bwi-linthicum",
     "label": "BWI — Linthicum",
@@ -446,11 +696,29 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "clearwater": {
+    "id": "clearwater",
+    "label": "Clearwater — Clearwater Beach",
+    "metro": "Tampa",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "coconut-grove": {
     "id": "coconut-grove",
     "label": "Miami — Coconut Grove",
     "metro": "Miami",
     "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "college-park": {
+    "id": "college-park",
+    "label": "College Park — Greenbelt",
+    "metro": "Washington DC",
+    "region": "MD",
     "specCount": 0,
     "comparableCount": 0,
     "specs": []
@@ -469,6 +737,24 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "label": "Coral Gables",
     "metro": "Miami",
     "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "crystal-city": {
+    "id": "crystal-city",
+    "label": "Arlington — Crystal City & Pentagon City",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "cumberland-md": {
+    "id": "cumberland-md",
+    "label": "Cumberland",
+    "metro": "Western Maryland",
+    "region": "MD",
     "specCount": 0,
     "comparableCount": 0,
     "specs": []
@@ -509,6 +795,15 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "deep-creek-lake": {
+    "id": "deep-creek-lake",
+    "label": "Deep Creek Lake — Garrett County",
+    "metro": "Western Maryland",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "delray-beach": {
     "id": "delray-beach",
     "label": "Delray Beach",
@@ -527,11 +822,92 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "easton-md": {
+    "id": "easton-md",
+    "label": "Easton — St. Michaels",
+    "metro": "Eastern Shore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "fairfax": {
+    "id": "fairfax",
+    "label": "Fairfax — Merrifield",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "falls-church": {
+    "id": "falls-church",
+    "label": "Falls Church",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "fort-lauderdale": {
     "id": "fort-lauderdale",
     "label": "Fort Lauderdale",
     "metro": "Fort Lauderdale",
     "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "fort-myers": {
+    "id": "fort-myers",
+    "label": "Fort Myers — Sanibel & Captiva",
+    "metro": "Fort Myers",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "frederick": {
+    "id": "frederick",
+    "label": "Frederick",
+    "metro": "Frederick",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "fredericksburg": {
+    "id": "fredericksburg",
+    "label": "Fredericksburg",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "gainesville-fl": {
+    "id": "gainesville-fl",
+    "label": "Gainesville",
+    "metro": "Gainesville",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "gaithersburg": {
+    "id": "gaithersburg",
+    "label": "Gaithersburg",
+    "metro": "Washington DC",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "hagerstown": {
+    "id": "hagerstown",
+    "label": "Hagerstown",
+    "metro": "Hagerstown",
+    "region": "MD",
     "specCount": 0,
     "comparableCount": 0,
     "specs": []
@@ -590,10 +966,46 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "lakeland-fl": {
+    "id": "lakeland-fl",
+    "label": "Lakeland",
+    "metro": "Lakeland",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "loudoun-ashburn": {
+    "id": "loudoun-ashburn",
+    "label": "Loudoun — Ashburn & Leesburg",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "manassas": {
+    "id": "manassas",
+    "label": "Manassas",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "marathon-fl": {
     "id": "marathon-fl",
     "label": "Marathon",
     "metro": "Florida Keys",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "marco-island": {
+    "id": "marco-island",
+    "label": "Marco Island",
+    "metro": "Naples",
     "region": "FL",
     "specCount": 0,
     "comparableCount": 0,
@@ -626,7 +1038,7 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": [
       {
-        "id": "6fd3cfd7-97d2-4f6d-a20b-a4005fcda73d",
+        "id": "294a72fe-1899-4e89-806a-33166ba9f39a",
         "kind": "demand",
         "posterKind": "human",
         "posterAccount": "syndicate.acme.testnet",
@@ -680,11 +1092,47 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "naples-fl": {
+    "id": "naples-fl",
+    "label": "Naples",
+    "metro": "Naples",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "national-harbor": {
     "id": "national-harbor",
     "label": "National Harbor",
     "metro": "Washington DC",
     "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "ocala-fl": {
+    "id": "ocala-fl",
+    "label": "Ocala",
+    "metro": "Ocala",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "ocean-city-md": {
+    "id": "ocean-city-md",
+    "label": "Ocean City",
+    "metro": "Eastern Shore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "orlando-downtown": {
+    "id": "orlando-downtown",
+    "label": "Orlando — Downtown",
+    "metro": "Orlando",
+    "region": "FL",
     "specCount": 0,
     "comparableCount": 0,
     "specs": []
@@ -725,6 +1173,15 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "reston-herndon": {
+    "id": "reston-herndon",
+    "label": "Reston — Herndon",
+    "metro": "Washington DC",
+    "region": "VA",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "rockville": {
     "id": "rockville",
     "label": "Rockville",
@@ -734,11 +1191,47 @@ export const MICRO_REGION_DETAILS_SNAPSHOT: Record<
     "comparableCount": 0,
     "specs": []
   },
+  "salisbury-md": {
+    "id": "salisbury-md",
+    "label": "Salisbury",
+    "metro": "Eastern Shore",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "sarasota": {
+    "id": "sarasota",
+    "label": "Sarasota",
+    "metro": "Sarasota",
+    "region": "FL",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
   "silver-spring": {
     "id": "silver-spring",
     "label": "Silver Spring",
     "metro": "Washington DC",
     "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "southern-maryland": {
+    "id": "southern-maryland",
+    "label": "Southern Maryland — Waldorf & Lexington Park",
+    "metro": "Southern Maryland",
+    "region": "MD",
+    "specCount": 0,
+    "comparableCount": 0,
+    "specs": []
+  },
+  "st-petersburg": {
+    "id": "st-petersburg",
+    "label": "St. Petersburg",
+    "metro": "Tampa",
+    "region": "FL",
     "specCount": 0,
     "comparableCount": 0,
     "specs": []
@@ -878,6 +1371,19 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "bel-air-aberdeen": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Bel Air — Aberdeen Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "bethesda-cbd": {
     "@context": "https://schema.org",
     "@type": "Dataset",
@@ -904,6 +1410,19 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "bradenton": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Bradenton — Anna Maria Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "bwi-linthicum": {
     "@context": "https://schema.org",
     "@type": "Dataset",
@@ -917,10 +1436,36 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "clearwater": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Clearwater — Clearwater Beach Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "coconut-grove": {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Miami — Coconut Grove Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "college-park": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "College Park — Greenbelt Pulse",
     "temporalCoverage": null,
     "variableMeasured": {
       "spec_count": 0,
@@ -947,6 +1492,32 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Coral Gables Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "crystal-city": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Arlington — Crystal City & Pentagon City Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "cumberland-md": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Cumberland Pulse",
     "temporalCoverage": null,
     "variableMeasured": {
       "spec_count": 0,
@@ -1008,6 +1579,19 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "deep-creek-lake": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Deep Creek Lake — Garrett County Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "delray-beach": {
     "@context": "https://schema.org",
     "@type": "Dataset",
@@ -1034,10 +1618,127 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "easton-md": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Easton — St. Michaels Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "fairfax": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Fairfax — Merrifield Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "falls-church": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Falls Church Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "fort-lauderdale": {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Fort Lauderdale Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "fort-myers": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Fort Myers — Sanibel & Captiva Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "frederick": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Frederick Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "fredericksburg": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Fredericksburg Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "gainesville-fl": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Gainesville Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "gaithersburg": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Gaithersburg Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "hagerstown": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Hagerstown Pulse",
     "temporalCoverage": null,
     "variableMeasured": {
       "spec_count": 0,
@@ -1125,10 +1826,62 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "lakeland-fl": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Lakeland Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "loudoun-ashburn": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Loudoun — Ashburn & Leesburg Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "manassas": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Manassas Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "marathon-fl": {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Marathon Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "marco-island": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Marco Island Pulse",
     "temporalCoverage": null,
     "variableMeasured": {
       "spec_count": 0,
@@ -1190,10 +1943,62 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "naples-fl": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Naples Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "national-harbor": {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "National Harbor Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "ocala-fl": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Ocala Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "ocean-city-md": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Ocean City Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "orlando-downtown": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Orlando — Downtown Pulse",
     "temporalCoverage": null,
     "variableMeasured": {
       "spec_count": 0,
@@ -1255,6 +2060,19 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "reston-herndon": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Reston — Herndon Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "rockville": {
     "@context": "https://schema.org",
     "@type": "Dataset",
@@ -1268,10 +2086,62 @@ export const MICRO_REGION_PULSES_SNAPSHOT: Record<string, PulseView> = {
     "pulse_data": null,
     "agent_action": "POST /api/v1/specs to initiate underwriting"
   },
+  "salisbury-md": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Salisbury Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "sarasota": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Sarasota Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
   "silver-spring": {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Silver Spring Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "southern-maryland": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Southern Maryland — Waldorf & Lexington Park Pulse",
+    "temporalCoverage": null,
+    "variableMeasured": {
+      "spec_count": 0,
+      "comparable_count": 0,
+      "settled_volume_usdc": 0
+    },
+    "pulse_data": null,
+    "agent_action": "POST /api/v1/specs to initiate underwriting"
+  },
+  "st-petersburg": {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "St. Petersburg Pulse",
     "temporalCoverage": null,
     "variableMeasured": {
       "spec_count": 0,
