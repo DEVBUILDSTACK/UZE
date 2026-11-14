@@ -14,7 +14,7 @@ export const metadata = {
     siteName: "UZEmarkets",
     title: "UZEmarkets — Information Markets",
     description:
-      "Test and use Hospitality, Income, Agriculture, Development and Resource in one information market.",
+      "Prove your property's P&L. Get financed faster. Revenue, expenses and net income — verified by AI, challenged on evidence, trusted by lenders.",
     images: [
       {
         url: "/og-uzemarkets.png",
@@ -28,7 +28,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "UZEmarkets — Information Markets",
     description:
-      "Test and use Hospitality, Income, Agriculture, Development and Resource in one information market.",
+      "Prove your property's P&L. Get financed faster. Revenue, expenses and net income — verified by AI, challenged on evidence, trusted by lenders.",
     images: ["/og-uzemarkets.png"],
   },
 };
