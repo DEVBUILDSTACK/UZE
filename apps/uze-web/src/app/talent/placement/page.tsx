@@ -27,7 +27,7 @@ const PAGE_JSON_LD = {
       serviceType:
         "Talent placement for hospitality and income commercial real estate",
       description:
-        "The UZE Underwrite report reads an asset's payroll lines and identifies the operational roles the property already pays for; Talent Placement sources vetted people for flagged roles, matched against the payroll budget the underwrite calculated. Talent submits a TalentProfile as JSON through the underwriting gateway; matching in the current demonstration is run by the placement team.",
+        "The UZE Underwrite report reads an asset's payroll lines and identifies the operational roles the property already pays for; Talent Placement sources vetted people for flagged roles, matched against the payroll budget the underwriting calculated. Talent submits a TalentProfile as JSON through the underwriting gateway; matching in the current demonstration is run by the placement team.",
       url: "https://uzemarkets.com/talent/placement",
       provider: { "@type": "Organization", name: "UZEmarkets" },
     },
@@ -57,7 +57,7 @@ export default function TalentPlacementPage() {
       <h1>Talent Placement</h1>
       <p className="lede">
         <strong>
-          The underwrite names the role. Placement fills it.
+          The underwriting names the role. Placement fills it.
         </strong>
       </p>
       <p>
@@ -66,7 +66,7 @@ export default function TalentPlacementPage() {
         property already pays for — property manager,
         maintenance, leasing, security. When a report flags a
         role, this desk sources a vetted person for it, matched
-        against the payroll budget the underwrite calculated.
+        against the payroll budget the underwriting calculated.
       </p>
 
       <section>
