@@ -364,6 +364,7 @@ export default function BrokeragePanel() {
             {(s.uze_crypto_route.venues as string[]).join(" + ")} —{" "}
             {s.uze_crypto_route.chain as string}.{" "}
             {s.uze_crypto_route.extension as string}{" "}
+            <strong>{s.uze_crypto_route.eligibility as string}</strong>{" "}
             {s.uze_crypto_route.risk as string}
           </p>
         </div>
@@ -418,10 +419,11 @@ export default function BrokeragePanel() {
         <div className="card">
           <h3>This door — brokerage model</h3>
           <p>
-            TradFi (stocks and ETFs) inside a brokerage account, held
-            in brokerage custody. The agent reads everything and
-            trades only in the dedicated MCP account, behind a review
-            step.
+            All available assets at the brokerage — long equities,
+            options, and crypto — inside a brokerage account, held in
+            brokerage custody. The agent reads everything and trades
+            only in the dedicated MCP account, behind a review step.
+            (This demo simulates equities.)
           </p>
         </div>
         <div className="card">
@@ -429,6 +431,7 @@ export default function BrokeragePanel() {
           <p>
             {custodyRoute?.differentiation as string}{" "}
             {custodyRoute?.extension as string}{" "}
+            <strong>{custodyRoute?.eligibility as string}</strong>{" "}
             {custodyRoute?.risk as string}
           </p>
         </div>

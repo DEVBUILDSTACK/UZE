@@ -73,6 +73,8 @@ def test_connect_payload_carries_the_rules():
     assert "Claude" in body["supported_clients"]
     assert "dedicated" in body["dedicated_account_rule"].lower()
     assert "loss of the entire amount invested" in body["disclosure"]
+    assert "more than 5 consecutive years" in body["disclosure"]
+    assert "more than 5 consecutive years" in body["self_custody_eligibility"]
 
 
 def test_connect_payload_carries_the_trading_segmentation():
@@ -249,6 +251,11 @@ def test_self_custody_route_and_pairings_board():
     assert is_error is False
     assert structured["custody"] == "permissionless_self_custody"
     assert set(structured["venues"]) == {"TradeLayer", "SigLayer"}
+    # Eligibility (James, 2026-11-16): the extension is only for
+    # experienced DeFi traders — more than 5 consecutive years
+    # trading permissionless, non-custodial DeFi markets.
+    assert "more than 5 consecutive years" in structured["eligibility"]
+    assert "permissionless, non-custodial" in structured["eligibility"]
 
     structured, is_error = _structured("UZE_Pairings_Board")
     assert is_error is False

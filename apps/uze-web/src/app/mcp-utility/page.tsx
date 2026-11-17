@@ -24,11 +24,17 @@ export default function McpUtilityPage() {
         This is the brokerage model as an MCP utility, built first
         ahead of the TradeLayer and SigLayer trading surfaces: your
         own LLM connects over one link, sees every account, and can
-        place stock and ETF orders only inside a dedicated,
-        separately funded MCP account — every order reviewed before
-        it executes. Crypto is not sold at this door: UZE crypto is
-        permissionless self-custody, with earlier-stage tokens the
-        brokerage never lists, at your own election.
+        place orders only inside a dedicated, separately funded MCP
+        account — every order reviewed before it executes. The live
+        model covers all available assets — long equities, options,
+        and crypto (order types: market, limit, stop limit, stop
+        market; this demo simulates equities). Crypto placed here is
+        brokerage-custody crypto, and it is not the UZE crypto
+        solution: UZE crypto is permissionless self-custody, with
+        earlier-stage tokens the brokerage never lists, at your own
+        election — and that extension is for experienced DeFi
+        traders only, more than 5 consecutive years trading
+        permissionless, non-custodial DeFi markets.
       </p>
       <p className="note">
         Dynamic mock-up — demo data, simulated orders, no brokerage

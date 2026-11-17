@@ -50,7 +50,10 @@ DISCLOSURE = (
     "extension: earlier-stage tokens acquired through the UZE "
     "self-custody route are higher-risk, are your own election "
     "(buyer beware), and are held in your own custody — you hold "
-    "your keys and bear custody risk. Draft disclosure, modelled on "
+    "your keys and bear custody risk. The UZE self-custody extension "
+    "is for experienced DeFi traders only — more than 5 consecutive "
+    "years trading permissionless, non-custodial DeFi markets. "
+    "Draft disclosure, modelled on "
     "published brokerage agentic-trading terms; not legal advice."
 )
 
@@ -229,6 +232,10 @@ SELF_CUSTODY_ROUTE = {
     "extension": (
         "Earlier-stage tokens the brokerage does not offer, acquired "
         "in the user's own custody, on the user's own election."
+    ),
+    "eligibility": (
+        "Experienced DeFi traders only — more than 5 consecutive "
+        "years trading permissionless, non-custodial DeFi markets."
     ),
     "risk": "Buyer beware — earlier-stage tokens are higher-risk.",
 }
@@ -761,6 +768,7 @@ async def connect_info() -> dict[str, Any]:
             "No crypto at this door. UZE crypto is permissionless "
             "self-custody via TradeLayer and SigLayer."
         ),
+        "self_custody_eligibility": SELF_CUSTODY_ROUTE["eligibility"],
         "trading_surfaces": TRADING_SURFACES,
         "trading_segmentation": "TradeLayer | SigLayer",
         "launch_sequence": LAUNCH_SEQUENCE,

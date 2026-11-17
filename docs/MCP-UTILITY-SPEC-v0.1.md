@@ -39,6 +39,11 @@ model, for the TradeLayer and SigLayer surfaces:
   more extensive DeFi experience can acquire earlier-stage tokens the
   brokerage does not offer, in their own custody, on their own
   election — buyer beware. The disclosure states this plainly.
+- **Eligibility (James, 2026-11-16 21:47 ET):** the UZE self-custody
+  extension is offered **only to experienced DeFi traders — more than
+  5 consecutive years trading permissionless, non-custodial DeFi
+  markets.** The rule is carried in the spec, the API payloads, the
+  disclosure, and the site copy wherever the extension is described.
 
 ## 3. Build order (James, 2026-11-16)
 
