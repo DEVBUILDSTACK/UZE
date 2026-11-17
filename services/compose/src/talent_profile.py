@@ -47,6 +47,49 @@ TALENT_TYPES: tuple[str, ...] = (
     "AGENTIC_SERVICE",
 )
 
+# People-layer taxonomy (owner rulings, 2026-11-17 — see
+# docs/specifications/talent-extension-headsin-v1.md).
+# Talent is the PEOPLE layer: engagement_class says through
+# whom a person is engaged and how the money moves — a
+# different axis from talent_type, which says what the
+# worker is. Both fields are OPTIONAL and strict-when-
+# present, like every taxonomy field in this module.
+ENGAGEMENT_CLASSES: tuple[str, ...] = (
+    "EMPLOYEE",
+    "AFFILIATE_SOLOPRENEUR",
+    "AFFILIATE_EXPERT",
+    "AGENTIC_SERVICE",
+)
+# Work modes are EMPLOYEE attributes (fully remote, hybrid —
+# max ~2 days off-site per week —, fully on-site). Affiliates
+# do not carry a work mode; validation enforces that.
+WORK_MODES: tuple[str, ...] = ("REMOTE", "HYBRID", "ON_SITE")
+# Opportunity categories decide who builds the supply:
+# FOCUS and EXPERTISE categories match natively; OTHER is
+# not built natively — it routes to expert
+# contractor-affiliates under placement agreements.
+OPPORTUNITY_CATEGORIES: tuple[str, ...] = (
+    "HOSPITALITY",
+    "INCOME_CRE",
+    "SOFTWARE_STACK",
+    "BLOCKCHAIN_TECH",
+    "OTHER",
+)
+FOCUS_CATEGORIES: tuple[str, ...] = ("HOSPITALITY", "INCOME_CRE")
+EXPERTISE_CATEGORIES: tuple[str, ...] = (
+    "SOFTWARE_STACK",
+    "BLOCKCHAIN_TECH",
+)
+# Experience segments (owner ruling, 2026-11-17): hands-on
+# placement concentrates on PLACEMENT_FOCUS; EARLY_CAREER is
+# served by the autonomous intents marketplace;
+# ELITE_EXCEPTION is in scope regardless of the band.
+EXPERIENCE_SEGMENTS: tuple[str, ...] = (
+    "PLACEMENT_FOCUS",
+    "EARLY_CAREER",
+    "ELITE_EXCEPTION",
+)
+
 # Development, Design & Wellness taxonomy (owner tap,
 # 2026-11-13 — standby + hackathon scope override, James's own
 # words). The D (Development) side of the marketplace connects
@@ -210,6 +253,59 @@ def _is_number(v: Any) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool)
 
 
+ASSESSMENT_FIELDS: tuple[str, ...] = (
+    "role",
+    "score",
+    "duration_seconds",
+    "skills_proven",
+    "completed_at",
+)
+
+
+def validate_assessment(
+    data: Any,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """Validate one pre-assessment object (extension spec
+    §2.3): the ~250-second role-specific skills proof carried
+    on a TalentProfile. Returns (normalized, []) or
+    (None, [field, ...]) naming every missing/invalid field
+    INSIDE the assessment; callers prefix as they need."""
+    if not isinstance(data, dict):
+        return None, list(ASSESSMENT_FIELDS)
+    problems: list[str] = []
+    role = data.get("role")
+    if not isinstance(role, str) or not role.strip():
+        problems.append("role")
+    score = data.get("score")
+    if not _is_number(score) or score < 0 or score > 100:
+        problems.append("score")
+    duration = data.get("duration_seconds")
+    if not _is_number(duration) or duration <= 0:
+        problems.append("duration_seconds")
+    proven = data.get("skills_proven")
+    if (
+        not isinstance(proven, list)
+        or not proven
+        or not all(isinstance(s, str) and s.strip() for s in proven)
+    ):
+        problems.append("skills_proven")
+    completed = data.get("completed_at")
+    if not isinstance(completed, str) or not completed.strip():
+        problems.append("completed_at")
+    if problems:
+        return None, problems
+    return (
+        {
+            "role": role.strip(),
+            "score": score,
+            "duration_seconds": duration,
+            "skills_proven": [s.strip() for s in proven],
+            "completed_at": completed.strip(),
+        },
+        [],
+    )
+
+
 def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
     """Validate a decoded JSON payload against TalentProfile.
 
@@ -274,6 +370,49 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
         or stage.strip().upper() not in PROJECT_LIFECYCLE_STAGES
     ):
         problems.append("project_lifecycle_stage")
+    # People-layer fields (extension spec §4): optional,
+    # strict-when-present, backward compatible.
+    eclass = data.get("engagement_class")
+    if eclass is not None and (
+        not isinstance(eclass, str)
+        or eclass.strip().upper() not in ENGAGEMENT_CLASSES
+    ):
+        problems.append("engagement_class")
+    wmode = data.get("work_mode")
+    if wmode is not None:
+        if (
+            not isinstance(wmode, str)
+            or wmode.strip().upper() not in WORK_MODES
+        ):
+            problems.append("work_mode")
+        elif (
+            not isinstance(eclass, str)
+            or eclass.strip().upper() != "EMPLOYEE"
+        ):
+            # Work mode is an employee attribute: a profile
+            # that is not declared EMPLOYEE — an affiliate, an
+            # agentic service, or no class at all — may not
+            # carry one.
+            problems.append("work_mode")
+    ocat = data.get("opportunity_category")
+    if ocat is not None and (
+        not isinstance(ocat, str)
+        or ocat.strip().upper() not in OPPORTUNITY_CATEGORIES
+    ):
+        problems.append("opportunity_category")
+    firm_years = data.get("major_firm_years")
+    if firm_years is not None and (
+        not _is_number(firm_years) or firm_years < 0
+    ):
+        problems.append("major_firm_years")
+    assessment = data.get("assessment")
+    normalized_assessment: dict[str, Any] | None = None
+    if assessment is not None:
+        normalized_assessment, aproblems = validate_assessment(
+            assessment
+        )
+        if aproblems:
+            problems.append("assessment")
 
     if problems:
         return None, problems
@@ -303,6 +442,20 @@ def validate_profile(data: Any) -> tuple[dict[str, Any] | None, list[str]]:
                 stage.strip().upper()
                 if isinstance(stage, str) else None
             ),
+            "engagement_class": (
+                eclass.strip().upper()
+                if isinstance(eclass, str) else None
+            ),
+            "work_mode": (
+                wmode.strip().upper()
+                if isinstance(wmode, str) else None
+            ),
+            "opportunity_category": (
+                ocat.strip().upper()
+                if isinstance(ocat, str) else None
+            ),
+            "major_firm_years": firm_years,
+            "assessment": normalized_assessment,
         },
         [],
     )
@@ -513,6 +666,158 @@ def match_profiles(
             continue
         out.append(p)
     return out
+
+
+def route_category(category: Any) -> dict[str, Any]:
+    """Category routing (extension spec §3): who builds the
+    supply for a category. FOCUS and EXPERTISE categories
+    match natively; OTHER — and any unrecognized category —
+    is NOT built natively: it routes to expert
+    contractor-affiliates under placement agreements, case
+    by case. The route is always explicit, never a silent
+    no-match."""
+    cat = (
+        category.strip().upper()
+        if isinstance(category, str) and category.strip()
+        else None
+    )
+    if cat is None:
+        return {
+            "category": None,
+            "category_class": None,
+            "routing": "native",
+            "route_reason": None,
+        }
+    if cat in FOCUS_CATEGORIES:
+        klass = "FOCUS"
+    elif cat in EXPERTISE_CATEGORIES:
+        klass = "EXPERTISE"
+    else:
+        klass = "OTHER"
+    if klass == "OTHER":
+        return {
+            "category": cat,
+            "category_class": "OTHER",
+            "routing": "affiliate_expert",
+            "route_reason": (
+                "category is not built natively — routed "
+                "through a placement agreement to an expert "
+                "contractor-affiliate, case by case"
+            ),
+        }
+    return {
+        "category": cat,
+        "category_class": klass,
+        "routing": "native",
+        "route_reason": None,
+    }
+
+
+_AI_ML_NEEDLES: tuple[str, ...] = (
+    "ai/ml", "ai engineer", "ml engineer", "machine learning",
+    "deep learning", "artificial intelligence", "llm",
+)
+
+
+def _is_ai_ml(profile: dict[str, Any]) -> bool:
+    hay = [str(profile.get("role", "")).lower()]
+    hay += [str(s).lower() for s in profile.get("skills") or []]
+    return any(n in h for n in _AI_ML_NEEDLES for h in hay)
+
+
+def experience_segment(profile: dict[str, Any]) -> str:
+    """The candidate's experience segment (extension spec
+    §6), derived from declared fields only: ELITE_EXCEPTION
+    for AI/ML profiles with >= 5 years at a major
+    international firm (major_firm_years); PLACEMENT_FOCUS
+    for >= 5 years of experience; otherwise EARLY_CAREER."""
+    firm_years = profile.get("major_firm_years") or 0
+    if _is_ai_ml(profile) and firm_years >= 5:
+        return "ELITE_EXCEPTION"
+    if (profile.get("experience_years") or 0) >= 5:
+        return "PLACEMENT_FOCUS"
+    return "EARLY_CAREER"
+
+
+def segment_route(
+    need: dict[str, Any] | None, profile: dict[str, Any]
+) -> str:
+    """Where a candidate is served for a need (extension
+    spec §6): 'placement' (the hands-on desk) or
+    'intents_marketplace' (the autonomous NEAR Intents
+    marketplace). The elite exception bypasses the band: an
+    ELITE_EXCEPTION candidate routes to placement against
+    any need. A need targeting EARLY_CAREER, and an
+    EARLY_CAREER candidate against a placement-focus need,
+    both route to the intents marketplace."""
+    if experience_segment(profile) == "ELITE_EXCEPTION":
+        return "placement"
+    target = str(
+        (need or {}).get("target_segment") or "PLACEMENT_FOCUS"
+    ).upper()
+    if target == "EARLY_CAREER":
+        return "intents_marketplace"
+    if experience_segment(profile) == "EARLY_CAREER":
+        return "intents_marketplace"
+    return "placement"
+
+
+def scorecard_matches(
+    need: dict[str, Any], profiles: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """The scorecard (extension spec §2.4 + §3 + §6): the
+    deterministic matcher behind a routing decision. OTHER
+    categories never run the matcher — they return the
+    labelled affiliate-expert route with no matches. Native
+    categories run match_profiles unchanged, apply the
+    need's min_assessment_score as a filter, rank by
+    assessment score when scores are present, and carry per
+    offer: the assessment score, the candidate's segment,
+    and the segment route."""
+    route = route_category(need.get("opportunity_category"))
+    if route["routing"] == "affiliate_expert":
+        return {
+            "status": "routed_to_affiliate_expert",
+            **route,
+            "matches": [],
+        }
+    matched = match_profiles(need, profiles)
+    min_score = need.get("min_assessment_score")
+    offers: list[dict[str, Any]] = []
+    for p in matched:
+        assessment = p.get("assessment")
+        score = (
+            assessment.get("score")
+            if isinstance(assessment, dict) else None
+        )
+        if min_score is not None and (
+            score is None or score < min_score
+        ):
+            continue
+        offers.append({
+            **p,
+            "scorecard": {
+                "assessment_score": score,
+                "segment": experience_segment(p),
+                "segment_route": segment_route(need, p),
+                "rank": None,
+            },
+        })
+    if any(
+        o["scorecard"]["assessment_score"] is not None
+        for o in offers
+    ):
+        offers.sort(key=lambda o: (
+            o["scorecard"]["assessment_score"] is None,
+            -(o["scorecard"]["assessment_score"] or 0),
+        ))
+    for i, o in enumerate(offers):
+        o["scorecard"]["rank"] = i + 1
+    return {
+        "status": "matched" if offers else "no_match",
+        **route,
+        "matches": offers,
+    }
 
 
 def assemble_project_team(

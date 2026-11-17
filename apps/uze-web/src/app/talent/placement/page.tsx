@@ -139,6 +139,83 @@ export default function TalentPlacementPage() {
       </section>
 
       <section>
+        <h2>The pre-assessment — skills prove the fit</h2>
+        <p>
+          Before a shortlist, a candidate can take a short,
+          role-specific pre-assessment — about 250 seconds —
+          that proves the skills the profile claims. The result
+          rides on the profile as a score, and the score is one
+          input to the match: a need can set a minimum score,
+          and shortlists rank by it. A resume tells a story;
+          the assessment is the evidence.
+        </p>
+      </section>
+
+      <section>
+        <h2>Two-way tracking — one state, both sides</h2>
+        <p>
+          An application moves through one state machine —
+          <strong> Recommended → Applied → In Progress →
+          Accepted / Rejected</strong> — and the candidate and
+          the employer see the same state at the same time,
+          with every transition recorded. No side works from a
+          different version of the truth. On Accepted, the
+          placement record hands off to payroll setup:
+          employees to payroll, affiliates on their engagement
+          terms, agentic services to x402.
+        </p>
+      </section>
+
+      <section>
+        <h2>Who placement serves — and who it doesn&apos;t</h2>
+        <p>
+          Hands-on placement concentrates on experienced
+          professionals — roughly 27 and up, with five to seven
+          years in the work. Early-career talent (roughly 19 to
+          27, fresh out of university), particularly in
+          white-collar roles exposed to AI replacement, is not
+          this desk&apos;s environment: that segment is matched
+          autonomously in the intents marketplace. One
+          exception stands regardless of the band: AI/ML and
+          highly experienced developers with five or more years
+          at a major international firm are in placement scope.
+        </p>
+      </section>
+
+      <section>
+        <h2>How matching runs — intents and solvers</h2>
+        <p>
+          An employer&apos;s role requirement is expressed as an
+          intent; candidate supply — human profiles and agentic
+          services alike — responds as solvers; a settled match
+          becomes the placement record. Today the solver behind
+          that interface is the deterministic matcher described
+          above, and the interface is the contract a smarter
+          solver can be swapped behind. Stated plainly: NEAR AI
+          attested inference is not yet live on this surface —
+          it is credit-blocked (HTTP 402) — so nothing here
+          claims an AI match. The match is arithmetic, labelled
+          as such.
+        </p>
+      </section>
+
+      <section>
+        <h2>Categories beyond the desk</h2>
+        <p>
+          Hospitality and income commercial real estate are the
+          focus categories, and software stack and blockchain
+          technical development are staffed natively from the
+          standing bench (India, Brazil, the United States,
+          Spain, Costa Rica). Other fields — healthcare,
+          scientific and pharmaceutical work among them — are
+          not built natively: the need is routed, openly,
+          through a placement agreement to an expert
+          contractor-affiliate, and the fee is usually paid on
+          placement.
+        </p>
+      </section>
+
+      <section>
         <h2>Development &amp; Design — the project team</h2>
         <p>
           A third kind of work builds the asset in the first

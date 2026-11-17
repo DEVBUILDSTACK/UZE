@@ -111,6 +111,43 @@ export default async function TalentIndexPage() {
         </div>
       </div>
 
+      <h2>How opportunities move — the categories</h2>
+      <div className="cards">
+        <div className="card">
+          <h3>Focus — Hospitality &amp; Income CRE</h3>
+          <p className="meta">Built natively</p>
+          <p>
+            The roles the underwriting names from an asset&apos;s
+            own payroll lines — operations and knowledge work for
+            hospitality and income commercial real estate.
+            Placement fills them from this desk.
+          </p>
+        </div>
+        <div className="card">
+          <h3>Expertise — Software &amp; Blockchain</h3>
+          <p className="meta">Built natively · standing bench</p>
+          <p>
+            Software stack and blockchain technical development,
+            staffed from established benches in India, Brazil,
+            the United States, and Europe — particularly Spain
+            and Costa Rica. The bench is chosen by the
+            employer&apos;s vertical first, and by the language
+            the role requires second.
+          </p>
+        </div>
+        <div className="card">
+          <h3>Other fields — expert affiliates</h3>
+          <p className="meta">Routed, case by case</p>
+          <p>
+            Healthcare, scientific and pharmaceutical work, and
+            every other field are not built natively here. They
+            move through placement agreements to expert
+            contractor-affiliates — labelled as routed, never
+            quietly unmatched.
+          </p>
+        </div>
+      </div>
+
       <h2>Talent profiles</h2>
       {talent.length ? (
         <div className="cards">
