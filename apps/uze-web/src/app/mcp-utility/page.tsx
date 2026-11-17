@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import BrokeragePanel from "@/components/brokerage-panel";
 
 export const metadata: Metadata = {
-  title: "Brokerage MCP | UZEmarkets",
+  title: "UZE MCP Directory | UZEmarkets",
   description:
-    "Dynamic mock-up of the brokerage-model MCP — the TradeLayer door: connect your own LLM, read every account, trade TradFi only in a dedicated MCP account. UZE crypto stays permissionless self-custody.",
+    "The UZE MCP Directory — the brokerage-model MCP, the TradeLayer door: connect your own LLM, read every account, trade only in a dedicated MCP account. UZE crypto stays permissionless self-custody.",
 };
 
 /** Brokerage MCP mock-up (2026-11-16, James's build order:
@@ -15,10 +15,10 @@ export const metadata: Metadata = {
 export default function McpUtilityPage() {
   return (
     <main className="mk">
-      <h1>Brokerage MCP — the TradeLayer door</h1>
+      <h1>UZE MCP Directory</h1>
       <p className="lede">
-        Connect your AI. It reads your accounts — and trades only
-        where you fence it in.
+        Brokerage MCP — the TradeLayer door. Connect your AI. It
+        reads your accounts — and trades only where you fence it in.
       </p>
       <p>
         This is the brokerage model as an MCP utility, built first

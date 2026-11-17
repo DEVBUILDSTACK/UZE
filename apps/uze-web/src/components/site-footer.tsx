@@ -102,6 +102,8 @@ export default function SiteFooter() {
       <p className="footer-links">
         <a href="https://uzemarkets.com/knowledge-base">Knowledge Base</a>
         {" · "}
+        <a href="https://uzemarkets.com/mcp-utility">UZE MCP Directory</a>
+        {" · "}
         <a href="https://dealfi.uzemarkets.com">DealFi</a>
       </p>
       <p className="copyright">
