@@ -270,7 +270,7 @@ function mockCheckout(asg) {
     ${asg ? `Seats assigned together: Row ${asg.row} · Seats ${asg.seatStart}–${asg.seatStart + qty - 1}<br>` : ""}
     Event: ${EVENT.receipt}<br>
     <span class="mocktag">MOCK SETTLEMENT</span> ${idsLabel} minted to your wallet — one NFT per seat, each with its own provenance chain — see “My tickets” below. In production this settles in USDC
-    on Solana with GIRAx attestation of the ticket. No funds move in this mock-up.
+    on Solana, each ticket carrying its attestation. No funds move in this mock-up.
   </div>`;
 }
 
