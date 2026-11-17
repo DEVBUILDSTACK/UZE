@@ -73,6 +73,14 @@ export default function McpUtilityPage() {
             permissionless self-custody — TradeLayer and SigLayer,
             the two-doors panel below.
           </p>
+          <p className="highlight-callout">
+            <strong>Highlight — EVM wallet recovery supported:</strong>{" "}
+            the Robinhood Wallet app (Robinhood&apos;s self-custody
+            crypto app) imports and recovers EVM wallets — Ethereum,
+            Arbitrum, Polygon, Optimism, Base, and Robinhood Chain —
+            from a secret recovery phrase or an iCloud / Google Drive
+            backup.
+          </p>
         </div>
       </div>
       <BrokeragePanel />

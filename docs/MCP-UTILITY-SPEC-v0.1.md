@@ -205,3 +205,13 @@ operative fence (the user may also turn approvals on inside
 Robinhood as a second fence). Crypto reached through this door is
 brokerage-custody crypto under §2's differentiation — never the UZE
 crypto solution.
+
+**EVM wallet recovery (indicated + highlighted on the site, James
+2026-11-16 22:13 ET; verified against Robinhood's own support pages
+the same evening):** the Robinhood Wallet app — Robinhood's
+self-custody crypto app, separate from the brokerage app — imports
+and recovers EVM wallets (Ethereum, Arbitrum, Polygon, Optimism,
+BNB Smart Chain, Base, Robinhood Chain) from a secret recovery
+phrase, or from an iCloud / Google Drive backup. Recovery is
+user-side: Robinhood never holds the phrase and cannot recover a
+lost one.
