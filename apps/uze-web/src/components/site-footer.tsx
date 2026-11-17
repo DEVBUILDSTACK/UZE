@@ -99,13 +99,26 @@ export default function SiteFooter() {
           ),
         )}
       </div>
-      <p className="footer-links">
-        <a href="https://uzemarkets.com/mcp-utility">UZE MCP Directory</a>
-        {" · "}
-        <a href="https://uzemarkets.com/knowledge-base">Knowledge Base</a>
-        {" · "}
-        <a href="https://dealfi.uzemarkets.com">DealFi</a>
-      </p>
+      <nav className="footer-links" aria-label="Site directory">
+        <a href="https://uzemarkets.com/mcp-utility">
+          <span className="link-glyph" aria-hidden="true">
+            🔗
+          </span>{" "}
+          UZE MCP Directory
+        </a>
+        <a href="https://dealfi.uzemarkets.com">
+          <span className="link-glyph" aria-hidden="true">
+            🔗
+          </span>{" "}
+          DealFi
+        </a>
+        <a href="https://uzemarkets.com/knowledge-base">
+          <span className="link-glyph" aria-hidden="true">
+            🔗
+          </span>{" "}
+          Knowledge Base
+        </a>
+      </nav>
       <p className="copyright">
         © 2026{" "}
         <span className="wordmark">

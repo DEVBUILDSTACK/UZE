@@ -570,6 +570,48 @@ form button,
   height: 1.3rem;
 }
 
+/* Footer directory links — three centered lines, each marked as a
+ * link (James, 2026-11-16): UZE MCP Directory / DealFi / Knowledge
+ * Base. Pill rows so the bottom of the page reads as a directory,
+ * not a footnote. */
+.site-footer .footer-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.site-footer .footer-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.site-footer .footer-links a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.site-footer .footer-links .link-glyph {
+  font-size: 0.85em;
+  line-height: 1;
+}
+
 .site-footer .copyright {
   margin: 0;
   color: var(--muted);
