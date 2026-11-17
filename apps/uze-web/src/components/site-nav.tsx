@@ -95,6 +95,9 @@ export default function SiteNav() {
           <a href="https://uzemarkets.com/talent/placement" onClick={close}>
             Talent Placement
           </a>
+          <a href="https://uzemarkets.com/tickets" onClick={close}>
+            Tickets
+          </a>
           <a href="https://devpartner.uzemarkets.com" onClick={close}>
             Dev Docs
           </a>
