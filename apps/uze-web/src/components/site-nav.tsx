@@ -130,7 +130,31 @@ export default function SiteNav() {
             </li>
           ))}
         </ul>
-        <p className="drawer-foot">Talent · Tickets · Touring · Stay</p>
+        <p className="drawer-foot">
+          <a href="https://uzemarkets.com/talent" onClick={close}>
+            Talent
+          </a>
+          {" · "}
+          <a href="https://uzemarkets.com/tickets" onClick={close}>
+            Tickets
+          </a>
+          {" · "}
+          <a
+            className="foot-dim"
+            href="https://uzemarkets.com/guidance"
+            onClick={close}
+          >
+            Touring
+          </a>
+          {" · "}
+          <a
+            className="foot-dim"
+            href="https://uzemarkets.com/guidance"
+            onClick={close}
+          >
+            Stay
+          </a>
+        </p>
       </aside>
     </>
   );

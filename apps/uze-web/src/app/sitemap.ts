@@ -25,6 +25,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/micro-regions` },
     { url: `${base}/specs` },
     { url: `${base}/mcp-utility` },
+    { url: `${base}/talent` },
+    { url: `${base}/tickets` },
     { url: `${base}/devpartner/en` },
     { url: `${base}/devpartner/pt-BR` },
     { url: `${base}/devpartner/pt-PT` },

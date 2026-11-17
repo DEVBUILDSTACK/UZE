@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UZEmarkets — Venue Ticketing (Mock-up)</title>
+<style>
+  :root { --tang:#ff6b00; --cream:#f5f2ee; --ink:#1a1a1a; --panel:#ffffff; --line:#e3ded6; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Georgia, 'Times New Roman', serif; background:var(--cream); color:var(--ink); }
+  header { display:flex; align-items:baseline; gap:14px; padding:14px 22px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  header h1 { font-size:22px; margin:0; } header h1 .uze { color:var(--tang); }
+  header .venue { font-style:italic; opacity:.75; }
+  .fixture { background:#e30613; color:#fff; font-family:Helvetica,Arial,sans-serif; padding:10px 22px; font-size:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .fixture .demo { background:#1a1a1a; color:#fff; font-size:10px; letter-spacing:.14em; padding:3px 8px; border-radius:999px; }
+  .mockbanner { margin-left:auto; background:var(--ink); color:var(--cream); font-family:Helvetica,Arial,sans-serif;
+    font-size:11px; letter-spacing:.14em; padding:6px 10px; border-radius:999px; }
+  main { display:grid; grid-template-columns: 1fr 330px; min-height: calc(100vh - 58px); }
+  #scene { position:relative; min-height:520px; }
+  #scene canvas { display:block; }
+  #tip { position:fixed; display:none; pointer-events:none; background:var(--ink); color:#fff;
+    font-family:Helvetica,Arial,sans-serif; font-size:12px; padding:5px 9px; border-radius:6px; z-index:9; }
+  .viewbar { position:absolute; left:14px; top:12px; display:flex; gap:8px; z-index:5; }
+  .viewbar button, .ghost { font-family:Helvetica,Arial,sans-serif; font-size:12px; padding:7px 12px; border-radius:999px;
+    border:1px solid var(--line); background:#fff; cursor:pointer; }
+  aside { border-left:1px solid var(--line); background:var(--panel); padding:16px; overflow:auto; }
+  .evtabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .evtabs button { flex:1; font-family:Helvetica,Arial,sans-serif; font-size:13px; padding:9px 6px; border-radius:999px; border:1px solid var(--line); background:#fff; cursor:pointer; }
+  .evtabs button.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .matchcard { display:flex; align-items:stretch; gap:8px; margin-bottom:8px; }
+  .matchcard .team { flex:1; border-radius:10px; padding:10px; text-align:center; font-family:Helvetica,Arial,sans-serif; }
+  .matchcard .home { background:#e30613; color:#fff; }
+  .matchcard .away { background:#fff; color:#1a1a1a; border:1px solid var(--line); border-top:6px solid #e30613; border-bottom:6px solid #1a1a1a; }
+  .matchcard .abbr { display:block; font-size:20px; font-weight:bold; letter-spacing:.08em; }
+  .matchcard .tname { display:block; font-size:12px; margin-top:2px; }
+  .matchcard .tcity { display:block; font-size:11px; opacity:.75; }
+  .matchcard .vs { align-self:center; text-align:center; font-family:Helvetica,Arial,sans-serif; font-size:11px; font-weight:bold; line-height:1.25; }
+  .matchnote { font-family:Helvetica,Arial,sans-serif; font-size:12px; opacity:.7; margin:0 0 12px; }
+  aside h2 { font-size:15px; margin:4px 0 10px; font-family:Helvetica,Arial,sans-serif; letter-spacing:.06em; text-transform:uppercase; }
+  .item { display:flex; align-items:center; gap:9px; width:100%; text-align:left; padding:8px 9px; margin-bottom:5px;
+    border:1px solid var(--line); border-radius:9px; background:#fff; cursor:pointer; font-family:Helvetica,Arial,sans-serif; font-size:13px; }
+  .item.active { border-color:var(--tang); box-shadow:0 0 0 1px var(--tang); }
+  .item .swatch { width:12px; height:12px; border-radius:3px; flex:none; }
+  .item .nm { flex:1; } .item .pr { opacity:.65; }
+  #detail { margin-top:14px; border-top:1px solid var(--line); padding-top:12px; font-family:Helvetica,Arial,sans-serif; font-size:14px; }
+  #detail h3 { margin:0 0 8px; font-family:Georgia,serif; font-size:19px; }
+  .hint { opacity:.65; font-style:italic; font-family:Georgia,serif; }
+  .ring-label { display:block; margin-bottom:10px; } .ring-label select { width:100%; margin-top:4px; padding:7px; border-radius:7px; border:1px solid var(--line); }
+  .qtyrow { display:flex; align-items:center; gap:10px; margin:8px 0; }
+  .qtyrow button { width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:16px; }
+  .total { margin:10px 0; font-size:16px; }
+  .mocktag { background:var(--tang); color:#fff; font-size:10px; letter-spacing:.1em; padding:2px 7px; border-radius:999px; vertical-align:middle; }
+  .btnrow { display:flex; gap:8px; } .cta { flex:1; background:var(--tang); color:#fff; border:none; padding:11px; border-radius:999px; font-size:14px; cursor:pointer; font-family:Helvetica,Arial,sans-serif; }
+  .cta:hover { background:#e05f00; }
+  .receipt { margin-top:12px; background:var(--cream); border:1px dashed var(--tang); border-radius:9px; padding:10px; font-size:13px; line-height:1.5; }
+
+  section.market { padding:18px 22px 26px; border-top:1px solid var(--line); background:#fff; }
+  section.market h2 { font-family:Helvetica,Arial,sans-serif; font-size:15px; letter-spacing:.06em; text-transform:uppercase; margin:4px 0 6px; }
+  section.market .sub { font-family:Helvetica,Arial,sans-serif; font-size:13px; opacity:.75; max-width:860px; line-height:1.5; }
+  .mgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-top:14px; }
+  .mcard { border:1px solid var(--line); border-radius:12px; padding:14px; font-family:Helvetica,Arial,sans-serif; font-size:13px; background:var(--cream); }
+  .mcard h3 { margin:0 0 8px; font-size:14px; }
+  .walletbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; font-family:Helvetica,Arial,sans-serif; font-size:13px; }
+  .wbtn { background:var(--ink); color:#fff; border:none; padding:9px 16px; border-radius:999px; cursor:pointer; font-size:13px; }
+  .addr { background:#fff; border:1px dashed var(--tang); border-radius:8px; padding:5px 9px; font-family:monospace; font-size:12px; }
+  .ticket { background:#fff; border:1px solid var(--line); border-left:5px solid var(--tang); border-radius:9px; padding:10px; margin-bottom:9px; line-height:1.5; }
+  .ticket .tid { font-weight:bold; } .hash { font-family:monospace; font-size:11px; opacity:.7; word-break:break-all; }
+  .badge { display:inline-block; background:#1d7a3a; color:#fff; font-size:10px; letter-spacing:.08em; padding:2px 8px; border-radius:999px; }
+  .badge.road { background:#b3261e; } .badge.mockb { background:var(--tang); }
+  .ticket button, .mcard button.buy { margin-top:6px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 12px; cursor:pointer; font-size:12px; }
+  .ticket button.list, .mcard button.buy { background:var(--tang); color:#fff; border:none; }
+  .prov { margin:6px 0 0; padding-left:16px; font-size:12px; line-height:1.6; }
+  select.vsel { width:100%; padding:7px; border-radius:7px; border:1px solid var(--line); margin-bottom:8px; }
+  .viewbar { flex-wrap:wrap; right:14px; }
+  .viewhint { flex-basis:100%; color:#fff; background:rgba(13,17,21,.62); padding:6px 10px; border-radius:10px; max-width:560px; }
+  .flowbar { position:absolute; left:50%; transform:translateX(-50%); bottom:14px; z-index:6; display:flex; align-items:center; gap:10px;
+    background:rgba(13,17,21,.85); color:#fff; padding:8px 10px; border-radius:999px; font-family:Helvetica,Arial,sans-serif; font-size:13px;
+    max-width:94%; box-shadow:0 6px 24px rgba(0,0,0,.35); }
+  .flowbar.hidden { display:none; }
+  .flowbar button { border:none; cursor:pointer; font-size:13px; padding:8px 14px; border-radius:999px; background:rgba(255,255,255,.14); color:#fff; white-space:nowrap; }
+  .flowbar #flowNext { background:var(--tang); font-weight:bold; }
+  .flowbar #flowLabel { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .qtylabel { font-family:Helvetica,Arial,sans-serif; font-size:12px; letter-spacing:.05em; text-transform:uppercase; opacity:.65; margin:10px 0 2px; }
+  .viewhint { font-size:12px; opacity:.75; max-width:520px; line-height:1.45; }
+  .callit { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-top:14px; }
+  .callit input[type=number] { width:130px; padding:8px; border-radius:8px; border:1px solid var(--line); font-size:14px; }
+  .askIn { width:92px; padding:5px 7px; border-radius:7px; border:1px solid var(--line); font-size:13px; margin:0 4px; }
+  table.board { width:100%; border-collapse:collapse; font-size:13px; }
+  table.board td, table.board th { padding:6px 4px; border-bottom:1px solid var(--line); text-align:left; }
+  .prize { font-weight:bold; color:#b97a06; }
+  footer { padding:10px 22px; font-family:Helvetica,Arial,sans-serif; font-size:12px; opacity:.7; border-top:1px solid var(--line); }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } aside { border-left:none; border-top:1px solid var(--line); } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<header>
+  <h1><span class="uze">UZE</span>markets <span style="font-weight:normal">— Venue Ticketing</span></h1>
+  <span class="venue" id="venueName"></span>
+  <span class="mockbanner">🟡 BUILT AS MOCK — NO LIVE INVENTORY · NO REAL SETTLEMENT</span>
+</header>
+<div class="fixture"><span class="demo">DEMO EVENT</span><span id="fixtureText"><strong>Internacional</strong> (Porto Alegre) vs <strong>São Paulo FC</strong> · January 2027 · Venue selector demo for the Brazil focus</span></div>
+<main>
+  <div id="scene">
+    <div class="viewbar">
+      <button id="viewOverview">Overview — orbit view</button>
+      <button id="viewTop">Top view — seat map</button>
+      <span class="viewhint">This is the 3D venue map: drag to spin it, tap a coloured sector and the camera flies in to show the view from those seats.</span>
+    </div>
+    <div id="camdbg" style="position:absolute;left:10px;bottom:10px;z-index:5;font-family:monospace;font-size:11px;color:#cfe3ff;background:rgba(13,17,21,.55);padding:4px 8px;border-radius:6px"></div>
+    <div id="flowbar" class="flowbar hidden">
+      <button id="flowBack">⌄ Full venue</button>
+      <span id="flowLabel"></span>
+      <button id="flowNext">Choose seats →</button>
+    </div>
+  </div>
+  <aside>
+    <div id="eventTabs" class="evtabs"></div>
+    <div class="matchcard" id="eventCard">
+      <div class="team home"><span class="abbr">INTER</span><span class="tname">Internacional</span><span class="tcity">Porto Alegre</span></div>
+      <div class="vs">VS<br><span>JAN<br>2027</span></div>
+      <div class="team away"><span class="abbr">SPFC</span><span class="tname">São Paulo FC</span><span class="tcity">São Paulo</span></div>
+    </div>
+    <p class="matchnote">Demo fixture — not on sale. Pick a sector to see the view from your seat.</p>
+    <h2>Sectors</h2>
+    <div id="sector-list"></div>
+    <div id="detail"></div>
+  </aside>
+
+</main>
+<section class="market">
+  <h2>Primary &amp; Secondary Market <span class="mocktag">MOCK</span></h2>
+  <p class="sub">Built for Brazil's play market — <strong>soccer, music, and large tech conventions</strong> — with secondary sales and partner referrals across Brazil, Central America, and the Caribbean.</p>
+  <p class="sub">Every ticket is an <strong>NFT minted on NEAR</strong>, held in the buyer's own wallet — no affiliate account needed.
+  At mint, the sale is sealed with an <strong>REE receipt</strong> and a <strong>TEE attestation</strong> that the ticket was issued by
+  <strong>UZEmarkets</strong> — so any later buyer can verify the ticket is genuine and trace the original NFT from the first
+  buyer's wallet to theirs. Resale moves the <em>same</em> NFT; the provenance chain is the fraud check. Matching itself stays on <strong>NEAR</strong>: buyers and sellers post <strong>intents</strong>, and the <strong>solver network</strong> matches the parties — matching is the marketplace's core function, and solvers are how it scales.
+  Wallet and chain are mocked here; the production integration is with our Australian partner <strong>Tickify.io</strong>
+  on LightLink (founder Roy Hui, participating affiliate partner).</p>
+  <p class="sub"><strong>Where the margin is:</strong> we enable tickets at the original (commercial) price — but the real margin is the <strong>hold</strong>. A buyer with launch-market access to a big-name event can secure more than one ticket at the commercial price and resell into the <strong>secondary premium</strong> — the price people with money pay to choose exactly where they sit. Two prices, one attested NFT the whole way. Your tickets below show both: what you paid at launch, and what the secondary market says now.</p>
+  <div class="walletbar">
+    <button class="wbtn" id="walletBtn">Connect wallet — NEAR (mock)</button>
+    <span id="walletAddr"></span>
+  </div>
+  <div class="mgrid">
+    <div class="mcard"><h3>🎟 My tickets (primary mints &amp; purchases)</h3><div id="myTickets"><p class="hint">Connect a wallet, then use “Mock checkout” above — your ticket is minted as an NFT here.</p></div></div>
+    <div class="mcard"><h3>🔁 Secondary market — resale listings</h3><div id="resaleList"></div>
+      <p class="hint" style="margin-top:8px">Confidential resale pricing via <strong>Arcium</strong> MPC is the production design — <span class="badge road">🔴 ROADMAP</span> In this mock, transfers are shown in the clear.</p></div>
+    <div class="mcard"><h3>✓ Verify a ticket</h3><select class="vsel" id="verifySel"></select><div id="verifyOut"><p class="hint">Select a ticket to see its provenance chain and attestation.</p></div></div>
+  </div>
+</section>
+
+<div id="tip"></div>
+
+<section class="market" id="callit">
+  <h2>📈 UZE Event Market — Call It <span class="mocktag">MOCK</span></h2>
+  <p class="sub" id="emIntro">For big fixtures, the market itself becomes the game. Call the price <strong>Tribuna Central (Lower Ring)</strong>
+  will settle at in the secondary market by match week for <strong>Internacional vs São Paulo FC</strong>. When the market settles,
+  the <strong>two closest calls</strong> win tickets: closest call takes the <span class="prize">grand prize — a PAIR of tickets</span>;
+  second closest takes the <span class="prize">consolation — a SINGLE ticket</span>. Prize tickets are minted as the same attested
+  NFTs, straight into the winner's wallet. Prize inventory is held back from the platform's own primary allocation \u2014 never bought off the secondary market, so nobody can pump the index to inflate a prize. Calls are open to primary ticket holders only: you must own the asset to price its secondary market. Every call is a signal the supply side prices against — demand, revealed before on-sale.
+  Positions bridge in via <strong>NEAR Intents</strong> (mocked here).</p>
+  <div class="callit">
+    <div class="mcard"><h3>🎯 Make your call</h3>
+      <p class="hint" id="callLabel">Your call (R$):</p>
+      <input type="number" id="callInput" min="50" max="5000" step="1" placeholder="e.g. 600">
+      <button class="wbtn" id="callBtn" style="margin-left:8px">Submit call</button>
+      <p class="hint" id="callStatus" style="margin-top:8px">Primary ticket holders only \u2014 buy in the primary market above and your call unlocks. One call per wallet in this mock.</p>
+      <button class="wbtn" id="settleBtn" style="background:var(--tang); margin-top:6px">Settle the market (mock)</button>
+      <p class="hint" id="settleOut" style="margin-top:8px"></p>
+    </div>
+    <div class="mcard"><h3>🏆 Leaderboard — closest to the settled price wins</h3><div id="board"><p class="hint">Calls appear here. Settle the market to award the tickets.</p></div></div>
+  </div>
+</section>
+<footer>© 2026 <a href="https://uzemarkets.com" style="color:#ff6b00;text-decoration:none">UZE</a>markets — Drag to rotate · click a sector to fly to it. Demo build 2026-11-12 · flow-v10 (per-seat minting; per-event markets; your own listings surface in the secondary market). Venue geometry is generated from the sector/ring data tables in <code>src/venue-data.js</code> — a new venue is a data entry, not a 3D model.</footer>
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>
