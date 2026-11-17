@@ -249,6 +249,7 @@ def test_insufficient_cash_and_position_refused():
 def test_self_custody_route_and_pairings_board():
     structured, is_error = _structured("UZE_Self_Custody_Route")
     assert is_error is False
+    assert structured["product"] == "UZE TradFi Complex & Agentic DeFi"
     assert structured["custody"] == "permissionless_self_custody"
     assert set(structured["venues"]) == {"TradeLayer", "SigLayer"}
     # Eligibility (James, 2026-11-16): the extension is only for

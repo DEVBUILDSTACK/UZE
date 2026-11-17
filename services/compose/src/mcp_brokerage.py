@@ -50,8 +50,9 @@ DISCLOSURE = (
     "extension: earlier-stage tokens acquired through the UZE "
     "self-custody route are higher-risk, are your own election "
     "(buyer beware), and are held in your own custody — you hold "
-    "your keys and bear custody risk. The UZE self-custody extension "
-    "is for experienced DeFi traders only — more than 5 consecutive "
+    "your keys and bear custody risk. UZE TradFi Complex & Agentic "
+    "DeFi — the self-custody extension — is for experienced DeFi "
+    "traders only — more than 5 consecutive "
     "years trading permissionless, non-custodial DeFi markets. "
     "Draft disclosure, modelled on "
     "published brokerage agentic-trading terms; not legal advice."
@@ -226,6 +227,7 @@ PAIRINGS = [
 ]
 
 SELF_CUSTODY_ROUTE = {
+    "product": "UZE TradFi Complex & Agentic DeFi",
     "custody": "permissionless_self_custody",
     "venues": ["TradeLayer", "SigLayer"],
     "chain": "Arbitrum Orbit L2 (Robinhood Chain, chain 4663) + UZE rails",
@@ -382,7 +384,10 @@ TOOLS: list[dict[str, Any]] = [
         "inputSchema": {"type": "object", "properties": {}},
         "outputSchema": {
             "type": "object",
-            "properties": {"custody": {"type": "string"}},
+            "properties": {
+                "product": {"type": "string"},
+                "custody": {"type": "string"},
+            },
             "required": ["custody"],
         },
         "_meta": {"custody": "permissionless_self_custody", "demo": True},

@@ -44,6 +44,14 @@ model, for the TradeLayer and SigLayer surfaces:
   5 consecutive years trading permissionless, non-custodial DeFi
   markets.** The rule is carried in the spec, the API payloads, the
   disclosure, and the site copy wherever the extension is described.
+- **Product name (James, spelled out 2026-11-16 22:01 ET):** the
+  offering is **UZE TradFi Complex & Agentic DeFi** — UZE (U-Z-E),
+  TradFi (capital T, capital F), Complex (capital C), ampersand,
+  Agentic DeFi. It is not only a self-custody extension: it is the
+  TradFi complex (the Robinhood brokerage door) and its agentic DeFi
+  side (the self-custody extension) under one name. The directory
+  entry on the site carries this name, with Robinhood Crypto kept
+  separate.
 
 ## 3. Build order (James, 2026-11-16)
 

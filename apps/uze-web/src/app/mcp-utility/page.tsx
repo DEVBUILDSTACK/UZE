@@ -32,8 +32,9 @@ export default function McpUtilityPage() {
         brokerage-custody crypto, and it is not the UZE crypto
         solution: UZE crypto is permissionless self-custody, with
         earlier-stage tokens the brokerage never lists, at your own
-        election — and that extension is for experienced DeFi
-        traders only, more than 5 consecutive years trading
+        election — and UZE TradFi Complex &amp; Agentic DeFi, the
+        self-custody side of this directory, is for experienced
+        DeFi traders only, more than 5 consecutive years trading
         permissionless, non-custodial DeFi markets.
       </p>
       <p className="note">
@@ -43,6 +44,37 @@ export default function McpUtilityPage() {
         if that API build is not deployed yet, the panel says so
         instead of faking the data.
       </p>
+      <h2>Directory</h2>
+      <div className="cards">
+        <div
+          className="card"
+          style={{ borderLeft: "4px solid var(--accent)" }}
+        >
+          <h3>Robinhood Brokerage — UZE TradFi Complex &amp; Agentic DeFi</h3>
+          <p className="meta">
+            Traditional finance — the prominent door across the US
+            and Europe
+          </p>
+          <p>
+            The TradFi complex: long equities and options in a
+            brokerage account, held in brokerage custody. Your agent
+            reads every account and trades only in the dedicated MCP
+            account, behind a review step. Its agentic DeFi side is
+            the UZE self-custody extension in the two-doors panel
+            below. The live demo of this entry is the panel below.
+          </p>
+        </div>
+        <div className="card">
+          <h3>Robinhood Crypto</h3>
+          <p className="meta">Kept separate — brokerage custody</p>
+          <p>
+            Crypto placed through Robinhood sits in Robinhood&apos;s
+            custody and is not the UZE crypto solution. UZE crypto is
+            permissionless self-custody — TradeLayer and SigLayer,
+            the two-doors panel below.
+          </p>
+        </div>
+      </div>
       <BrokeragePanel />
     </main>
   );
