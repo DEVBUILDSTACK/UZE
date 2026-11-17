@@ -33,19 +33,20 @@ export default function TicketsPage() {
 
       <h2>The built surface — live here</h2>
       <p>
-        The venue ticketing build, integrated: pick a sector in the
+        The venue ticketing build — the canonical standalone build,
+        linked live from its own home: pick a sector in the
         3D venue and the engine allocates your seats; connect the
         wallet and your tickets land in it as NFTs, one per seat,
         each with its own provenance chain; list them and they
         surface in the secondary market beside the live secondary
         index. Demo build (flow-v10) — wallet and settlement are
         mocked inside it, and it says so.{" "}
-        <a href="/venue-ticketing/" target="_blank" rel="noreferrer">
+        <a href="https://devbuildstack.github.io/uze-venue-ticketing-demo/" target="_blank" rel="noreferrer">
           Open the full ticketing surface →
         </a>
       </p>
       <iframe
-        src="/venue-ticketing/"
+        src="https://devbuildstack.github.io/uze-venue-ticketing-demo/"
         title="UZE venue ticketing — seat selection, NFT wallet, secondary market"
         style={{
           width: "100%",
