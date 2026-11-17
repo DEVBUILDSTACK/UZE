@@ -21,11 +21,14 @@ export default function TicketsPage() {
         many seats together — the engine assigns.
       </p>
       <p>
-        A UZE ticket is minted once, as an NFT with its receipt and
-        attestation attached. On resale the original NFT transfers —
-        it is never re-minted — so the chain of custody is the proof.
-        Matching runs on NEAR intents and its solver network; the
-        ticket can bridge to Solana, Ink, Base, LightLink, and
+        A UZE ticket is minted once on NEAR, as an NFT with its
+        receipt and attestation attached. On resale the original NFT
+        transfers — it is never re-minted — so the chain of custody
+        is the proof. Everything bridges through NEAR — NEAR Intents
+        and NEAR AI: the EVM L2s (Robinhood Chain, Ink, and Base),
+        LightLink as the EVM home through the Tickify.io affiliate
+        integration, and Solana. Settlement follows the chain — USDC
+        on Solana and Base (CCTP through Wormhole), USDG on
         Robinhood Chain.
       </p>
 

@@ -459,7 +459,7 @@ const short = (a) => (a === ISSUER ? a : a.slice(0, 6) + "…" + a.slice(-4));
 function connectWallet() {
   if (!MARKET.wallet) MARKET.wallet = newAddr();
   document.getElementById("walletAddr").innerHTML =
-    `<span class="addr">${MARKET.wallet}</span> <span class="badge mockb">NEAR · MOCK WALLET</span>`;
+    `<span class="addr">${MARKET.wallet}</span> <span class="badge mockb">LIGHTLINK · MOCK WALLET</span>`;
   document.getElementById("walletBtn").textContent = "Wallet connected";
   renderMarket();
 }
