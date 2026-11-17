@@ -458,28 +458,33 @@ state it.
 
 ## 10. The DealFi desk — an affiliate's productized placement (SPEC ONLY)
 
-**DealFi is any type of financial demand, served by a
-lead-generation desk — the DealFi desk.** In Talent terms
-the desk is a **productized placement**: companies
-worldwide staff sales associates to sell debt financing,
-equity, or private equity. The answer offered on this
-platform is that the demand-side employer uses the DealFi
-desk **instead of hiring** business development / growth /
-salespeople to place their financial or funding services.
-The desk cures the need to hire financing salespeople.
+**DealFi leads with funding as it rolls out — a funding
+and deals desk: a lead-generation desk for funding,
+financial, and talent demand.** Debt, equity, and private
+financing sit on the funding side; crossing into the
+Talent plane, the desk also serves talent referral
+demand. In Talent terms the desk is a **productized
+placement**: companies worldwide staff sales associates
+to sell debt financing, equity, or private equity. The
+answer offered on this platform is that the demand-side
+employer uses the DealFi desk **instead of hiring**
+business development / growth / salespeople to place
+their financial or funding services. The desk cures the
+need to hire financing salespeople.
 
 **Whose desk it is (owner correction, 2026-11-17):** the
 DealFi desk is **not a UZEmarkets build** and does not live
 in this monorepo. DealFi is an **affiliate solution in its
 own right — its own entity and its own repo**:
 
-- **Entity: DFI LLC (Wyoming)** — "DealFi" is the product
-  and desk name; DFI LLC is the affiliate entity behind it.
+- **Entity: DealFi (DFI)** — the Wyoming affiliate entity
+  behind the desk (written DealFi (DFI); the term "LLC" is
+  not used, per the owner's correction, 2026-11-17).
 - **Ownership & licensing:** the separate DealFi repo is
   still part of **our** repo structure — it lives in
   **DEVBUILDSTACK**, separately branded. All IP is
   **completely owned by 456iP** and **perpetually,
-  non-exclusively sub-licensed** to others; DFI LLC
+  non-exclusively sub-licensed** to others; DealFi (DFI)
   operates under that sub-license. The repo separation
   exists precisely so the asset can be sub-licensed
   cleanly as a bounded unit — separation is a licensing
