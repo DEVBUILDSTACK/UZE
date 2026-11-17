@@ -13,7 +13,7 @@
 
 export const VENUE = {
   id: "bcn-pilot-01",
-  name: "Demo Stadium — Venue Survey",
+  name: "Estádio Beira-Rio — Demo Survey",
   city: "Porto Alegre",
   eventTypes: ["football", "concert", "spectator-events"],
   currency: "EUR",
@@ -56,15 +56,15 @@ export function fromPrice(sector, rings = RINGS) {
 export const EVENTS = [
   {
     id: "soccer", tab: "⚽ Soccer", kind: "soccer", currency: "R$",
-    venue: "Demo Stadium — Venue Survey", city: "Porto Alegre",
+    venue: "Estádio Beira-Rio — Demo Survey", city: "Porto Alegre",
     ringLabel: "Ring", centerColor: 0x2f7d32,
-    banner: "<strong>Home Team</strong> vs <strong>Away Team</strong> · Demo fixture · Venue selector demo",
-    receipt: "Home Team vs Away Team · Demo fixture",
-    emName: "Home Team vs Away Team", emFocus: { sector: "Tribuna Central", ring: "Lower Ring" },
+    banner: "<strong>Internacional</strong> (Porto Alegre) vs <strong>São Paulo FC</strong> · January 2027 · Venue selector demo for the Brazil focus",
+    receipt: "Internacional vs São Paulo FC · January 2027 (demo fixture)",
+    emName: "Internacional vs São Paulo FC", emFocus: { sector: "Tribuna Central", ring: "Lower Ring" },
     sectors: SECTORS, rings: null,
-    card: `<div class="team home"><span class="abbr">HOME</span><span class="tname">Home Team</span><span class="tcity">Home side</span></div>
+    card: `<div class="team home"><span class="abbr">INTER</span><span class="tname">Internacional</span><span class="tcity">Porto Alegre</span></div>
       <div class="vs">VS<br><span>JAN<br>2027</span></div>
-      <div class="team away"><span class="abbr">AWAY</span><span class="tname">Away Team</span><span class="tcity">Away side</span></div>`,
+      <div class="team away"><span class="abbr">SPFC</span><span class="tname">São Paulo FC</span><span class="tcity">São Paulo</span></div>`,
   },
   {
     id: "music", tab: "🎵 Music", kind: "music", currency: "R$",
