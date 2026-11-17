@@ -490,8 +490,8 @@ own right — its own entity and its own repo**:
   cleanly as a bounded unit — separation is a licensing
   boundary, not an ownership boundary.
 - It integrates **into** the UZEmarkets platform the way
-  **Fundio** does (Fundio VC LLC or similar naming — its
-  own affiliate entity, built into the platform but not
+  **Fundio** does (Fundio (FVC) — FVC short for Fundio VC,
+  its own affiliate entity, built into the platform but not
   UZEmarkets): an **API-level integration** between the
   affiliate's own system and the platform, consistent with
   how this spec treats other affiliate surfaces.
