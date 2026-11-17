@@ -26,8 +26,7 @@ export default function TicketsPage() {
         transfers — it is never re-minted — so the chain of custody
         is the proof. Everything bridges through NEAR — NEAR Intents
         and NEAR AI: the EVM L2s (Robinhood Chain, Ink, and Base),
-        LightLink as the EVM home through the Tickify.io affiliate
-        integration, and Solana. Settlement follows the chain — USDC
+        LightLink as the EVM home, and Solana. Settlement follows the chain — USDC
         on Solana and Base (CCTP through Wormhole), USDG on
         Robinhood Chain.
       </p>

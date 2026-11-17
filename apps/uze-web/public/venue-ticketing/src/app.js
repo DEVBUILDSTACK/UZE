@@ -446,8 +446,8 @@ tick();
 
 // ===========================================================================
 // MARKET LAYER (MOCK) — primary NFT mint + secondary resale on LightLink.
-// All state is in-memory and labelled MOCK. Production: Tickify.io partner
-// integration on LightLink EVM; confidential resale pricing via Arcium MPC
+// All state is in-memory and labelled MOCK. Production: NEAR primary
+// mint with the LightLink EVM bridge; confidential resale pricing via Arcium MPC
 // is the roadmap seam (see the note in the secondary panel).
 // ===========================================================================
 const MARKET = { wallet: null, tickets: [], counter: 1042 };
