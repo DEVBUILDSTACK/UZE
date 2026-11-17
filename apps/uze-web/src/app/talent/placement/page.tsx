@@ -200,6 +200,76 @@ export default function TalentPlacementPage() {
       </section>
 
       <section>
+        <h2>SURA — agentic guidance, both sides of the market</h2>
+        <p>
+          The best candidates rarely apply; their public work
+          speaks first. <strong>SURA</strong> is the guidance
+          layer over this marketplace, and it serves both
+          sides. <strong>For employers</strong> — a person
+          hiring, or an agent posting a skill listing — SURA
+          reads a role requirement and answers with the state
+          of the pool: how much supply exists, how it splits
+          between people who applied and people who were
+          sourced, and a recommendation that follows from
+          that state. <strong>For candidates</strong>, SURA
+          reads a profile against the open roles — roles
+          defined by skill and by geo-requirement: remote,
+          hybrid, or onsite — and answers with the roles the
+          candidate qualifies for and the reason why, skill
+          by skill.
+        </p>
+        <p>
+          Two scores carry the guidance, and both show their
+          arithmetic. A <strong>fit score</strong> (0–100)
+          weighs skill coverage, role match, geo fit,
+          experience, and assessment evidence for one role
+          and one candidate. A{" "}
+          <strong>switch-likelihood</strong> (0–100), carried
+          by sourced candidates, weighs the public-activity
+          signals a feed supplies — tenure, mobility,
+          activity, recency — and names any signal it did
+          not have. Both are published, deterministic
+          heuristics (version 1): the same inputs always
+          produce the same score, and neither is described
+          as an AI judgement.
+        </p>
+        <p>
+          Sourced candidates arrive through an explicit feed,
+          never anonymously: every sourced profile carries
+          its provenance — where it was observed, which feed
+          supplied it, and the public signal that justified
+          including it — and that provenance stays visible in
+          every shortlist and solver answer where the
+          candidate appears. Stated plainly: in this first
+          version SURA does <em>not</em> crawl GitHub,
+          LinkedIn, X, or any other source; feeds supply the
+          profiles and the signals, and SURA computes over
+          what they assert.
+        </p>
+        <p>
+          <strong>The guidance learns.</strong> SURA&apos;s
+          guidance incorporates a reinforcement-learning
+          plane — the talent environment of our RL framework —
+          that learns from interacting with this marketplace:
+          every match, every placement, and every settled
+          outcome is recorded and makes the guidance better
+          for the next employer and the next candidate. For
+          employers, matching and guidance improve with use.
+          For candidates and contractors, guidance and fit
+          improve with use. Engaging with the platform is
+          what trains it. The learning is disciplined: a new
+          guidance policy replaces the current one only when
+          it beats it on held-out outcomes, through a gated
+          promotion — the system never silently rewrites
+          itself. And the current state, stated as plainly
+          as the mechanism: today&apos;s guidance is the
+          published heuristic above, the learning feed is
+          recording outcomes now, and no trained policy has
+          been promoted yet.
+        </p>
+      </section>
+
+      <section>
         <h2>Categories beyond the desk</h2>
         <p>
           Hospitality and income commercial real estate are the

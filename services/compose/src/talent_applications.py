@@ -32,6 +32,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+import sura
 import talent_ats
 import talent_profile
 
@@ -61,10 +62,14 @@ class SolveIn(BaseModel):
 
 @router.post("/intents/solve")
 def solve(body: SolveIn):
+    # The solver pool is applied ∪ sourced supply (SURA
+    # spec §3.2): sourced candidates — ingested through
+    # the SURA feed with provenance marked — are treated
+    # identically to applied candidates inside the solver,
+    # and their provenance rides in every offer.
+    pool = talent_ats.load_profiles() + sura.load_sourced_profiles()
     return JSONResponse(
-        content=talent_ats.solve_intent(
-            body.need, talent_ats.load_profiles()
-        )
+        content=talent_ats.solve_intent(body.need, pool)
     )
 
 
@@ -113,6 +118,9 @@ def create_application(body: ApplicationIn):
         body.actor.strip() or "system",
     )
     talent_ats.record_application(app)
+    # Settle any linked SURA guidance events (spec §9.2):
+    # entering the lifecycle marks the outcome matched.
+    sura.settle_outcomes_for_application(app)
     return JSONResponse(content=app)
 
 
@@ -149,6 +157,10 @@ def transition_application(application_id: str, body: TransitionIn):
     if problems:
         return _insufficient(problems)
     talent_ats.record_transition(updated, updated["events"][-1])
+    # Settle linked SURA guidance events from the new
+    # lifecycle state (spec §9.2) — ACCEPTED settles
+    # placed/accepted; REJECTED settles rejected.
+    sura.settle_outcomes_for_application(updated)
     return JSONResponse(content=updated)
 
 
