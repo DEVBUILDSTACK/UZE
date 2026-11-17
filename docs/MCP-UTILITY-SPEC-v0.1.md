@@ -172,3 +172,23 @@ UZE Auction**:
 The brokerage connect payload carries only the trading
 segmentation; the product segmentation lives on the product MCP
 surface. Neither grouping borrows the other's names.
+
+## 10. Asset coverage — all available assets (James, 2026-11-16 21:29 ET)
+
+Per Robinhood's "Trading with your agent" article (read in full the
+same evening; brief §6): the brokerage agent surface covers **long
+equities, options, and crypto** — order types market (share- and
+dollar-based), limit, stop limit, stop market; no multi-leg options
+by agent; crypto trade-only (no transfer/stake/lend), gated on a
+corresponding Robinhood Crypto account and state availability.
+
+The live integration's allowlist plan follows the article's external
+-agent catalogue (~90 tools): read tools and the review/preview
+simulations across all asset classes are allowlisted after the live
+schema review; place/cancel/exercise tools stay behind the user's
+per-order confirmation. Robinhood's own trade-approvals control
+defaults OFF for MCP accounts, so the review gate in §1 is the
+operative fence (the user may also turn approvals on inside
+Robinhood as a second fence). Crypto reached through this door is
+brokerage-custody crypto under §2's differentiation — never the UZE
+crypto solution.
