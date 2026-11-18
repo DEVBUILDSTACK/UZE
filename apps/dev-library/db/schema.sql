@@ -89,6 +89,14 @@ CREATE TABLE IF NOT EXISTS comms_send (
   data      jsonb NOT NULL DEFAULT '{}'::jsonb
 );
 
+-- One-time sign-in codes. Serverless functions share no memory, so in
+-- DB mode the codes live here instead of gate.mjs's in-process map.
+CREATE TABLE IF NOT EXISTS otp_code (
+  email      text PRIMARY KEY,              -- lowercased
+  code_hash  text NOT NULL,                 -- sha256 hex of the 6-digit code
+  expires_at bigint NOT NULL                -- epoch ms
+);
+
 CREATE TABLE IF NOT EXISTS comment (
   id       bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   slug     text NOT NULL,

@@ -1,0 +1,136 @@
+name: Deploy Dev Library
+
+# Push to main (apps/dev-library changes) or manual dispatch ->
+# deploy the Dev Library (apps/dev-library) to its own Vercel project
+# "uze-dev-library", with a Vercel Postgres store as the talent data
+# layer and dev.uzemarkets.com as its domain. Same secret pattern as
+# deploy.yml: VERCEL_TOKEN + VERCEL_ORG_ID from repo secrets; the
+# project id is resolved by name (this project is not VERCEL_PROJECT_ID,
+# which belongs to uze-web). Every step echoes the raw API/CLI output
+# so a failure names its own blocker.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "apps/dev-library/**"
+      - ".github/workflows/deploy-dev-library.yml"
+
+concurrency:
+  group: deploy-dev-library
+  cancel-in-progress: false
+
+jobs:
+  dev-library-vercel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      PROJECT_NAME: uze-dev-library
+      STORE_NAME: dev-library-db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Ensure Vercel project exists
+        id: proj
+        run: |
+          set -u
+          LIST=$(curl -s "https://api.vercel.com/v10/projects?teamId=${VERCEL_ORG_ID}&limit=100" -H "Authorization: Bearer ${VERCEL_TOKEN}")
+          PID=$(echo "$LIST" | python3 -c "import json,sys; d=json.load(sys.stdin); print(next((p['id'] for p in d.get('projects',[]) if p['name']=='${PROJECT_NAME}'),''))")
+          if [ -z "$PID" ]; then
+            echo "project not found — creating ${PROJECT_NAME}"
+            CREATE=$(curl -s -X POST "https://api.vercel.com/v10/projects?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d "{\"name\":\"${PROJECT_NAME}\"}")
+            echo "$CREATE" | head -c 600; echo
+            PID=$(echo "$CREATE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('id',''))")
+          fi
+          echo "project_id=$PID" >> "$GITHUB_OUTPUT"
+          echo "project id: $PID"
+          test -n "$PID"
+
+      - name: Stage deploy copy outside git tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/dev-library-deploy"
+          tar --exclude=node_modules --exclude=.vercel -cf - . | (cd "$RUNNER_TEMP/dev-library-deploy" && tar xf -)
+        working-directory: ./apps/dev-library
+
+      - name: Link project + pull settings
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        run: |
+          vercel link --yes --project "$PROJECT_NAME" --token="$VERCEL_TOKEN"
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Ensure Postgres store exists and is connected
+        run: |
+          set -u
+          STORES=$(curl -s "https://api.vercel.com/v1/storage/stores?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}")
+          SID=$(echo "$STORES" | python3 -c "import json,sys; d=json.load(sys.stdin); s=d.get('stores',d if isinstance(d,list) else []); print(next((x['id'] for x in s if x.get('name')=='${STORE_NAME}'),''))" 2>/dev/null || echo "")
+          if [ -z "$SID" ]; then
+            echo "store not found — creating ${STORE_NAME}"
+            CREATE=$(curl -s -X POST "https://api.vercel.com/v1/storage/stores?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d "{\"name\":\"${STORE_NAME}\",\"type\":\"postgres\"}")
+            echo "$CREATE" | head -c 800; echo
+            SID=$(echo "$CREATE" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('store',d).get('id',''))" 2>/dev/null || echo "")
+          fi
+          echo "store id: $SID"
+          test -n "$SID"
+          echo "== connect store to project (idempotent; an 'already connected' response is fine)"
+          curl -s -X POST "https://api.vercel.com/v1/storage/stores/${SID}/connections?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d "{\"projectId\":\"${{ steps.proj.outputs.project_id }}\",\"type\":\"postgres\",\"environments\":[\"production\",\"preview\",\"development\"]}" | head -c 800; echo
+
+      - name: Ensure project env (working-set dir + session secret)
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        run: |
+          set -u
+          EXISTING=$(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null || echo "")
+          if ! echo "$EXISTING" | grep -q "LIBRARY_DATA"; then
+            printf "/tmp/dev-library-data" | vercel env add LIBRARY_DATA production --token="$VERCEL_TOKEN"
+          fi
+          if ! echo "$EXISTING" | grep -q "LIBRARY_SECRET"; then
+            openssl rand -hex 32 | tr -d '\n' | vercel env add LIBRARY_SECRET production --token="$VERCEL_TOKEN"
+          fi
+          echo "env present: $(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null | grep -E 'LIBRARY|POSTGRES' || true)"
+
+      - name: Build (verify compile)
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy (prebuilt, production)
+        id: deploy
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        run: |
+          URL=$(vercel deploy --prod --prebuilt --token="$VERCEL_TOKEN" | tail -1)
+          echo "deployment_url=$URL" >> "$GITHUB_OUTPUT"
+          echo "deployed: $URL"
+
+      - name: Add domain dev.uzemarkets.com
+        run: |
+          set -u
+          PID="${{ steps.proj.outputs.project_id }}"
+          echo "== POST domain (idempotent)"
+          curl -s -X POST "https://api.vercel.com/v10/projects/${PID}/domains?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d '{"name":"dev.uzemarkets.com"}' | head -c 600; echo
+          echo "== domain state (verification / DNS requirements, if any)"
+          curl -s "https://api.vercel.com/v9/projects/${PID}/domains/dev.uzemarkets.com?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 1200; echo
+          curl -s "https://api.vercel.com/v6/domains/dev.uzemarkets.com/config?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 800; echo
+
+      - name: Seed the data layer
+        working-directory: ./apps/dev-library
+        run: |
+          cd "$RUNNER_TEMP/dev-library-deploy" && vercel env pull .env.production.local --environment=production --token="$VERCEL_TOKEN" && cd -
+          PGURL=$(grep -E "^POSTGRES_URL=" "$RUNNER_TEMP/dev-library-deploy/.env.production.local" | head -1 | cut -d= -f2- | tr -d '"')
+          if [ -z "$PGURL" ]; then echo "BLOCKER: POSTGRES_URL not present in project env — the store connection did not inject it"; exit 1; fi
+          npm install --no-workspaces --no-audit --no-fund pg
+          DATABASE_URL="$PGURL" node db/seed.mjs
+
+      - name: Smoke check
+        run: |
+          set -u
+          echo "== deployment URL"
+          curl -s -o /dev/null -w "%{http_code}\n" "${{ steps.deploy.outputs.deployment_url }}/"
+          curl -s "${{ steps.deploy.outputs.deployment_url }}/api/catalog" | head -c 200; echo
+          echo "== dev.uzemarkets.com (may lag until DNS verifies)"
+          curl -s -o /dev/null -w "%{http_code}\n" "https://dev.uzemarkets.com/" || true

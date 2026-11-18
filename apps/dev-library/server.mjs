@@ -37,13 +37,25 @@ const publicDev = (d) => d && ({ name: d.name, email: d.email, track: d.track ||
 
 // DB mode (DATABASE_URL set): the talent data layer is the durable
 // record — hydrate the working set from it before serving.
-if (process.env.DATABASE_URL) {
-  const { initPgStore } = await import("./lib/store-pg.mjs");
-  await initPgStore();
+let flushFn = null;
+if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+  // Serverless filesystems are read-only but for /tmp: seed the
+  // working set there from the bundled data/ on first cold start.
+  if (process.env.LIBRARY_DATA) {
+    fs.mkdirSync(process.env.LIBRARY_DATA, { recursive: true });
+    if (!fs.existsSync(path.join(process.env.LIBRARY_DATA, "developers.json"))) {
+      for (const f of fs.readdirSync(path.join(ROOT, "data"))) {
+        fs.copyFileSync(path.join(ROOT, "data", f), path.join(process.env.LIBRARY_DATA, f));
+      }
+    }
+  }
+  const pgStore = await import("./lib/store-pg.mjs");
+  await pgStore.initPgStore();
+  flushFn = pgStore.flushPg;
   console.log("dev-library: DB mode (Postgres data layer)");
 }
 
-const server = http.createServer(async (req, res) => {
+const handleRequest = async (req, res) => {
   const url = new URL(req.url, "http://x");
   const p = url.pathname;
   try {
@@ -52,12 +64,12 @@ const server = http.createServer(async (req, res) => {
     // --- the door ---
     if (p === "/api/request-code" && req.method === "POST") {
       const { email } = await body(req);
-      if (email) requestCode(String(email)); // generic answer either way
+      if (email) await requestCode(String(email)); // generic answer either way
       return send(res, 200, { ok: true });
     }
     if (p === "/api/verify" && req.method === "POST") {
       const { email, code } = await body(req);
-      if (!email || !verifyCode(String(email), String(code))) return send(res, 401, { error: "invalid code" });
+      if (!email || !(await verifyCode(String(email), String(code)))) return send(res, 401, { error: "invalid code" });
       const token = signSession(String(email));
       return send(res, 200, { ok: true, developer: publicDev(findDeveloper(email)) },
         { "set-cookie": `dl_session=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/` });
@@ -143,5 +155,17 @@ const server = http.createServer(async (req, res) => {
   } catch (e) {
     return send(res, 500, { error: String(e.message || e) });
   }
+};
+
+// In DB mode, mutating requests wait for the write-through to land
+// before the invocation completes — the record is durable, not hoped.
+const server = http.createServer(async (req, res) => {
+  await handleRequest(req, res);
+  if (flushFn && req.method === "POST") await flushFn();
 });
-server.listen(PORT, () => console.log(`dev-library listening on :${PORT}`));
+export default server; // @vercel/node serves the http.Server instance
+
+import { pathToFileURL } from "node:url";
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  server.listen(PORT, () => console.log(`dev-library listening on :${PORT}`));
+}

@@ -21,6 +21,30 @@ let pool = null;
 let chain = Promise.resolve();
 export function flushPg() { return chain; }
 
+export async function ensurePool() {
+  if (!pool) {
+    pool = new pg.Pool({ connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL });
+    await pool.query(SCHEMA);
+  }
+  return pool;
+}
+// DB-backed one-time codes (serverless-safe; gate.mjs uses these in DB mode).
+export async function setOtp(email, hash, expires) {
+  const p = await ensurePool();
+  await p.query(`INSERT INTO otp_code (email,code_hash,expires_at) VALUES ($1,$2,$3)
+                 ON CONFLICT (email) DO UPDATE SET code_hash=EXCLUDED.code_hash, expires_at=EXCLUDED.expires_at`,
+    [email, hash, expires]);
+}
+export async function getOtp(email) {
+  const p = await ensurePool();
+  const { rows } = await p.query("SELECT code_hash, expires_at FROM otp_code WHERE email=$1", [email]);
+  return rows[0] ? { hash: rows[0].code_hash, expires: Number(rows[0].expires_at) } : null;
+}
+export async function delOtp(email) {
+  const p = await ensurePool();
+  await p.query("DELETE FROM otp_code WHERE email=$1", [email]);
+}
+
 async function persist(name, obj) {
   const q = (sql, params) => pool.query(sql, params);
   if (name === "developers.json") {
@@ -63,8 +87,7 @@ async function persist(name, obj) {
 }
 
 export async function initPgStore() {
-  pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-  await pool.query(SCHEMA);
+  await ensurePool();
   const { rows: devCount } = await pool.query("SELECT count(*)::int AS n FROM developer");
   const { rows: mockCount } = await pool.query("SELECT count(*)::int AS n FROM mock");
   if (devCount[0].n === 0 && mockCount[0].n === 0) {
