@@ -148,6 +148,35 @@ jobs:
           fi
           echo "env present: $(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null | grep -E 'LIBRARY|POSTGRES' || true)"
 
+      # RESEND_API_KEY sync (added 2026-11-18, James's direction —
+      # Vercel is operated through this GitHub/API route, never the
+      # dashboard): the key is placed as an Actions repository secret by
+      # a separate session; this step upserts it into the project's
+      # production env with the same CLI pattern as the step above. It
+      # is best-effort and inert until the secret exists, and the value
+      # is never echoed — it is masked up front, piped to `env add` on
+      # stdin, and that command's output is discarded.
+      - name: Sync RESEND_API_KEY from Actions secret (best-effort)
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          set -u
+          if [ -z "${RESEND_API_KEY:-}" ]; then
+            echo "RESEND_API_KEY Actions secret not set — skipping (mailer stays inert until it is placed)"
+            exit 0
+          fi
+          echo "::add-mask::$RESEND_API_KEY"
+          EXISTING=$(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null || echo "")
+          if echo "$EXISTING" | grep -q "RESEND_API_KEY"; then
+            echo "RESEND_API_KEY already in production env — replacing (upsert)"
+            vercel env rm RESEND_API_KEY production --yes --token="$VERCEL_TOKEN" >/dev/null 2>&1 || true
+          fi
+          printf %s "$RESEND_API_KEY" | vercel env add RESEND_API_KEY production --token="$VERCEL_TOKEN" >/dev/null
+          echo "RESEND_API_KEY synced to production env (value not shown)"
+
       - name: Build (verify compile)
         working-directory: ${{ runner.temp }}/dev-library-deploy
         env:
