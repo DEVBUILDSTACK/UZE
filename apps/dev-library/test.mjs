@@ -8,6 +8,7 @@
 // event, the log marks them sent with the provider id, the delivered
 // sign-in code works, and a failed send stays queued — never dropped.
 import { spawn } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
@@ -134,7 +135,8 @@ fs.cpSync(path.join(ROOT, "data"), tmp2, { recursive: true });
 const PORT2 = 18735;
 const env2 = { ...process.env, PORT: String(PORT2), LIBRARY_DATA: tmp2,
   LIBRARY_MASTER_TOKEN: "test-master", LIBRARY_SECRET: "test-secret",
-  RESEND_API_KEY: "test-key", RESEND_API_URL: `http://127.0.0.1:${stub.address().port}/emails` };
+  RESEND_API_KEY: "test-key", RESEND_API_URL: `http://127.0.0.1:${stub.address().port}/emails`,
+  RESEND_WEBHOOK_SECRET: "whsec_" + Buffer.from("devlib-webhook-test").toString("base64") };
 const srv2 = spawn("node", ["server.mjs"], { cwd: ROOT, env: env2, stdio: "pipe" });
 const B2 = `http://127.0.0.1:${PORT2}`;
 const call2 = async (p, { method = "GET", body, master } = {}) => {
@@ -182,6 +184,31 @@ try {
   const revLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "revocation" && s.to === "mia@test.dev"); return e && e.attempts >= 1 ? e : null; });
   ok("failed send stays queued, attempt + error recorded (never dropped)",
     !!revLog && revLog.status === "queued" && !!revLog.lastError);
+
+  // Phase 3 — delivery webhooks: a Svix-signed delivered event lands
+  // on the comms entry it belongs to; a replay is deduped; a forged
+  // signature is refused.
+  const whPost = async (payload, { id = "msg_" + Math.random().toString(36).slice(2),
+      ts = String(Math.floor(Date.now() / 1000)), bad = false } = {}) => {
+    const raw = JSON.stringify(payload);
+    const sig = crypto.createHmac("sha256", Buffer.from("devlib-webhook-test"))
+      .update(`${id}.${ts}.${raw}`).digest("base64");
+    const r = await fetch(B2 + "/api/resend-webhook", { method: "POST",
+      headers: { "content-type": "application/json", "svix-id": id, "svix-timestamp": ts,
+        "svix-signature": `v1,${bad ? "AAAA" + sig.slice(4) : sig}` }, body: raw });
+    return { status: r.status, id };
+  };
+  const wh = await whPost({ type: "email.delivered", created_at: new Date().toISOString(),
+    data: { email_id: invLog.providerId, to: ["mia@test.dev"] } });
+  const invAfter = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.delivery && e.delivery.status === "delivered" ? e : null; });
+  ok("webhook: delivered event recorded on the comms entry", wh.status === 200 && !!invAfter);
+  const replay = await whPost({ type: "email.delivered", created_at: new Date().toISOString(),
+    data: { email_id: invLog.providerId } }, { id: wh.id });
+  const invReplay = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev");
+  ok("webhook: duplicate delivery deduped on svix id", replay.status === 200 && invReplay.delivery.events.length === 1);
+  const forged = await whPost({ type: "email.delivered", created_at: new Date().toISOString(),
+    data: { email_id: invLog.providerId } }, { bad: true });
+  ok("webhook: forged signature rejected", forged.status === 401);
 } finally {
   srv2.kill();
   stub.close();

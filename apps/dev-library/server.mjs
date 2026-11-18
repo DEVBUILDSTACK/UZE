@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { load, save, chronicle } from "./lib/store.mjs";
 import { findDeveloper, requestCode, verifyCode, signSession, readSession, visibleMocks } from "./lib/gate.mjs";
 import { drainComms } from "./lib/mailer.mjs";
+import { applyWebhook, webhookConfigured } from "./lib/webhook.mjs";
 import * as life from "./lib/lifecycle.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -25,6 +26,9 @@ const send = (res, code, obj, headers = {}) => {
 };
 const body = (req) => new Promise((resolve) => {
   let s = ""; req.on("data", (c) => (s += c)); req.on("end", () => { try { resolve(JSON.parse(s || "{}")); } catch { resolve({}); } });
+});
+const rawBody = (req) => new Promise((resolve) => {
+  let s = ""; req.on("data", (c) => (s += c)); req.on("end", () => resolve(s));
 });
 const sessionOf = (req) => {
   const cookie = req.headers.cookie || "";
@@ -127,6 +131,14 @@ const handleRequest = async (req, res) => {
       db.comments.push(c); save("comments.json", db);
       chronicle("comment", { slug, by: d.email });
       return send(res, 200, { ok: true, comment: c });
+    }
+
+    // --- Resend delivery webhooks (Svix-signed; records the real
+    // fate of each send on its comms entry) ---
+    if (p === "/api/resend-webhook" && req.method === "POST") {
+      if (!webhookConfigured()) return send(res, 503, { error: "webhook not armed" });
+      const r = applyWebhook(await rawBody(req), req.headers);
+      return send(res, r.ok ? 200 : 401, r);
     }
 
     // --- master control (SoSem; x-master-token) ---
