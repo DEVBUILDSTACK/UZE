@@ -54,59 +54,150 @@ const HEADLINE = { invitation: "A seat in the reading room." };
 const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SERIF = "Georgia,'Times New Roman',serif";
 
+// Design system v3 (2026-11-18, built to the Resend/React Email
+// research spec in ~/workspace/research_notes/
+// resend-email-design-innovation-20261118-2210/report.md):
+// table layout (role="presentation"), CSS fully inlined, live text
+// only, deliberate preheader per kind (<90 chars), lang/dir set, and
+// a dark-mode pack authored for Apple Mail ONLY (color-scheme metas
+// + one <style> block whose prefers-color-scheme rules carry
+// !important — the documented exception to inlining; Gmail and
+// Outlook get the light design, untouched). Total HTML stays far
+// under Gmail's ~102KB clip line. Imagery is HOSTED on our own
+// domain (never CID): the hero is an animated GIF whose first frame
+// is the complete static design — the only motion that survives
+// Gmail + Apple Mail. The GIF (assets/hero.gif, 1200x400 shown at
+// 600x200, ~353KB) animates one floating card: the card region of
+// hero.jpg bobbing ±3px on a 4s sine over the flat-cream wall,
+// palette-encoded with transparent delta frames (ffmpeg recipe:
+// drawbox-erase + feathered alphamerge patch + overlay eval=frame
+// + palettegen reserve_transparent + paletteuse diff_mode=rectangle).
+// Standing layout rules (James): CTAs sit directly above the
+// signature; the logo sits underneath the signature block; the
+// WhatsApp band is the bottom-most element of the card; the OTP
+// email stays lean — no hero, no buttons, no banners.
+const PREHEADER = {
+  invitation: "Your seat in the UZE Dev Library is ready — enter with a one-time code.",
+  otp: "Your UZE Dev Library sign-in code — it expires in 15 minutes.",
+  "source-grant": "Your DEVBUILDSTACK source access is live — details inside.",
+  "change-notice": "A change to your Dev Library access — details inside.",
+  revocation: "Your Dev Library access has been reset — details inside.",
+};
+const HERO_URL = "https://dev.uzemarkets.com/hero.gif";
+const HERO_ALT = "The UZE Dev Library reading room — design mocks, interface cards and working notes laid out for review";
+const STYLE_BLOCK = `<style>
+:root{color-scheme:light dark}
+@media only screen and (max-width:620px){.em-card{width:100%!important}.em-pad{padding-left:20px!important;padding-right:20px!important}}
+@media (prefers-color-scheme:dark){
+.em-bg{background-color:#141210!important}
+.em-card{background-color:#201c18!important;border-color:#3a352f!important}
+.em-text{color:#f2ede6!important}
+.em-head{color:#ffffff!important}
+.em-muted{color:#b3aa9d!important}
+.em-facts{background-color:#2a251f!important;border-color:#3a352f!important}
+.em-code{background-color:#2a251f!important;border-color:#3a352f!important}
+.em-code-num{color:#ffffff!important}
+.em-div{border-top-color:#3a352f!important}
+}
+</style>`;
+const LINK = (href, label, color = "#ff6b00") =>
+  `<a href="${href}" style="color:${color};font-weight:700;text-decoration:underline">${label}</a>`;
+
 export function renderHtml(entry) {
-  const greeting = GREETING[entry.kind] || "Hello,";
+  const desk = entry.kind !== "otp";
+  const greeting = entry.greetingText || GREETING[entry.kind] || "Hello,";
+  const preheader = entry.preheader || PREHEADER[entry.kind] || "";
   const code = entry.kind === "otp" && entry.body.match(/is (\d{6})\./)?.[1];
-  const paras = esc(entry.body).split(/\n+/).filter(Boolean)
-    .map((p) => `<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#1a1a1a">${p}</p>`).join("");
-  const headline = HEADLINE[entry.kind]
-    ? `<h1 style="margin:0 0 18px;font-family:${SERIF};font-size:29px;line-height:1.2;font-weight:700;color:#1a1a1a">${HEADLINE[entry.kind]}</h1>` : "";
-  const codeBlock = code ? `<div style="text-align:center;margin:22px 0;padding:20px;background:#f5f2ee;border:1px solid #ddd5c9;border-radius:10px"><span style="font-size:34px;font-weight:800;letter-spacing:8px;color:#1a1a1a">${code}</span></div>` : "";
+  const pText = (inner) => `<p class="em-text" style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#1a1a1a">${inner}</p>`;
+  const paras = esc(entry.body).split(/\n+/).filter(Boolean).map(pText).join("");
+  const headline = desk && HEADLINE[entry.kind]
+    ? `<h1 class="em-head" style="margin:0 0 18px;font-family:${SERIF};font-size:29px;line-height:1.2;font-weight:700;color:#1a1a1a">${HEADLINE[entry.kind]}</h1>` : "";
+  const codeBlock = code ? `<div class="em-code" style="text-align:center;margin:22px 0;padding:20px;background-color:#f5f2ee;border:1px solid #ddd5c9;border-radius:10px"><span class="em-code-num" style="font-size:34px;font-weight:800;letter-spacing:8px;color:#1a1a1a">${code}</span></div>` : "";
   const cta = entry.kind === "invitation"
-    ? `<div style="text-align:center;margin:26px 0 8px"><a href="${LIBRARY_URL}" style="display:inline-block;background:#ff6b00;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 34px;border-radius:999px">Enter the Dev Library</a></div>
-    <p style="text-align:center;margin:0 0 6px;font-size:13px;color:#6b655e">or go straight to <a href="${LIBRARY_URL}" style="color:#ff6b00;font-weight:600">dev.uzemarkets.com</a></p>` : "";
+    ? `<div style="text-align:center;margin:26px 0 8px"><a href="${LIBRARY_URL}" style="display:inline-block;background-color:#ff6b00;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 34px;border-radius:999px">Enter the Dev Library</a></div>
+    <p class="em-muted" style="text-align:center;margin:0 0 6px;font-size:13px;color:#6b655e">or go straight to ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>` : "";
   const facts = entry.kind === "invitation"
-    ? `<div style="background:#f5f2ee;border:1px solid #ddd5c9;border-radius:12px;padding:18px 22px;margin:22px 0">
-      <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; The catalogue is organised by <strong>topic, date and repository</strong></p>
-      <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>Comment and suggest</strong> on anything you read, ahead of any source access</p>
-      <p style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by a <strong>one-time code</strong> sent to your email — no password to keep</p>
+    ? `<div class="em-facts" style="background-color:#f5f2ee;border:1px solid #ddd5c9;border-radius:12px;padding:18px 22px;margin:22px 0">
+      <p class="em-text" style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; The catalogue is organised by <strong>topic, date and repository</strong></p>
+      <p class="em-text" style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>Comment and suggest</strong> on anything you read, ahead of any source access</p>
+      <p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by a <strong>one-time code</strong> sent to your email — no password to keep</p>
     </div>` : "";
   // The social-engagement banner (James, 2026-11-18): the visual
-  // block at the bottom of desk correspondence — X and the podcast,
-  // with the share ask. The sign-in code email stays lean without it.
-  const banner = entry.kind !== "otp"
-    ? `<div style="margin-top:22px;background:#ff6b00;border-radius:12px;padding:22px;text-align:center">
-      <div style="font-size:19px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ffffff">UZE</span><span style="color:#1a1a1a">markets</span></div>
-      <p style="margin:9px 0 4px;color:#ffffff;font-size:14px;line-height:1.55">Join the conversation — <a href="https://x.com/UZEmarkets_fyi" style="color:#ffffff;font-weight:700;text-decoration:underline">follow us on X</a>, like, and post your take.</p>
-      <p style="margin:0;color:#ffffff;font-size:14px;line-height:1.55">Hear the week on <a href="https://podcast.uzemarkets.com" style="color:#ffffff;font-weight:700;text-decoration:underline">the podcast</a> — and share the weekly edition.</p>
+  // block in desk correspondence — X and the podcast, with the
+  // share ask. A send may carry its own lines (entry.bannerLines,
+  // plain text) — outreach copy varies; the desk default is below.
+  const bannerLines = entry.bannerLines
+    ? entry.bannerLines.map((l, i) => `<p style="margin:${i ? "5px" : "9px"} 0 0;color:#ffffff;font-size:14px;line-height:1.55">${esc(l)}</p>`).join("")
+    : `<p style="margin:9px 0 0;color:#ffffff;font-size:14px;line-height:1.55">Join the conversation — ${LINK("https://x.com/UZEmarkets_fyi", "follow us on X", "#ffffff")}, like, and post your take.</p>
+      <p style="margin:5px 0 0;color:#ffffff;font-size:14px;line-height:1.55">Hear the week on ${LINK("https://podcast.uzemarkets.com", "the podcast", "#ffffff")} — and share the weekly edition.</p>`;
+  const banner = desk
+    ? `<div style="margin-top:22px;background-color:#ff6b00;border-radius:12px;padding:22px;text-align:center">
+      <div style="font-size:19px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ffffff">UZE</span><span style="color:#1a1a1a">markets</span></div>${bannerLines}
     </div>` : "";
-  const ctaLinks = CTA_LINKS.map(([label, url]) => `<a href="${url}" style="color:#ff6b00;text-decoration:none;font-weight:600">${label}</a>`).join(" &nbsp;·&nbsp; ");
-  return `<div style="background:#f5f2ee;padding:28px 12px;font-family:${SANS}">
-  <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #ddd5c9;border-radius:14px;overflow:hidden">
-    <div style="background:#1a1a1a;padding:20px 34px">
-      <div style="font-size:21px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span style="color:#ffffff">markets</span></div>
-      <div style="font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px">DEV LIBRARY · THE READING ROOM</div>
-    </div>
-    <div style="padding:28px 34px 24px">
-    ${headline}<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#1a1a1a">${esc(greeting)}</p>
-    ${paras}${codeBlock}${cta}${facts}
-    <div style="border-top:1px solid #ddd5c9;margin-top:24px;padding-top:14px">
-      <p style="margin:0 0 4px;font-size:13px;color:#1a1a1a">${ctaLinks}</p>
-      <p style="margin:0;font-size:13px;color:#6b655e;line-height:1.5">Share the weekly edition, and leave us feedback or a kind word on those channels. Our affiliate WhatsApp group opens soon.</p>
-    </div>${banner}
-    <div style="margin-top:20px">
-      <p style="margin:0 0 2px;color:#1a1a1a">Warm regards,</p>
-      <p style="margin:0;font-weight:700;color:#1a1a1a">The UZE Markets Desk</p>
-      <p style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · <a href="mailto:desk@uzemarkets.com" style="color:#ff6b00;text-decoration:none">desk@uzemarkets.com</a> · <a href="${LIBRARY_URL}" style="color:#ff6b00;text-decoration:none">dev.uzemarkets.com</a></p>
+  // The button row — the house CTAs as unmissable pills, sitting
+  // directly above the signature, share line beneath them.
+  const pill = (href, label, bg) =>
+    `<td bgcolor="${bg}" style="background-color:${bg};border-radius:999px"><a href="${href}" style="display:inline-block;padding:10px 18px;color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap">${label}</a></td>`;
+  const buttonRow = desk
+    ? `<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:22px auto 0">
+      <tr>${pill("https://x.com/UZEmarkets_fyi", "Follow us on X", "#1a1a1a")}<td width="8"></td>${pill("https://instagram.com/uzemarkets", "Instagram", "#b02a8a")}<td width="8"></td>${pill("https://podcast.uzemarkets.com", "Listen to the podcast", "#ff6b00")}</tr>
+    </table>
+    <p class="em-muted" style="text-align:center;margin:10px 0 0;font-size:13px;color:#6b655e;line-height:1.5">Share the weekly edition, and leave us feedback or a kind word on those channels. Our affiliate WhatsApp group opens soon.</p>` : "";
+  const signature = desk
+    ? `<div style="margin-top:20px">
+      <p class="em-text" style="margin:0 0 2px;color:#1a1a1a">Warm regards,</p>
+      <p class="em-text" style="margin:0;font-weight:700;color:#1a1a1a">The UZE Markets Desk</p>
+      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>
     </div>
     <div style="margin-top:22px">
-      <div style="font-size:22px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span style="color:#1a1a1a">markets</span></div>
-      <div style="font-size:11px;letter-spacing:2.5px;color:#6b655e;margin-top:2px">DEV LIBRARY · THE READING ROOM</div>
-    </div>
-    </div>
-  </div>
-  <p style="text-align:center;color:#6b655e;font-size:12px;margin:16px 0 0">© 2026 <a href="https://uzemarkets.com" style="color:#ff6b00;text-decoration:none">UZE</a>markets</p>
-</div>`;
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span class="em-text" style="color:#1a1a1a">markets</span></div>
+      <div class="em-muted" style="font-size:11px;letter-spacing:2.5px;color:#6b655e;margin-top:2px">${esc(entry.footerEyebrow || "DEV LIBRARY · THE READING ROOM")}</div>
+    </div>`
+    : `<div class="em-div" style="border-top:1px solid #ddd5c9;margin-top:24px;padding-top:14px">
+      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">The UZE Markets Desk · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>
+    </div>`;
+  const heroRow = desk
+    ? `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${HERO_URL}" width="600" height="200" alt="${HERO_ALT}" style="display:block;width:100%;max-width:600px;height:auto;border:0" /></td></tr>` : "";
+  // The WhatsApp band — bottom-most element of the card (James,
+  // 2026-11-18). The affiliate group does not exist yet (Meta gate,
+  // Dec 2), so the band links to the house site — never an invented
+  // group invite.
+  const whatsappRow = desk
+    ? `<tr><td bgcolor="#25D366" style="background-color:#25D366;border-bottom-left-radius:14px;border-bottom-right-radius:14px;padding:20px 34px;text-align:center">
+      <p style="margin:0;font-size:16px;font-weight:800;color:#ffffff">Join us on WhatsApp</p>
+      <p style="margin:5px 0 0;font-size:13px;line-height:1.55;color:#ffffff">Our affiliate WhatsApp group opens soon — start at ${LINK("https://uzemarkets.com", "uzemarkets.com", "#ffffff")}</p>
+    </td></tr>` : "";
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" dir="ltr">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light dark" />
+<meta name="supported-color-schemes" content="light dark" />
+<title>${esc(entry.subject || "UZE Dev Library")}</title>
+${STYLE_BLOCK}
+</head>
+<body style="margin:0;padding:0;background-color:#f5f2ee;font-family:${SANS}">
+<div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">${esc(preheader)}</div>
+<table role="presentation" class="em-bg" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f5f2ee" style="background-color:#f5f2ee;font-family:${SANS}">
+<tr><td align="center" style="padding:28px 12px">
+<table role="presentation" class="em-card" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="border-collapse:separate;width:600px;max-width:600px;background-color:#ffffff;border:1px solid #ddd5c9;border-radius:14px">
+<tr><td bgcolor="#1a1a1a" style="background-color:#1a1a1a;border-top-left-radius:14px;border-top-right-radius:14px;padding:20px 34px">
+<div style="font-size:21px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span style="color:#ffffff">markets</span></div>
+<div style="font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px">DEV LIBRARY · THE READING ROOM</div>
+</td></tr>
+${heroRow}
+<tr><td class="em-pad" style="padding:28px 34px 24px">
+${headline}${pText(esc(greeting))}
+${paras}${codeBlock}${cta}${facts}${desk ? `<div class="em-div" style="border-top:1px solid #ddd5c9;margin-top:24px"></div>${banner}${buttonRow}` : ""}${signature}
+</td></tr>
+${whatsappRow}
+</table>
+<p style="text-align:center;color:#6b655e;font-size:12px;margin:16px 0 0">© 2026 <a href="https://uzemarkets.com" style="color:#ff6b00;font-weight:700;text-decoration:underline">UZE</a>markets</p>
+</td></tr>
+</table>
+</body>
+</html>`;
 }
 
 export async function sendMail(entry) {

@@ -66,6 +66,18 @@ const handleRequest = async (req, res) => {
   try {
     if (p === "/" && req.method === "GET") { res.writeHead(200, { "content-type": "text/html" }); return res.end(INDEX); }
 
+    // --- email imagery (public by design: mail clients load these
+    // without a session). Hosted on our own domain per the design
+    // spec — hero.jpg is the static 1200x400 (2x) hero, hero.gif the
+    // animated version whose first frame is that same design. ---
+    if ((p === "/hero.jpg" || p === "/hero.gif") && req.method === "GET") {
+      const file = path.join(ROOT, "assets", p.slice(1));
+      if (!fs.existsSync(file)) return send(res, 404, { error: "not found" });
+      res.writeHead(200, { "content-type": p.endsWith(".gif") ? "image/gif" : "image/jpeg",
+        "cache-control": "public, max-age=86400" });
+      return res.end(fs.readFileSync(file));
+    }
+
     // --- the door ---
     if (p === "/api/request-code" && req.method === "POST") {
       const { email } = await body(req);

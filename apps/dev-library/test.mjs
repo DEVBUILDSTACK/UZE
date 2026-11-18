@@ -53,6 +53,11 @@ const signIn = async (email) => {
 try {
   for (let i = 0; i < 50; i++) { try { const r = await fetch(B + "/"); if (r.ok) break; } catch { await new Promise(r => setTimeout(r, 100)); } }
 
+  const heroJpg = await fetch(B + "/hero.jpg");
+  ok("hero.jpg served (hosted email imagery, public)", heroJpg.status === 200 && (heroJpg.headers.get("content-type") || "").includes("image/jpeg"));
+  const heroGif = await fetch(B + "/hero.gif");
+  ok("hero.gif served (hosted email imagery, public)", heroGif.status === 200 && (heroGif.headers.get("content-type") || "").includes("image/gif"));
+
   ok("catalog without session -> 401", (await call("/api/catalog")).status === 401);
   const before = comms().length;
   await call("/api/request-code", { method: "POST", body: { email: "ghost@nowhere.test" } });
@@ -168,6 +173,18 @@ try {
     inv.html.indexOf("UZEmarkets_fyi") < inv.html.indexOf("The UZE Markets Desk") &&
     inv.html.indexOf("The UZE Markets Desk") < inv.html.indexOf("font-size:22px") &&
     inv.text.includes("UZEmarkets_fyi"));
+  ok("design system v3: table layout, lang, preheader, dark-mode pack, hosted hero, <95KB",
+    !!inv && inv.html.includes('role="presentation"') && inv.html.includes('lang="en"') &&
+    inv.html.includes("Your seat in the UZE Dev Library is ready") &&
+    inv.html.includes("prefers-color-scheme") && inv.html.includes('name="color-scheme"') &&
+    inv.html.includes("https://dev.uzemarkets.com/hero.gif") && inv.html.includes('alt="The UZE Dev Library reading room') &&
+    Buffer.byteLength(inv.html) < 95 * 1024);
+  ok("button row: X / Instagram / podcast pills all present",
+    !!inv && inv.html.includes("Follow us on X") && inv.html.includes("https://instagram.com/uzemarkets") &&
+    inv.html.includes("Listen to the podcast") && inv.html.includes("#b02a8a"));
+  ok("WhatsApp band is the bottom-most card element (after the logo block)",
+    !!inv && inv.html.includes("#25D366") && inv.html.includes("Join us on WhatsApp") &&
+    inv.html.indexOf("#25D366") > inv.html.indexOf("font-size:22px"));
   const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
   ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));
 
@@ -177,6 +194,9 @@ try {
   ok("sign-in code SENT at the request event", !!delivered);
   ok("code email is branded and shows the code large",
     !!delivered && otpMail.html.includes(delivered) && otpMail.html.includes("Hello,"));
+  ok("code email stays lean: no hero, no button row, no banners",
+    !!delivered && !otpMail.html.includes("hero.gif") && !otpMail.html.includes("#25D366") &&
+    !otpMail.html.includes("Listen to the podcast") && !otpMail.html.includes("Join the conversation"));
   const v = await call2("/api/verify", { method: "POST", body: { email: "mia@test.dev", code: delivered } });
   ok("the delivered code signs in", v.status === 200 && !!v.cookie);
 
