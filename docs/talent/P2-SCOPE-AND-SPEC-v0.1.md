@@ -104,3 +104,18 @@ people.
 ---
 
 *End of P2 scope and specification v0.1 — prepared for James's tap.*
+
+---
+
+## Amendment — Composite ingestion, 2026-11-18 (DeepSeek feedback #1; by addition, v0.1 above unchanged)
+
+DeepSeek's composite feedback (`docs/talent/DEEPSEEK-COMPOSITE-FEEDBACK-2026-11-18.md`) was diagnosed and ingested the same day; the diagnosis of record is `docs/talent/DIAGNOSIS-COMPOSITE-FEEDBACK-2026-11-18.md`. On James's tap, this specification is read **as amended by the following**, which govern where they differ from v0.1 and from the attestation/access addendum:
+
+1. **Two gates, not one.** The single human gate above becomes: **Gate 1 — employer confirmation of intent** (signed, console-only) and **Gate 2 — approver-of-record confirmation of validity** (per-vertical approver, console-only, human-signed; the approver cannot be an agent). The open item "the gate's approver of record" is Gate 2's.
+2. **Generation model corrected.** Assessment generation is: role-signal extraction → **template selection from a curated library** → slot-filling → **calibration against a reference population**. This corrects the attestation addendum's "frontier agent builds the spec" model: generation fills slots in curated templates; it does not author instruments.
+3. **Access products restated.** x402 (candidate-run metering) and NEAR staking (builder access window) are **two products**, not two payment methods; combined use earns the best rate. The affiliate-vs-client differential requires a **documented-relationship rule** (new required element).
+4. **Blind spots as requirements.** Scoring carries a stated human-review threshold; validity claims are made only in the form "calibrated against reference population X with metric Y" (stratified calibration or explicit gap acknowledgment); approver competence is a governance requirement; **retake policy: one retake per six months, max two total, logged**; disclosure timing (outcome under engagement-scoped pseudonym before signing; identity at engagement + deposit) is stated design.
+5. **Publication hardened.** Three-store separation (identity / engagement / publication; the publisher has no identity-store read path) plus triangulation mitigation: coarse bucketing, aggregate-first publication, minimum-anonymity-set threshold (e.g., 5), engagement-scoped pseudonyms.
+6. **Pinning home — recommendation of record.** **UZE-IPFS (real IPFS on NEAR Cloud)** is the recommended home, answering this spec's open item as a recommendation; the capability claim is unverified and goes to verification before assertion (diagnosis X2). Filebase/Pinata is the named fallback. Ruling 7 is James's.
+7. **Build sequence.** On tap, sprint 1 runs the composite's **reordered 13-day sequence** (B.6) in place of the decomposition order above; sprint 2 carries the attestation layer, the access gate, further verticals, and the calibration population.
+8. **Machine surface.** The assessment layer is also served through three Markets-tier MCP tools — `submit_assessment(role_config)`, `score_assessment(talent_did, assessment_id)`, `publish_assessment_outcome(assessment_id)` — under the **dual-surface contract**: the console is a view over the API, never a parallel path; autonomous-first for money/execution, human-first for judgment; both gates remain console-only regardless of surface.

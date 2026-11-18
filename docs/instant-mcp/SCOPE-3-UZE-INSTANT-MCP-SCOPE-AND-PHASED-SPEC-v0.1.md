@@ -107,3 +107,16 @@ Every tool call — executed, refused, or revoked — is a chronicle Event. Stat
 ---
 
 *Prepared by SoSem, 2026-11-18. On James's tap, the build decomposes per §8, one phase at a time.*
+
+---
+
+## Amendment — Composite ingestion, 2026-11-18 (DeepSeek feedback #1; by addition, v0.1 above unchanged)
+
+DeepSeek's composite feedback (`docs/talent/DEEPSEEK-COMPOSITE-FEEDBACK-2026-11-18.md`, filed on the Talent line per James's direction — the scopes stand separated; this amendment carries only what touches Scope 3) was diagnosed the same day; the diagnosis of record is `docs/talent/DIAGNOSIS-COMPOSITE-FEEDBACK-2026-11-18.md`. On James's tap, this specification is read **as amended by the following**:
+
+1. **The Talent/P2 vertical joins the Markets tier.** The Markets tier serves three vertical families: TradeLayer, SigLayer, and the **Talent layer (P2 Assessment)**. The vertical catalog grows by three tools: `submit_assessment(role_config)`, `score_assessment(talent_did, assessment_id)`, and `publish_assessment_outcome(assessment_id)` — the last being `publish_redacted` wired to the assessment engagement. Enumerated catalog: 9 base + 9 vertical = **18 tools** (the composite's "8 / 17" labels repeat the standalone's undercount; flag D7 stands, diagnosis X1).
+2. **D1 RESOLVED.** The composite's rails layer names **USDC Solana as the default rail**, conforming to the rail law of record. §5's conformance is now the source's own position; no exception is needed.
+3. **Publication layer named.** `publish_redacted` publishes to **UZE-IPFS** (real IPFS on NEAR Cloud) as the recommended home — shared with the P2 package, ruling 7; the capability claim is unverified and is a P0 verification item (diagnosis X2). A NEAR Cloud bucket is never to be labeled IPFS.
+4. **Gating extended.** §4's layer 3 (vertical safety) explicitly includes P2's **two-gate human approval**; both gates are console-only and human-signed on every surface.
+5. **Dual-surface contract adopted.** The console is a view over the API, never a parallel path; autonomous-first for money/execution, human-first for judgment.
+6. **Open items consolidated.** §10's five items are superseded by the composite's **seven rulings** (diagnosis §7): rulings 1–4 are this scope's; rulings 5–7 ride with the P2 package. Flags **D2** (directory list reconciliation) and **D4** ("<30 seconds" unverified) stand unchanged.
