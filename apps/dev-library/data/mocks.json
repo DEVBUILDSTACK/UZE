@@ -1,0 +1,26 @@
+{
+ "version": 1,
+ "mocks": [
+  {
+   "slug": "agent-ticket-acquisition",
+   "title": "Agent Ticket Acquisition — headless interface mock",
+   "description": "Headless agent acquires primary where we control the sale, secondary sealed bid where we don't — 1 seat vs 4 connected seats, Porto Alegre (route-1 primary) vs Miami (secondary only).",
+   "topic": "Ticketing / Agent Commerce",
+   "date": "2026-11-18",
+   "repo": "DEVBUILDSTACK/uze-aeinfo-prediction-markets",
+   "repoAliases": [],
+   "aliases": [],
+   "clearance": [],
+   "version": 1,
+   "changelog": [
+    "v1 — 2026-11-18: initial mock, built on the real commerce engine (commerce/engine.mjs); four cases self-asserted."
+   ],
+   "view": "agent-acquire.html",
+   "sourcePath": "core/demo-agent-acquire.mjs",
+   "track": "BOTH",
+   "objective": "Prove the control doctrine in code: primary only where we are seller of record or technology partner; secondary sealed bid everywhere else — at 1-seat and 4-seat scale.",
+   "viewLink": "https://github.com/DEVBUILDSTACK/uze-aeinfo-prediction-markets/blob/main/agent-acquire.html",
+   "sourceLink": "https://github.com/DEVBUILDSTACK/uze-aeinfo-prediction-markets/blob/main/core/demo-agent-acquire.mjs"
+  }
+ ]
+}

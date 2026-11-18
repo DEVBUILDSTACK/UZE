@@ -1,0 +1,22 @@
+// JSON data store. Data dir defaults to ../data, overridable with
+// LIBRARY_DATA (tests run against a temp copy — the real chronicle
+// is never touched by a test run).
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const DATA = process.env.LIBRARY_DATA || path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data");
+export function load(name) { return JSON.parse(fs.readFileSync(path.join(DATA, name), "utf8")); }
+export function save(name, obj) { fs.writeFileSync(path.join(DATA, name), JSON.stringify(obj, null, 1) + "\n"); }
+export function chronicle(type, fields) {
+  const c = load("chronicle.json");
+  c.entries.push({ at: new Date().toISOString(), type, ...fields });
+  save("chronicle.json", c);
+}
+export function commsSend(to, kind, subject, body) {
+  const log = load("comms-log.json");
+  const entry = { at: new Date().toISOString(), from: log.sender, to, kind, subject, body, status: "queued" };
+  log.sends.push(entry); save("comms-log.json", log);
+  chronicle("comms-send", { to, kind, subject });
+  return entry;
+}

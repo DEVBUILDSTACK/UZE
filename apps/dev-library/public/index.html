@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UZE Dev Library — the reading room</title>
+<style>
+  :root { --orange:#ff6b00; --cream:#f5f2ee; --ink:#1a1a1a; --muted:#6b655e; --line:#ddd5c9; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Georgia, 'Times New Roman', serif; background:var(--cream); color:var(--ink); }
+  header { padding:28px 22px 6px; max-width:880px; margin:0 auto; }
+  h1 { font-size:30px; margin:0; } h1 .uze { color:var(--orange); }
+  .sub { color:var(--muted); margin:6px 0 0; font-size:15px; }
+  main { max-width:880px; margin:0 auto; padding:18px 22px 60px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px; margin:14px 0; }
+  input, select, textarea, button { font:inherit; font-size:15px; padding:9px 11px; border:1px solid var(--line); border-radius:7px; background:#fff; }
+  button { background:var(--ink); color:#fff; border-color:var(--ink); cursor:pointer; }
+  button.alt { background:#fff; color:var(--ink); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .filters { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
+  .mock h3 { margin:0 0 4px; font-size:19px; }
+  .meta { color:var(--muted); font-size:13px; }
+  .tag { display:inline-block; border:1px solid var(--orange); color:var(--orange); border-radius:20px; padding:1px 9px; font-size:12px; margin-right:6px; }
+  .hidden { display:none; }
+  .err { color:#b02a37; } .ok { color:#2e7d32; }
+  textarea { width:100%; min-height:70px; }
+  .comment { border-top:1px solid var(--line); padding:8px 0; font-size:14px; }
+  a { color:var(--orange); }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="uze">UZE</span> Dev Library</h1>
+  <p class="sub">The reading room — what has been built across DEVBUILDSTACK, explained. Descriptions and mocks only; source lives on GitHub, behind its own gate.</p>
+</header>
+<main>
+  <section id="signin" class="card">
+    <h3 style="margin-top:0">Sign in</h3>
+    <div class="row">
+      <input id="email" type="email" placeholder="your@email" size="30">
+      <button id="req">Email me a code</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="code" inputmode="numeric" placeholder="6-digit code" size="12">
+      <button id="verify" class="alt">Verify</button>
+      <span id="signmsg"></span>
+    </div>
+  </section>
+
+  <section id="room" class="hidden">
+    <div class="row" style="justify-content:space-between">
+      <div id="who"></div>
+      <button id="signout" class="alt">Sign out</button>
+    </div>
+    <div class="filters">
+      <select id="f-topic"><option value="">Topic — all</option></select>
+      <select id="f-date"><option value="">Date — all</option></select>
+      <select id="f-repo"><option value="">Repository — all</option></select>
+      <select id="f-track"><option value="">Track — all</option></select>
+    </div>
+    <div id="catalog"></div>
+    <div id="detail"></div>
+  </section>
+
+  <section id="master" class="card">
+    <h3 style="margin-top:0">Master control</h3>
+    <div class="row">
+      <input id="mtoken" type="password" placeholder="master token" size="24">
+      <button id="mload" class="alt">Load developer list</button>
+      <span id="mmsg"></span>
+    </div>
+    <div id="mlist" style="margin-top:10px"></div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const api = async (path, opts = {}) => {
+  const r = await fetch(path, { headers: { "content-type": "application/json" }, ...opts });
+  return { status: r.status, body: await r.json().catch(() => ({})) };
+};
+$("req").onclick = async () => {
+  await api("/api/request-code", { method: "POST", body: JSON.stringify({ email: $("email").value }) });
+  $("signmsg").textContent = "If that email is on the list, a code is on its way.";
+  $("signmsg").className = "ok";
+};
+$("verify").onclick = async () => {
+  const r = await api("/api/verify", { method: "POST", body: JSON.stringify({ email: $("email").value, code: $("code").value }) });
+  if (r.status !== 200) { $("signmsg").textContent = "That code did not check out."; $("signmsg").className = "err"; return; }
+  await enter();
+};
+$("signout").onclick = async () => { await api("/api/signout", { method: "POST" }); location.reload(); };
+async function enter() {
+  const me = await api("/api/me");
+  if (me.status !== 200) return;
+  $("signin").classList.add("hidden"); $("room").classList.remove("hidden");
+  const d = me.body.developer;
+  $("who").innerHTML = "<b>" + d.name + "</b> · " + d.email + " · track " + d.track + " · stage " + d.stage;
+  const f = await api("/api/facets");
+  const fill = (id, vals) => { const s = $(id); vals.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; s.appendChild(o); }); };
+  fill("f-topic", f.body.topics || []); fill("f-date", f.body.dates || []); fill("f-repo", f.body.repos || []); fill("f-track", f.body.tracks || []);
+  await catalog();
+}
+async function catalog() {
+  const q = new URLSearchParams();
+  for (const [id, key] of [["f-topic","topic"],["f-date","date"],["f-repo","repo"],["f-track","track"]]) { const v = $(id).value; if (v) q.set(key, v); }
+  const r = await api("/api/catalog?" + q);
+  $("catalog").innerHTML = (r.body.mocks || []).map(m =>
+    '<div class="card mock"><h3>' + m.title + '</h3>' +
+    '<div class="meta"><span class="tag">' + m.topic + '</span><span class="tag">' + (m.track || "BOTH") + '</span>' + m.date + " · " + m.repo + " · v" + m.version + "</div>" +
+    "<p>" + m.description + "</p>" +
+    '<button class="alt" onclick="openMock(\'' + m.slug + "')\">Open</button></div>").join("") || "<p>No mocks match.</p>";
+}
+["f-topic","f-date","f-repo","f-track"].forEach(id => $(id).onchange = catalog);
+window.openMock = async (slug) => {
+  const r = await api("/api/mock/" + encodeURIComponent(slug));
+  if (r.body.redirect) return openMock(r.body.redirect);
+  if (r.status !== 200) { $("detail").innerHTML = '<div class="card err">Not available.</div>'; return; }
+  const m = r.body.mock;
+  $("detail").innerHTML = '<div class="card"><h3 style="margin-top:0">' + m.title + "</h3>" +
+    (m.objective ? "<p><b>Objective.</b> " + m.objective + "</p>" : "") + "<p>" + m.description + "</p>" +
+    '<p class="meta">Version ' + m.version + " · " + m.repo + (m.viewLink ? ' · <a href="' + m.viewLink + '" target="_blank">View the mock</a>' : "") + (m.sourceLink ? ' · <a href="' + m.sourceLink + '" target="_blank">Source (GitHub gate applies)</a>' : "") + "</p>" +
+    "<p class='meta'>" + (m.changelog || []).join("<br>") + "</p>" +
+    "<h4>Comments & suggestions</h4>" + (r.body.comments || []).map(c => '<div class="comment"><b>' + c.by + "</b> · " + c.at.slice(0,10) + "<br>" + c.text + "</div>").join("") +
+    '<textarea id="ctext" placeholder="Suggest a refinement — the build lead reviews every one."></textarea>' +
+    '<div class="row" style="margin-top:8px"><button onclick="sendComment(\'' + m.slug + "')\">Send suggestion</button></div></div>";
+  $("detail").scrollIntoView({ behavior: "smooth" });
+};
+window.sendComment = async (slug) => {
+  const r = await api("/api/comment", { method: "POST", body: JSON.stringify({ slug, text: $("ctext").value }) });
+  if (r.status === 200) openMock(slug);
+};
+$("mload").onclick = async () => {
+  const r = await fetch("/api/admin/developers", { headers: { "x-master-token": $("mtoken").value } });
+  const b = await r.json().catch(() => ({}));
+  if (r.status !== 200) { $("mmsg").textContent = "Master token not accepted."; $("mmsg").className = "err"; return; }
+  $("mmsg").textContent = "";
+  $("mlist").innerHTML = (b.developers || []).map(d =>
+    "<div class='comment'><b>" + d.name + "</b> · " + d.email + " · track " + d.track + " · stage " + d.stage +
+    "<br>Reading room: " + (d.readingRoom ? "YES" : "no") + " · GitHub source: " + (d.source.length ? d.source.join(", ") : "none") + "</div>").join("") || "No developers yet.";
+};
+enter();
+</script>
+</body>
+</html>

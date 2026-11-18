@@ -1,0 +1,1 @@
+{"description":"UZE Dev Library — the permissioned reading room for the Fundio / UZE Markets developer team (Talent Vertical Phase 1).","name":"uze-dev-library","private":true,"scripts":{"start":"node server.mjs","test":"node test.mjs"},"type":"module","version":"1.0.0"}
