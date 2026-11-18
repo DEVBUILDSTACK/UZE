@@ -2,12 +2,21 @@ name: Deploy Dev Library
 
 # Push to main (apps/dev-library changes) or manual dispatch ->
 # deploy the Dev Library (apps/dev-library) to its own Vercel project
-# "uze-dev-library", with a Vercel Postgres store as the talent data
-# layer and dev.uzemarkets.com as its domain. Same secret pattern as
-# deploy.yml: VERCEL_TOKEN + VERCEL_ORG_ID from repo secrets; the
-# project id is resolved by name (this project is not VERCEL_PROJECT_ID,
-# which belongs to uze-web). Every step echoes the raw API/CLI output
-# so a failure names its own blocker.
+# "uze-dev-library" with dev.uzemarkets.com as its domain. Same secret
+# pattern as deploy.yml: VERCEL_TOKEN + VERCEL_ORG_ID from repo secrets;
+# the project id is resolved by name (this project is not
+# VERCEL_PROJECT_ID, which belongs to uze-web). Every step echoes the
+# raw API/CLI output so a failure names its own blocker.
+#
+# DATABASE NOTE (2026-11-18, run 2 blocker): Vercel Postgres was sunset
+# in June 2025 — POST /v1/storage/stores for type=postgres returns
+# {"error":{"code":"not_found"}}; new Postgres comes from the Vercel
+# Marketplace (Neon), which injects DATABASE_URL into the project env.
+# The store step below is therefore best-effort (connects a legacy store
+# if one exists, never fails the deploy), and the seed step runs only
+# when POSTGRES_URL or DATABASE_URL is actually present in the project
+# env. Until a database is attached, the app runs on its JSON working
+# set (LIBRARY_DATA=/tmp) exactly as rehearsed locally.
 
 on:
   workflow_dispatch:
@@ -72,19 +81,20 @@ jobs:
           vercel link --yes --project "$PROJECT_NAME" --token="$VERCEL_TOKEN"
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
-      - name: Ensure Postgres store exists and is connected
+      - name: Attach Postgres store if one exists (legacy path, best-effort)
+        continue-on-error: true
         run: |
           set -u
           STORES=$(curl -s "https://api.vercel.com/v1/storage/stores?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}")
           SID=$(echo "$STORES" | python3 -c "import json,sys; d=json.load(sys.stdin); s=d.get('stores',d if isinstance(d,list) else []); print(next((x['id'] for x in s if x.get('name')=='${STORE_NAME}'),''))" 2>/dev/null || echo "")
           if [ -z "$SID" ]; then
-            echo "store not found — creating ${STORE_NAME}"
-            CREATE=$(curl -s -X POST "https://api.vercel.com/v1/storage/stores?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d "{\"name\":\"${STORE_NAME}\",\"type\":\"postgres\"}")
-            echo "$CREATE" | head -c 800; echo
-            SID=$(echo "$CREATE" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('store',d).get('id',''))" 2>/dev/null || echo "")
+            echo "NOTICE: no legacy store named ${STORE_NAME}. Direct creation is retired"
+            echo "(Vercel Postgres sunset June 2025; run 2 got not_found from the create API)."
+            echo "The database now arrives via the Vercel Marketplace (Neon) as DATABASE_URL."
+            echo "Deploy continues on the JSON working set; the seed step self-skips until then."
+            exit 0
           fi
           echo "store id: $SID"
-          test -n "$SID"
           echo "== connect store to project (idempotent; an 'already connected' response is fine)"
           curl -s -X POST "https://api.vercel.com/v1/storage/stores/${SID}/connections?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d "{\"projectId\":\"${{ steps.proj.outputs.project_id }}\",\"type\":\"postgres\",\"environments\":[\"production\",\"preview\",\"development\"]}" | head -c 800; echo
 
@@ -135,8 +145,13 @@ jobs:
           VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
         run: |
           cd "$RUNNER_TEMP/dev-library-deploy" && vercel env pull .env.production.local --environment=production --token="$VERCEL_TOKEN" && cd -
-          PGURL=$(grep -E "^POSTGRES_URL=" "$RUNNER_TEMP/dev-library-deploy/.env.production.local" | head -1 | cut -d= -f2- | tr -d '"')
-          if [ -z "$PGURL" ]; then echo "BLOCKER: POSTGRES_URL not present in project env — the store connection did not inject it"; exit 1; fi
+          PGURL=$(grep -E "^(POSTGRES_URL|DATABASE_URL)=" "$RUNNER_TEMP/dev-library-deploy/.env.production.local" | head -1 | cut -d= -f2- | tr -d '"')
+          if [ -z "$PGURL" ]; then
+            echo "NOTICE: no POSTGRES_URL / DATABASE_URL in project env — no database attached yet."
+            echo "Skipping the seed. Attach a Marketplace Postgres (Neon) to uze-dev-library and"
+            echo "re-run this workflow; the seed is idempotent and will populate the data layer then."
+            exit 0
+          fi
           npm install --no-workspaces --no-audit --no-fund pg
           DATABASE_URL="$PGURL" node db/seed.mjs
 
