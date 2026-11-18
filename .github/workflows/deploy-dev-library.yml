@@ -17,6 +17,15 @@ name: Deploy Dev Library
 # when POSTGRES_URL or DATABASE_URL is actually present in the project
 # env. Until a database is attached, the app runs on its JSON working
 # set (LIBRARY_DATA=/tmp) exactly as rehearsed locally.
+#
+# NEON PROVISION STEP (added 2026-11-18, James's direction — "attach
+# Neon; you should be able to do that through GitHub"): Vercel's
+# documented non-interactive path is the CLI: `vercel integration add
+# neon` provisions + connects a Marketplace resource with the CI token,
+# and neon is the one integration whose `accept-terms` accepts --yes
+# (vercel.com/docs/cli/integration). The step is best-effort and
+# idempotent: it skips when a database URL is already in the env, and
+# its full output stays in the run log so any blocker names itself.
 
 on:
   workflow_dispatch:
@@ -80,6 +89,32 @@ jobs:
         run: |
           vercel link --yes --project "$PROJECT_NAME" --token="$VERCEL_TOKEN"
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Provision Neon via Marketplace (idempotent, best-effort)
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
+        run: |
+          set -u
+          # Idempotency: a database URL already in the production env means
+          # a database is attached — never provision a second one.
+          vercel env pull .env.dbcheck --environment=production --token="$VERCEL_TOKEN" >/dev/null 2>&1 || true
+          if grep -qE "^(POSTGRES_URL|DATABASE_URL)=" .env.dbcheck 2>/dev/null; then
+            echo "database already attached (POSTGRES_URL/DATABASE_URL present in production env) — skipping provision"
+            exit 0
+          fi
+          TEAM_SLUG=$(curl -s "https://api.vercel.com/v2/teams/${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | python3 -c "import json,sys; print(json.load(sys.stdin).get('slug',''))" 2>/dev/null || echo "")
+          SCOPE="${TEAM_SLUG:-$VERCEL_ORG_ID}"
+          echo "team scope: $SCOPE"
+          echo "== neon products / plans / metadata (ground truth for the add below)"
+          vercel integration add neon --help --token="$VERCEL_TOKEN" --scope "$SCOPE" 2>&1 | head -c 3000; echo
+          echo "== accept marketplace terms (neon is the one integration whose accept-terms supports --yes)"
+          vercel integration accept-terms neon --yes --token="$VERCEL_TOKEN" --scope "$SCOPE" 2>&1 | head -c 1000; echo
+          echo "== provision the neon resource and connect it to this project"
+          vercel integration add neon --name "${STORE_NAME}" --meta region=us-east-1 --token="$VERCEL_TOKEN" --scope "$SCOPE" 2>&1 | tail -c 3000; echo
+          echo "== production env names after provisioning (names only, no values)"
+          vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null | grep -E "POSTGRES|DATABASE|NEON" || echo "no POSTGRES/DATABASE/NEON env names visible yet"
 
       - name: Attach Postgres store if one exists (legacy path, best-effort)
         continue-on-error: true
