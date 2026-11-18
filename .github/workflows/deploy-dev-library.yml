@@ -62,6 +62,12 @@ jobs:
 
       - name: Link project + pull settings
         working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          # The job env carries VERCEL_ORG_ID alone, which makes the CLI
+          # demand its pair. Pair it with THIS project's id (run 1 blocker,
+          # 2026-11-18: "You specified VERCEL_ORG_ID but you forgot to
+          # specify VERCEL_PROJECT_ID").
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
         run: |
           vercel link --yes --project "$PROJECT_NAME" --token="$VERCEL_TOKEN"
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
@@ -84,6 +90,8 @@ jobs:
 
       - name: Ensure project env (working-set dir + session secret)
         working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
         run: |
           set -u
           EXISTING=$(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null || echo "")
@@ -97,11 +105,15 @@ jobs:
 
       - name: Build (verify compile)
         working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
         run: vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy (prebuilt, production)
         id: deploy
         working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
         run: |
           URL=$(vercel deploy --prod --prebuilt --token="$VERCEL_TOKEN" | tail -1)
           echo "deployment_url=$URL" >> "$GITHUB_OUTPUT"
@@ -119,6 +131,8 @@ jobs:
 
       - name: Seed the data layer
         working-directory: ./apps/dev-library
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
         run: |
           cd "$RUNNER_TEMP/dev-library-deploy" && vercel env pull .env.production.local --environment=production --token="$VERCEL_TOKEN" && cd -
           PGURL=$(grep -E "^POSTGRES_URL=" "$RUNNER_TEMP/dev-library-deploy/.env.production.local" | head -1 | cut -d= -f2- | tr -d '"')
