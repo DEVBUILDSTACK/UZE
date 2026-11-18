@@ -1,0 +1,118 @@
+flowchart TB
+    %% === VERSION HEADER ===
+    %% schema_version: 3.1
+    %% settle_rails: 5
+    %% bridge_paths: 5
+    %% world_linkage: TEMPO_CASH only
+    %% =======================
+
+    subgraph SRC["Source of funds — client"]
+        SRC1["Client escrow<br/>funded at signing"]
+        SRC2["Rail chosen at signing<br/>immutable thereafter"]
+        SRC1 --> SRC2
+    end
+
+    subgraph RAILS["Five settlement rails"]
+        direction TB
+        R1["<b>BASE_USDC</b><br/>chain: Base L2<br/>currency: USDC<br/>bridge: NATIVE"]
+        R2["<b>SOLANA_USDC</b><br/>chain: Solana L1<br/>currency: USDC<br/>bridge: NATIVE"]
+        R3["<b>ROBINHOOD_USDG</b><br/>chain: Robinhood Chain<br/>currency: USDG (Paxos)<br/>bridge: ACROSS from USDC"]
+        R4["<b>TEMPO_CASH</b><br/>chain: Tempo (Stripe)<br/>currency: CASH (Bridge)<br/>bridge: BRIDGE_STRIPE native"]
+        R5["<b>INTERNAL_INVOICE</b><br/>chain: none<br/>currency: fiat<br/>bridge: n/a<br/>(Track A only)"]
+    end
+
+    SRC2 --> R1
+    SRC2 --> R2
+    SRC2 --> R3
+    SRC2 --> R4
+    SRC2 --> R5
+
+    subgraph SETTLE["Settlement execution"]
+        direction TB
+        E1["Payment entity written<br/>rail + bridgePath + tx ref"]
+        E2["Milestone release<br/>per deliverable"]
+        E3["Audit tx recorded<br/>on chain of settlement"]
+        E1 --> E2 --> E3
+    end
+
+    R1 --> SETTLE
+    R2 --> SETTLE
+    R3 --> SETTLE
+    R4 --> SETTLE
+    R5 -.->|"no Payment entity<br/>invoice/payroll outside"| SETTLE
+
+    subgraph BRIDGE["Bridge reference paths"]
+        direction TB
+        B1["<b>NATIVE</b><br/>Base / Solana USDC<br/>direct — no bridge"]
+        B2["<b>ACROSS</b><br/>USDC on Base → USDG<br/>on Robinhood Chain<br/>non-custodial, ~10s fill"]
+        B3["<b>BRIDGE_STRIPE</b><br/>CASH issuance/redemption<br/>via Bridge (Stripe subsidiary)<br/>wallet-to-wallet or wallet-to-fiat"]
+        B4["<b>LIGHTLINK_DEBRIDGE</b><br/>NFT ticket mint on LightLink<br/>deBridge → Base/Solana<br/>for NFT-delivered engagements"]
+        B5["<b>NEAR_INTENTS_1CLICK</b><br/>cross-rail swap in solver network<br/>e.g. CASH → USDC on Solana<br/>via competing solvers"]
+    end
+
+    subgraph WORLD["World.xyz downstream — TEMPO_CASH only"]
+        direction TB
+        W1["Talent receives CASH<br/>worldParticipant=true"]
+        W2["prediCt program<br/>split: 1 CASH → 1 YES + 1 NO"]
+        W3["Trade on DFlow RFQ<br/>maker quotes"]
+        W4["Operator resolves<br/>determine_outcome"]
+        W5["Redeem winner<br/>1:1 CASH"]
+        W1 --> W2 --> W3 --> W4 --> W5
+    end
+
+    R4 -.->|"direct, no conversion"| WORLD
+
+    subgraph FAILURE["Failure modes and closed behavior"]
+        direction TB
+        F1["Rail outage mid-engagement<br/>→ escrow holds<br/>→ both parties notified<br/>→ milestone pauses, doesn't lose funds"]
+        F2["Bridge failure (Across / deBridge)<br/>→ retry with backoff<br/>→ if persists, switch rail requires new engagement"]
+        F3["CASH issuance failure (Bridge)<br/>→ escrow stays on originating rail<br/>→ talent can request re-route"]
+        F4["Payment record write failure<br/>→ tx succeeds but record missing<br/>→ reconciliation job scans chain + heals"]
+    end
+
+    SETTLE -.->|"on failure"| FAILURE
+    BRIDGE -.->|"on failure"| FAILURE
+
+    subgraph INVARIANTS["Rail invariants"]
+        direction TB
+        V1["rail chosen at signing — immutable"]
+        V2["Payment.bridgeTx mandatory for ACROSS"]
+        V3["Payment.cashIssuanceRef mandatory for TEMPO_CASH"]
+        V4["Payment.worldMarketEligible true iff TEMPO_CASH ∧ worldParticipant"]
+        V5["AEInfo-linked scope defaults TEMPO_CASH"]
+        V6["Internal engagements create no Payment"]
+    end
+
+    RAILS -.-> INVARIANTS
+
+    style SRC1 fill:#e1bee7,stroke:#7b1fa2
+    style SRC2 fill:#fff3cd,stroke:#b8860b
+    style R1 fill:#e3f2fd,stroke:#1565c0
+    style R2 fill:#e3f2fd,stroke:#1565c0
+    style R3 fill:#f3e5f5,stroke:#7b1fa2
+    style R4 fill:#ff6b00,color:#fff,stroke:#b74700,stroke-width:3px
+    style R5 fill:#e0e0e0,stroke:#616161
+    style E1 fill:#c8e6c9,stroke:#2e7d32
+    style E2 fill:#c8e6c9,stroke:#2e7d32
+    style E3 fill:#c8e6c9,stroke:#2e7d32
+    style B1 fill:#e3f2fd,stroke:#1565c0
+    style B2 fill:#f3e5f5,stroke:#7b1fa2
+    style B3 fill:#ff6b00,color:#fff,stroke:#b74700
+    style B4 fill:#b3e5fc,stroke:#0277bd
+    style B5 fill:#ffab40,stroke:#b74700
+    style W1 fill:#ffe0b2,stroke:#e65100
+    style W2 fill:#ffe0b2,stroke:#e65100
+    style W3 fill:#ffe0b2,stroke:#e65100
+    style W4 fill:#ffe0b2,stroke:#e65100
+    style W5 fill:#ffcdd2,stroke:#b02a37
+    style F1 fill:#ffcdd2,stroke:#b02a37
+    style F2 fill:#ffcdd2,stroke:#b02a37
+    style F3 fill:#ffcdd2,stroke:#b02a37
+    style F4 fill:#ffcdd2,stroke:#b02a37
+    style V1 fill:#c8e6c9,stroke:#2e7d32
+    style V2 fill:#c8e6c9,stroke:#2e7d32
+    style V3 fill:#c8e6c9,stroke:#2e7d32
+    style V4 fill:#c8e6c9,stroke:#2e7d32
+    style V5 fill:#c8e6c9,stroke:#2e7d32
+    style V6 fill:#c8e6c9,stroke:#2e7d32
+

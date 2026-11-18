@@ -1,0 +1,66 @@
+flowchart TD
+    START([You arrive at the reading room])
+
+    subgraph DISCOVER["DISCOVER"]
+        D1["Browse mocks<br/>descriptions, never code"]
+        D2["See what we have built<br/>in your areas of interest"]
+    end
+
+    subgraph DECLARE["DECLARE YOURSELF"]
+        DEC1["Roles — what you do<br/>dev · designer · CTO · HR · data · AI"]
+        DEC2["Realms — where you apply<br/>Lightning · NFT/wallets · NEAR AI<br/>cross-chain · Lighter"]
+        DEC3["Up to five pairs<br/>primary → quinary"]
+        DEC4["Preferred settlement rail<br/>Base USDC · Solana USDC<br/>Robinhood USDG · Tempo CASH"]
+    end
+
+    subgraph ASSESS["GET ASSESSED"]
+        A1["Path A · Hands-on keyboard<br/>live code demonstration"]
+        A2["Path B · Vibe walkthrough<br/>explain what you built"]
+    end
+
+    subgraph PREVIEW["SEE THE FIT"]
+        PV1["Engagement bookends<br/>service · deployment<br/>timeline · payment rail"]
+        PV2["Your skills fit<br/>match · gap · growth"]
+        PV3["Consent to client preview<br/>only if you choose"]
+    end
+
+    subgraph MATCH["MATCH"]
+        M1["Post your intent<br/>skills · deployment pref · rate · rail"]
+        M2["Autonomous solver proposes<br/>feasible pairings"]
+        M3["You accept, counter, or decline"]
+    end
+
+    subgraph COMMIT["COMMIT"]
+        C1["Both sides sign<br/>via NEAR Intents"]
+        C2["Client funds escrow<br/>on agreed rail"]
+        C3["Work begins"]
+    end
+
+    subgraph DELIVER["DELIVER & SETTLE"]
+        DL1["Milestones per roadmap issue"]
+        DL2["Escrow releases per deliverable"]
+        DL3["Paid on chosen rail<br/>Base · Solana · Robinhood · Tempo"]
+        DL4["If Tempo CASH — you can directly<br/>participate in World.xyz markets"]
+        DL5["Full history preserved"]
+    end
+
+    START --> DISCOVER
+    DISCOVER --> DECLARE
+    DECLARE --> ASSESS
+    ASSESS --> PREVIEW
+    PREVIEW --> MATCH
+    MATCH --> COMMIT
+    COMMIT --> DELIVER
+    DELIVER --> END([Engagement complete])
+
+    style START fill:#c8e6c9,stroke:#2e7d32
+    style END fill:#c8e6c9,stroke:#2e7d32
+    style DISCOVER fill:#e3f2fd,stroke:#1565c0
+    style DECLARE fill:#e3f2fd,stroke:#1565c0
+    style ASSESS fill:#fff3cd,stroke:#b8860b
+    style PREVIEW fill:#fff3cd,stroke:#b8860b
+    style MATCH fill:#e1bee7,stroke:#7b1fa2
+    style COMMIT fill:#e1bee7,stroke:#7b1fa2
+    style DELIVER fill:#c8e6c9,stroke:#2e7d32
+    style DL4 fill:#f3e5f5,stroke:#7b1fa2
+

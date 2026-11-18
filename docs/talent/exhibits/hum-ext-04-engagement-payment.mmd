@@ -1,0 +1,82 @@
+flowchart TB
+    START([A client wants to engage you])
+
+    subgraph SHAPES["Four engagement shapes"]
+        SC1["AUGMENTATION<br/>join client's team"]
+        SC2["OUTSTAFFING<br/>client-managed, we mediate"]
+        SC3["DIRECT PLACEMENT<br/>client hires directly"]
+        SC4["PROJECT DELIVERY<br/>milestone-based scope"]
+    end
+
+    subgraph DEPLOY["Four deployment shapes"]
+        DP1["REMOTE · fully off-site"]
+        DP2["HYBRID · partial on-site<br/>during a weekly period"]
+        DP3["MIXED · on-site + off-site<br/>across a period"]
+        DP4["ONSITE · fully on-site"]
+    end
+
+    subgraph PAY["How you get paid — five rails"]
+        P0["Client funds escrow<br/>at signing"]
+        P1["Each milestone<br/>= one roadmap issue"]
+        P2["Deliverable confirmed<br/>→ escrow releases"]
+        P3["Rail chosen at signing"]
+        P4["<b>BASE · USDC</b><br/>Base L2 · native USDC"]
+        P5["<b>SOLANA · USDC</b><br/>Solana L1 · native USDC"]
+        P6["<b>ROBINHOOD · USDG</b><br/>Robinhood Chain<br/>USDC bridged via Across"]
+        P7["<b>TEMPO · CASH</b><br/>Stripe rail · Bridge-issued<br/>— directly usable on World.xyz"]
+        P8["<b>INTERNAL</b><br/>Track A only · invoice/payroll"]
+        P0 --> P1 --> P2 --> P3
+        P3 --> P4
+        P3 --> P5
+        P3 --> P6
+        P3 --> P7
+        P3 --> P8
+    end
+
+    subgraph NFT["NFT ticket / credential (if applicable)"]
+        N1["LightLink L2<br/>gasless NFT mint"]
+        N2["deBridge → Base"]
+        N3["deBridge → Solana"]
+        N1 --> N2
+        N1 --> N3
+    end
+
+    subgraph WORLD["Tempo CASH → World.xyz connection"]
+        W1["You hold CASH<br/>in your wallet"]
+        W2["Split into YES + NO<br/>on any World market"]
+        W3["Redeem winning position<br/>1:1 for CASH"]
+        W1 --> W2
+        W2 --> W3
+    end
+
+    START --> SHAPES
+    START --> DEPLOY
+    START --> PAY
+    P7 -.->|"if you participate in prediction markets"| WORLD
+    PAY -.->|"if NFT ticket involved"| NFT
+
+    style START fill:#c8e6c9,stroke:#2e7d32
+    style SC1 fill:#e1bee7,stroke:#7b1fa2
+    style SC2 fill:#e1bee7,stroke:#7b1fa2
+    style SC3 fill:#e1bee7,stroke:#7b1fa2
+    style SC4 fill:#e1bee7,stroke:#7b1fa2
+    style DP1 fill:#e0f2f1,stroke:#00695c
+    style DP2 fill:#e0f2f1,stroke:#00695c
+    style DP3 fill:#e0f2f1,stroke:#00695c
+    style DP4 fill:#e0f2f1,stroke:#00695c
+    style P0 fill:#f3e5f5,stroke:#7b1fa2
+    style P1 fill:#f3e5f5,stroke:#7b1fa2
+    style P2 fill:#f3e5f5,stroke:#7b1fa2
+    style P3 fill:#fff3cd,stroke:#b8860b
+    style P4 fill:#e3f2fd,stroke:#1565c0
+    style P5 fill:#e3f2fd,stroke:#1565c0
+    style P6 fill:#f3e5f5,stroke:#7b1fa2
+    style P7 fill:#ff6b00,color:#fff,stroke:#b74700,stroke-width:2px
+    style P8 fill:#e0e0e0,stroke:#616161
+    style N1 fill:#c8e6c9,stroke:#2e7d32
+    style N2 fill:#b3e5fc,stroke:#0277bd
+    style N3 fill:#b3e5fc,stroke:#0277bd
+    style W1 fill:#ffe0b2,stroke:#e65100
+    style W2 fill:#ffe0b2,stroke:#e65100
+    style W3 fill:#ffcdd2,stroke:#b02a37
+

@@ -1,0 +1,103 @@
+flowchart LR
+    subgraph CLOUD["NEAR AI Cloud — confidential solver compute (TEE)"]
+        direction TB
+        S1["Client Intent<br/>{roles[], realms[]<br/>service, deployment<br/>timeline, budget_range<br/>preferredRail}"]
+        S2["Talent Intent<br/>{expertise pairs<br/>deployment_pref<br/>availability, rate<br/>preferredRail}"]
+        S3["Filter stage<br/>eligibility · track compat<br/>clearance overlap · rail compat"]
+        S4["Rank stage<br/>1 primary expertise match<br/>2 secondary match<br/>3 proficiency spread<br/>4 deployment fit<br/>5 rate fit<br/>6 deterministic tie-break"]
+        S5["Match candidates<br/>ranked with reasoning<br/>returned to both sides"]
+        S1 --> S3
+        S2 --> S3
+        S3 --> S4
+        S4 --> S5
+    end
+
+    subgraph INTENTS["NEAR Intents — solver network"]
+        direction TB
+        I1["Signed Intent<br/>both sides sign<br/>via NEAR Intents"]
+        I2["Competing Solvers<br/>quote cross-chain fill"]
+        I3["1Click API<br/>payer chain ≠ merchant chain<br/>solver executes swap"]
+        I4["On-chain settlement<br/>escrow releases"]
+        I1 --> I2 --> I3 --> I4
+    end
+
+    subgraph RAILS["Settlement rails"]
+        direction TB
+        R1["<b>Base · USDC</b>"]
+        R2["<b>Solana · USDC</b>"]
+        R3["<b>Robinhood · USDG</b><br/>via Across"]
+        R4["<b>Tempo · CASH</b><br/>Bridge-issued"]
+    end
+
+    subgraph LIGHTLINK["LightLink L2 — NFT ticket bridge"]
+        direction TB
+        LL1["NFT mint (gasless, 0.5s)"]
+        LL2["deBridge → Base"]
+        LL3["deBridge → Solana"]
+        LL1 --> LL2
+        LL1 --> LL3
+    end
+
+    subgraph WORLD["World.xyz — CASH downstream"]
+        direction TB
+        W1["CASH balance<br/>in talent wallet"]
+        W2["Split → YES + NO<br/>on any market"]
+        W3["Redeem winner<br/>1:1 CASH"]
+        W1 --> W2 --> W3
+    end
+
+    S5 --> I1
+    I4 --> R1
+    I4 --> R2
+    I4 --> R3
+    I4 --> R4
+    LL2 -.->|"NFT delivery"| R1
+    LL3 -.->|"NFT delivery"| R2
+    R4 -.->|"direct participation"| WORLD
+
+    subgraph PORTS["External ports"]
+        direction TB
+        PR1["Vercel API"]
+        PR2["GitHub REST API"]
+        PR3["desk@uzemarkets.com"]
+        PR4["NEAR AI Cloud<br/>TEE inference"]
+        PR5["NEAR Intents 1Click API"]
+        PR6["LightLink bridge<br/>deBridge"]
+        PR7["Across<br/>USDC → USDG"]
+        PR8["Bridge (Stripe)<br/>CASH issuance"]
+    end
+
+    CLOUD -.-> PR4
+    INTENTS -.-> PR5
+    LIGHTLINK -.-> PR6
+    RAILS -.-> PR7
+    RAILS -.-> PR8
+
+    style S1 fill:#e1bee7,stroke:#7b1fa2
+    style S2 fill:#e1bee7,stroke:#7b1fa2
+    style S3 fill:#fff3cd,stroke:#b8860b
+    style S4 fill:#ffab40,stroke:#b74700
+    style S5 fill:#c8e6c9,stroke:#2e7d32
+    style I1 fill:#ffcdd2,stroke:#b02a37
+    style I2 fill:#ffab40,stroke:#b74700
+    style I3 fill:#ffab40,stroke:#b74700
+    style I4 fill:#1e7d32,color:#fff,stroke:#14532d
+    style R1 fill:#e3f2fd,stroke:#1565c0
+    style R2 fill:#e3f2fd,stroke:#1565c0
+    style R3 fill:#f3e5f5,stroke:#7b1fa2
+    style R4 fill:#ff6b00,color:#fff,stroke:#b74700,stroke-width:2px
+    style LL1 fill:#c8e6c9,stroke:#2e7d32
+    style LL2 fill:#b3e5fc,stroke:#0277bd
+    style LL3 fill:#b3e5fc,stroke:#0277bd
+    style W1 fill:#ffe0b2,stroke:#e65100
+    style W2 fill:#ffe0b2,stroke:#e65100
+    style W3 fill:#ffcdd2,stroke:#b02a37
+    style PR1 fill:#e0f2f1,stroke:#00695c
+    style PR2 fill:#e0f2f1,stroke:#00695c
+    style PR3 fill:#e0f2f1,stroke:#00695c
+    style PR4 fill:#e0f2f1,stroke:#00695c
+    style PR5 fill:#e0f2f1,stroke:#00695c
+    style PR6 fill:#e0f2f1,stroke:#00695c
+    style PR7 fill:#e0f2f1,stroke:#00695c
+    style PR8 fill:#e0f2f1,stroke:#00695c
+

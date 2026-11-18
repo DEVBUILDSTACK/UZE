@@ -1,0 +1,64 @@
+flowchart LR
+    subgraph ROLES["ROLES — what you do"]
+        R1["Digital design dev"]
+        R2["Full-stack dev"]
+        R3["Front-end dev"]
+        R4["Blockchain dev"]
+        R5["Smart-contract dev"]
+        R6["Blockchain CTO"]
+        R7["Developer advocate"]
+        R8["Talent / HR specialist"]
+        R9["Data scientist"]
+        R10["AI / SI specialist"]
+    end
+
+    subgraph REALMS["REALMS — where you apply"]
+        RM1["Lightning"]
+        RM2["NFT + wallets"]
+        RM3["NEAR AI"]
+        RM4["Cross-chain<br/>EVM · Solana · Robinhood"]
+        RM5["Lighter"]
+    end
+
+    subgraph PAIRS["YOUR PROFILE = up to 5 pairs"]
+        P1["PRIMARY · what you do best"]
+        P2["SECONDARY"]
+        P3["TERTIARY"]
+        P4["QUATERNARY"]
+        P5["QUINARY"]
+    end
+
+    subgraph EXAMPLE["Example profiles"]
+        E1["Smart-contract dev × Lightning<br/>(primary)"]
+        E2["Full-stack dev × NFT/wallets<br/>(primary)"]
+        E3["Blockchain CTO × Cross-chain<br/>(primary)<br/>Blockchain dev × NEAR AI<br/>(secondary)"]
+    end
+
+    ROLES --> PAIRS
+    REALMS --> PAIRS
+    PAIRS --> EXAMPLE
+
+    style R1 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R2 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R3 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R4 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R5 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R6 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R7 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R8 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R9 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R10 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style RM1 fill:#fff3cd,stroke:#b8860b
+    style RM2 fill:#fff3cd,stroke:#b8860b
+    style RM3 fill:#fff3cd,stroke:#b8860b
+    style RM4 fill:#fff3cd,stroke:#b8860b
+    style RM5 fill:#fff3cd,stroke:#b8860b
+    style P1 fill:#c8e6c9,stroke:#2e7d32
+    style P2 fill:#a5d6a7,stroke:#2e7d32
+    style P3 fill:#81c784,stroke:#2e7d32
+    style P4 fill:#66bb6a,stroke:#2e7d32
+    style P5 fill:#4caf50,stroke:#2e7d32
+    style E1 fill:#e0f2f1,stroke:#00695c
+    style E2 fill:#e0f2f1,stroke:#00695c
+    style E3 fill:#e0f2f1,stroke:#00695c
+

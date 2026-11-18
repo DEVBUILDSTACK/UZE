@@ -1,0 +1,41 @@
+stateDiagram-v2
+    state "Track B — External Placement" as TrackB {
+        [*] --> DISCOVERY : engagement_created
+        DISCOVERY --> PREVIEW_SHOWN : preview_generated
+        PREVIEW_SHOWN --> INTENTS_POSTED : talent_accepts
+        INTENTS_POSTED --> MATCH_PROPOSED : solver_returns
+        MATCH_PROPOSED --> INTENTS_POSTED : declined
+        MATCH_PROPOSED --> MATCH_SIGNED : both_sign
+        MATCH_SIGNED --> ESCROW_HELD : client_funds
+        ESCROW_HELD --> MILESTONE_IN_PROGRESS : milestone_starts
+        MILESTONE_IN_PROGRESS --> MILESTONE_COMPLETE : deliverable_confirmed
+        MILESTONE_COMPLETE --> SETTLED : tranche_released
+        MILESTONE_COMPLETE --> DISPUTED : contest_opened
+        DISPUTED --> SETTLED : resolved_for_talent
+        DISPUTED --> REFUNDED : resolved_for_client
+        SETTLED --> [*]
+        REFUNDED --> [*]
+    }
+
+    state "Track A — Internal Only" as TrackA {
+        [*] --> DISCOVERY_A : engagement_created
+        DISCOVERY_A --> PREVIEW_SHOWN_A : preview_generated
+        PREVIEW_SHOWN_A --> INTERNAL_ACCEPTED : talent_accepts
+        INTERNAL_ACCEPTED --> INTERNAL_ACTIVE : hire_confirmed
+        INTERNAL_ACTIVE --> INTERNAL_COMPLETE : term_ends
+        INTERNAL_COMPLETE --> [*]
+    }
+
+    note right of TrackB
+        All transitions logged as Event.
+        Escrow = client-funded, platform-held.
+        Settlement rail chosen at signing;
+        immutable thereafter.
+    end note
+
+    note left of TrackA
+        No marketplace, no escrow.
+        Roadmap binding to our scopes.
+        Payment via invoice/payroll (external).
+    end note
+

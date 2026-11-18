@@ -1,0 +1,24 @@
+stateDiagram-v2
+    state "Assessment" as Assessment {
+        [*] --> NOT_STARTED
+        NOT_STARTED --> IN_PROGRESS : talent_begins
+        IN_PROGRESS --> SUBMITTED : talent_submits
+        SUBMITTED --> GRADED : SoSem_reviews
+        GRADED --> ACCEPTED : pass
+        GRADED --> REJECTED : fail
+        REJECTED --> NOT_STARTED : retake_after_cooldown
+    }
+
+    state "CodeArtifact" as CodeArtifact {
+        [*] --> VIBE : created
+        VIBE --> HARD_REVISION : walkthrough_signed
+        HARD_REVISION --> DRAFT : reviewer_passes
+        DRAFT --> FINAL : draft_review
+        FINAL --> SANDBOX : deploy
+        SANDBOX --> PRODUCTION : no_regressions
+        PRODUCTION --> ARCHIVED : retire
+        VIBE --> ARCHIVED : abandoned
+        HARD_REVISION --> VIBE : rejected
+        DRAFT --> HARD_REVISION : revisions
+    }
+

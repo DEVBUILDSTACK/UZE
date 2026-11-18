@@ -1,0 +1,35 @@
+stateDiagram-v2
+    [*] --> PROSPECT : record_created
+    PROSPECT --> CONTACTED : contact_email_or_whatsapp
+    CONTACTED --> RECRUITING : engagement_begins
+    RECRUITING --> RR_GRANTED : grant_rr
+    RR_GRANTED --> SRC_GRANTED : grant_src
+    RR_GRANTED --> PLACED : place_track_a
+    SRC_GRANTED --> PLACED : place_track_b
+    PLACED --> REVOKED : revoke_all
+    RR_GRANTED --> REVOKED : revoke_rr
+    SRC_GRANTED --> RR_GRANTED : revoke_src_only
+    REVOKED --> CONTACTED : re_recruit
+
+    note right of PROSPECT
+        Talent registered, not yet contacted.
+        Expertise may be empty.
+        preferredRail may be set.
+    end note
+
+    note right of RR_GRANTED
+        Reading room session available.
+        Track assignment recorded.
+    end note
+
+    note right of PLACED
+        Track A: internal hire, invoice/payroll
+        Track B: client placement, settlement
+        via one of 4 on-chain rails
+    end note
+
+    note right of REVOKED
+        Access terminated (sessions, GitHub, RR).
+        Chronicle preserved — state transition, not delete.
+    end note
+

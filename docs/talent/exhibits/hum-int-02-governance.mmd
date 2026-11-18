@@ -1,0 +1,54 @@
+flowchart TB
+    JAMES["<b>James</b><br/>Founder · Project Lead<br/>Final authority"]
+
+    subgraph MASTER["Master Control"]
+        SOMSEM["<b>SoSem</b><br/>Build lead + master agent<br/>Operates list, grants,<br/>revocations, comms"]
+    end
+
+    subgraph SUCCESSION["Succession chain"]
+        D5["<b>D5</b><br/>Hammond James Dugan V<br/>First successor"]
+        D4["<b>D4</b><br/>Hammond J. Dugan IV<br/>Second successor"]
+        JAMES -.->|"on incapacity"| D5
+        D5 -.->|"if D5 unavailable"| D4
+    end
+
+    subgraph EXEMPT["Founder exemptions<br/>not roadmap-bound"]
+        EX["William Dugan<br/>D5 · D4"]
+    end
+
+    subgraph GATES["Standing gates"]
+        G1["James's tap authorizes<br/>build · grant · send · spend"]
+        G2["No keys, addresses, or credentials<br/>through this surface"]
+        G3["Open-repo gate: closed until<br/>HR placement + payment proven"]
+    end
+
+    subgraph RAILAUTH["Rail authorization"]
+        RA1["Each settlement rail requires<br/>James's explicit enable"]
+        RA2["TEMPO_CASH rail ties to<br/>AEInfo/World.xyz — same authorization"]
+        RA3["Rail outages fail-closed:<br/>escrow holds, both parties notified"]
+    end
+
+    subgraph AUDIT["Audit chronicle"]
+        AU["Every state transition<br/>every send · every grant<br/>every settlement · append-only"]
+    end
+
+    JAMES --> MASTER
+    MASTER --> AUDIT
+    SOMSEM -->|"operates"| GATES
+    SOMSEM -->|"operates"| RAILAUTH
+    SUCCESSION -->|"activates on James unavailability"| MASTER
+    EXEMPT -.->|"bypass roadmap binding"| MASTER
+
+    style JAMES fill:#ff6b00,color:#fff,stroke:#b74700,stroke-width:3px
+    style SOMSEM fill:#ff6b00,color:#fff,stroke:#b74700
+    style D5 fill:#ffab40,stroke:#b74700
+    style D4 fill:#ffab40,stroke:#b74700
+    style EX fill:#f3e5f5,stroke:#7b1fa2
+    style G1 fill:#ffcdd2,stroke:#b02a37
+    style G2 fill:#ffcdd2,stroke:#b02a37
+    style G3 fill:#fff3cd,stroke:#b8860b
+    style RA1 fill:#ffe0b2,stroke:#e65100
+    style RA2 fill:#ffe0b2,stroke:#e65100
+    style RA3 fill:#ffe0b2,stroke:#e65100
+    style AU fill:#b39ddb,stroke:#4527a0
+

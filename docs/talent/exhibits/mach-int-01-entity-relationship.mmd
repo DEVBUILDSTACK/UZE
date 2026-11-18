@@ -1,0 +1,144 @@
+erDiagram
+    TALENT ||--o{ GRANT : has
+    TALENT ||--o{ ASSESSMENT : takes
+    TALENT ||--o{ CODE_ARTIFACT : produces
+    TALENT ||--o{ UI_SPIN_UP : deploys
+    TALENT ||--o| ENGAGEMENT : holds
+    CODE_ARTIFACT ||--o{ STAGE_EVENT : promotes_via
+    CODE_ARTIFACT ||--o{ UI_SPIN_UP : deploys_as
+    CLIENT ||--o{ INTENT : posts
+    CLIENT ||--o| ENGAGEMENT : engages_in
+    ENGAGEMENT ||--o{ PAYMENT : receives
+    ENGAGEMENT ||--o{ DISPUTE : may_have
+    ENGAGEMENT }o--|| SETTLEMENT_RAIL : uses
+
+    TALENT {
+        uuid id PK
+        string type
+        string track
+        string name
+        string email
+        string whatsapp
+        json expertise
+        string status
+        boolean isOwner
+        boolean migrationPending
+        string preferredRail
+        boolean worldParticipant
+    }
+    GRANT {
+        uuid id PK
+        uuid talentId FK
+        string surface
+        string scope
+        timestamp grantedAt
+        timestamp revokedAt
+        timestamp lastActivityAt
+    }
+    ASSESSMENT {
+        uuid id PK
+        uuid talentId FK
+        string path
+        timestamp startedAt
+        timestamp completedAt
+        json result
+        uuid artifactRef FK
+    }
+    CODE_ARTIFACT {
+        uuid id PK
+        uuid talentId FK
+        string title
+        string origin
+        string currentStage
+    }
+    STAGE_EVENT {
+        uuid id PK
+        uuid artifactId FK
+        string fromStage
+        string toStage
+        uuid promotedBy FK
+        timestamp at
+        string evidence
+    }
+    UI_SPIN_UP {
+        uuid id PK
+        uuid talentId FK
+        uuid artifactId FK
+        string mode
+        string subdomain
+        timestamp deployedAt
+        timestamp expiresAt
+        boolean retained
+    }
+    CLIENT {
+        uuid id PK
+        string name
+        string contact
+        json serviceCategories
+    }
+    ENGAGEMENT {
+        uuid id PK
+        string type
+        uuid talentId FK
+        uuid clientId FK
+        string service
+        string deployment
+        json bookends
+        string state
+        string settlementRail
+        string settlementBridge
+        boolean nftOutput
+        string nftChain
+    }
+    INTENT {
+        uuid id PK
+        string side
+        json fields
+        string state
+    }
+    PAYMENT {
+        uuid id PK
+        uuid engagementId FK
+        string milestone
+        decimal amount
+        string currency
+        string rail
+        string bridgePath
+        string bridgeTx
+        string nativeTx
+        string cashIssuanceRef
+        string escrowStatus
+        boolean worldMarketEligible
+    }
+    DISPUTE {
+        uuid id PK
+        uuid engagementId FK
+        string milestone
+        timestamp openedAt
+        timestamp closedAt
+        string resolution
+    }
+    SETTLEMENT_RAIL {
+        string code PK
+        string chain
+        string currency
+        string bridge
+        string primaryUse
+    }
+    MOCK {
+        string id PK
+        string title
+        string track
+        string repo
+        string status
+        string version
+        string nftChain
+    }
+    EVENT {
+        uuid id PK
+        string type
+        json entity
+        uuid actorId FK
+        timestamp at
+    }
+

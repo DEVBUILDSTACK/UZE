@@ -1,0 +1,81 @@
+flowchart TB
+    CONSOLE["<b>Administrative Console</b><br/>Treasury · TALENT · Enterprise Services"]
+
+    subgraph TALENT["TALENT VERTICAL"]
+        direction TB
+        subgraph LAYERS["Four layers"]
+            direction LR
+            L_DIS["<b>Discovery</b><br/>Reading Room<br/>descriptions + mocks"]
+            L_AS["<b>Assessment</b><br/>DAL module<br/>exam + ladder + sandbox"]
+            L_PL["<b>Placement</b><br/>Track A internal<br/>Track B marketplace"]
+            L_SET["<b>Settlement</b><br/>5 rails<br/>escrow + milestone"]
+            L_DIS --> L_AS --> L_PL --> L_SET
+        end
+        subgraph SPINE["Shared spine — all layers"]
+            direction LR
+            SP1["Developer List"]
+            SP2["Comms Desk<br/>desk@uzemarkets.com"]
+            SP3["Chronicle<br/>append-only"]
+        end
+    end
+
+    subgraph TRACKS["Two tracks"]
+        direction LR
+        TA["<b>Track A — Internal</b><br/>hired/contracted to us<br/>invoice/payroll<br/>no marketplace"]
+        TB["<b>Track B — External</b><br/>placed with client<br/>escrow-mediated<br/>NEAR Intents settlement"]
+    end
+
+    subgraph EXTERNAL["External infrastructure — explicit"]
+        direction TB
+        E1["<b>NEAR AI Cloud</b><br/>confidential solver compute<br/>TEE-backed"]
+        E2["<b>NEAR Intents</b><br/>1Click solver network<br/>cross-chain settlement"]
+        E3["<b>LightLink L2</b><br/>NFT ticket mint<br/>gasless 0.5s"]
+        E4["<b>deBridge</b><br/>LightLink → Base/Solana<br/>NFT delivery"]
+        E5["<b>Across</b><br/>USDC → USDG<br/>Robinhood Chain"]
+        E6["<b>Bridge (Stripe)</b><br/>CASH issuance<br/>Tempo rail"]
+        E7["<b>World.xyz</b><br/>prediction market<br/>CASH collateral"]
+    end
+
+    subgraph CTRL["Master Control"]
+        direction LR
+        MASTER["SoSem<br/>under James"]
+        SUCC["Succession<br/>D5 → D4"]
+        AUDIT["Audit<br/>chronicle"]
+        MASTER --> SUCC
+        MASTER --> AUDIT
+    end
+
+    CONSOLE --> TALENT
+    TALENT --> TRACKS
+    L_PL --> TA
+    L_PL --> TB
+    L_PL -.->|"solver runs on"| E1
+    L_SET -.->|"escrow settles via"| E2
+    L_SET -.->|"USDC rails"| E3
+    L_SET -.->|"USDG path"| E5
+    L_SET -.->|"CASH path"| E6
+    E6 -.->|"direct participation"| E7
+    E4 -.->|"NFT tickets"| E3
+    CTRL -->|"operates"| TALENT
+
+    style CONSOLE fill:#ff6b00,color:#fff,stroke:#b74700,stroke-width:2px
+    style L_DIS fill:#c8e6c9,stroke:#2e7d32
+    style L_AS fill:#c8e6c9,stroke:#2e7d32
+    style L_PL fill:#fff3cd,stroke:#b8860b
+    style L_SET fill:#e1bee7,stroke:#7b1fa2
+    style SP1 fill:#e3f2fd,stroke:#1565c0
+    style SP2 fill:#e3f2fd,stroke:#1565c0
+    style SP3 fill:#e3f2fd,stroke:#1565c0
+    style TA fill:#e3f2fd,stroke:#1565c0
+    style TB fill:#fff3cd,stroke:#b8860b
+    style E1 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style E2 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style E3 fill:#c8e6c9,stroke:#2e7d32
+    style E4 fill:#b3e5fc,stroke:#0277bd
+    style E5 fill:#f3e5f5,stroke:#7b1fa2
+    style E6 fill:#ff6b00,color:#fff,stroke:#b74700
+    style E7 fill:#ffe0b2,stroke:#e65100
+    style MASTER fill:#ff6b00,color:#fff,stroke:#b74700
+    style SUCC fill:#ffab40,stroke:#b74700
+    style AUDIT fill:#b39ddb,stroke:#4527a0
+

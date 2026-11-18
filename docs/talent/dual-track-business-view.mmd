@@ -1,0 +1,98 @@
+flowchart TB
+    subgraph CONSOLE["Administrative Console (existing)"]
+        NAV["Treasury · <b>TALENT</b> · Enterprise Services"]
+    end
+
+    subgraph SHARED["Shared Platform Spine"]
+        direction TB
+        SP_RR["<b>Reading Room</b><br/>descriptions + mocks"]
+        SP_AS["<b>Assessment</b><br/>exam paths A + B"]
+        SP_CD["<b>Comms Desk</b><br/>desk@uzemarkets.com"]
+        SP_DL["<b>Developer List</b><br/>lifecycle chronicle"]
+        SP_SB["<b>Vercel Sandbox</b><br/>dev's own UI spin-up"]
+    end
+
+    subgraph TRACKA["TRACK A — Internal technical only"]
+        direction TB
+        TA1["Qualify before we commit"]
+        TA2["<b>Hire / contract to us</b><br/>Fundio · UZE Markets · DEVBUILDSTACK"]
+        TA3["Our roadmap<br/>our repos<br/>our code"]
+        TA4["Payroll / contractor invoice<br/>(outside this platform)"]
+        TA5["Revoke → reset to zero<br/>chronicle preserved"]
+        TA1 --> TA2 --> TA3 --> TA4 --> TA5
+    end
+
+    subgraph TRACKB["TRACK B — External talent placement"]
+        direction TB
+        TB1["Source and assess"]
+        TB2["<b>NEAR intent marketplace</b><br/>client ⇄ talent<br/>solver-matched"]
+        TB3["Signed engagement<br/>four service categories"]
+        TB4["<b>Escrow</b><br/>milestone release<br/>CASH / USDC"]
+        TB5["Engagement closes<br/>returns to discovery"]
+        TB1 --> TB2 --> TB3 --> TB4 --> TB5
+    end
+
+    subgraph SERVICES["Track B · service categories"]
+        direction LR
+        SC1["AUG<br/>augmentation"]
+        SC2["OUTSTAFF<br/>outstaffing"]
+        SC3["PLACE<br/>direct placement"]
+        SC4["PROJECT<br/>project delivery"]
+    end
+
+    subgraph DEPLOY["Track B · deployment shapes"]
+        direction LR
+        DP1["REMOTE"]
+        DP2["HYBRID<br/>partial on-site<br/>during a week"]
+        DP3["MIXED<br/>on-site + off-site<br/>across a period"]
+        DP4["ONSITE"]
+    end
+
+    NAV --> SHARED
+    SHARED --> TRACKA
+    SHARED --> TRACKB
+    TB3 --> SERVICES
+    TB3 --> DEPLOY
+
+    subgraph CTRL["Master Control"]
+        direction TB
+        MA["SoSem<br/>under James"]
+        SU["Succession<br/>D5 → D4"]
+        AUD["Chronicle<br/>append-only"]
+        MA --> SU
+        MA --> AUD
+    end
+
+    SHARED -.->|"audited by"| AUD
+    TRACKA -.->|"audited by"| AUD
+    TRACKB -.->|"audited by"| AUD
+    CTRL -->|"operates"| SHARED
+
+    style NAV fill:#ff6b00,color:#fff,stroke:#b74700,stroke-width:2px
+    style SP_RR fill:#c8e6c9,stroke:#2e7d32
+    style SP_AS fill:#c8e6c9,stroke:#2e7d32
+    style SP_CD fill:#c8e6c9,stroke:#2e7d32
+    style SP_DL fill:#c8e6c9,stroke:#2e7d32
+    style SP_SB fill:#c8e6c9,stroke:#2e7d32
+    style TA1 fill:#e3f2fd,stroke:#1565c0
+    style TA2 fill:#e3f2fd,stroke:#1565c0
+    style TA3 fill:#e3f2fd,stroke:#1565c0
+    style TA4 fill:#e3f2fd,stroke:#1565c0
+    style TA5 fill:#ffcdd2,stroke:#b02a37
+    style TB1 fill:#fff3cd,stroke:#b8860b
+    style TB2 fill:#fff3cd,stroke:#b8860b
+    style TB3 fill:#fff3cd,stroke:#b8860b
+    style TB4 fill:#e1bee7,stroke:#7b1fa2
+    style TB5 fill:#c8e6c9,stroke:#2e7d32
+    style SC1 fill:#f3e5f5,stroke:#7b1fa2
+    style SC2 fill:#f3e5f5,stroke:#7b1fa2
+    style SC3 fill:#f3e5f5,stroke:#7b1fa2
+    style SC4 fill:#f3e5f5,stroke:#7b1fa2
+    style DP1 fill:#e0f2f1,stroke:#00695c
+    style DP2 fill:#e0f2f1,stroke:#00695c
+    style DP3 fill:#e0f2f1,stroke:#00695c
+    style DP4 fill:#e0f2f1,stroke:#00695c
+    style MA fill:#ff6b00,color:#fff,stroke:#b74700
+    style SU fill:#ffab40,stroke:#b74700
+    style AUD fill:#b39ddb,stroke:#4527a0
+

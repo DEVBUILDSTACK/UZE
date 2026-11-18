@@ -1,0 +1,94 @@
+flowchart TB
+    subgraph INV["Invariants — MUST HOLD"]
+        direction TB
+        I1["I1 · Expertise: 1-5 RoleRealmPair<br/>no duplicate (role, realm); first = PRIMARY"]
+        I2["I2 · Engagement.type=INTERNAL ⇒<br/>clientId=null ∧ no escrow ∧ no Payment"]
+        I3["I3 · Engagement.type=EXTERNAL_PLACED ⇒<br/>requires Client + Service + Deployment + Escrow + Rail"]
+        I4["I4 · Mock.track=INTERNAL_ONLY ⇒<br/>not shown to external clients"]
+        I5["I5 · Mock.track=EXTERNAL_VISIBLE ⇒<br/>not shown to internal-only preview flows"]
+        I6["I6 · CLIENT_PREVIEW grant requires<br/>expertise ∩ mock.roles overlap"]
+        I7["I7 · Status DERIVED from grants + contact history"]
+        I8["I8 · REVOKED preserves history forever"]
+        I9["I9 · Assessment Path B ⇒ artifactRef required"]
+        I10["I10 · Ladder promotion requires promotedBy"]
+        I11["I11 · UISpinUp ⇒ currentStage ∈ FINAL/SANDBOX/PROD"]
+        I12["I12 · Sandbox isolated from production + other devs"]
+        I13["I13 · Every transition emits Event — chronicle append-only"]
+        I14["I14 · Session invalid if access-affecting Event since issuedAt"]
+        I15["I15 · Revoke cascade atomic"]
+        I16["I16 · Engagement.settlementRail immutable after signing"]
+        I17["I17 · Payment.bridgeTx mandatory when bridgePath=ACROSS"]
+        I18["I18 · Payment.cashIssuanceRef mandatory when rail=TEMPO_CASH"]
+        I19["I19 · Payment.worldMarketEligible true iff rail=TEMPO_CASH ∧ talent.worldParticipant"]
+        I20["I20 · AEInfo-linked scope defaults to TEMPO_CASH unless overridden"]
+        I21["I21 · Internal engagements never create Payment records"]
+    end
+
+    subgraph CASCADE["Revoke Cascade — atomic transaction"]
+        direction TB
+        R0["revoke(talentId, reason, actor)"]
+        R1["1 · status ← REVOKED"]
+        R2["2 · sessions ← invalidated"]
+        R3["3 · GitHub API remove collaborator<br/>retry 24h → manual flag"]
+        R4["4 · RR allowlist entry removed"]
+        R5["5 · desk email dispatched"]
+        R6["6 · chronicle preserved"]
+        R0 --> R1 --> R2 --> R3 --> R4 --> R5 --> R6
+    end
+
+    subgraph PREVENT["What the invariants prevent"]
+        direction TB
+        P1["Track field silently changed"]
+        P2["Track A talent in marketplace"]
+        P3["External talent seeing internal mocks"]
+        P4["Client seeing talent clearance without consent"]
+        P5["Automation promoting code without review"]
+        P6["Sandbox reaching production data"]
+        P7["Revoked developer retaining access"]
+        P8["Settlement rail changed mid-engagement"]
+        P9["CASH payment without Bridge reference"]
+        P10["Internal engagement generating spurious Payment"]
+    end
+
+    INV -.->|"enforced at"| CASCADE
+    CASCADE -.->|"prevents"| PREVENT
+
+    style I1 fill:#c8e6c9,stroke:#2e7d32
+    style I2 fill:#c8e6c9,stroke:#2e7d32
+    style I3 fill:#c8e6c9,stroke:#2e7d32
+    style I4 fill:#c8e6c9,stroke:#2e7d32
+    style I5 fill:#c8e6c9,stroke:#2e7d32
+    style I6 fill:#c8e6c9,stroke:#2e7d32
+    style I7 fill:#c8e6c9,stroke:#2e7d32
+    style I8 fill:#c8e6c9,stroke:#2e7d32
+    style I9 fill:#c8e6c9,stroke:#2e7d32
+    style I10 fill:#c8e6c9,stroke:#2e7d32
+    style I11 fill:#c8e6c9,stroke:#2e7d32
+    style I12 fill:#c8e6c9,stroke:#2e7d32
+    style I13 fill:#c8e6c9,stroke:#2e7d32
+    style I14 fill:#c8e6c9,stroke:#2e7d32
+    style I15 fill:#c8e6c9,stroke:#2e7d32
+    style I16 fill:#ffe0b2,stroke:#e65100
+    style I17 fill:#ffe0b2,stroke:#e65100
+    style I18 fill:#ffe0b2,stroke:#e65100
+    style I19 fill:#ffe0b2,stroke:#e65100
+    style I20 fill:#ffe0b2,stroke:#e65100
+    style I21 fill:#ffe0b2,stroke:#e65100
+    style R0 fill:#ff6b00,color:#fff,stroke:#b74700
+    style R1 fill:#ffcdd2,stroke:#b02a37
+    style R2 fill:#ffcdd2,stroke:#b02a37
+    style R3 fill:#ffcdd2,stroke:#b02a37
+    style R4 fill:#ffcdd2,stroke:#b02a37
+    style R5 fill:#ffcdd2,stroke:#b02a37
+    style R6 fill:#c8e6c9,stroke:#2e7d32
+    style P1 fill:#fff3cd,stroke:#b8860b
+    style P2 fill:#fff3cd,stroke:#b8860b
+    style P3 fill:#fff3cd,stroke:#b8860b
+    style P4 fill:#fff3cd,stroke:#b8860b
+    style P5 fill:#fff3cd,stroke:#b8860b
+    style P6 fill:#fff3cd,stroke:#b8860b
+    style P7 fill:#fff3cd,stroke:#b8860b
+    style P8 fill:#fff3cd,stroke:#b8860b
+    style P9 fill:#fff3cd,stroke:#b8860b
+    style P10 fill:#fff3cd,stroke:#b8860b
+

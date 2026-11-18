@@ -1,0 +1,106 @@
+flowchart LR
+    subgraph ROLES["Role Axis — what they do"]
+        direction TB
+        R1["DIGITAL_DESIGN_DEV"]
+        R2["FULL_STACK_DEV"]
+        R3["FRONT_END_DEV"]
+        R4["BLOCKCHAIN_DEV"]
+        R5["SMART_CONTRACT_DEV"]
+        R6["BLOCKCHAIN_CTO"]
+        R7["DEVELOPER_ADVOCATE"]
+        R8["TALENT_HR_SPECIALIST"]
+        R9["DATA_SCIENTIST"]
+        R10["AI_SI_SPECIALIST"]
+        R11["OTHER_ROLE<br/>(extension)"]
+    end
+
+    subgraph REALMS["Realm Axis — where they apply"]
+        direction TB
+        RM1["LIGHTNING"]
+        RM2["NFT_WALLETS"]
+        RM3["NEAR_AI"]
+        RM4["CROSS_CHAIN<br/>EVM · Solana · Robinhood"]
+        RM5["LIGHTER"]
+        RM6["OTHER_REALM<br/>(extension)"]
+    end
+
+    subgraph PAIRS["Talent.expertise — up to 5 Role×Realm pairs"]
+        direction TB
+        P1["<b>PRIMARY</b><br/>e.g. SMART_CONTRACT_DEV × LIGHTNING"]
+        P2["<b>SECONDARY</b><br/>e.g. FULL_STACK_DEV × NFT_WALLETS"]
+        P3["<b>TERTIARY</b>"]
+        P4["<b>QUATERNARY</b>"]
+        P5["<b>QUINARY</b>"]
+        P1 --> P2 --> P3 --> P4 --> P5
+    end
+
+    subgraph MATCH["Matching surface (Track B)"]
+        direction TB
+        M_IN["<b>Client Intent</b><br/>roles[] · realms[]<br/>service · deployment<br/>timeline · budget"]
+        M_SOLV["<b>NEAR AI Solver</b><br/>filters before ranking<br/>lexicographic rank<br/>1·primary match<br/>2·secondary match<br/>3·proficiency spread<br/>4·deployment fit<br/>5·rate fit<br/>6·deterministic tie-break"]
+        M_OUT["<b>Ranked candidates</b><br/>with fit reasoning<br/>per candidate"]
+        M_IN --> M_SOLV --> M_OUT
+    end
+
+    subgraph TRACKS["Track applicability"]
+        direction TB
+        T_A["<b>TRACK A — Internal</b><br/>roles+realms drive<br/>roadmap assignment<br/>and assessment design"]
+        T_B["<b>TRACK B — External</b><br/>roles+realms drive<br/>solver matching<br/>and client preview"]
+        T_E["<b>EITHER</b><br/>both apply"]
+    end
+
+    ROLES -.->|"crossed with"| REALMS
+    ROLES --> PAIRS
+    REALMS --> PAIRS
+    PAIRS --> MATCH
+    PAIRS --> TRACKS
+
+    subgraph QUERY["Example queries this supports"]
+        direction TB
+        Q1["<i>Lightning smart-contract dev, primary,<br/>remote or hybrid, ≤$X/day</i>"]
+        Q2["<i>Cross-chain full-stack, secondary or better,<br/>either track</i>"]
+        Q3["<i>Blockchain CTO, primary,<br/>direct placement only</i>"]
+        Q4["<i>Data scientist, near/ai primary,<br/>project delivery</i>"]
+        Q5["<i>Talent HR specialist,<br/>blockchain recruit — for internal team</i>"]
+    end
+
+    Q1 -.-> M_IN
+    Q2 -.-> M_IN
+    Q3 -.-> M_IN
+    Q4 -.-> M_IN
+    Q5 -.-> M_IN
+
+    style R1 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R2 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R3 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R4 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R5 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R6 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R7 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R8 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R9 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R10 fill:#1565c0,color:#fff,stroke:#0d47a1
+    style R11 fill:#5c6bc0,color:#fff,stroke:#283593
+    style RM1 fill:#fff3cd,stroke:#b8860b
+    style RM2 fill:#fff3cd,stroke:#b8860b
+    style RM3 fill:#fff3cd,stroke:#b8860b
+    style RM4 fill:#fff3cd,stroke:#b8860b
+    style RM5 fill:#fff3cd,stroke:#b8860b
+    style RM6 fill:#ffe0b2,stroke:#e65100
+    style P1 fill:#c8e6c9,stroke:#2e7d32
+    style P2 fill:#a5d6a7,stroke:#2e7d32
+    style P3 fill:#81c784,stroke:#2e7d32
+    style P4 fill:#66bb6a,stroke:#2e7d32
+    style P5 fill:#4caf50,stroke:#2e7d32
+    style M_IN fill:#e1bee7,stroke:#7b1fa2
+    style M_SOLV fill:#ffab40,stroke:#b74700
+    style M_OUT fill:#e1bee7,stroke:#7b1fa2
+    style T_A fill:#e3f2fd,stroke:#1565c0
+    style T_B fill:#fff3cd,stroke:#b8860b
+    style T_E fill:#f3e5f5,stroke:#7b1fa2
+    style Q1 fill:#e0f2f1,stroke:#00695c
+    style Q2 fill:#e0f2f1,stroke:#00695c
+    style Q3 fill:#e0f2f1,stroke:#00695c
+    style Q4 fill:#e0f2f1,stroke:#00695c
+    style Q5 fill:#e0f2f1,stroke:#00695c
+
