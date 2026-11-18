@@ -161,6 +161,11 @@ try {
     !!inv && inv.html.includes("Dear Development Partner") && inv.html.includes("#ff6b00") &&
     inv.html.includes("dev.uzemarkets.com") && inv.html.includes("The UZE Markets Desk") &&
     inv.text.includes("The UZE Markets Desk"));
+  ok("house CTAs sit above the signature, logo underneath (James's layout rule)",
+    !!inv && inv.html.includes("x.com/UZEmarkets_fyi") && inv.html.includes("podcast.uzemarkets.com") &&
+    inv.html.indexOf("UZEmarkets_fyi") < inv.html.indexOf("The UZE Markets Desk") &&
+    inv.html.indexOf("The UZE Markets Desk") < inv.html.indexOf("font-size:22px") &&
+    inv.text.includes("UZEmarkets_fyi"));
   const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
   ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));
 
