@@ -1,5 +1,16 @@
 {
  "version": 1,
  "sender": "desk@uzemarkets.com",
- "sends": []
+ "sends": [
+  {
+   "id": "c05s293o1ll",
+   "at": "2026-11-18T21:07:07.000Z",
+   "from": "desk@uzemarkets.com",
+   "to": "uze@uzemarkets.com",
+   "kind": "invitation",
+   "subject": "You have access to the UZE Dev Library",
+   "body": "You have been granted reading-room access to the UZE Dev Library. Sign in with this email address to receive a one-time code.",
+   "status": "queued"
+  }
+ ]
 }

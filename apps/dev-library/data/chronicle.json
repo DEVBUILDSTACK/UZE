@@ -6,6 +6,31 @@
    "type": "system-founded",
    "actor": "SoSem (master agent, for James)",
    "note": "Dev Library founded as its own clean repo per James's direction, 2026-11-18. Scope: docs/SCOPE.md."
+  },
+  {
+   "at": "2026-11-18T21:07:07.000Z",
+   "type": "developer-added",
+   "email": "uze@uzemarkets.com",
+   "name": "James Dugan (Owner \u2014 internal test)",
+   "expertise": []
+  },
+  {
+   "at": "2026-11-18T21:07:07.000Z",
+   "type": "contact",
+   "email": "uze@uzemarkets.com",
+   "channel": "email"
+  },
+  {
+   "at": "2026-11-18T21:07:07.000Z",
+   "type": "comms-send",
+   "to": "uze@uzemarkets.com",
+   "kind": "invitation",
+   "subject": "You have access to the UZE Dev Library"
+  },
+  {
+   "at": "2026-11-18T21:07:07.000Z",
+   "type": "grant-reading-room",
+   "email": "uze@uzemarkets.com"
   }
  ]
 }
