@@ -23,7 +23,8 @@ export function chronicle(type, fields) {
 }
 export function commsSend(to, kind, subject, body) {
   const log = load("comms-log.json");
-  const entry = { at: new Date().toISOString(), from: log.sender, to, kind, subject, body, status: "queued" };
+  const entry = { id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
+    at: new Date().toISOString(), from: log.sender, to, kind, subject, body, status: "queued" };
   log.sends.push(entry); save("comms-log.json", log);
   chronicle("comms-send", { to, kind, subject });
   return entry;

@@ -3,9 +3,13 @@
 // full lifecycle: one internal-track developer end to end (prospect →
 // contact → reading room → comment → source → revocation → chronicle
 // intact) and one external-track developer through the preview rule
-// (track filtering). Comms sends must be QUEUED, never sent.
+// (track filtering). Comms in phase 1 (no mail key): QUEUED, never
+// sent. Phase 2 (mail key set, stub mail API): sends fire at the
+// event, the log marks them sent with the provider id, the delivered
+// sign-in code works, and a failed send stays queued — never dropped.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,7 +26,8 @@ fs.writeFileSync(path.join(tmp, "mocks.json"), JSON.stringify(mocks, null, 1));
 
 const PORT = 18734;
 const env = { ...process.env, PORT: String(PORT), LIBRARY_DATA: tmp,
-  LIBRARY_MASTER_TOKEN: "test-master", LIBRARY_SECRET: "test-secret" };
+  LIBRARY_MASTER_TOKEN: "test-master", LIBRARY_SECRET: "test-secret",
+  RESEND_API_KEY: "", RESEND_API_URL: "" }; // phase 1: mail unconfigured, queue-only
 const srv = spawn("node", ["server.mjs"], { cwd: ROOT, env, stdio: "pipe" });
 const B = `http://127.0.0.1:${PORT}`;
 let pass = 0, fail = 0;
@@ -107,6 +112,69 @@ try {
 } finally {
   srv.kill();
   fs.rmSync(tmp, { recursive: true, force: true });
+}
+
+// ---- Phase 2: the sending arm, against a stub mail API ----
+const received = [];
+const stub = http.createServer((req, res) => {
+  let s = ""; req.on("data", (c) => (s += c)); req.on("end", () => {
+    const payload = JSON.parse(s || "{}");
+    received.push(payload);
+    if ((payload.subject || "").includes("reset")) {
+      res.writeHead(500, { "content-type": "application/json" });
+      return res.end(JSON.stringify({ message: "stub failure" }));
+    }
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ id: "stub-msg-" + received.length }));
+  });
+});
+await new Promise((r) => stub.listen(0, "127.0.0.1", r));
+const tmp2 = fs.mkdtempSync(path.join(os.tmpdir(), "devlib-test2-"));
+fs.cpSync(path.join(ROOT, "data"), tmp2, { recursive: true });
+const PORT2 = 18735;
+const env2 = { ...process.env, PORT: String(PORT2), LIBRARY_DATA: tmp2,
+  LIBRARY_MASTER_TOKEN: "test-master", LIBRARY_SECRET: "test-secret",
+  RESEND_API_KEY: "test-key", RESEND_API_URL: `http://127.0.0.1:${stub.address().port}/emails` };
+const srv2 = spawn("node", ["server.mjs"], { cwd: ROOT, env: env2, stdio: "pipe" });
+const B2 = `http://127.0.0.1:${PORT2}`;
+const call2 = async (p, { method = "GET", body, master } = {}) => {
+  const r = await fetch(B2 + p, { method, headers: { "content-type": "application/json",
+    ...(master ? { "x-master-token": "test-master" } : {}) },
+    body: body ? JSON.stringify(body) : undefined });
+  return { status: r.status, body: await r.json().catch(() => ({})), cookie: r.headers.get("set-cookie") };
+};
+const comms2 = () => JSON.parse(fs.readFileSync(path.join(tmp2, "comms-log.json"), "utf8")).sends;
+// The server drains the queue as the POST completes (same await point
+// as the DB write-through), so poll briefly for the send to land.
+const waitFor = async (fn, ms = 4000) => {
+  const t0 = Date.now();
+  while (Date.now() - t0 < ms) { const v = fn(); if (v) return v; await new Promise(r => setTimeout(r, 100)); }
+  return fn();
+};
+try {
+  for (let i = 0; i < 50; i++) { try { const r = await fetch(B2 + "/"); if (r.ok) break; } catch { await new Promise(r => setTimeout(r, 100)); } }
+  await call2("/api/admin/add-developer", { method: "POST", master: true, body: { name: "Mia Mail", email: "mia@test.dev", track: "EITHER", expertise: ["NEAR_AI"] } });
+  await call2("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "mia@test.dev" } });
+  const inv = await waitFor(() => received.find((x) => (x.to || []).includes("mia@test.dev") && (x.subject || "").includes("access to the UZE Dev Library")));
+  ok("mail configured: invitation SENT at the grant event, from desk@", !!inv && String(inv.from).includes("desk@uzemarkets.com"));
+  const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
+  ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));
+
+  await call2("/api/request-code", { method: "POST", body: { email: "mia@test.dev" } });
+  const otpMail = await waitFor(() => received.filter((x) => (x.subject || "").includes("sign-in code")).pop());
+  const delivered = otpMail && otpMail.text.match(/sign-in code for the UZE Dev Library is (\d{6})/)[1];
+  ok("sign-in code SENT at the request event", !!delivered);
+  const v = await call2("/api/verify", { method: "POST", body: { email: "mia@test.dev", code: delivered } });
+  ok("the delivered code signs in", v.status === 200 && !!v.cookie);
+
+  await call2("/api/admin/revoke-all", { method: "POST", master: true, body: { email: "mia@test.dev", reason: "stub failure rehearsal" } });
+  const revLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "revocation" && s.to === "mia@test.dev"); return e && e.attempts >= 1 ? e : null; });
+  ok("failed send stays queued, attempt + error recorded (never dropped)",
+    !!revLog && revLog.status === "queued" && !!revLog.lastError);
+} finally {
+  srv2.kill();
+  stub.close();
+  fs.rmSync(tmp2, { recursive: true, force: true });
 }
 console.log(`\nRESULT: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -11,6 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { load, save, chronicle } from "./lib/store.mjs";
 import { findDeveloper, requestCode, verifyCode, signSession, readSession, visibleMocks } from "./lib/gate.mjs";
+import { drainComms } from "./lib/mailer.mjs";
 import * as life from "./lib/lifecycle.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -157,11 +158,17 @@ const handleRequest = async (req, res) => {
   }
 };
 
-// In DB mode, mutating requests wait for the write-through to land
-// before the invocation completes — the record is durable, not hoped.
+// After a mutating request: (1) the comms queue drains — sends fire
+// at the moment of the event when the mail key is configured, and the
+// log records what actually went out; (2) in DB mode the write-through
+// lands before the invocation completes — the record is durable,
+// not hoped (the drain runs first so sent statuses persist too).
 const server = http.createServer(async (req, res) => {
   await handleRequest(req, res);
-  if (flushFn && req.method === "POST") await flushFn();
+  if (req.method === "POST") {
+    await drainComms().catch(() => {});
+    if (flushFn) await flushFn();
+  }
 });
 export default server; // @vercel/node serves the http.Server instance
 
