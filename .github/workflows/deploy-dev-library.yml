@@ -177,6 +177,33 @@ jobs:
           printf %s "$RESEND_API_KEY" | vercel env add RESEND_API_KEY production --token="$VERCEL_TOKEN" >/dev/null
           echo "RESEND_API_KEY synced to production env (value not shown)"
 
+      # RESEND_WEBHOOK_SECRET sync (added 2026-11-18, same pattern and
+      # rationale as the RESEND_API_KEY step above): the webhook signing
+      # secret is placed as an Actions repository secret by a separate
+      # session; this step upserts it into the project's production env.
+      # Best-effort and inert until the secret exists; the value is never
+      # echoed. Until it lands, POST /api/resend-webhook answers 503.
+      - name: Sync RESEND_WEBHOOK_SECRET from Actions secret (best-effort)
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
+          RESEND_WEBHOOK_SECRET: ${{ secrets.RESEND_WEBHOOK_SECRET }}
+        run: |
+          set -u
+          if [ -z "${RESEND_WEBHOOK_SECRET:-}" ]; then
+            echo "RESEND_WEBHOOK_SECRET Actions secret not set — skipping (webhook endpoint stays 503 until it is placed)"
+            exit 0
+          fi
+          echo "::add-mask::$RESEND_WEBHOOK_SECRET"
+          EXISTING=$(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null || echo "")
+          if echo "$EXISTING" | grep -q "RESEND_WEBHOOK_SECRET"; then
+            echo "RESEND_WEBHOOK_SECRET already in production env — replacing (upsert)"
+            vercel env rm RESEND_WEBHOOK_SECRET production --yes --token="$VERCEL_TOKEN" >/dev/null 2>&1 || true
+          fi
+          printf %s "$RESEND_WEBHOOK_SECRET" | vercel env add RESEND_WEBHOOK_SECRET production --token="$VERCEL_TOKEN" >/dev/null
+          echo "RESEND_WEBHOOK_SECRET synced to production env (value not shown)"
+
       - name: Build (verify compile)
         working-directory: ${{ runner.temp }}/dev-library-deploy
         env:
