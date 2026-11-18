@@ -83,7 +83,7 @@ const SERIF = "Georgia,'Times New Roman',serif";
 // Lower-half remodel (James, 2026-11-18, Maple Finance design
 // language): the top half is locked; from the facts card down, all
 // varied colors are removed — black pill buttons (Enter + the CTA
-// row), a flat facts list on a hairline, a pale peach engagement
+// row), a flat facts list on a hairline, a creamsicle engagement
 // banner with a serif headline and ink links, and a black WhatsApp
 // band. Tangerine survives only in the wordmark, the facts markers,
 // and inline link color — one accent family, disciplined.
@@ -134,7 +134,7 @@ export function renderHtml(entry) {
       <p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by an <strong>OTP, one-time code</strong> sent to your email — no password to keep</p>
     </div>` : "";
   // The social-engagement banner (James, 2026-11-18; remodelled the
-  // same day in the Maple Finance design language): a pale peach
+  // same day in the Maple Finance design language): a creamsicle
   // block, ink text, a serif headline — X and the podcast, with the
   // share ask. A send may carry its own lines (entry.bannerLines,
   // plain text) — outreach copy varies; the desk default is below.

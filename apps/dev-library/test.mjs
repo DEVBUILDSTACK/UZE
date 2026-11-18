@@ -183,7 +183,7 @@ try {
     !!inv && inv.html.includes("Follow us on X") && inv.html.includes("https://instagram.com/uzemarkets") &&
     inv.html.includes("Listen to the podcast") && inv.html.includes('bgcolor="#1a1a1a"') &&
     !inv.html.includes("#b02a8a"));
-  ok("lower half in the Maple language: black Enter pill, peach banner, serif headline, no varied colors",
+  ok("lower half in the Maple language: black Enter pill, creamsicle banner, serif headline, no varied colors",
     !!inv && inv.html.includes("Enter the Dev Library") &&
     inv.html.includes("background-color:#1a1a1a;color:#ffffff") &&
     inv.html.includes("#FDEEE2") && inv.html.includes("Georgia") && inv.html.includes("Join the conversation") &&
