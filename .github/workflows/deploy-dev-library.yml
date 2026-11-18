@@ -112,7 +112,7 @@ jobs:
           echo "== accept marketplace terms (neon is the one integration whose accept-terms supports --yes)"
           vercel integration accept-terms neon --yes --token="$VERCEL_TOKEN" --scope "$SCOPE" 2>&1 | head -c 1000; echo
           echo "== provision the neon resource and connect it to this project"
-          vercel integration add neon --name "${STORE_NAME}" --meta region=us-east-1 --token="$VERCEL_TOKEN" --scope "$SCOPE" 2>&1 | tail -c 3000; echo
+          vercel integration add neon --name "${STORE_NAME}" --meta region=iad1 --token="$VERCEL_TOKEN" --scope "$SCOPE" 2>&1 | tail -c 3000; echo
           echo "== production env names after provisioning (names only, no values)"
           vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null | grep -E "POSTGRES|DATABASE|NEON" || echo "no POSTGRES/DATABASE/NEON env names visible yet"
 
