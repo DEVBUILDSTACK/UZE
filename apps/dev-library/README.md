@@ -25,3 +25,12 @@ Env: `LIBRARY_SECRET` (session signing), `LIBRARY_MASTER_TOKEN` (master-control 
 ## Data
 
 `data/` holds the JSON store for the standalone deployment. The platform-side home is the PostgreSQL `talent` schema — migration `d1ce7a1e5001` in `services/compose/alembic/versions/` (verified by from-empty replay, 2026-11-18). The two stores carry the same contracts; the app store is the deployable unit for dev.uzemarkets.com, the schema is the core integration.
+
+## Data layer — Vercel DB (addendum, 2026-11-18)
+
+With `DATABASE_URL` set, the app runs on the talent data layer (Vercel Postgres in production): `lib/store-pg.mjs` hydrates the working set from the DB at boot and writes every save through to the typed tables in `db/schema.sql` (`developer`, `developer_status`, `repo_permission`, `mock`, `chronicle_entry`, `comms_send`, `comment`). The DB is the durable record; the JSON documents remain the app's interface and working set.
+
+- `node db/seed.mjs` — idempotent seed: the five known professionals (`db/professionals.mjs`, from the verified GitHub scan of 2026-11-18) into `developer` + `developer_status`, and their 59 grants into `repo_permission`. Records access as found; changes nothing.
+- `node db/sync-sheet.mjs [--dry-run]` — regenerates the Google Sheet (Permissions Ledger + Developer Status tabs) from the DB. The sheet is an output of the DB, never hand-edited.
+- Verified 2026-11-18 against a local Postgres: seed counts {developer 5, developer_status 5, repo_permission 59}; the rehearsal suite passes 21/21 in both JSON mode and DB mode; DB-mode boot serves exactly the five seeded professionals.
+- Provisioning remainder: create the Postgres store on the dev-library Vercel project and set `DATABASE_URL` — rides with the dev.uzemarkets.com deployment (separate gate).

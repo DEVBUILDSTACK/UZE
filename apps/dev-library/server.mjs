@@ -35,6 +35,14 @@ const publicDev = (d) => d && ({ name: d.name, email: d.email, track: d.track ||
   expertise: d.expertise, readingRoom: d.readingRoom.active,
   source: d.source.filter((s) => !s.revokedAt).map((s) => s.repo) });
 
+// DB mode (DATABASE_URL set): the talent data layer is the durable
+// record — hydrate the working set from it before serving.
+if (process.env.DATABASE_URL) {
+  const { initPgStore } = await import("./lib/store-pg.mjs");
+  await initPgStore();
+  console.log("dev-library: DB mode (Postgres data layer)");
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   const p = url.pathname;

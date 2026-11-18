@@ -7,7 +7,15 @@ import { fileURLToPath } from "node:url";
 
 const DATA = process.env.LIBRARY_DATA || path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data");
 export function load(name) { return JSON.parse(fs.readFileSync(path.join(DATA, name), "utf8")); }
-export function save(name, obj) { fs.writeFileSync(path.join(DATA, name), JSON.stringify(obj, null, 1) + "\n"); }
+// Write-through persistence (lib/store-pg.mjs registers here in DB
+// mode): the JSON documents are the working set; Postgres is the
+// durable record. In JSON mode no persister is registered.
+let persister = null;
+export function setPersister(fn) { persister = fn; }
+export function save(name, obj) {
+  fs.writeFileSync(path.join(DATA, name), JSON.stringify(obj, null, 1) + "\n");
+  if (persister) persister(name, obj);
+}
 export function chronicle(type, fields) {
   const c = load("chronicle.json");
   c.entries.push({ at: new Date().toISOString(), type, ...fields });
