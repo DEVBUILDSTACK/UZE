@@ -37,6 +37,20 @@ The four engagement modes apply under both models. Which model a
 given engagement runs under is a term of the engagement itself,
 recorded before work begins.
 
+## Reserved portal subdomains (James, 2026-11-18)
+
+Two additional subdomains — totally separate and distinct, one per
+money model. **Names reserved only; NOT created** (no DNS, no app)
+until James directs their build:
+
+- **uzeoutstaff.uzemarkets.com** — the outstaffing portal
+  (UZE pays the talent, bills the client).
+- **uzeplacement.uzemarkets.com** — the placement portal
+  (fee-based; the client pays the individual directly).
+
+The developer instance remains dev.uzemarkets.com (the UZE Dev
+Library).
+
 ## Rail note
 
 Where UZE Markets is the paymaster (outstaffing) or collects the
