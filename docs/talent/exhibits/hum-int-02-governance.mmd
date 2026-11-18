@@ -6,14 +6,16 @@ flowchart TB
     end
 
     subgraph SUCCESSION["Succession chain"]
-        D5["<b>D5</b><br/>Hammond James Dugan V<br/>First successor"]
-        D4["<b>D4</b><br/>Hammond J. Dugan IV<br/>Second successor"]
-        JAMES -.->|"on incapacity"| D5
-        D5 -.->|"if D5 unavailable"| D4
+        D4["<b>D4</b><br/>Hammond James Dugan IV<br/>First successor"]
+        D5["<b>D5</b><br/>Hammond James Dugan V<br/>Second successor"]
+        WCD["<b>WCD</b><br/>William Cumberland Dugan<br/>Third successor"]
+        JAMES -.->|"on incapacity"| D4
+        D4 -.->|"if D4 unavailable"| D5
+        D5 -.->|"if D5 unavailable"| WCD
     end
 
     subgraph EXEMPT["Founder exemptions<br/>not roadmap-bound"]
-        EX["William Dugan<br/>D5 · D4"]
+        EX["WCD — William Cumberland Dugan<br/>D5 — Hammond James Dugan V<br/>D4 — Hammond James Dugan IV"]
     end
 
     subgraph GATES["Standing gates"]
@@ -43,6 +45,7 @@ flowchart TB
     style SOMSEM fill:#ff6b00,color:#fff,stroke:#b74700
     style D5 fill:#ffab40,stroke:#b74700
     style D4 fill:#ffab40,stroke:#b74700
+    style WCD fill:#ffab40,stroke:#b74700
     style EX fill:#f3e5f5,stroke:#7b1fa2
     style G1 fill:#ffcdd2,stroke:#b02a37
     style G2 fill:#ffcdd2,stroke:#b02a37

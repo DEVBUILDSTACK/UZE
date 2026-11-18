@@ -1,3 +1,5 @@
+> **Correction applied 2026-11-18 (James, 13:24 ET):** succession chain corrected to **D4 → D5 → WCD** and WCD's full name restored (**William Cumberland Dugan**) throughout this upload copy. The byte-identical document as received is preserved as James's upload (md5 54032936b9f5e3f1e1a90041a17aea00).
+
 AEINFO TALENT VERTICAL — CONSOLIDATED ENGINEERING DOCUMENT
 
 Original brief through final directive v3.1
@@ -60,7 +62,7 @@ Addendum 2 — Developer list lifecycle:
 · Roadmap binding for every non-founder; the three Dugan owners exempt.
 · Reset-to-zero on revocation; chronicle preserved.
 · No uncontrolled action (roadmap-bound work only).
-· Master control: SoSem, succession to D5, then D4.
+· Master control: SoSem, succession to D4, then D5, then WCD.
 
 ---
 
@@ -74,7 +76,7 @@ Q2 gate placement App-level on Vercel correct Middleware-level gate; OTP uniform
 Q3 manifest + filters Design serves rear-view purpose Status filter; version+changelog fields; clearance-scoped developer filter
 Q4 missed risks Trust boundary correct Eight named risks within the stated boundary
 Q5 comms desk Design coherent Comments route by subject; alias version-chain; email deliverability critical path; OTP link hygiene
-Q6 developer list Lifecycle sound Stage-as-summary vs access-booleans; soft-delete; D4 second successor; item 15 depends on branch protection
+Q6 developer list Lifecycle sound Stage-as-summary vs access-booleans; soft-delete; D4 first successor; item 15 depends on branch protection
 
 II.2 — Foundation sprints (LR.0 – LR.5)
 
@@ -376,7 +378,7 @@ Key diagram signatures (render destination — full source in repo):
 · HUM-EXT-03 (Assessment & Ladder) — two assessment paths feeding the six-stage ladder ending in Vercel sandbox spin-up (HUMAN, AUTONOMOUS, BOTH).
 · HUM-EXT-04 (Engagement & Payment) — four shapes, four deployments, five rails, plus the World.xyz downstream connection for CASH.
 · HUM-INT-01 (Platform Architecture) — four layers, shared spine, two tracks, all external infrastructure explicit (NEAR AI Cloud, NEAR Intents, LightLink, deBridge, Across, Bridge/Stripe, World.xyz), master control.
-· HUM-INT-02 (Governance) — James → SoSem with D5 → D4 succession; rail authorization gates; standing gates; audit chronicle.
+· HUM-INT-02 (Governance) — James → SoSem with D4 → D5 → WCD succession; rail authorization gates; standing gates; audit chronicle.
 · HUM-INT-03 (Phase Execution) — P0 through P6, each with its component list.
 · MACH-INT-01 (ER v3.1) — full entity-relationship diagram including SettlementRail table, all entities from v3.0 plus new settlement fields.
 · MACH-INT-02 (Talent States) — lifecycle machine with preferredRail and worldParticipant noted at PROSPECT and PLACED states.
