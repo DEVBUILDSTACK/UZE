@@ -1,5 +1,6 @@
 # TALENT VERTICAL — CONSOLIDATED BUILD SCOPE + PHASED SPRINT ADDENDUM
 ## Status: FOR JAMES'S TAP · v1.0 · 2026-11-18 · Executor: SoSem
+> **Status stamp (2026-11-18, added by addition per James's direction — the header above is the filed original and is not rewritten):** the build was **tapped by James on 2026-11-18** (evidence: commits `83cb964` — Phase 1 build — and `d36b333` — data layer on the amended scope). Phase 1 is built and deployed. This stamp supersedes the header's pre-tap wording; the tap gate it records is satisfied.
 ## Authority chain: Directive v3.0 + v3.1 (James, 2026-11-18) · Phase 0 extension pass (SoSem, filed bd226ae) · James's rulings of 2026-11-18 (succession 13:24 ET; rail law 13:49 ET + carve-out) · DeepSeek's read on Phase 0 (concurrence, no corrections outstanding)
 ## For DeepSeek (review copy): this package is build-ready as ruled. Asked: a thumbs-up go, or a named defect. No clarifying questions — every open item carries a ruled default below.
 

@@ -8,6 +8,8 @@ The database is not a separate store beside the phased sprint — **it is the ph
 
 ## 2. The database
 
+> **Supersession note (2026-11-18, added by addition — §2's original text below is not rewritten):** the provider name in this section is overtaken. **Vercel Postgres was sunset in June 2025** — the legacy create-store API returns `not_found` (deploy commit `78f63d6`). The attach path is now a **Marketplace Postgres (Neon)**, which injects the database URL into the project env. This addendum's architecture — one data layer for the phased sprint, the sheet generated from the DB — is unchanged; only the provider named in the first bullet is superseded.
+
 - **Vercel Postgres**, a dedicated database, separate from the compose core's Postgres (Scope Tenet 01 keeps business data distinct; this is the talent vertical's store for the developer-facing plane), attached to the dev-library deployment (dev.uzemarkets.com).
 - The compose-side `talent` schema (migration d1ce7a1e5001) remains the core integration contract; the Vercel DB carries the same entities for the reading-room plane: developers, expertise, grants, mocks, sessions, events, comms.
 - The Phase 1 app's JSON store (apps/dev-library/lib/store.mjs) is replaced by this database behind the same interface; the rehearsal suite must pass unchanged against it.
