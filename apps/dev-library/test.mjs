@@ -64,7 +64,7 @@ try {
   await call("/api/admin/mark-contact", { method: "POST", master: true, body: { email: "ina@test.dev", channel: "whatsapp" } });
   await call("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "ina@test.dev" } });
   await call("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "xan@test.dev" } });
-  ok("invitations queued (not sent)", comms().filter(s => s.kind === "invitation").length === 2 && comms().every(s => s.status === "queued"));
+  ok("invitations queued (not sent)", comms().filter(s => s.kind === "invitation" && ["ina@test.dev", "xan@test.dev"].includes(s.to)).length === 2 && comms().every(s => s.status === "queued"));
 
   const ina = await signIn("ina@test.dev");
   const cat = await call("/api/catalog", { cookie: ina });
@@ -157,6 +157,10 @@ try {
   await call2("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "mia@test.dev" } });
   const inv = await waitFor(() => received.find((x) => (x.to || []).includes("mia@test.dev") && (x.subject || "").includes("access to the UZE Dev Library")));
   ok("mail configured: invitation SENT at the grant event, from desk@", !!inv && String(inv.from).includes("desk@uzemarkets.com"));
+  ok("invitation is branded: greeting, tangerine, library link, desk signature",
+    !!inv && inv.html.includes("Dear Development Partner") && inv.html.includes("#ff6b00") &&
+    inv.html.includes("dev.uzemarkets.com") && inv.html.includes("The UZE Markets Desk") &&
+    inv.text.includes("The UZE Markets Desk"));
   const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
   ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));
 
@@ -164,6 +168,8 @@ try {
   const otpMail = await waitFor(() => received.filter((x) => (x.subject || "").includes("sign-in code")).pop());
   const delivered = otpMail && otpMail.text.match(/sign-in code for the UZE Dev Library is (\d{6})/)[1];
   ok("sign-in code SENT at the request event", !!delivered);
+  ok("code email is branded and shows the code large",
+    !!delivered && otpMail.html.includes(delivered) && otpMail.html.includes("Hello,"));
   const v = await call2("/api/verify", { method: "POST", body: { email: "mia@test.dev", code: delivered } });
   ok("the delivered code signs in", v.status === 200 && !!v.cookie);
 
