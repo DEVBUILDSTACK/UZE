@@ -50,7 +50,11 @@ export function renderText(entry) {
   return `${GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${SIGN_OFF}\n${LIBRARY_URL}\n\nUZEmarkets`;
 }
 
-const HEADLINE = { invitation: "A seat in the reading room." };
+// Naming rule (James, 2026-11-18): "the reading room" is internal
+// language only — it never appears in external copy. External name
+// is the UZE Dev Library, full stop. No headline rides the desk
+// emails; the copy opens with the greeting.
+const HEADLINE = {};
 const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SERIF = "Georgia,'Times New Roman',serif";
 
@@ -84,7 +88,7 @@ const PREHEADER = {
   revocation: "Your Dev Library access has been reset — details inside.",
 };
 const HERO_URL = "https://dev.uzemarkets.com/hero.gif";
-const HERO_ALT = "The UZE Dev Library reading room — design mocks, interface cards and working notes laid out for review";
+const HERO_ALT = "The UZE Dev Library — design mocks, interface cards and working notes laid out for review";
 const STYLE_BLOCK = `<style>
 :root{color-scheme:light dark}
 @media only screen and (max-width:620px){.em-card{width:100%!important}.em-pad{padding-left:20px!important;padding-right:20px!important}}
@@ -120,7 +124,7 @@ export function renderHtml(entry) {
     ? `<div class="em-facts" style="background-color:#f5f2ee;border:1px solid #ddd5c9;border-radius:12px;padding:18px 22px;margin:22px 0">
       <p class="em-text" style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; The catalogue is organised by <strong>topic, date and repository</strong></p>
       <p class="em-text" style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>Comment and suggest</strong> on anything you read, ahead of any source access</p>
-      <p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by a <strong>one-time code</strong> sent to your email — no password to keep</p>
+      <p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by an <strong>OTP, one-time code</strong> sent to your email — no password to keep</p>
     </div>` : "";
   // The social-engagement banner (James, 2026-11-18): the visual
   // block in desk correspondence — X and the podcast, with the
@@ -151,7 +155,7 @@ export function renderHtml(entry) {
     </div>
     <div style="margin-top:22px">
       <div style="font-size:22px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span class="em-text" style="color:#1a1a1a">markets</span></div>
-      <div class="em-muted" style="font-size:11px;letter-spacing:2.5px;color:#6b655e;margin-top:2px">${esc(entry.footerEyebrow || "DEV LIBRARY · THE READING ROOM")}</div>
+      <div class="em-muted" style="font-size:11px;letter-spacing:2.5px;color:#6b655e;margin-top:2px">${esc(entry.footerEyebrow || "THE TALENT DESK · DEV LIBRARY")}</div>
     </div>`
     : `<div class="em-div" style="border-top:1px solid #ddd5c9;margin-top:24px;padding-top:14px">
       <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">The UZE Markets Desk · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>
@@ -184,7 +188,7 @@ ${STYLE_BLOCK}
 <table role="presentation" class="em-card" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="border-collapse:separate;width:600px;max-width:600px;background-color:#ffffff;border:1px solid #ddd5c9;border-radius:14px">
 <tr><td bgcolor="#1a1a1a" style="background-color:#1a1a1a;border-top-left-radius:14px;border-top-right-radius:14px;padding:20px 34px">
 <div style="font-size:21px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span style="color:#ffffff">markets</span></div>
-<div style="font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px">DEV LIBRARY · THE READING ROOM</div>
+<div style="font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px">DEV LIBRARY</div>
 </td></tr>
 ${heroRow}
 <tr><td class="em-pad" style="padding:28px 34px 24px">

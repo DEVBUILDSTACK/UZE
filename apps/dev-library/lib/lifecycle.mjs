@@ -35,7 +35,7 @@ export function grantReadingRoom(email) {
   const d = mutate(email, (x) => { x.readingRoom = { active: true, grantedAt: new Date().toISOString(), revokedAt: null };
     if (["prospect", "contacted", "recruiting"].includes(x.stage)) setStage(x, "reading-room"); });
   commsSend(email, "invitation", "You have access to the UZE Dev Library",
-    "You have been granted reading-room access to the UZE Dev Library. Sign in with this email address to receive a one-time code.");
+    "You have been granted access to the UZE Dev Library. Sign in with this email address to receive a one-time code.");
   chronicle("grant-reading-room", { email }); return d;
 }
 export function grantSource(email, repo, roadmap = null) {

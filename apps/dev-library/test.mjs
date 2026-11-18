@@ -177,7 +177,7 @@ try {
     !!inv && inv.html.includes('role="presentation"') && inv.html.includes('lang="en"') &&
     inv.html.includes("Your seat in the UZE Dev Library is ready") &&
     inv.html.includes("prefers-color-scheme") && inv.html.includes('name="color-scheme"') &&
-    inv.html.includes("https://dev.uzemarkets.com/hero.gif") && inv.html.includes('alt="The UZE Dev Library reading room') &&
+    inv.html.includes("https://dev.uzemarkets.com/hero.gif") && inv.html.includes('alt="The UZE Dev Library —') &&
     Buffer.byteLength(inv.html) < 95 * 1024);
   ok("button row: X / Instagram / podcast pills all present",
     !!inv && inv.html.includes("Follow us on X") && inv.html.includes("https://instagram.com/uzemarkets") &&
@@ -185,6 +185,10 @@ try {
   ok("WhatsApp band is the bottom-most card element (after the logo block)",
     !!inv && inv.html.includes("#25D366") && inv.html.includes("Join us on WhatsApp") &&
     inv.html.indexOf("#25D366") > inv.html.indexOf("font-size:22px"));
+  ok("naming rule: no external copy says 'reading room' (James, 2026-11-18)",
+    !!inv && !/reading room/i.test(inv.html) && !/reading room/i.test(inv.text) &&
+    inv.html.includes(">DEV LIBRARY<") && inv.html.includes("THE TALENT DESK · DEV LIBRARY") &&
+    inv.html.includes("Sign-in is by an"));
   const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
   ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));
 
