@@ -37,6 +37,21 @@ The four engagement modes apply under both models. Which model a
 given engagement runs under is a term of the engagement itself,
 recorded before work begins.
 
+## Confidentiality — the desk shields the talent (James, 2026-11-18)
+
+All communication runs through **the desk** (desk@uzemarkets.com).
+Partners are brought in — and CC'd — only when an engagement
+warrants it.
+
+**A talent target is never exposed** — no identity, no contact
+information — to a client in either model (outstaffing or
+placement) until **both** are in hand:
+
+1. a **signed engagement**, and
+2. a **deposit**.
+
+Until then the talent is presented blind, through the desk alone.
+
 ## Reserved portal subdomains (James, 2026-11-18)
 
 Two additional subdomains — totally separate and distinct, one per
