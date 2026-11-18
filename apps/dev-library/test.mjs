@@ -179,12 +179,18 @@ try {
     inv.html.includes("prefers-color-scheme") && inv.html.includes('name="color-scheme"') &&
     inv.html.includes("https://dev.uzemarkets.com/hero.gif") && inv.html.includes('alt="The UZE Dev Library —') &&
     Buffer.byteLength(inv.html) < 95 * 1024);
-  ok("button row: X / Instagram / podcast pills all present",
+  ok("button row: X / Instagram / podcast pills all present, all black (Maple remodel)",
     !!inv && inv.html.includes("Follow us on X") && inv.html.includes("https://instagram.com/uzemarkets") &&
-    inv.html.includes("Listen to the podcast") && inv.html.includes("#b02a8a"));
-  ok("WhatsApp band is the bottom-most card element (after the logo block)",
-    !!inv && inv.html.includes("#25D366") && inv.html.includes("Join us on WhatsApp") &&
-    inv.html.indexOf("#25D366") > inv.html.indexOf("font-size:22px"));
+    inv.html.includes("Listen to the podcast") && inv.html.includes('bgcolor="#1a1a1a"') &&
+    !inv.html.includes("#b02a8a"));
+  ok("lower half in the Maple language: black Enter pill, peach banner, serif headline, no varied colors",
+    !!inv && inv.html.includes("Enter the Dev Library") &&
+    inv.html.includes("background-color:#1a1a1a;color:#ffffff") &&
+    inv.html.includes("#FDEEE2") && inv.html.includes("Georgia") && inv.html.includes("Join the conversation") &&
+    !inv.html.includes("#b02a8a") && !inv.html.includes("#25D366"));
+  ok("WhatsApp band is the bottom-most card element (after the logo block), black not green",
+    !!inv && inv.html.includes("Join us on WhatsApp") && !inv.html.includes("#25D366") &&
+    inv.html.indexOf("Join us on WhatsApp") > inv.html.indexOf("font-size:22px"));
   ok("naming rule: no external copy says 'reading room' (James, 2026-11-18)",
     !!inv && !/reading room/i.test(inv.html) && !/reading room/i.test(inv.text) &&
     inv.html.includes(">DEV LIBRARY<") && inv.html.includes("THE TALENT DESK · DEV LIBRARY") &&

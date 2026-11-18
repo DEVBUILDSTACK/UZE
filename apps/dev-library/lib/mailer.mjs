@@ -80,6 +80,13 @@ const SERIF = "Georgia,'Times New Roman',serif";
 // signature; the logo sits underneath the signature block; the
 // WhatsApp band is the bottom-most element of the card; the OTP
 // email stays lean — no hero, no buttons, no banners.
+// Lower-half remodel (James, 2026-11-18, Maple Finance design
+// language): the top half is locked; from the facts card down, all
+// varied colors are removed — black pill buttons (Enter + the CTA
+// row), a flat facts list on a hairline, a pale peach engagement
+// banner with a serif headline and ink links, and a black WhatsApp
+// band. Tangerine survives only in the wordmark, the facts markers,
+// and inline link color — one accent family, disciplined.
 const PREHEADER = {
   invitation: "Your seat in the UZE Dev Library is ready — enter with a one-time code.",
   otp: "Your UZE Dev Library sign-in code — it expires in 15 minutes.",
@@ -98,7 +105,7 @@ const STYLE_BLOCK = `<style>
 .em-text{color:#f2ede6!important}
 .em-head{color:#ffffff!important}
 .em-muted{color:#b3aa9d!important}
-.em-facts{background-color:#2a251f!important;border-color:#3a352f!important}
+.em-facts{border-top-color:#3a352f!important}
 .em-code{background-color:#2a251f!important;border-color:#3a352f!important}
 .em-code-num{color:#ffffff!important}
 .em-div{border-top-color:#3a352f!important}
@@ -118,25 +125,26 @@ export function renderHtml(entry) {
     ? `<h1 class="em-head" style="margin:0 0 18px;font-family:${SERIF};font-size:29px;line-height:1.2;font-weight:700;color:#1a1a1a">${HEADLINE[entry.kind]}</h1>` : "";
   const codeBlock = code ? `<div class="em-code" style="text-align:center;margin:22px 0;padding:20px;background-color:#f5f2ee;border:1px solid #ddd5c9;border-radius:10px"><span class="em-code-num" style="font-size:34px;font-weight:800;letter-spacing:8px;color:#1a1a1a">${code}</span></div>` : "";
   const cta = entry.kind === "invitation"
-    ? `<div style="text-align:center;margin:26px 0 8px"><a href="${LIBRARY_URL}" style="display:inline-block;background-color:#ff6b00;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 34px;border-radius:999px">Enter the Dev Library</a></div>
+    ? `<div style="text-align:center;margin:26px 0 8px"><a href="${LIBRARY_URL}" style="display:inline-block;background-color:#1a1a1a;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 34px;border-radius:999px">Enter the Dev Library</a></div>
     <p class="em-muted" style="text-align:center;margin:0 0 6px;font-size:13px;color:#6b655e">or go straight to ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>` : "";
   const facts = entry.kind === "invitation"
-    ? `<div class="em-facts" style="background-color:#f5f2ee;border:1px solid #ddd5c9;border-radius:12px;padding:18px 22px;margin:22px 0">
-      <p class="em-text" style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; The catalogue is organised by <strong>topic, date and repository</strong></p>
-      <p class="em-text" style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>Comment and suggest</strong> on anything you read, ahead of any source access</p>
+    ? `<div class="em-facts" style="border-top:1px solid #ddd5c9;padding:20px 2px 4px;margin:26px 0 2px">
+      <p class="em-text" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; The catalogue is organised by <strong>topic, date and repository</strong></p>
+      <p class="em-text" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>Comment and suggest</strong> on anything you read, ahead of any source access</p>
       <p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by an <strong>OTP, one-time code</strong> sent to your email — no password to keep</p>
     </div>` : "";
-  // The social-engagement banner (James, 2026-11-18): the visual
-  // block in desk correspondence — X and the podcast, with the
+  // The social-engagement banner (James, 2026-11-18; remodelled the
+  // same day in the Maple Finance design language): a pale peach
+  // block, ink text, a serif headline — X and the podcast, with the
   // share ask. A send may carry its own lines (entry.bannerLines,
   // plain text) — outreach copy varies; the desk default is below.
   const bannerLines = entry.bannerLines
-    ? entry.bannerLines.map((l, i) => `<p style="margin:${i ? "5px" : "9px"} 0 0;color:#ffffff;font-size:14px;line-height:1.55">${esc(l)}</p>`).join("")
-    : `<p style="margin:9px 0 0;color:#ffffff;font-size:14px;line-height:1.55">Join the conversation — ${LINK("https://x.com/UZEmarkets_fyi", "follow us on X", "#ffffff")}, like, and post your take.</p>
-      <p style="margin:5px 0 0;color:#ffffff;font-size:14px;line-height:1.55">Hear the week on ${LINK("https://podcast.uzemarkets.com", "the podcast", "#ffffff")} — and share the weekly edition.</p>`;
+    ? entry.bannerLines.map((l, i) => `<p style="margin:${i ? "5px" : "10px"} 0 0;color:#1a1a1a;font-size:14px;line-height:1.55">${esc(l)}</p>`).join("")
+    : `<p style="margin:10px 0 0;color:#1a1a1a;font-size:14px;line-height:1.55">${LINK("https://x.com/UZEmarkets_fyi", "Follow us on X", "#1a1a1a")}, like, and post your take.</p>
+      <p style="margin:5px 0 0;color:#1a1a1a;font-size:14px;line-height:1.55">Hear the week on ${LINK("https://podcast.uzemarkets.com", "the podcast", "#1a1a1a")} — and share the weekly edition.</p>`;
   const banner = desk
-    ? `<div style="margin-top:22px;background-color:#ff6b00;border-radius:12px;padding:22px;text-align:center">
-      <div style="font-size:19px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ffffff">UZE</span><span style="color:#1a1a1a">markets</span></div>${bannerLines}
+    ? `<div style="margin-top:26px;background-color:#FDEEE2;border-radius:12px;padding:26px 24px;text-align:center">
+      <div style="font-family:${SERIF};font-size:21px;line-height:1.25;color:#1a1a1a">Join the conversation</div>${bannerLines}
     </div>` : "";
   // The button row — the house CTAs as unmissable pills, sitting
   // directly above the signature, share line beneath them.
@@ -144,16 +152,16 @@ export function renderHtml(entry) {
     `<td bgcolor="${bg}" style="background-color:${bg};border-radius:999px"><a href="${href}" style="display:inline-block;padding:10px 18px;color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap">${label}</a></td>`;
   const buttonRow = desk
     ? `<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:22px auto 0">
-      <tr>${pill("https://x.com/UZEmarkets_fyi", "Follow us on X", "#1a1a1a")}<td width="8"></td>${pill("https://instagram.com/uzemarkets", "Instagram", "#b02a8a")}<td width="8"></td>${pill("https://podcast.uzemarkets.com", "Listen to the podcast", "#ff6b00")}</tr>
+      <tr>${pill("https://x.com/UZEmarkets_fyi", "Follow us on X", "#1a1a1a")}<td width="8"></td>${pill("https://instagram.com/uzemarkets", "Instagram", "#1a1a1a")}<td width="8"></td>${pill("https://podcast.uzemarkets.com", "Listen to the podcast", "#1a1a1a")}</tr>
     </table>
     <p class="em-muted" style="text-align:center;margin:10px 0 0;font-size:13px;color:#6b655e;line-height:1.5">Share the weekly edition, and leave us feedback or a kind word on those channels. Our affiliate WhatsApp group opens soon.</p>` : "";
   const signature = desk
-    ? `<div style="margin-top:20px">
+    ? `<div style="margin-top:28px">
       <p class="em-text" style="margin:0 0 2px;color:#1a1a1a">Warm regards,</p>
       <p class="em-text" style="margin:0;font-weight:700;color:#1a1a1a">The UZE Markets Desk</p>
       <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>
     </div>
-    <div style="margin-top:22px">
+    <div style="margin-top:28px">
       <div style="font-size:22px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span class="em-text" style="color:#1a1a1a">markets</span></div>
       <div class="em-muted" style="font-size:11px;letter-spacing:2.5px;color:#6b655e;margin-top:2px">${esc(entry.footerEyebrow || "THE TALENT DESK · DEV LIBRARY")}</div>
     </div>`
@@ -163,11 +171,12 @@ export function renderHtml(entry) {
   const heroRow = desk
     ? `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${HERO_URL}" width="600" height="200" alt="${HERO_ALT}" style="display:block;width:100%;max-width:600px;height:auto;border:0" /></td></tr>` : "";
   // The WhatsApp band — bottom-most element of the card (James,
-  // 2026-11-18). The affiliate group does not exist yet (Meta gate,
+  // 2026-11-18), black in the Maple-language remodel (the green is
+  // gone). The affiliate group does not exist yet (Meta gate,
   // Dec 2), so the band links to the house site — never an invented
   // group invite.
   const whatsappRow = desk
-    ? `<tr><td bgcolor="#25D366" style="background-color:#25D366;border-bottom-left-radius:14px;border-bottom-right-radius:14px;padding:20px 34px;text-align:center">
+    ? `<tr><td bgcolor="#1a1a1a" style="background-color:#1a1a1a;border-bottom-left-radius:14px;border-bottom-right-radius:14px;padding:20px 34px;text-align:center">
       <p style="margin:0;font-size:16px;font-weight:800;color:#ffffff">Join us on WhatsApp</p>
       <p style="margin:5px 0 0;font-size:13px;line-height:1.55;color:#ffffff">Our affiliate WhatsApp group opens soon — start at ${LINK("https://uzemarkets.com", "uzemarkets.com", "#ffffff")}</p>
     </td></tr>` : "";
