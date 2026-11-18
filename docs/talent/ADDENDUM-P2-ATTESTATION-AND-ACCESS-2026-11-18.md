@@ -36,10 +36,14 @@ those roles after each level.
 
 **Named aid, as rendered in James's dictation: "Tridesh"** — to aid
 in the post-university / post-master's education side of this layer.
-*[Confirmation pending: whether this is Shradesh Jodawat and the
-Gradify credential rail, or a distinct party. The function is
-specified either way; the name is recorded as rendered and is not
-treated as settled until James confirms.]*
+
+**Confirmation (James, 2026-11-18):** the aid is **Shradesh
+Jodawat** — founder of **Gradify** (spelled G-R-A-D-I-F-Y, with a
+D), **Gradify Labs**, the **Gradify University** credentials-on-chain
+rail. "Tridesh" was a dictation rendering of his name and is
+superseded by this confirmation. (Shradesh Jodawat is a distinct
+person from Shradhesh Jain, the full-stack developer — never
+conflate the two.)
 
 ## 3. Access economics — the configuring employer pays for access
 
