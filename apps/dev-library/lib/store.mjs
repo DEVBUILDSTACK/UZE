@@ -28,8 +28,15 @@ export function chronicle(type, fields) {
 // parenthetical dropped ("James Dugan (D5)" -> "James"). No name
 // on file: the mailer's kind default stands; a name is never
 // invented.
+// Address-name rulings (James, 2026-11-19): the greeting name is
+// not always the display name's first token. D4 — Hammond James
+// Dugan IV, the founder SoSem deals with — is addressed "Hammond",
+// never "James" (that is his son, D5). Keyed by email; every other
+// recipient resolves from their roster record.
+const ADDRESS_NAME = { "uze@uzemarkets.com": "Hammond" };
 function firstNameFor(email) {
   const em = String(email || "").toLowerCase();
+  if (ADDRESS_NAME[em]) return ADDRESS_NAME[em];
   const clean = (n) => String(n || "").replace(/\([^)]*\)/g, "").trim().split(/\s+/)[0] || null;
   try {
     const c = (load("eco-contributors.json").contributors || []).find((x) => (x.email || "").toLowerCase() === em);
