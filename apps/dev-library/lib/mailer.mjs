@@ -38,7 +38,12 @@
 // Founders WCD and D5 get their own signature blocks, titled
 // "Founder", when they join the domain — the desk signature below is
 // the standing default until then.
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { load, save } from "./store.mjs";
+
+const APP_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const API_URL = () => process.env.RESEND_API_URL || "https://api.resend.com/emails";
 const FROM = () => process.env.LIBRARY_FROM || "UZE Dev Library <desk@uzemarkets.com>";
@@ -47,7 +52,7 @@ const FROM = () => process.env.LIBRARY_FROM || "UZE Dev Library <desk@uzemarkets
 // same sending discipline — only the name and the home link differ.
 const ECO_FROM = () => process.env.ECO_FROM || "UZE Buildr Team <desk@uzemarkets.com>";
 const LIBRARY_URL = "https://dev.uzemarkets.com";
-const ECO_URL = "https://buildr-team.uzemarkets.com";
+const ECO_URL = "https://buildr-eco.uzemarkets.com";
 export const mailConfigured = () => Boolean(process.env.RESEND_API_KEY);
 
 const GREETING = { otp: "Hello,", invitation: "Dear Development Partner,",
@@ -162,9 +167,9 @@ export function renderHtml(entry) {
   const cta = entry.kind === "invitation"
     ? pillCta(LIBRARY_URL, "Enter the Dev Library", `or go straight to ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}`)
     : entry.kind === "eco-invitation"
-    ? pillCta(ECO_URL, "Enter the Buildr Team", `or go straight to ${LINK(ECO_URL, "buildr-team.uzemarkets.com")}`)
+    ? pillCta(ECO_URL, "Enter the Buildr Team", `or go straight to ${LINK(ECO_URL, "buildr-eco.uzemarkets.com")}`)
     : entry.kind === "invitation_dual"
-    ? pillCta(ECO_URL, "Start with the ecosystem", `start at ${LINK(ECO_URL, "buildr-team.uzemarkets.com")} — then step into ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}`)
+    ? pillCta(ECO_URL, "Start with the ecosystem", `start at ${LINK(ECO_URL, "buildr-eco.uzemarkets.com")} — then step into ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}`)
     : "";
   const facts = entry.kind === "invitation"
     ? factsWrap(
@@ -178,7 +183,7 @@ export function renderHtml(entry) {
       `<p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by an <strong>OTP, one-time code</strong> sent to your email — no password to keep, no GitHub account needed</p>`)
     : entry.kind === "invitation_dual"
     ? factsWrap(
-      factLine(`<strong>1 — UZE Buildr Team:</strong> start here. The whole ecosystem, both design surfaces, the pillars — ${LINK(ECO_URL, "buildr-team.uzemarkets.com")}`) +
+      factLine(`<strong>1 — UZE Buildr Team:</strong> start here. The whole ecosystem, both design surfaces, the pillars — ${LINK(ECO_URL, "buildr-eco.uzemarkets.com")}`) +
       `<p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>2 — UZE Dev Partner Library:</strong> then step into the library, where the work itself lives — ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>`)
     : "";
   // The social-engagement banner (James, 2026-11-18; remodelled the
@@ -274,6 +279,21 @@ function sendErrorText(e) {
 }
 
 export async function sendMail(entry) {
+  const payload = { from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], subject: entry.subject,
+    text: renderText(entry), html: renderHtml(entry),
+    tags: [{ name: "app", value: entry.app === "eco" ? "eco" : "dev-library" }, { name: "kind", value: entry.kind }] };
+  // Attachments (James, 2026-11-19): an entry may carry attachment
+  // descriptors ({ filename, file } — file is app-relative; the
+  // content ships with the app). The mailer resolves them at send
+  // time and sends base64 content per the Resend API. A missing
+  // file fails the send loudly (recorded in lastError) — an
+  // invitation never goes out silently missing its diagrams.
+  if (entry.attachments?.length) {
+    payload.attachments = entry.attachments.map(a => ({
+      filename: a.filename,
+      content: fs.readFileSync(path.join(APP_ROOT, a.file)).toString("base64"),
+    }));
+  }
   const r = await fetch(API_URL(), {
     method: "POST",
     // Resend dev-docs findings (deep dive 2026-11-18): a raw-API call
@@ -282,9 +302,7 @@ export async function sendMail(entry) {
     // tags are the metadata channel (echoed back in webhooks).
     headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json",
       "user-agent": "uze-dev-library/1.0", "idempotency-key": `comms/${entry.id}` },
-    body: JSON.stringify({ from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], subject: entry.subject,
-      text: renderText(entry), html: renderHtml(entry),
-      tags: [{ name: "app", value: entry.app === "eco" ? "eco" : "dev-library" }, { name: "kind", value: entry.kind }] }),
+    body: JSON.stringify(payload),
     signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
   });
   const raw = await r.text().catch(() => "");

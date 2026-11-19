@@ -1,4 +1,4 @@
-// The UZE Buildr Team contributor registry (buildr-team.uzemarkets.com).
+// The UZE Buildr Team contributor registry (buildr-eco.uzemarkets.com).
 // A distinct roster from the Developer List: contributors are
 // principals and ecosystem contributors who do NOT use GitHub —
 // email + one-time code only. Visibility model (James, 2026-11-19):

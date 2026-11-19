@@ -1,6 +1,6 @@
 // UZE Buildr Team — the eco contributor surface, host-routed inside
 // the Dev Library app (James's architecture ruling, 2026-11-19):
-// when the request Host is buildr-team.uzemarkets.com, this module
+// when the request Host is buildr-eco.uzemarkets.com, this module
 // serves the contributor surface; every other host keeps the Dev
 // Library behavior byte-for-byte. Same Vercel project, same Neon
 // store, same Resend mailer, same deploy workflow and design wash —
@@ -23,7 +23,7 @@ import { sendEntryNow } from "../lib/mailer.mjs";
 import { ORG_ROUTES, ORG_PAGES, orgRoute } from "./org-pages.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const ECO_HOST = "buildr-team.uzemarkets.com";
+export const ECO_HOST = "buildr-eco.uzemarkets.com";
 const LIBRARY_URL = "https://dev.uzemarkets.com";
 
 export function isEcoHost(req) {

@@ -140,4 +140,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
     fs.writeFileSync(path.join(OUT_DIR, dest), html + "\n");
     console.log(`${dest}: ${html.length} bytes`);
   }
+  // The invitation attachment (James, 2026-11-19): the diagrams
+  // document itself, as a .md file — the complete set of three
+  // Mermaid diagrams. The mailer attaches it to invitations for
+  // full-visibility contributors only (lib/invitations.mjs).
+  const diagramsSrc = path.join(SRC_DIR, "UZE-ECOSYSTEM-MAPPING-DIAGRAMS-2026-11-19.md");
+  fs.copyFileSync(diagramsSrc, path.join(OUT_DIR, "diagrams.md"));
+  console.log(`diagrams.md: ${fs.statSync(path.join(OUT_DIR, "diagrams.md")).size} bytes (attachment copy)`);
 }

@@ -1,6 +1,6 @@
 // The UZE Buildr Team seed roster (James's directive, 2026-11-19).
 // Contributors are principals and ecosystem contributors who do NOT
-// use GitHub: the surface at buildr-team.uzemarkets.com is email +
+// use GitHub: the surface at buildr-eco.uzemarkets.com is email +
 // one-time code only. Visibility model: the Ecosystem top level is
 // visible to EVERY signed-in contributor; the four org sections
 // beneath it (keys from db/orgs.mjs: UZE, L2Launch, DFI, FVC) are

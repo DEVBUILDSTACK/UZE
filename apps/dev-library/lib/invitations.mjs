@@ -15,7 +15,7 @@ import { commsSend } from "./store.mjs";
 import { findContributor } from "./eco-contributors.mjs";
 import { findDeveloper } from "./gate.mjs";
 
-const ECO_URL = "https://buildr-team.uzemarkets.com";
+const ECO_URL = "https://buildr-eco.uzemarkets.com";
 const LIBRARY_URL = "https://dev.uzemarkets.com";
 
 export function surfacesFor(email) {
@@ -31,9 +31,9 @@ export function invitationKindFor(email) {
   if (library) return "invitation";
   return null;
 }
-const ECO_EXTRA = { app: "eco", siteUrl: ECO_URL, siteLabel: "buildr-team.uzemarkets.com",
+const ECO_EXTRA = { app: "eco", siteUrl: ECO_URL, siteLabel: "buildr-eco.uzemarkets.com",
   bandLabel: "BUILDR TEAM", footerEyebrow: "THE ECOSYSTEM DESK · BUILDR TEAM" };
-const DUAL_EXTRA = { app: "eco", siteUrl: ECO_URL, siteLabel: "buildr-team.uzemarkets.com",
+const DUAL_EXTRA = { app: "eco", siteUrl: ECO_URL, siteLabel: "buildr-eco.uzemarkets.com",
   bandLabel: "BUILDR TEAM + DEV LIBRARY", footerEyebrow: "THE ECOSYSTEM DESK · BUILDR TEAM" };
 
 export const ECO_INVITATION_SUBJECT = "Your access to the UZE Buildr Team";
@@ -49,13 +49,32 @@ export const DUAL_INVITATION_BODY =
   "Start with the ecosystem — the whole picture. Then the library, where the work itself lives.\n" +
   "Sign-in on both surfaces is by a one-time code sent to this email address — no password to keep, and no GitHub account needed for the Buildr Team.";
 
+// The diagrams attachment (James, 2026-11-19): an invitation for a
+// FULL-visibility contributor (all four org sections) carries the
+// complete diagrams set — all three Mermaids: the two ecosystem
+// diagrams that draw the DFI and FVC connections, and the composite
+// that leaves those firms out — as a .md attachment (the generated
+// content file eco/content/diagrams.md). A segmented contributor
+// gets only material consistent with their visibility: no
+// visibility-consistent subset file exists today, so nothing is
+// attached and the reason is recorded on the entry instead —
+// sections are never leaked by attachment.
+const ALL_ORG_KEYS = ["UZE", "L2Launch", "DFI", "FVC"];
+export function diagramsAttachmentFor(email) {
+  const c = findContributor(email);
+  if (!c) return {};
+  const full = ALL_ORG_KEYS.every(k => (c.orgs || []).includes(k));
+  if (full) return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "eco/content/diagrams.md" }] };
+  return { attachmentNote: "No visibility-consistent diagrams file exists for this contributor's sections — nothing attached." };
+}
+
 // Compose (queue) the invitation an email's grants call for.
 // Returns the comms entry, or null when the email holds only a
 // library grant (the library invitation is lifecycle's own) or no
 // grant at all.
 export function composeInvitation(email) {
   const kind = invitationKindFor(email);
-  if (kind === "invitation_dual") return commsSend(email, "invitation_dual", DUAL_INVITATION_SUBJECT, DUAL_INVITATION_BODY, DUAL_EXTRA);
-  if (kind === "eco-invitation") return commsSend(email, "eco-invitation", ECO_INVITATION_SUBJECT, ECO_INVITATION_BODY, ECO_EXTRA);
+  if (kind === "invitation_dual") return commsSend(email, "invitation_dual", DUAL_INVITATION_SUBJECT, DUAL_INVITATION_BODY, { ...DUAL_EXTRA, ...diagramsAttachmentFor(email) });
+  if (kind === "eco-invitation") return commsSend(email, "eco-invitation", ECO_INVITATION_SUBJECT, ECO_INVITATION_BODY, { ...ECO_EXTRA, ...diagramsAttachmentFor(email) });
   return null;
 }

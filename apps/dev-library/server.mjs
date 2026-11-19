@@ -102,7 +102,7 @@ const handleRequest = async (req, res) => {
   const p = url.pathname;
   try {
     // --- UZE Buildr Team (eco contributor surface): host-routed.
-    // On buildr-team.uzemarkets.com this module serves everything;
+    // On buildr-eco.uzemarkets.com this module serves everything;
     // every other host keeps the Dev Library behavior below,
     // byte-for-byte. ---
     if (isEcoHost(req)) return handleEcoRequest(req, res, { send, body, ecoAdmin: handleEcoAdmin });

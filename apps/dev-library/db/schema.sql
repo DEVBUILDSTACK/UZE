@@ -235,7 +235,7 @@ CREATE TABLE IF NOT EXISTS advisor (
 -- is already nullable.
 ALTER TABLE advisor ALTER COLUMN email DROP NOT NULL;
 
--- ── UZE Buildr Team (eco contributor surface, buildr-team.uzemarkets.com) ──
+-- ── UZE Buildr Team (eco contributor surface, buildr-eco.uzemarkets.com) ──
 -- Contributors are principals and ecosystem contributors who do NOT use
 -- GitHub: email + one-time code only. The Ecosystem top level is visible
 -- to every signed-in contributor; org sections are granted per

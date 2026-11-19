@@ -1,5 +1,5 @@
 // UZE Buildr Team rehearsal — the eco contributor surface
-// (buildr-team.uzemarkets.com, host-routed in this app). Runs the
+// (buildr-eco.uzemarkets.com, host-routed in this app). Runs the
 // server against TEMP data dirs (the real chronicle is never
 // touched) in three phases:
 //   A — eco host, mail unconfigured: the door, org visibility
@@ -235,7 +235,7 @@ try {
   // The ONLY real address test mail may touch: James's internal
   // testing address, via a master-seeded test persona.
   const added = await Bc.call("/api/admin/eco/contributors", { method: "POST", master: true,
-    body: { name: "SoSem mail-path test", email: "uze@uzemarkets.com", role: "Ecosystem Contributor", orgs: ["FVC"] } });
+    body: { name: "SoSem mail-path test", email: "uze@uzemarkets.com", role: "Ecosystem Contributor", orgs: ["UZE", "L2Launch", "DFI", "FVC"] } });
   ok("B: master seeds the uze@ test persona", added.status === 200 && added.body.contributor.email === "uze@uzemarkets.com");
   await Bc.call("/api/eco/request-code", { method: "POST", body: { email: "uze@uzemarkets.com" } });
   const otpMail = received.find(m => (m.to || []).includes("uze@uzemarkets.com") && /sign-in code/.test(m.subject || ""));
@@ -259,12 +259,62 @@ try {
   }
   ok("B: the dual invitation sends from the Buildr Team name, ecosystem first",
     !!dualMail && dualMail.from === "UZE Buildr Team <desk@uzemarkets.com>" &&
-    dualMail.text.indexOf("buildr-team.uzemarkets.com") >= 0 &&
-    dualMail.text.indexOf("buildr-team.uzemarkets.com") < dualMail.text.indexOf("dev.uzemarkets.com") &&
+    dualMail.text.indexOf("buildr-eco.uzemarkets.com") >= 0 &&
+    dualMail.text.indexOf("buildr-eco.uzemarkets.com") < dualMail.text.indexOf("dev.uzemarkets.com") &&
     dualMail.text.includes("Start with the ecosystem — the whole picture. Then the library, where the work itself lives."));
   ok("B: the dual invitation HTML carries the hosted hero and both surfaces in order",
     !!dualMail && dualMail.html.includes("https://dev.uzemarkets.com/hero.gif") &&
-    dualMail.html.indexOf("buildr-team.uzemarkets.com") < dualMail.html.lastIndexOf("dev.uzemarkets.com"));
+    dualMail.html.indexOf("buildr-eco.uzemarkets.com") < dualMail.html.lastIndexOf("dev.uzemarkets.com"));
+  // The diagrams attachment: a full-visibility invitee's invitation
+  // carries the complete diagrams set as a .md attachment.
+  const dualAtt = dualMail && (dualMail.attachments || [])[0];
+  const dualAttText = dualAtt ? Buffer.from(dualAtt.content, "base64").toString("utf8") : "";
+  ok("B: the full-visibility dual invitation carries the diagrams attachment (all three Mermaids)",
+    !!dualAtt && dualAtt.filename === "UZE-ecosystem-diagrams.md" &&
+    (dualAttText.match(/```mermaid/g) || []).length === 3 &&
+    dualAttText.includes("Diagram 1") && dualAttText.includes("Diagram 3"));
+  const dualEntry = comms(tmpB).filter(x => x.to === "dual@test.dev" && x.kind === "invitation_dual").pop();
+  ok("B: the attachment is recorded on the comms entry",
+    !!dualEntry && Array.isArray(dualEntry.attachments) && dualEntry.attachments[0].file === "eco/content/diagrams.md");
+
+  // The uze@ test persona: the bundled data ALSO carries James's
+  // owner persona at this address with a library grant, so the
+  // composer correctly treats it as a dual-holder — its invitation
+  // is the dual one, and (full visibility) it carries the set.
+  const uzeInv = await Bc.call("/api/admin/eco/invite", { method: "POST", master: true, body: { email: "uze@uzemarkets.com" } });
+  ok("B: the uze@ test persona composes invitation_dual (it holds both surfaces)",
+    uzeInv.body.kind === "invitation_dual");
+  let uzeMail = null;
+  for (let i = 0; i < 30 && !uzeMail; i++) {
+    uzeMail = received.find(m => (m.to || []).includes("uze@uzemarkets.com") && /Start here/.test(m.subject || ""));
+    if (!uzeMail) await new Promise(r => setTimeout(r, 100));
+  }
+  const uzeAtt = uzeMail && (uzeMail.attachments || [])[0];
+  ok("B: the test invitation to uze@ carries the diagrams attachment",
+    !!uzeMail && !!uzeAtt && uzeAtt.filename === "UZE-ecosystem-diagrams.md" &&
+    (Buffer.from(uzeAtt.content, "base64").toString("utf8").match(/```mermaid/g) || []).length === 3);
+  // Design lineage (James, 2026-11-19): the eco invitations render
+  // on the SAME template as the Jonathan letter — the v5 template of
+  // record: hosted hero (never data-URI, never CID), black pill
+  // CTAs, the creamsicle band, hairlines, the © 2026 footer.
+  ok("B: the invitation renders on the v5 template lineage (hosted hero, pills, creamsicle, footer)",
+    !!uzeMail && uzeMail.html.includes('src="https://dev.uzemarkets.com/hero.gif"') &&
+    !uzeMail.html.includes("data:image") && !uzeMail.html.includes("cid:") &&
+    uzeMail.html.includes("background-color:#FDEEE2") && uzeMail.html.includes("border-radius:999px") &&
+    uzeMail.html.includes("© 2026") && uzeMail.from === "UZE Buildr Team <desk@uzemarkets.com>");
+
+  // A segmented invitee: no subset file exists, so nothing is
+  // attached and the reason is recorded — sections never leak.
+  await Bc.call("/api/admin/eco/invite", { method: "POST", master: true, body: { email: "ecoonly@test.dev" } });
+  let onlyMail = null;
+  for (let i = 0; i < 30 && !onlyMail; i++) {
+    onlyMail = received.find(m => (m.to || []).includes("ecoonly@test.dev") && /Your access to the UZE Buildr Team/.test(m.subject || ""));
+    if (!onlyMail) await new Promise(r => setTimeout(r, 100));
+  }
+  const onlyEntry = comms(tmpB).filter(x => x.to === "ecoonly@test.dev" && x.kind === "eco-invitation").pop();
+  ok("B: a segmented invitee's invitation carries NO attachment, with the reason recorded",
+    !!onlyMail && !(onlyMail.attachments && onlyMail.attachments.length) &&
+    !!onlyEntry && /No visibility-consistent diagrams file/.test(onlyEntry.attachmentNote || ""));
 } finally {
   srvB.kill(); stub.close();
 }
@@ -305,8 +355,14 @@ try {
   const dualEntry = comms(tmpA).filter(x => x.to === "dual@test.dev" && x.kind === "invitation_dual").pop();
   ok("C: the dual invitation body names both surfaces in order",
     !!dualEntry && dualEntry.body.indexOf("UZE Buildr Team — start here") >= 0 &&
-    dualEntry.body.indexOf("buildr-team.uzemarkets.com") < dualEntry.body.indexOf("dev.uzemarkets.com") &&
+    dualEntry.body.indexOf("buildr-eco.uzemarkets.com") < dualEntry.body.indexOf("dev.uzemarkets.com") &&
     dualEntry.body.includes("UZE Dev Partner Library — then step into the library"));
+  // Jonathan (the inaugural full-visibility case): composing his
+  // invitation records the complete diagrams attachment on the entry.
+  await Cc.call("/api/admin/eco/invite", { method: "POST", master: true, body: { email: "schmidtcommunications@gmail.com" } });
+  const jonEntry = comms(tmpA).filter(x => x.to === "schmidtcommunications@gmail.com" && x.kind === "eco-invitation").pop();
+  ok("C: a full-visibility principal's composed invitation records the diagrams attachment",
+    !!jonEntry && Array.isArray(jonEntry.attachments) && jonEntry.attachments[0].filename === "UZE-ecosystem-diagrams.md");
 
   // The library grant flow itself honors the dual rule.
   const grant = await Cc.call("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "dual2@test.dev" } });
