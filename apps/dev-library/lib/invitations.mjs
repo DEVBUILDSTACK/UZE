@@ -49,23 +49,27 @@ export const DUAL_INVITATION_BODY =
   "Start with the ecosystem — the whole picture. Then the library, where the work itself lives.\n" +
   "Sign-in on both surfaces is by a one-time code sent to this email address — no password to keep, and no GitHub account needed for the Buildr Team.";
 
-// The diagrams attachment (James, 2026-11-19): an invitation for a
-// FULL-visibility contributor (all four org sections) carries the
-// complete diagrams set — all three Mermaids: the two ecosystem
-// diagrams that draw the DFI and FVC connections, and the composite
-// that leaves those firms out — as a .md attachment (the generated
-// content file eco/content/diagrams.md). A segmented contributor
+// The diagrams attachment (James, 2026-11-19): the diagrams ship
+// in AUDIENCE CUTS (James's ruling, 2026-11-19). The principal —
+// Jonathan Schmidt — receives the cut framed on UZE and L2Launch
+// only: DFI and FVC are excluded from his diagrams
+// (eco/content/diagrams-jonathan.md). The family owners (D4, D5,
+// WCD) receive the owners' cut with all four organizations in
+// frame (eco/content/diagrams-owners.md). A segmented contributor
 // gets only material consistent with their visibility: no
 // visibility-consistent subset file exists today, so nothing is
 // attached and the reason is recorded on the entry instead —
 // sections are never leaked by attachment.
 const ALL_ORG_KEYS = ["UZE", "L2Launch", "DFI", "FVC"];
+const PRINCIPAL_EMAIL = "schmidtcommunications@gmail.com";
 export function diagramsAttachmentFor(email) {
   const c = findContributor(email);
   if (!c) return {};
   const full = ALL_ORG_KEYS.every(k => (c.orgs || []).includes(k));
-  if (full) return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "eco/content/diagrams.md" }] };
-  return { attachmentNote: "No visibility-consistent diagrams file exists for this contributor's sections — nothing attached." };
+  if (!full) return { attachmentNote: "No visibility-consistent diagrams file exists for this contributor's sections — nothing attached." };
+  if (String(email).toLowerCase() === PRINCIPAL_EMAIL)
+    return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "eco/content/diagrams-jonathan.md" }] };
+  return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "eco/content/diagrams-owners.md" }] };
 }
 
 // Compose (queue) the invitation an email's grants call for.

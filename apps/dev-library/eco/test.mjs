@@ -317,7 +317,7 @@ try {
     dualAttText.includes("Diagram 1") && dualAttText.includes("Diagram 3"));
   const dualEntry = comms(tmpB).filter(x => x.to === "dual@test.dev" && x.kind === "invitation_dual").pop();
   ok("B: the attachment is recorded on the comms entry",
-    !!dualEntry && Array.isArray(dualEntry.attachments) && dualEntry.attachments[0].file === "eco/content/diagrams.md");
+    !!dualEntry && Array.isArray(dualEntry.attachments) && dualEntry.attachments[0].file === "eco/content/diagrams-owners.md");
 
   // The uze@ test persona: the bundled data ALSO carries James's
   // owner persona at this address with a library grant, so the
@@ -405,6 +405,8 @@ try {
   const jonEntry = comms(tmpA).filter(x => x.to === "schmidtcommunications@gmail.com" && x.kind === "eco-invitation").pop();
   ok("C: a full-visibility principal's composed invitation records the diagrams attachment",
     !!jonEntry && Array.isArray(jonEntry.attachments) && jonEntry.attachments[0].filename === "UZE-ecosystem-diagrams.md");
+  ok("C: the principal's attachment is HIS cut — UZE + L2Launch, DFI/FVC excluded (James, 2026-11-19)",
+    !!jonEntry && jonEntry.attachments[0].file === "eco/content/diagrams-jonathan.md");
 
   // The library grant flow itself honors the dual rule.
   const grant = await Cc.call("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "dual2@test.dev" } });
