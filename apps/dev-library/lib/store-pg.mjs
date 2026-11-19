@@ -44,6 +44,24 @@ export async function delOtp(email) {
   const p = await ensurePool();
   await p.query("DELETE FROM otp_code WHERE email=$1", [email]);
 }
+// Eco one-time codes live in eco_otp_code — a distinct namespace so
+// Dev Library codes and UZE Buildr Team codes never mix, even for an
+// email that holds grants on both surfaces.
+export async function setEcoOtp(email, hash, expires) {
+  const p = await ensurePool();
+  await p.query(`INSERT INTO eco_otp_code (email,code_hash,expires_at) VALUES ($1,$2,$3)
+                 ON CONFLICT (email) DO UPDATE SET code_hash=EXCLUDED.code_hash, expires_at=EXCLUDED.expires_at`,
+    [email, hash, expires]);
+}
+export async function getEcoOtp(email) {
+  const p = await ensurePool();
+  const { rows } = await p.query("SELECT code_hash, expires_at FROM eco_otp_code WHERE email=$1", [email]);
+  return rows[0] ? { hash: rows[0].code_hash, expires: Number(rows[0].expires_at) } : null;
+}
+export async function delEcoOtp(email) {
+  const p = await ensurePool();
+  await p.query("DELETE FROM eco_otp_code WHERE email=$1", [email]);
+}
 
 async function persist(name, obj) {
   const q = (sql, params) => pool.query(sql, params);
@@ -158,6 +176,39 @@ async function persist(name, obj) {
                  position=EXCLUDED.position, data=EXCLUDED.data`,
         [o.key, o.name, o.acronym || null, o.position || 0, JSON.stringify(o)]);
     }
+  } else if (name === "eco-contributors.json") {
+    // Same reconcile-by-id discipline as the advisor roster: the
+    // roster is small, removal is real, email is optional (key on
+    // id, never email). Org grants are rewritten per contributor so
+    // the table always mirrors the working set exactly.
+    const list = obj.contributors || [];
+    if (list.length) {
+      await q(`DELETE FROM eco_contributor WHERE id NOT IN (${list.map((_, i) => `$${i + 1}`).join(",")})`,
+        list.map(c => c.id));
+    } else {
+      await q(`DELETE FROM eco_contributor`);
+    }
+    for (const c of list) {
+      await q(`INSERT INTO eco_contributor (id,name,email,role,stage,session_epoch,added_at,data)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+               ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, email=EXCLUDED.email,
+                 role=EXCLUDED.role, stage=EXCLUDED.stage, session_epoch=EXCLUDED.session_epoch,
+                 data=EXCLUDED.data`,
+        [c.id, c.name, c.email ? c.email.toLowerCase() : null, c.role || null,
+         c.stage || "seeded", c.sessionEpoch || 0, c.addedAt, JSON.stringify(c)]);
+      await q(`DELETE FROM eco_contributor_org WHERE contributor_id=$1`, [c.id]);
+      for (const orgKey of c.orgs || []) {
+        await q(`INSERT INTO eco_contributor_org (contributor_id,org_key) VALUES ($1,$2) ON CONFLICT DO NOTHING`,
+          [c.id, orgKey]);
+      }
+    }
+  } else if (name === "eco-flow.json") {
+    // Append-only: one row per transition, dedupe on the event id so
+    // re-persisting the working set never duplicates a transition.
+    for (const e of obj.events || []) {
+      await q(`INSERT INTO eco_flow_event (contributor_id,step,at,dedupe,data) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (dedupe) DO NOTHING`,
+        [e.contributorId, e.step, e.at, e.id, JSON.stringify(e)]);
+    }
   } else if (name === "publications.json") {
     for (const p of obj.publications || []) {
       await q(`INSERT INTO publication (id,cid,pseudonym,cohort_key,published_at,data) VALUES ($1,$2,$3,$4,$5,$6)
@@ -174,7 +225,7 @@ export async function initPgStore() {
   const { rows: mockCount } = await pool.query("SELECT count(*)::int AS n FROM mock");
   if (devCount[0].n === 0 && mockCount[0].n === 0) {
     // First boot on an empty DB: adopt the working set as the record.
-    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json", "assessments.json", "publications.json", "advisors.json", "orgs.json"]) {
+    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json", "assessments.json", "publications.json", "advisors.json", "orgs.json", "eco-contributors.json", "eco-flow.json"]) {
       await persist(name, load(name));
     }
   } else {
@@ -250,6 +301,32 @@ export async function initPgStore() {
       } else {
         save("advisors.json", { version: 1, advisors: fromDb });
       }
+    }
+    // Eco contributors (2026-11-19): same merge-by-id semantics as
+    // the advisor roster — the DB is the record for what it holds,
+    // and bundled seeds it does not hold yet merge in by id so the
+    // Buildr Team roster lands on an existing production DB.
+    const ecoRows = await pool.query("SELECT data FROM eco_contributor ORDER BY added_at, email");
+    const ecoFromDb = ecoRows.rows.map(r => r.data);
+    if (!ecoFromDb.length) {
+      await persist("eco-contributors.json", load("eco-contributors.json"));
+    } else {
+      const seedEco = load("eco-contributors.json").contributors || [];
+      const haveEcoIds = new Set(ecoFromDb.map(c => c.id));
+      const freshEco = seedEco.filter(c => !haveEcoIds.has(c.id));
+      if (freshEco.length) {
+        const mergedEco = [...ecoFromDb, ...freshEco];
+        save("eco-contributors.json", { version: 1, contributors: mergedEco });
+        await persist("eco-contributors.json", { version: 1, contributors: mergedEco });
+      } else {
+        save("eco-contributors.json", { version: 1, contributors: ecoFromDb });
+      }
+    }
+    // Eco flow events: rebuild the working set from the append-only
+    // table when it holds rows; otherwise the working set stands.
+    const ecoFlowRows = await pool.query("SELECT data FROM eco_flow_event ORDER BY id");
+    if (ecoFlowRows.rows.length) {
+      save("eco-flow.json", { version: 1, events: ecoFlowRows.rows.map(r => r.data) });
     }
   }
   setPersister((name, obj) => { chain = chain.then(() => persist(name, obj)).catch(e => console.error("pg persist failed:", name, e.message)); });

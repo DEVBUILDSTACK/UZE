@@ -42,12 +42,18 @@ import { load, save } from "./store.mjs";
 
 const API_URL = () => process.env.RESEND_API_URL || "https://api.resend.com/emails";
 const FROM = () => process.env.LIBRARY_FROM || "UZE Dev Library <desk@uzemarkets.com>";
+// UZE Buildr Team sends (entries with app "eco") carry the Buildr
+// Team sender name on the same desk@ address, the same key, and the
+// same sending discipline — only the name and the home link differ.
+const ECO_FROM = () => process.env.ECO_FROM || "UZE Buildr Team <desk@uzemarkets.com>";
 const LIBRARY_URL = "https://dev.uzemarkets.com";
+const ECO_URL = "https://buildr-team.uzemarkets.com";
 export const mailConfigured = () => Boolean(process.env.RESEND_API_KEY);
 
 const GREETING = { otp: "Hello,", invitation: "Dear Development Partner,",
   "source-grant": "Dear Development Partner,", "change-notice": "Dear Development Partner,",
-  revocation: "Dear Development Partner," };
+  revocation: "Dear Development Partner,",
+  "eco-otp": "Hello,", "eco-invitation": "Hello,", invitation_dual: "Hello," };
 const SIGN_OFF = "Warm regards,\nThe UZE Markets Desk\nGlobal Support & Contact · desk@uzemarkets.com";
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -64,7 +70,7 @@ const CTA_TEXT = `Stay close — ${CTA_LINKS.map(([label, url]) => `${label}: ${
 Share the weekly edition, and leave us feedback or a kind word on those channels. Our affiliate WhatsApp group opens soon.`;
 
 export function renderText(entry) {
-  return `${GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${SIGN_OFF}\n${LIBRARY_URL}\n\nUZEmarkets`;
+  return `${GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${SIGN_OFF}\n${entry.siteUrl || LIBRARY_URL}\n\nUZEmarkets`;
 }
 
 // Naming rule (James, 2026-11-18): "the reading room" is internal
@@ -110,6 +116,9 @@ const PREHEADER = {
   "source-grant": "Your DEVBUILDSTACK source access is live — details inside.",
   "change-notice": "A change to your Dev Library access — details inside.",
   revocation: "Your Dev Library access has been reset — details inside.",
+  "eco-otp": "Your UZE Buildr Team sign-in code — it expires in 15 minutes.",
+  "eco-invitation": "Your access to the UZE Buildr Team is ready — enter with a one-time code.",
+  invitation_dual: "Start with the ecosystem — then step into the UZE Dev Partner Library.",
 };
 const HERO_URL = "https://dev.uzemarkets.com/hero.gif";
 const HERO_ALT = "The UZE Dev Library — design mocks, interface cards and working notes laid out for review";
@@ -132,24 +141,46 @@ const LINK = (href, label, color = "#ff6b00") =>
   `<a href="${href}" style="color:${color};font-weight:700;text-decoration:underline">${label}</a>`;
 
 export function renderHtml(entry) {
-  const desk = entry.kind !== "otp";
+  const desk = entry.kind !== "otp" && entry.kind !== "eco-otp";
+  const SITE = entry.siteUrl || LIBRARY_URL;
+  const SITEL = entry.siteLabel || "dev.uzemarkets.com";
   const greeting = entry.greetingText || GREETING[entry.kind] || "Hello,";
   const preheader = entry.preheader || PREHEADER[entry.kind] || "";
-  const code = entry.kind === "otp" && entry.body.match(/is (\d{6})\./)?.[1];
+  const code = (entry.kind === "otp" || entry.kind === "eco-otp") && entry.body.match(/is (\d{6})\./)?.[1];
   const pText = (inner) => `<p class="em-text" style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#1a1a1a">${inner}</p>`;
   const paras = esc(entry.body).split(/\n+/).filter(Boolean).map(pText).join("");
   const headline = desk && HEADLINE[entry.kind]
     ? `<h1 class="em-head" style="margin:0 0 18px;font-family:${SERIF};font-size:29px;line-height:1.2;font-weight:700;color:#1a1a1a">${HEADLINE[entry.kind]}</h1>` : "";
   const codeBlock = code ? `<div class="em-code" style="text-align:center;margin:22px 0;padding:20px;background-color:#f5f2ee;border:1px solid #ddd5c9;border-radius:10px"><span class="em-code-num" style="font-size:34px;font-weight:800;letter-spacing:8px;color:#1a1a1a">${code}</span></div>` : "";
+  const pillCta = (href, label, sub) =>
+    `<div style="text-align:center;margin:26px 0 8px"><a href="${href}" style="display:inline-block;background-color:#1a1a1a;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 34px;border-radius:999px">${label}</a></div>
+    <p class="em-muted" style="text-align:center;margin:0 0 6px;font-size:13px;color:#6b655e">${sub}</p>`;
+  const factLine = (inner) =>
+    `<p class="em-text" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; ${inner}</p>`;
+  const factsWrap = (lines) =>
+    `<div class="em-facts" style="border-top:1px solid #ddd5c9;padding:20px 2px 4px;margin:26px 0 2px">${lines}</div>`;
   const cta = entry.kind === "invitation"
-    ? `<div style="text-align:center;margin:26px 0 8px"><a href="${LIBRARY_URL}" style="display:inline-block;background-color:#1a1a1a;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 34px;border-radius:999px">Enter the Dev Library</a></div>
-    <p class="em-muted" style="text-align:center;margin:0 0 6px;font-size:13px;color:#6b655e">or go straight to ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>` : "";
+    ? pillCta(LIBRARY_URL, "Enter the Dev Library", `or go straight to ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}`)
+    : entry.kind === "eco-invitation"
+    ? pillCta(ECO_URL, "Enter the Buildr Team", `or go straight to ${LINK(ECO_URL, "buildr-team.uzemarkets.com")}`)
+    : entry.kind === "invitation_dual"
+    ? pillCta(ECO_URL, "Start with the ecosystem", `start at ${LINK(ECO_URL, "buildr-team.uzemarkets.com")} — then step into ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}`)
+    : "";
   const facts = entry.kind === "invitation"
-    ? `<div class="em-facts" style="border-top:1px solid #ddd5c9;padding:20px 2px 4px;margin:26px 0 2px">
-      <p class="em-text" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; The catalogue is organised by <strong>topic, date and repository</strong></p>
-      <p class="em-text" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>Comment and suggest</strong> on anything you read, ahead of any source access</p>
-      <p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by an <strong>OTP, one-time code</strong> sent to your email — no password to keep</p>
-    </div>` : "";
+    ? factsWrap(
+      factLine(`The catalogue is organised by <strong>topic, date and repository</strong>`) +
+      factLine(`<strong>Comment and suggest</strong> on anything you read, ahead of any source access`) +
+      `<p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by an <strong>OTP, one-time code</strong> sent to your email — no password to keep</p>`)
+    : entry.kind === "eco-invitation"
+    ? factsWrap(
+      factLine(`The <strong>whole ecosystem</strong> is here: both design surfaces, the pillars, the architecture`) +
+      factLine(`You see the <strong>sections your role carries</strong> — the Ecosystem level is open to every contributor`) +
+      `<p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; Sign-in is by an <strong>OTP, one-time code</strong> sent to your email — no password to keep, no GitHub account needed</p>`)
+    : entry.kind === "invitation_dual"
+    ? factsWrap(
+      factLine(`<strong>1 — UZE Buildr Team:</strong> start here. The whole ecosystem, both design surfaces, the pillars — ${LINK(ECO_URL, "buildr-team.uzemarkets.com")}`) +
+      `<p class="em-text" style="margin:0;font-size:14px;line-height:1.6;color:#1a1a1a"><span style="color:#ff6b00;font-weight:800">—</span>&nbsp; <strong>2 — UZE Dev Partner Library:</strong> then step into the library, where the work itself lives — ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>`)
+    : "";
   // The social-engagement banner (James, 2026-11-18; remodelled the
   // same day in the Maple Finance design language): a creamsicle
   // block, ink text, a serif headline — X and the podcast, with the
@@ -176,14 +207,14 @@ export function renderHtml(entry) {
     ? `<div style="margin-top:28px">
       <p class="em-text" style="margin:0 0 2px;color:#1a1a1a">Warm regards,</p>
       <p class="em-text" style="margin:0;font-weight:700;color:#1a1a1a">The UZE Markets Desk</p>
-      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>
+      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(SITE, SITEL)}</p>
     </div>
     <div style="margin-top:28px">
       <div style="font-size:22px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span class="em-text" style="color:#1a1a1a">markets</span></div>
       <div class="em-muted" style="font-size:11px;letter-spacing:2.5px;color:#6b655e;margin-top:2px">${esc(entry.footerEyebrow || "THE TALENT DESK · DEV LIBRARY")}</div>
     </div>`
     : `<div class="em-div" style="border-top:1px solid #ddd5c9;margin-top:24px;padding-top:14px">
-      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">The UZE Markets Desk · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(LIBRARY_URL, "dev.uzemarkets.com")}</p>
+      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">The UZE Markets Desk · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(SITE, SITEL)}</p>
     </div>`;
   const heroRow = desk
     ? `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${HERO_URL}" width="600" height="200" alt="${HERO_ALT}" style="display:block;width:100%;max-width:600px;height:auto;border:0" /></td></tr>` : "";
@@ -214,7 +245,7 @@ ${STYLE_BLOCK}
 <table role="presentation" class="em-card" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="border-collapse:separate;width:600px;max-width:600px;background-color:#ffffff;border:1px solid #ddd5c9;border-radius:14px">
 <tr><td bgcolor="#1a1a1a" style="background-color:#1a1a1a;border-top-left-radius:14px;border-top-right-radius:14px;padding:20px 34px">
 <div style="font-size:21px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span style="color:#ffffff">markets</span></div>
-<div style="font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px">DEV LIBRARY</div>
+<div style="font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px">${esc(entry.bandLabel || "DEV LIBRARY")}</div>
 </td></tr>
 ${heroRow}
 <tr><td class="em-pad" style="padding:28px 34px 24px">
@@ -251,9 +282,9 @@ export async function sendMail(entry) {
     // tags are the metadata channel (echoed back in webhooks).
     headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json",
       "user-agent": "uze-dev-library/1.0", "idempotency-key": `comms/${entry.id}` },
-    body: JSON.stringify({ from: FROM(), to: [entry.to], subject: entry.subject,
+    body: JSON.stringify({ from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], subject: entry.subject,
       text: renderText(entry), html: renderHtml(entry),
-      tags: [{ name: "app", value: "dev-library" }, { name: "kind", value: entry.kind }] }),
+      tags: [{ name: "app", value: entry.app === "eco" ? "eco" : "dev-library" }, { name: "kind", value: entry.kind }] }),
     signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
   });
   const raw = await r.text().catch(() => "");
@@ -332,9 +363,10 @@ export async function drainComms({ maxAttempts = 10, excludeIds = new Set() } = 
   const healed = deduped.length !== log.sends.length;
   log.sends = deduped;
   if (healed) save("comms-log.json", log); // the heal persists even if nothing is attempted
+  const otpFirst = (e) => (e.kind === "otp" || e.kind === "eco-otp") ? 0 : 1;
   const queued = log.sends
     .filter((e) => e.status === "queued" && !excludeIds.has(e.id))
-    .sort((a, b) => (a.kind === "otp" ? 0 : 1) - (b.kind === "otp" ? 0 : 1)
+    .sort((a, b) => otpFirst(a) - otpFirst(b)
       || String(a.at).localeCompare(String(b.at)));
   let sent = 0, attempted = 0;
   for (const entry of queued) {

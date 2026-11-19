@@ -234,3 +234,42 @@ CREATE TABLE IF NOT EXISTS advisor (
 -- keep an already-created table in step. A no-op where the column
 -- is already nullable.
 ALTER TABLE advisor ALTER COLUMN email DROP NOT NULL;
+
+-- ── UZE Buildr Team (eco contributor surface, buildr-team.uzemarkets.com) ──
+-- Contributors are principals and ecosystem contributors who do NOT use
+-- GitHub: email + one-time code only. The Ecosystem top level is visible
+-- to every signed-in contributor; org sections are granted per
+-- contributor in eco_contributor_org (org keys mirror the `org` table:
+-- DFI | FVC | UZE | L2Launch).
+CREATE TABLE IF NOT EXISTS eco_contributor (
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  email text UNIQUE,               -- unique only when present (NULL allowed)
+  role text,
+  stage text NOT NULL DEFAULT 'seeded',
+  session_epoch int NOT NULL DEFAULT 0,
+  added_at timestamptz NOT NULL,
+  data jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+CREATE TABLE IF NOT EXISTS eco_contributor_org (
+  contributor_id text NOT NULL REFERENCES eco_contributor(id) ON DELETE CASCADE,
+  org_key text NOT NULL,
+  PRIMARY KEY (contributor_id, org_key)
+);
+-- Eco OTP codes live in their own table so Dev Library codes and eco
+-- codes never mix, even for an email that holds grants on both surfaces.
+CREATE TABLE IF NOT EXISTS eco_otp_code (
+  email text PRIMARY KEY,
+  code_hash text NOT NULL,
+  expires_at bigint NOT NULL
+);
+-- Flow-completion events: append-only, one row per transition. A
+-- contributor's current step is DERIVED from these rows, never a flag.
+CREATE TABLE IF NOT EXISTS eco_flow_event (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  contributor_id text NOT NULL,
+  step text NOT NULL,
+  at timestamptz NOT NULL,
+  dedupe text UNIQUE NOT NULL,
+  data jsonb NOT NULL DEFAULT '{}'::jsonb
+);

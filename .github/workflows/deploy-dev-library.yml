@@ -307,6 +307,16 @@ jobs:
           curl -s "https://api.vercel.com/v9/projects/${PID}/domains/dev.uzemarkets.com?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 1200; echo
           curl -s "https://api.vercel.com/v6/domains/dev.uzemarkets.com/config?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 800; echo
 
+      - name: Add domain buildr-team.uzemarkets.com
+        run: |
+          set -u
+          PID="${{ steps.proj.outputs.project_id }}"
+          echo "== POST domain (idempotent)"
+          curl -s -X POST "https://api.vercel.com/v10/projects/${PID}/domains?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" -d '{"name":"buildr-team.uzemarkets.com"}' | head -c 600; echo
+          echo "== domain state (verification / DNS requirements, if any)"
+          curl -s "https://api.vercel.com/v9/projects/${PID}/domains/buildr-team.uzemarkets.com?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 1200; echo
+          curl -s "https://api.vercel.com/v6/domains/buildr-team.uzemarkets.com/config?teamId=${VERCEL_ORG_ID}" -H "Authorization: Bearer ${VERCEL_TOKEN}" | head -c 800; echo
+
       - name: Seed the data layer
         working-directory: ./apps/dev-library
         env:

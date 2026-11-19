@@ -19,6 +19,10 @@ import * as orgreg from "./lib/orgs.mjs";
 import * as eng from "./lib/engagements.mjs";
 import * as asm from "./lib/assessments.mjs";
 import { loadPublications, findPublication, publicView } from "./lib/publisher.mjs";
+import { handleEcoRequest, isEcoHost } from "./eco/eco-server.mjs";
+import { loadContributors, publicView as ecoPublicView, addContributor as addEcoContributor } from "./lib/eco-contributors.mjs";
+import { progressForAll, noteLibrarySignIn } from "./lib/eco-flow.mjs";
+import { composeInvitation, invitationKindFor } from "./lib/invitations.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8734;
@@ -65,10 +69,44 @@ if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
   console.log("dev-library: DB mode (Postgres data layer)");
 }
 
+// --- UZE Buildr Team master surface (shared by both hosts: the
+// desk manages the contributor roster and reads flow progress from
+// wherever it is working; the master token gates every route). The
+// stalled flag binds dual-holders only — no requirement → no stall
+// for single-surface contributors. ---
+const handleEcoAdmin = async (req, res, url) => {
+  const p = url.pathname;
+  if (!isMaster(req)) { send(res, 403, { error: "master only" }); return true; }
+  if (p === "/api/admin/eco/contributors" && req.method === "GET") {
+    send(res, 200, { contributors: loadContributors().map(ecoPublicView) }); return true;
+  }
+  if (p === "/api/admin/eco/progress" && req.method === "GET") {
+    send(res, 200, { progress: progressForAll() }); return true;
+  }
+  if (req.method === "POST") {
+    const b = await body(req);
+    if (p === "/api/admin/eco/contributors") { send(res, 200, { ok: true, contributor: ecoPublicView(addEcoContributor(b)) }); return true; }
+    if (p === "/api/admin/eco/invite") {
+      // Compose (queue) the invitation the email's grants call
+      // for — eco, dual, or (library-only) lifecycle's own.
+      const entry = composeInvitation(String(b.email || ""));
+      send(res, 200, { ok: true, kind: invitationKindFor(String(b.email || "")), entryId: entry ? entry.id : null });
+      return true;
+    }
+  }
+  return false;
+};
+
 const handleRequest = async (req, res) => {
   const url = new URL(req.url, "http://x");
   const p = url.pathname;
   try {
+    // --- UZE Buildr Team (eco contributor surface): host-routed.
+    // On buildr-team.uzemarkets.com this module serves everything;
+    // every other host keeps the Dev Library behavior below,
+    // byte-for-byte. ---
+    if (isEcoHost(req)) return handleEcoRequest(req, res, { send, body, ecoAdmin: handleEcoAdmin });
+
     if (p === "/" && req.method === "GET") { res.writeHead(200, { "content-type": "text/html" }); return res.end(INDEX); }
 
     // --- email imagery (public by design: mail clients load these
@@ -105,6 +143,9 @@ const handleRequest = async (req, res) => {
       const { email, code } = await body(req);
       if (!email || !(await verifyCode(String(email), String(code)))) return send(res, 401, { error: "invalid code" });
       const token = signSession(String(email));
+      // Dual-surface flow (James, 2026-11-19): a dual-holder signing
+      // in here, under the same email, completes the eco sequence.
+      try { noteLibrarySignIn(String(email)); } catch { /* the eco record never blocks a library sign-in */ }
       return send(res, 200, { ok: true, developer: publicDev(findDeveloper(email)) },
         { "set-cookie": `dl_session=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/` });
     }
@@ -205,6 +246,10 @@ const handleRequest = async (req, res) => {
       }
       if (p === "/api/admin/orgs" && req.method === "GET") {
         return send(res, 200, { orgs: orgreg.loadOrgs() });
+      }
+      // --- UZE Buildr Team (eco): roster + flow progress ---
+      if (p.startsWith("/api/admin/eco/")) {
+        if (await handleEcoAdmin(req, res, url)) return;
       }
       // --- engagements (M1): desk surface + the blind client view ---
       const engMatch = p.match(/^\/api\/admin\/engagements(?:\/([^/]+)(\/client-view)?)?$/);

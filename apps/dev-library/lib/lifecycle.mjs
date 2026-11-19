@@ -3,6 +3,7 @@
 // zero and preserves the history — the chronicle is never rewritten.
 import { load, save, chronicle, commsSend } from "./store.mjs";
 import { validatePairs, TRACKS } from "./taxonomy.mjs";
+import { composeInvitation } from "./invitations.mjs";
 
 const STAGES = ["prospect", "contacted", "recruiting", "reading-room", "source-access", "revoked"];
 function mutate(email, fn) {
@@ -55,8 +56,15 @@ export function markContact(email, channel) { // channel: "email" | "whatsapp" �
 export function grantReadingRoom(email) {
   const d = mutate(email, (x) => { x.readingRoom = { active: true, grantedAt: new Date().toISOString(), revokedAt: null };
     if (["prospect", "contacted", "recruiting"].includes(x.stage)) setStage(x, "reading-room"); });
-  commsSend(email, "invitation", "You have access to the UZE Dev Library",
-    "You have been granted access to the UZE Dev Library. Sign in with this email address to receive a one-time code.");
+  // Dual-surface rule (James, 2026-11-19): an email that ALSO holds
+  // an eco contributor grant receives ONE combined invitation —
+  // ecosystem first, library second — never two competing emails.
+  // composeInvitation returns null for library-only emails, and the
+  // library invitation below stands unchanged for them.
+  if (!composeInvitation(email)) {
+    commsSend(email, "invitation", "You have access to the UZE Dev Library",
+      "You have been granted access to the UZE Dev Library. Sign in with this email address to receive a one-time code.");
+  }
   chronicle("grant-reading-room", { email }); return d;
 }
 export function grantSource(email, repo, roadmap = null) {

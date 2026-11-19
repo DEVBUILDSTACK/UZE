@@ -10,6 +10,7 @@ import pg from "pg";
 import { PROFESSIONALS, SCAN_DATE } from "./professionals.mjs";
 import { ADVISORS } from "./advisors.mjs";
 import { ORGS } from "./orgs.mjs";
+import { ECO_CONTRIBUTORS } from "./eco-contributors.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -76,8 +77,26 @@ for (const a of ADVISORS) {
        org=EXCLUDED.org, base=EXCLUDED.base, lane=EXCLUDED.lane, data=EXCLUDED.data`,
     [a.id, a.name, a.email ? a.email.toLowerCase() : null, a.title, a.org, a.base, a.lane, a.addedAt, JSON.stringify(a)]);
 }
+// The UZE Buildr Team roster (db/eco-contributors.mjs) — a distinct
+// roster from the Developer List: no GitHub, email + one-time code
+// only. The upsert keys on id so a null email never collides; org
+// grants are rewritten per contributor so re-seeding is exact.
+for (const c of ECO_CONTRIBUTORS) {
+  await pool.query(
+    `INSERT INTO eco_contributor (id,name,email,role,stage,session_epoch,added_at,data)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+     ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, email=EXCLUDED.email, role=EXCLUDED.role,
+       stage=EXCLUDED.stage, data=EXCLUDED.data`,
+    [c.id, c.name, c.email ? c.email.toLowerCase() : null, c.role, c.stage, c.sessionEpoch || 0, c.addedAt, JSON.stringify(c)]);
+  await pool.query(`DELETE FROM eco_contributor_org WHERE contributor_id=$1`, [c.id]);
+  for (const orgKey of c.orgs || []) {
+    await pool.query(
+      `INSERT INTO eco_contributor_org (contributor_id,org_key) VALUES ($1,$2) ON CONFLICT DO NOTHING`,
+      [c.id, orgKey]);
+  }
+}
 const counts = {};
-for (const t of ["developer", "developer_status", "repo_permission", "advisor", "org"]) {
+for (const t of ["developer", "developer_status", "repo_permission", "advisor", "org", "eco_contributor", "eco_contributor_org"]) {
   counts[t] = (await pool.query(`SELECT count(*)::int AS n FROM ${t}`)).rows[0].n;
 }
 console.log("seeded:", JSON.stringify(counts));

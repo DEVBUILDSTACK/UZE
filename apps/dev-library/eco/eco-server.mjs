@@ -1,0 +1,402 @@
+// UZE Buildr Team — the eco contributor surface, host-routed inside
+// the Dev Library app (James's architecture ruling, 2026-11-19):
+// when the request Host is buildr-team.uzemarkets.com, this module
+// serves the contributor surface; every other host keeps the Dev
+// Library behavior byte-for-byte. Same Vercel project, same Neon
+// store, same Resend mailer, same deploy workflow and design wash —
+// no new project, no new secrets. For local tests, an
+// `x-eco-host` header or the ECO_HOST_OVERRIDE env routes a request
+// here on any host.
+//
+// House rules carried over: email + one-time code only (no GitHub,
+// no password); the Ecosystem top level is visible to every
+// signed-in contributor; org sections are enforced server-side
+// (nav hides the rest, direct URL → 403); the eight-token palette
+// only; the wordmark on one line.
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { findContributor, canSeeOrg, publicView } from "../lib/eco-contributors.mjs";
+import { requestEcoCode, verifyEcoCode, signEcoSession, readEcoSession } from "../lib/eco-gate.mjs";
+import { isDualHolder, recordFlowEvent, deriveProgress } from "../lib/eco-flow.mjs";
+import { sendEntryNow } from "../lib/mailer.mjs";
+import { ORG_ROUTES, ORG_PAGES, orgRoute } from "./org-pages.mjs";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+export const ECO_HOST = "buildr-team.uzemarkets.com";
+const LIBRARY_URL = "https://dev.uzemarkets.com";
+
+export function isEcoHost(req) {
+  if (process.env.ECO_HOST_OVERRIDE) return true;
+  if (req.headers["x-eco-host"]) return true;
+  const host = String(req.headers.host || "").split(":")[0].toLowerCase();
+  return host === ECO_HOST;
+}
+
+const FRAGMENTS = {};
+for (const name of ["human", "agentic", "diagrams", "overview"]) {
+  FRAGMENTS[name] = fs.readFileSync(path.join(HERE, "content", `${name}.html`), "utf8");
+}
+
+const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const STYLE = `
+:root{--orange:#ff6b00;--cream:#f5f2ee;--creamsicle:#FDEEE2;--ink:#1a1a1a;--muted:#6b655e;--line:#ddd5c9;--bandmuted:#b8b0a4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 48px}
+.band{background:var(--ink);border-radius:14px;padding:22px 26px;color:#fff}
+.band .eyebrow{font-size:10px;letter-spacing:2.5px;color:var(--bandmuted);margin-top:3px}
+.band h1{font-family:Georgia,'Times New Roman',serif;font-size:27px;margin:0;font-weight:700;white-space:nowrap}
+.uze{color:var(--orange)}
+.sub{color:var(--muted);margin:14px 2px 0;line-height:1.55}
+nav.sections{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
+nav.sections a{color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px}
+nav.sections a[aria-current="page"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-top:18px}
+.card h2{font-family:Georgia,'Times New Roman',serif;font-size:21px;margin:0 0 8px}
+.card h3{font-family:Georgia,'Times New Roman',serif;font-size:17px;margin:18px 0 6px}
+.card p{line-height:1.65;margin:0 0 12px}
+.card p.lede{font-size:17px}
+label{font-weight:700;font-size:14px;display:block;margin:14px 0 6px}
+input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:#fff;color:var(--ink)}
+button,.btn{display:inline-block;background:var(--ink);color:#fff;border:0;border-radius:999px;padding:12px 26px;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.msg{font-weight:700;margin-top:12px}
+.err{font-weight:700}.err::before{content:"— ";color:var(--orange)}
+.hidden{display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.tile a{color:var(--ink);font-weight:700;text-decoration:none}
+.tile p{color:var(--muted);font-size:14px;margin:6px 0 0}
+.softband{background:var(--creamsicle);border-radius:12px;padding:20px 22px;margin-top:18px}
+.softband h2{font-family:Georgia,'Times New Roman',serif;font-size:19px;margin:0 0 6px}
+.softband p{margin:0;line-height:1.6}
+ol.steps{list-style:none;margin:14px 0;padding:0}
+ol.steps li{padding:7px 0 7px 30px;position:relative;line-height:1.5;color:var(--muted)}
+ol.steps li .dot{position:absolute;left:2px;top:11px;width:13px;height:13px;border-radius:50%;border:2px solid var(--bandmuted);background:#fff}
+ol.steps li.done{color:var(--ink)}
+ol.steps li.done .dot{background:var(--ink);border-color:var(--ink)}
+ol.steps li.now{color:var(--ink);font-weight:700}
+ol.steps li.now .dot{border-color:var(--ink)}
+.doc h2{font-family:Georgia,'Times New Roman',serif;font-size:23px;margin:26px 0 8px}
+.doc h3{font-family:Georgia,'Times New Roman',serif;font-size:18px;margin:20px 0 6px}
+.doc h4{font-size:16px;margin:16px 0 6px}
+.doc p{line-height:1.7;margin:0 0 12px}
+.doc ul,.doc ol{line-height:1.7;margin:0 0 12px;padding-left:22px}
+.doc li{margin-bottom:5px}
+.doc blockquote{border-left:3px solid var(--orange);margin:14px 0;padding:2px 0 2px 16px;color:var(--ink)}
+.doc blockquote p{margin:0 0 8px}
+.doc code{background:var(--cream);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font-size:13px}
+.doc pre{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font-size:13px;line-height:1.55}
+.doc pre code{background:none;border:0;padding:0}
+.doc pre.mermaid{background:#fff;text-align:center}
+.doc details.diagram-code{margin:0 0 16px}
+.doc details.diagram-code summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--ink)}
+.doc table{border-collapse:collapse;width:100%;margin:0 0 16px;font-size:14px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;line-height:1.5}
+.doc th{background:var(--cream)}
+.doc a{color:var(--ink);font-weight:600}
+.doc hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.who{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+footer{margin-top:34px;background:var(--ink);border-radius:14px;padding:20px 26px;color:#fff;text-align:center}
+footer .wm{font-size:20px;font-weight:800}
+footer a{color:var(--orange);font-weight:700;text-decoration:none}
+footer .fine{color:var(--bandmuted);font-size:12px;margin-top:6px}
+@media (max-width:620px){.band h1{font-size:23px}.grid{grid-template-columns:1fr}.wrap{padding:18px 10px 36px}}
+`;
+
+const STEP_LABELS = {
+  signed_in: "Signed in",
+  overview_viewed: "Team overview opened",
+  overview_completed: "Team overview — completed",
+  advanced_to_library: "Continued to the Dev Partner Library",
+  library_signed_in: "Signed in to the Dev Partner Library",
+};
+const STEP_ORDER = Object.keys(STEP_LABELS);
+
+function navHtml(contributor, active) {
+  const items = [["/", "Home"], ["/ecosystem", "Ecosystem"], ["/surfaces/human", "Human surface"], ["/surfaces/agentic", "Agentic surface"]];
+  for (const r of ORG_ROUTES) if (canSeeOrg(contributor, r.key)) items.push([`/org/${r.slug}`, r.acronym === "L2L" ? "L2Launch" : r.name]);
+  return `<nav class="sections" aria-label="Sections">${items.map(([href, label]) =>
+    `<a href="${href}"${href === active ? ' aria-current="page"' : ""}>${esc(label)}</a>`).join("")}</nav>`;
+}
+function layout({ title, contributor = null, active = "", body }) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} · UZE Buildr Team</title>
+<style>${STYLE}</style>
+</head>
+<body>
+<div class="wrap">
+<header class="band">
+<h1><span class="uze">UZE</span> Buildr Team</h1>
+<div class="eyebrow">THE ECOSYSTEM CONTRIBUTORS' SURFACE</div>
+</header>
+${contributor ? navHtml(contributor, active) : ""}
+<main>
+${body}
+</main>
+<footer>
+<div class="wm"><span class="uze">UZE</span>markets</div>
+<p class="fine">© 2026 <a href="https://uzemarkets.com">UZE</a>markets · The UZE Markets Desk · desk@uzemarkets.com</p>
+</footer>
+</div>
+</body>
+</html>`;
+}
+
+function signInPage(note = "") {
+  const body = `
+<p class="sub">For the principals and contributors of the UZE ecosystem. Sign in with the email address your access was granted to — a one-time code is sent to that exact address. No password, and no GitHub account.</p>
+<section class="card" id="step-email">
+<h2>Sign in</h2>
+<p>Enter the exact email address your contributor access was granted to.</p>
+<label for="email">Email address</label>
+<input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+<button id="send-code" style="margin-top:16px">Email me a sign-in code</button>
+<p class="msg" id="msg1" role="status"></p>
+</section>
+<section class="card hidden" id="step-code">
+<h2>Enter your code</h2>
+<p>We emailed a 6-digit code. It expires in 15 minutes.</p>
+<label for="code">One-time code</label>
+<input id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">
+<button id="verify" style="margin-top:16px">Sign in</button>
+<p class="msg" id="msg2" role="status"></p>
+</section>
+${note ? `<p class="err" style="margin-top:14px">${esc(note)}</p>` : ""}
+<script>
+const $=id=>document.getElementById(id);
+$("send-code").onclick=async()=>{
+  const email=$("email").value.trim();
+  if(!email){$("msg1").innerHTML='<span class="err">Enter your email address.</span>';return}
+  $("msg1").textContent="Sending…";
+  await fetch("/api/eco/request-code",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email})});
+  $("msg1").textContent="If that address holds contributor access, a code is on its way.";
+  $("step-code").classList.remove("hidden");
+};
+$("verify").onclick=async()=>{
+  const email=$("email").value.trim(),code=$("code").value.trim();
+  const r=await fetch("/api/eco/verify",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email,code})});
+  if(r.ok){location.href="/";return}
+  $("msg2").innerHTML='<span class="err">That code did not check out — request a fresh one and try again.</span>';
+};
+</script>`;
+  return layout({ title: "Sign in", body });
+}
+
+function stepsList(progress) {
+  const idx = progress.current ? STEP_ORDER.indexOf(progress.current) : -1;
+  return `<ol class="steps">${STEP_ORDER.map((s, i) => {
+    const done = !!progress.steps[s];
+    const now = !done && progress.next === s;
+    return `<li class="${done ? "done" : now ? "now" : ""}"><span class="dot"></span>${esc(STEP_LABELS[s])}${done ? ` — ${esc(String(progress.steps[s]).slice(0, 10))}` : ""}</li>`;
+  }).join("")}</ol>`;
+}
+function nextAction(progress) {
+  switch (progress.next) {
+    case "overview_viewed": return `<a class="btn" href="/ecosystem">Read the team overview</a>`;
+    case "overview_completed": return `<a class="btn" href="/ecosystem">Finish the team overview</a>`;
+    case "advanced_to_library": return `<a class="btn" href="/eco/advance-to-library">Continue to the UZE Dev Partner Library →</a>`;
+    case "library_signed_in": return `<a class="btn" href="${LIBRARY_URL}">Sign in to the Dev Partner Library</a>`;
+    default: return "";
+  }
+}
+
+function homePage(contributor) {
+  const dual = isDualHolder(contributor.email);
+  const progress = deriveProgress(contributor);
+  const tiles = [
+    ["/ecosystem", "The Ecosystem", "The verbal overview and the three diagrams — the whole picture, both surfaces woven through it."],
+    ["/surfaces/human", "Human Design Surface", "The design language every person sees: one canonical source, eight values, the car wash."],
+    ["/surfaces/agentic", "Agentic Design Surface", "The surface built for software agents: one guarded door, the chronicle, the treasury focus."],
+  ];
+  for (const r of ORG_ROUTES) if (canSeeOrg(contributor, r.key)) {
+    tiles.push([`/org/${r.slug}`, `${r.acronym} — ${r.name}`, "Its place in the architecture, and how the two design surfaces touch it."]);
+  }
+  const flowCard = dual && !progress.completed ? `
+<section class="card">
+<h2>Pick up where you left off</h2>
+<p>Your path through the two surfaces is tracked by the steps themselves — each one is recorded when you take it.</p>
+${stepsList(progress)}
+${nextAction(progress)}
+</section>` : dual && progress.completed ? `
+<section class="card">
+<h2>Your two-surface path is complete</h2>
+${stepsList(progress)}
+</section>` : "";
+  const otherSurface = dual ? `
+<section class="softband">
+<h2>Your other surface</h2>
+<p>You also hold access to the UZE Dev Partner Library — the workshop, where the work itself lives.</p>
+<p style="margin-top:12px"><a class="btn" href="${progress.steps.advanced_to_library ? LIBRARY_URL : "/eco/advance-to-library"}">Continue to the UZE Dev Partner Library →</a></p>
+</section>` : "";
+  const body = `
+<section class="card">
+<div class="who">
+<div>
+<h2>${esc(contributor.name)}</h2>
+<p style="color:var(--muted);margin:0">${esc(contributor.role || "Ecosystem Contributor")} · ${esc(contributor.email || "")}</p>
+</div>
+<form method="post" action="/api/eco/signout"><button class="ghost" type="submit">Sign out</button></form>
+</div>
+</section>
+${flowCard}
+<section class="card">
+<h2>Your sections</h2>
+<p>The Ecosystem level is open to every contributor. Below it, you see the sections your role carries.</p>
+<div class="grid">${tiles.map(([href, t, d]) => `<div class="tile"><a href="${href}">${esc(t)} →</a><p>${esc(d)}</p></div>`).join("")}</div>
+</section>
+${otherSurface}
+<section class="card">
+<h2>How this site works</h2>
+<p>Sign-in is by email and a one-time code — no GitHub, no password to keep. You see the sections your role carries; the rest are not hidden links, they are simply not yours to open.</p>
+<p>You experience these surfaces as a <strong>tenant of the design standard</strong>: the values may be presented per the standard — the structure never changes. One design language, amended by its principals, washed before it is seen.</p>
+<p>Underneath both surfaces — not a third surface — runs the <strong>programmatic logic: system scale, not control</strong> — and the programmatic core inside each container is the standing priority. The Ecosystem page states it in full, under "The programmatic core."</p>
+</section>`;
+  return layout({ title: "Home", contributor, active: "/", body });
+}
+
+function ecosystemPage(contributor) {
+  const progress = deriveProgress(contributor);
+  const done = !!progress.steps.overview_completed;
+  const closing = done
+    ? `<div class="softband"><h2>Team overview — completed</h2><p>Recorded${progress.steps.overview_completed ? ` on ${esc(String(progress.steps.overview_completed).slice(0, 10))}` : ""}. The click was the record.</p></div>`
+    : `<div class="softband"><h2>Finished the overview?</h2><p>When you have taken in the whole picture — the overview and the three diagrams — record it here. The click is the record.</p><form method="post" action="/api/eco/flow/complete-overview" style="margin-top:12px"><button type="submit">Team overview — completed</button></form></div>`;
+  const body = `
+<section class="card">
+<h2>The Ecosystem</h2>
+<p>Start here: the verbal overview, then the three diagrams. The full documents live at <a href="/surfaces/human">Human Design Surface</a> and <a href="/surfaces/agentic">Agentic Design Surface</a>.</p>
+</section>
+<section class="card doc">${FRAGMENTS.overview}</section>
+<section class="card doc">${FRAGMENTS.diagrams}
+</section>
+<section class="softband">
+<h2>The programmatic core — under both surfaces</h2>
+<p><strong>Under both surfaces — not a third surface — runs the programmatic logic:</strong> the approach of continual efficiency and scale that the human design surface and the agentic design surface alike stand on. Programmatic means <strong>system scale, not control</strong>. Smart, innovative programmatic builds are how this ecosystem grows — cost-effectively. The team is always focused on the programmatic core inside each ecosystem container: the UZE dual-plane Talent vertical; the media and Content Desk; and ticketing commerce in its two key launch planes, <strong>music and sport</strong> — which must be totally cemented and working before the ecosystem moves into Stay and the artist side of Touring.</p>
+<p style="margin-top:10px">When the programmatic core needs an update, that update is immediately the priority — the daily, hourly priority — always improving, moving with frontier intelligence where it is cost-effective.</p>
+<p style="margin-top:10px">And the loop never stops — continually monitored, continually improved: <strong>assessment → micro scopes → phased specification → micro accomplishments.</strong> Each assessment creates micro scopes; every micro scope has its own name and its own README stating what its goal is, and it runs under the microscope in micro phases — micro phase one, micro phase two, micro phase three — each a micro accomplishment, feeding the next assessment.</p>
+<p style="margin-top:10px">The programmatic approach is assessed on a standing cadence: daily and hourly attention; week in review; month in review; quarter in review; trimester in review; every six months; every year — always holding a forward-looking <strong>30 / 60 / 90 / 120 / 180-day</strong> view, and never planning beyond a trimester or a half year.</p>
+</section>
+${closing}
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,theme:"base",themeVariables:{primaryColor:"#FDEEE2",primaryBorderColor:"#1a1a1a",primaryTextColor:"#1a1a1a",lineColor:"#1a1a1a",secondaryColor:"#f5f2ee",tertiaryColor:"#ffffff"}})}</script>`;
+  return layout({ title: "The Ecosystem", contributor, active: "/ecosystem", body });
+}
+
+function surfacePage(contributor, which) {
+  const title = which === "human" ? "Human Design Surface" : "Agentic Design Surface";
+  const body = `<section class="card doc">${FRAGMENTS[which]}</section>`;
+  return layout({ title, contributor, active: `/surfaces/${which}`, body });
+}
+
+function orgPage(contributor, route) {
+  const body = `
+<section class="card">
+<h2>${esc(route.acronym)} — ${esc(route.name)}</h2>
+${ORG_PAGES[route.key]}
+<p style="margin-top:16px"><a href="/ecosystem">← Back to the Ecosystem overview</a></p>
+</section>`;
+  return layout({ title: `${route.acronym} — ${route.name}`, contributor, active: `/org/${route.slug}`, body });
+}
+
+function messagePage(contributor, title, text) {
+  const body = `<section class="card"><h2>${esc(title)}</h2><p>${esc(text)}</p><p><a href="/">← Home</a></p></section>`;
+  return layout({ title, contributor, body });
+}
+
+const ecoSessionOf = (req) => {
+  const cookie = req.headers.cookie || "";
+  const m = cookie.match(/eco_session=([^;]+)/);
+  return m ? readEcoSession(decodeURIComponent(m[1])) : null;
+};
+const html = (res, code, text) => { res.writeHead(code, { "content-type": "text/html" }); res.end(text); };
+const redirect = (res, to) => { res.writeHead(302, { location: to }); res.end(); };
+
+export async function handleEcoRequest(req, res, { send, body, ecoAdmin }) {
+  const url = new URL(req.url, "http://x");
+  const p = url.pathname;
+  try {
+    // --- the master surface for this roster lives on both hosts ---
+    if (p.startsWith("/api/admin/eco/") && ecoAdmin) {
+      if (await ecoAdmin(req, res, url)) return;
+    }
+    // --- the door ---
+    if (p === "/api/eco/request-code" && req.method === "POST") {
+      const { email } = await body(req);
+      if (email) {
+        const r = await requestEcoCode(String(email)); // generic answer either way
+        if (r && r.entryId) {
+          await sendEntryNow(r.entryId).catch(() => {});
+          (req._commsAttempted ??= new Set()).add(r.entryId);
+        }
+      }
+      return send(res, 200, { ok: true });
+    }
+    if (p === "/api/eco/verify" && req.method === "POST") {
+      const { email, code } = await body(req);
+      if (!email || !(await verifyEcoCode(String(email), String(code)))) return send(res, 401, { error: "invalid code" });
+      const contributor = findContributor(String(email));
+      const token = signEcoSession(String(email));
+      if (contributor) recordFlowEvent(contributor, "signed_in");
+      return send(res, 200, { ok: true, contributor: publicView(contributor) },
+        { "set-cookie": `eco_session=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/` });
+    }
+    if (p === "/api/eco/signout" && req.method === "POST") {
+      res.writeHead(302, { location: "/", "set-cookie": "eco_session=; Max-Age=0; Path=/" });
+      return res.end();
+    }
+    if (p === "/api/eco/me" && req.method === "GET") {
+      const c = ecoSessionOf(req); if (!c) return send(res, 401, { error: "no session" });
+      return send(res, 200, { contributor: publicView(c), dual: isDualHolder(c.email), progress: deriveProgress(c) });
+    }
+    // --- flow actions: the click IS the record. There is no
+    // endpoint that accepts a step claim — advancement happens only
+    // through these session-bound actions. ---
+    if (p === "/api/eco/flow/complete-overview" && req.method === "POST") {
+      const c = ecoSessionOf(req); if (!c) return send(res, 401, { error: "no session" });
+      const progress = deriveProgress(c);
+      if (!progress.steps.overview_viewed) return send(res, 400, { error: "open the team overview first" });
+      recordFlowEvent(c, "overview_completed");
+      if (String(req.headers.accept || "").includes("application/json")) return send(res, 200, { ok: true, progress: deriveProgress(c) });
+      return redirect(res, "/");
+    }
+    if (p === "/eco/advance-to-library" && req.method === "GET") {
+      const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
+      if (!isDualHolder(c.email)) return html(res, 403, messagePage(c, "One surface only", "Your access is to the UZE Buildr Team alone — there is no second surface on your record."));
+      recordFlowEvent(c, "advanced_to_library");
+      return redirect(res, LIBRARY_URL);
+    }
+    // --- pages (session required) ---
+    if (req.method === "GET" && p === "/") {
+      const c = ecoSessionOf(req);
+      return html(res, 200, c ? homePage(c) : signInPage());
+    }
+    if (req.method === "GET" && p === "/ecosystem") {
+      const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
+      recordFlowEvent(c, "overview_viewed");
+      return html(res, 200, ecosystemPage(c));
+    }
+    if (req.method === "GET" && (p === "/surfaces/human" || p === "/surfaces/agentic")) {
+      const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
+      return html(res, 200, surfacePage(c, p.endsWith("human") ? "human" : "agentic"));
+    }
+    const orgMatch = p.match(/^\/org\/([a-z0-9]+)$/);
+    if (req.method === "GET" && orgMatch) {
+      const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
+      const route = orgRoute(orgMatch[1]);
+      if (!route) return html(res, 404, messagePage(c, "Not found", "That section does not exist."));
+      if (!canSeeOrg(c, route.key)) {
+        return html(res, 403, messagePage(c, "Not your section", `${route.name} is not among the sections your role carries. The Ecosystem level above it is open to you.`));
+      }
+      return html(res, 200, orgPage(c, route));
+    }
+    return send(res, 404, { error: "not found" });
+  } catch (e) {
+    return send(res, 500, { error: String(e.message || e) });
+  }
+}

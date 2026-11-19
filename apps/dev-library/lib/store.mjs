@@ -21,10 +21,10 @@ export function chronicle(type, fields) {
   c.entries.push({ at: new Date().toISOString(), type, ...fields });
   save("chronicle.json", c);
 }
-export function commsSend(to, kind, subject, body) {
+export function commsSend(to, kind, subject, body, extra = {}) {
   const log = load("comms-log.json");
   const entry = { id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
-    at: new Date().toISOString(), from: log.sender, to, kind, subject, body, status: "queued" };
+    at: new Date().toISOString(), from: log.sender, to, kind, subject, body, status: "queued", ...extra };
   log.sends.push(entry); save("comms-log.json", log);
   chronicle("comms-send", { to, kind, subject });
   return entry;
