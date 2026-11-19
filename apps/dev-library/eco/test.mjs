@@ -166,6 +166,8 @@ try {
   const jHome = await A.page("/", { cookie: jCookie });
   ok("A: full-access single-surface home has no dual machinery",
     !jHome.text.includes("Pick up where you left off") && !jHome.text.includes("Your other surface"));
+  ok("every eco page footer carries the three-surface brow — quiet gray links that resolve to ink on hover (James, 2026-11-19)",
+    jHome.text.includes('class="brow"') && jHome.text.includes('>BUILDER COLLABORATOR</a>') && jHome.text.includes('.brow a:hover{color:var(--ink)'));
   ok("A: surfaces render in full for a signed-in contributor",
     (await A.page("/surfaces/human", { cookie: jCookie })).text.includes("Pillar") &&
     (await A.page("/surfaces/agentic", { cookie: jCookie })).status === 200);

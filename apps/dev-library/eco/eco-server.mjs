@@ -99,10 +99,15 @@ ol.steps li.now .dot{border-color:var(--ink)}
 .doc a{color:var(--ink);font-weight:600}
 .doc hr{border:0;border-top:1px solid var(--line);margin:22px 0}
 .who{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-footer{margin-top:34px;background:var(--ink);border-radius:14px;padding:20px 26px;color:#fff;text-align:center}
+.brow{text-align:center;font-size:10px;letter-spacing:1px;color:var(--muted);margin:26px 0 8px;white-space:nowrap}
+.brow a{color:var(--muted);text-decoration:none}
+.brow a:hover{color:var(--ink);text-decoration:underline}
+footer{margin-top:8px;background:var(--ink);border-radius:14px;padding:20px 26px;color:#fff;text-align:center}
 footer .wm{font-size:20px;font-weight:800}
 footer a{color:var(--orange);font-weight:700;text-decoration:none}
 footer .fine{color:var(--bandmuted);font-size:12px;margin-top:6px}
+footer .fine a.ql{color:var(--bandmuted);font-weight:400;text-decoration:none}
+footer .fine a.ql:hover{color:#fff;text-decoration:underline}
 @media (max-width:620px){.band h1{font-size:23px}.grid{grid-template-columns:1fr}.wrap{padding:18px 10px 36px}}
 `;
 
@@ -140,9 +145,10 @@ ${contributor ? navHtml(contributor, active) : ""}
 <main>
 ${body}
 </main>
+<div class="brow"><a href="https://uzemarkets.com">THE TALENT DESK</a> · <a href="https://dev.uzemarkets.com">DEV LIBRARY</a> · <a href="https://buildr-eco.uzemarkets.com">BUILDER COLLABORATOR</a></div>
 <footer>
 <div class="wm"><span class="uze">UZE</span>markets</div>
-<p class="fine">© 2026 <a href="https://uzemarkets.com">UZE</a>markets · The UZE Markets Desk · desk@uzemarkets.com</p>
+<p class="fine">© 2026 <a href="https://uzemarkets.com">UZE</a>markets · The UZE Markets Desk · <a class="ql" href="mailto:desk@uzemarkets.com">desk@uzemarkets.com</a></p>
 </footer>
 </div>
 </body>

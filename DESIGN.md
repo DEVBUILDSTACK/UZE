@@ -54,6 +54,14 @@ place and this file resolves to them.
    A wrapped wordmark is a build failure, on the same level as a failed
    test. Footer form: `© 2026 UZEmarkets` centered in an ink band, "UZE"
    tangerine linking to https://uzemarkets.com, no underline.
+   **Quiet links (James, 2026-11-19):** anything that can be hyperlinked
+   is hyperlinked, but a link never shows a raw scheme-ful URL as its
+   text — it carries a label. Quiet surfaces (the footer eyebrow
+   THE TALENT DESK · DEV LIBRARY · BUILDER COLLABORATOR, addresses in
+   copy) sit muted with a hairline underline and resolve to ink on
+   hover (white on ink bands); tangerine stays reserved for the
+   wordmark, primary links, and actions. The car wash fails a raw URL
+   used as link text.
 3. **Buttons are black pills.** Ink background, white text,
    `border-radius: 999px`, sans 700. Secondary: white pill, ink text, ink
    border. No square buttons, no colored buttons.

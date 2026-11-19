@@ -248,6 +248,20 @@ try {
           `(height ${wm.heightPx.toFixed(1)}px = 1.00 line at ${wm.fontSize}, white-space: ${wm.whiteSpace})`);
       }
 
+      // ----- 3b. quiet-link check: no raw URL as link text (James, 2026-11-19) -----
+      // House rule: anything linkable is linked, but a link never shows a raw
+      // scheme-ful URL as its text — it carries a label. Short domains and
+      // addresses as labels are the designed exceptions.
+      const rawLinks = await page.evaluate(() =>
+        [...document.querySelectorAll('a')].map((a) => (a.textContent || '').trim()).filter((t) => /^https?:\/\//i.test(t)));
+      if (rawLinks.length) {
+        const msg = `raw URL used as link text (quiet-link rule): ${rawLinks.slice(0, 3).join(' · ')}`;
+        failures.push(msg);
+        say(`[FAIL] ${msg}`);
+      } else {
+        say('[PASS] quiet-link check — no raw URL serves as link text');
+      }
+
       // ----- 4. axe floor (report-only; see README) -----
       const axePath = path.join(process.cwd(), 'node_modules', 'axe-core', 'axe.min.js');
       const localAxe = fs.existsSync(axePath)

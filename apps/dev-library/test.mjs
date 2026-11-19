@@ -63,6 +63,9 @@ try {
   const pageHtml = await (await fetch(B + "/")).text();
   const faqAt = pageHtml.indexOf('id="faq"');
   const faqSection = faqAt >= 0 ? pageHtml.slice(faqAt, pageHtml.indexOf("</section>", faqAt)) : "";
+  ok("page footer: the three surfaces ride as quiet gray hover links above the ink band (James, 2026-11-19)",
+    pageHtml.includes('class="brow"') && pageHtml.includes('>THE TALENT DESK</a>') && pageHtml.includes('>DEV LIBRARY</a>') &&
+    pageHtml.includes('>BUILDER COLLABORATOR</a>') && pageHtml.includes('.brow a:hover { color:var(--ink);'));
   ok("FAQ: macro section served on the page, all ten topics present",
     ["Access &amp; sign-in", "Browsing the catalog", "The samples", "Commenting &amp; suggesting",
      "Tracks &amp; expertise", "Engagements &amp; the money models", "Assessments (Scope 2)",
@@ -635,7 +638,8 @@ try {
     inv.html.indexOf("Join us on WhatsApp") > inv.html.indexOf("font-size:22px"));
   ok("naming rule: no external copy says 'reading room' (James, 2026-11-18)",
     !!inv && !/reading room/i.test(inv.html) && !/reading room/i.test(inv.text) &&
-    inv.html.includes(">DEV LIBRARY<") && inv.html.includes("THE TALENT DESK · DEV LIBRARY · <a href=\"https://buildr-eco.uzemarkets.com\"") && inv.html.includes(">BUILDER COLLABORATOR</a>") &&
+    inv.html.includes(">DEV LIBRARY<") && inv.html.includes(">THE TALENT DESK</a>") && inv.html.includes(">DEV LIBRARY</a>") && inv.html.includes(">BUILDER COLLABORATOR</a>") &&
+    inv.html.includes("href=\"https://buildr-eco.uzemarkets.com\"") && !inv.html.includes("desk@uzemarkets.com</a> · <a href=\"https://dev.uzemarkets.com\"") &&
     inv.html.includes("Sign-in is by an"));
   const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
   ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));

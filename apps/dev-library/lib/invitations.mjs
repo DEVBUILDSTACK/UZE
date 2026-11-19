@@ -32,9 +32,9 @@ export function invitationKindFor(email) {
   return null;
 }
 const ECO_EXTRA = { app: "eco", siteUrl: ECO_URL, siteLabel: "buildr-eco.uzemarkets.com",
-  bandLabel: "BUILDR TEAM", footerEyebrow: "THE ECOSYSTEM DESK · BUILDR TEAM" };
+  bandLabel: "BUILDR TEAM", footerEyebrow: "THE ECOSYSTEM DESK · BUILDR TEAM", footerEyebrowHtml: `THE ECOSYSTEM DESK · <a href="https://buildr-eco.uzemarkets.com" style="color:#6b655e;text-decoration:none">BUILDR TEAM</a>` };
 const DUAL_EXTRA = { app: "eco", siteUrl: ECO_URL, siteLabel: "buildr-eco.uzemarkets.com",
-  bandLabel: "BUILDR TEAM + DEV LIBRARY", footerEyebrow: "THE ECOSYSTEM DESK · BUILDR TEAM" };
+  bandLabel: "BUILDR TEAM + DEV LIBRARY", footerEyebrow: "THE ECOSYSTEM DESK · BUILDR TEAM", footerEyebrowHtml: `THE ECOSYSTEM DESK · <a href="https://buildr-eco.uzemarkets.com" style="color:#6b655e;text-decoration:none">BUILDR TEAM</a>` };
 
 export const ECO_INVITATION_SUBJECT = "Your access to the UZE Buildr Team";
 export const ECO_INVITATION_BODY =

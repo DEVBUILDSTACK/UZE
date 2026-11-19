@@ -130,6 +130,8 @@ const HERO_ALT = "The UZE Dev Library — design mocks, interface cards and work
 const STYLE_BLOCK = `<style>
 :root{color-scheme:light dark}
 @media only screen and (max-width:620px){.em-card{width:100%!important}.em-pad{padding-left:20px!important;padding-right:20px!important}}
+.em-brow a{color:#6b655e;text-decoration:none}
+.em-brow a:hover{color:#1a1a1a;text-decoration:underline}
 @media (prefers-color-scheme:dark){
 .em-bg{background-color:#141210!important}
 .em-card{background-color:#201c18!important;border-color:#3a352f!important}
@@ -140,6 +142,7 @@ const STYLE_BLOCK = `<style>
 .em-code{background-color:#2a251f!important;border-color:#3a352f!important}
 .em-code-num{color:#ffffff!important}
 .em-div{border-top-color:#3a352f!important}
+.em-brow a{color:#b3aa9d}
 }
 </style>`;
 const LINK = (href, label, color = "#ff6b00") =>
@@ -212,14 +215,14 @@ export function renderHtml(entry) {
     ? `<div style="margin-top:28px">
       <p class="em-text" style="margin:0 0 2px;color:#1a1a1a">Warm regards,</p>
       <p class="em-text" style="margin:0;font-weight:700;color:#1a1a1a">The UZE Markets Desk</p>
-      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(SITE, SITEL)}</p>
+      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")}</p>
     </div>
     <div style="margin-top:28px">
       <div style="font-size:22px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span class="em-text" style="color:#1a1a1a">markets</span></div>
-      <div class="em-muted" style="font-size:10px;letter-spacing:1px;color:#6b655e;margin-top:2px;white-space:nowrap">${entry.footerEyebrow ? esc(entry.footerEyebrow) : `THE TALENT DESK · DEV LIBRARY · <a href="https://buildr-eco.uzemarkets.com" style="color:#6b655e;text-decoration:none">BUILDER COLLABORATOR</a>`}</div>
+      <div class="em-muted em-brow" style="font-size:10px;letter-spacing:1px;color:#6b655e;margin-top:2px;white-space:nowrap">${entry.footerEyebrowHtml ? entry.footerEyebrowHtml : entry.footerEyebrow ? esc(entry.footerEyebrow) : `<a href="https://uzemarkets.com" style="color:#6b655e;text-decoration:none">THE TALENT DESK</a> · <a href="https://dev.uzemarkets.com" style="color:#6b655e;text-decoration:none">DEV LIBRARY</a> · <a href="https://buildr-eco.uzemarkets.com" style="color:#6b655e;text-decoration:none">BUILDER COLLABORATOR</a>`}</div>
     </div>`
     : `<div class="em-div" style="border-top:1px solid #ddd5c9;margin-top:24px;padding-top:14px">
-      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">The UZE Markets Desk · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(SITE, SITEL)}</p>
+      <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">The UZE Markets Desk · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")}</p>
     </div>`;
   const heroRow = desk
     ? `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${HERO_URL}" width="600" height="200" alt="${HERO_ALT}" style="display:block;width:100%;max-width:600px;height:auto;border:0" /></td></tr>` : "";
