@@ -133,6 +133,12 @@ export default function SiteNav() {
             </li>
           ))}
         </ul>
+        <div className="drawer-hub">
+          <a href="https://uzemarkets.com/c3-admin-hub" onClick={close}>
+            C3 Admin Hub
+          </a>
+          <span>Command &amp; Control Console · corporate email</span>
+        </div>
         <p className="drawer-foot">
           <a href="https://uzemarkets.com/talent" onClick={close}>
             Talent

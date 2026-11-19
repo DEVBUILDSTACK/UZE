@@ -1,0 +1,68 @@
+name: C3 Web Env
+
+# Provisions the UZE-WEB Vercel project's production env for the
+# C3 Admin Hub gate (James, 2026-11-19): RESEND_API_KEY (upserted
+# from the Actions repository secret, same pattern and rationale as
+# the dev-library sync — Vercel is operated through this GitHub/API
+# route, never the dashboard) and C3_OTP_SECRET (generated in-run
+# the first time only, so live sessions are never invalidated by a
+# re-run). Values are masked up front, piped to `vercel env add` on
+# stdin, and that command's output is discarded — a value is never
+# echoed. Manual dispatch only.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync-c3-env:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Link a scratch dir to the web project
+        run: |
+          mkdir -p "${RUNNER_TEMP}/c3-env/.vercel"
+          printf '{"orgId":"%s","projectId":"%s"}' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > "${RUNNER_TEMP}/c3-env/.vercel/project.json"
+          echo "linked project (ids not shown)"
+      - name: Sync RESEND_API_KEY from Actions secret (best-effort)
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/c3-env
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          set -u
+          if [ -z "${RESEND_API_KEY:-}" ]; then
+            echo "RESEND_API_KEY Actions secret not set — skipping (the C3 gate stays inert until it is placed)"
+            exit 0
+          fi
+          echo "::add-mask::$RESEND_API_KEY"
+          EXISTING=$(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null || echo "")
+          if echo "$EXISTING" | grep -q "RESEND_API_KEY"; then
+            echo "RESEND_API_KEY already in production env — replacing (upsert)"
+            vercel env rm RESEND_API_KEY production --yes --token="$VERCEL_TOKEN" >/dev/null 2>&1 || true
+          fi
+          printf %s "$RESEND_API_KEY" | vercel env add RESEND_API_KEY production --token="$VERCEL_TOKEN" >/dev/null 2>&1
+          echo "RESEND_API_KEY synced to the web project's production env (value not shown)"
+      - name: Ensure C3_OTP_SECRET (generate once, never rotate)
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/c3-env
+        run: |
+          set -u
+          EXISTING=$(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null || echo "")
+          if echo "$EXISTING" | grep -q "C3_OTP_SECRET"; then
+            echo "C3_OTP_SECRET already in production env — leaving it (no rotation)"
+            exit 0
+          fi
+          GEN=$(openssl rand -hex 32 | tr -d '\n')
+          echo "::add-mask::$GEN"
+          printf %s "$GEN" | vercel env add C3_OTP_SECRET production --token="$VERCEL_TOKEN" >/dev/null 2>&1
+          echo "C3_OTP_SECRET generated and placed in the web project's production env (value not shown)"

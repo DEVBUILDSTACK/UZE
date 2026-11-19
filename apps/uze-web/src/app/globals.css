@@ -136,6 +136,40 @@ h3 {
   z-index: 50;
   padding: 1rem;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* C3 Admin Hub — the drawer's bottom-most entry (James, 2026-11-19):
+ * the Command & Control Console, gated by corporate-email OTP.
+ * Sits below everything, over a hairline, in the DC3 bottom-card
+ * position. */
+.drawer .drawer-hub {
+  order: 99;
+  margin-top: auto;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+
+.drawer .drawer-hub a {
+  display: block;
+  background: var(--text);
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+}
+
+.drawer .drawer-hub a:hover {
+  background: #ff6b00;
+}
+
+.drawer .drawer-hub span {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 
 .drawer.open {
@@ -289,6 +323,242 @@ h3 {
 .drawer .drawer-foot a.foot-dim {
   color: var(--muted);
   font-weight: 400;
+}
+
+/* ---- C3 Admin Hub (own site behind the corporate-email OTP gate) ---- */
+
+.c3-eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #ff6b00;
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+}
+
+.c3-muted {
+  color: var(--muted);
+}
+
+.c3-gate-wrap {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 3rem 1rem 4rem;
+}
+
+.c3-gate {
+  background: #ffffff;
+  border: 1px solid #ddd5c9;
+  border-radius: 14px;
+  padding: 2rem 2.2rem;
+}
+
+.c3-gate h1,
+.c3-main h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  margin: 0 0 0.8rem;
+}
+
+.c3-form {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.4rem;
+}
+
+.c3-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.c3-form input {
+  font: inherit;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #ddd5c9;
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text);
+}
+
+.c3-btn {
+  font: inherit;
+  font-weight: 700;
+  background: var(--text);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.c3-btn:hover {
+  background: #ff6b00;
+}
+
+.c3-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.c3-linkbtn {
+  font: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.c3-notice {
+  margin-top: 1rem;
+  background: #FDEEE2;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+}
+
+.c3-error {
+  margin-top: 1rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.c3-wrap {
+  display: flex;
+  min-height: 70vh;
+}
+
+.c3-rail {
+  width: 15.5rem;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 1.4rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.c3-rail-brand {
+  text-decoration: none;
+}
+
+.c3-nav {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.c3-nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid transparent;
+}
+
+.c3-nav a:hover {
+  border-color: var(--border);
+}
+
+.c3-nav a.active {
+  background: #ff6b00;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.c3-nav-lower {
+  margin-top: auto;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.c3-rail-foot {
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.c3-rail-foot a {
+  color: var(--text);
+}
+
+.c3-main {
+  flex: 1;
+  max-width: 46rem;
+  padding: 1.8rem 1.4rem 3.5rem;
+}
+
+.c3-cards {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.4rem;
+}
+
+.c3-card {
+  display: grid;
+  gap: 0.3rem;
+  background: #ffffff;
+  border: 1px solid #ddd5c9;
+  border-radius: 14px;
+  padding: 1.3rem 1.5rem;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.c3-card:hover {
+  border-color: #ff6b00;
+}
+
+.c3-card-name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.c3-card-line {
+  color: var(--muted);
+}
+
+.c3-rows {
+  margin-top: 1.4rem;
+  display: grid;
+}
+
+.c3-row {
+  display: flex;
+  gap: 0.9rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.c3-row-mark {
+  color: #ff6b00;
+  font-weight: 700;
+}
+
+.c3-row-name {
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+}
+
+.c3-row-line {
+  color: var(--muted);
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .c3-wrap {
+    flex-direction: column;
+  }
+
+  .c3-rail {
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
 }
 
 /* ---- Shared elements ---- */
