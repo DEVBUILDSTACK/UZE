@@ -626,7 +626,7 @@ try {
   const inv = await waitFor(() => received.find((x) => (x.to || []).includes("mia@test.dev") && (x.subject || "").includes("access to the UZE Dev Library")));
   ok("mail configured: invitation SENT at the grant event, from desk@", !!inv && String(inv.from).includes("desk@uzemarkets.com"));
   ok("invitation is branded: greeting, tangerine, library link, desk signature",
-    !!inv && inv.html.includes("Dear Development Partner") && inv.html.includes("#ff6b00") &&
+    !!inv && inv.html.includes("Hello Mia,") && inv.html.includes("#ff6b00") &&
     inv.html.includes("dev.uzemarkets.com") && inv.html.includes("The UZE Markets Desk") &&
     inv.text.includes("The UZE Markets Desk"));
   ok("house CTAs sit above the signature, logo underneath (James's layout rule)",
@@ -667,7 +667,7 @@ try {
   const delivered = otpMail && otpMail.text.match(/sign-in code for the UZE Dev Library is (\d{6})/)[1];
   ok("sign-in code SENT at the request event", !!delivered);
   ok("code email is branded and shows the code large",
-    !!delivered && otpMail.html.includes(delivered) && otpMail.html.includes("Hello,"));
+    !!delivered && otpMail.html.includes(delivered) && otpMail.html.includes("Hello Mia,"));
   ok("code email stays lean: no hero, no button row, no banners",
     !!delivered && !otpMail.html.includes("hero.gif") && !otpMail.html.includes("#25D366") &&
     !otpMail.html.includes("Listen to the podcast") && !otpMail.html.includes("Join the conversation"));

@@ -21,10 +21,34 @@ export function chronicle(type, fields) {
   c.entries.push({ at: new Date().toISOString(), type, ...fields });
   save("chronicle.json", c);
 }
+// The greeting rule (James, 2026-11-19): an email always addresses
+// the recipient as Hello "First Name". The name resolves from the
+// rosters — the eco contributor record first (it carries the
+// settled spellings), then the developer record — with any
+// parenthetical dropped ("James Dugan (D5)" -> "James"). No name
+// on file: the mailer's kind default stands; a name is never
+// invented.
+function firstNameFor(email) {
+  const em = String(email || "").toLowerCase();
+  const clean = (n) => String(n || "").replace(/\([^)]*\)/g, "").trim().split(/\s+/)[0] || null;
+  try {
+    const c = (load("eco-contributors.json").contributors || []).find((x) => (x.email || "").toLowerCase() === em);
+    if (c && clean(c.name)) return clean(c.name);
+  } catch { /* no eco roster in this data dir */ }
+  try {
+    const d = (load("developers.json").developers || []).find((x) => (x.email || "").toLowerCase() === em);
+    if (d && clean(d.name)) return clean(d.name);
+  } catch { /* no developer roster in this data dir */ }
+  return null;
+}
 export function commsSend(to, kind, subject, body, extra = {}) {
   const log = load("comms-log.json");
   const entry = { id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
     at: new Date().toISOString(), from: log.sender, to, kind, subject, body, status: "queued", ...extra };
+  if (!entry.greetingText) {
+    const first = firstNameFor(to);
+    if (first) entry.greetingText = `Hello ${first},`;
+  }
   log.sends.push(entry); save("comms-log.json", log);
   chronicle("comms-send", { to, kind, subject });
   return entry;
