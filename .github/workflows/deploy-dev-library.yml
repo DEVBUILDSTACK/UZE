@@ -204,6 +204,34 @@ jobs:
           printf %s "$RESEND_WEBHOOK_SECRET" | vercel env add RESEND_WEBHOOK_SECRET production --token="$VERCEL_TOKEN" >/dev/null
           echo "RESEND_WEBHOOK_SECRET synced to production env (value not shown)"
 
+      # LIBRARY_MASTER_TOKEN sync (added 2026-11-18, same pattern and
+      # rationale as the RESEND steps above): the Dev Library master
+      # token is placed as an Actions repository secret; this step
+      # upserts it into the project's production env, opening the
+      # /api/admin/* master-control surface. Best-effort and inert
+      # until the secret exists; the value is never echoed. Until it
+      # lands, /api/admin/* answers 403 to every caller.
+      - name: Sync LIBRARY_MASTER_TOKEN from Actions secret (best-effort)
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/dev-library-deploy
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.proj.outputs.project_id }}
+          LIBRARY_MASTER_TOKEN: ${{ secrets.LIBRARY_MASTER_TOKEN }}
+        run: |
+          set -u
+          if [ -z "${LIBRARY_MASTER_TOKEN:-}" ]; then
+            echo "LIBRARY_MASTER_TOKEN Actions secret not set — skipping (admin API stays closed until it is placed)"
+            exit 0
+          fi
+          echo "::add-mask::$LIBRARY_MASTER_TOKEN"
+          EXISTING=$(vercel env ls production --token="$VERCEL_TOKEN" 2>/dev/null || echo "")
+          if echo "$EXISTING" | grep -q "LIBRARY_MASTER_TOKEN"; then
+            echo "LIBRARY_MASTER_TOKEN already in production env — replacing (upsert)"
+            vercel env rm LIBRARY_MASTER_TOKEN production --yes --token="$VERCEL_TOKEN" >/dev/null 2>&1 || true
+          fi
+          printf %s "$LIBRARY_MASTER_TOKEN" | vercel env add LIBRARY_MASTER_TOKEN production --token="$VERCEL_TOKEN" >/dev/null
+          echo "LIBRARY_MASTER_TOKEN synced to production env (value not shown)"
+
       - name: Build (verify compile)
         working-directory: ${{ runner.temp }}/dev-library-deploy
         env:
