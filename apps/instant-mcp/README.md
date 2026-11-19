@@ -48,13 +48,28 @@ here binds it.
   and discoverable in `tools/list`, labeled "[Available M3]". Every call
   is refused with an `available_m3` response and recorded as a chronicle
   Event. They activate when M3's settlement substrate lands.
-- **The 9 Markets-tier vertical tools** (`open_position`,
+- **The remaining Markets-tier vertical tools** (`open_position`,
   `close_position`, `sealed_bid_assignment`, `sign_attestation`,
-  `open_dispute`, `publish_redacted`, `submit_assessment`,
-  `score_assessment`, `publish_assessment_outcome`): M3 scope. Tonight
+  `open_dispute`, `publish_redacted`): M3 scope. Tonight
   they exist in the catalog so the tier gate refuses them correctly —
   Instance principals get a `tier_gate` refusal; Markets principals get
   the `available_m3` refusal. Settlement tools: available M3.
+
+## Talent tools — LIVE (Scope 2 / P2 activation, 2026-11-18)
+
+`submit_assessment`, `score_assessment`, and `publish_assessment_outcome`
+went live under merged-program amendment S2 — their designed trigger
+was the first assessment outcome published under P2's two human gates,
+which the P2 Sprint 1 loop proof produced. They execute over HTTP
+against the P2 system of record in `apps/dev-library`
+(`lib/talent-client.mjs`; `TALENT_API_URL`, default
+`http://127.0.0.1:8734`; `TALENT_API_MASTER_TOKEN`) and **inherit the
+gates**: a submission creates an UNGATED record (Gate 1 and Gate 2 are
+human signatures in the console — no tool call can satisfy them);
+scoring and publishing refuse with `gates_not_passed` against any
+record whose gates have not passed, and publishing additionally
+enforces the publisher's minimum anonymity set. The rehearsal proves
+activation end-to-end (44 passed, 0 failed).
 
 ## Provisioning is a LOCAL MOCK
 
