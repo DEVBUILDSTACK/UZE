@@ -93,6 +93,8 @@ try {
     pageHtml.includes('class="uze-link"') && pageHtml.includes('href="https://uzemarkets.com"'));
   ok("design: no off-palette status hues — feedback renders in the palette (ink + tangerine marker), never red/green",
     !pageHtml.includes("#b02a37") && !pageHtml.includes("#2e7d32"));
+  ok("design: the wordmark never wraps — one line at phone width (nowrap + reduced band size under the mobile breakpoint)",
+    pageHtml.includes("white-space:nowrap") && pageHtml.includes(".band h1{font-size:23px}"));
 
   ok("catalog without session -> 401", (await call("/api/catalog")).status === 401);
   const before = comms().length;
