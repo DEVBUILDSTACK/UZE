@@ -40,6 +40,9 @@
   .comment { border-top:1px solid var(--line); padding:8px 0; font-size:14px; line-height:1.6; }
   a { color:var(--orange); font-weight:700; text-decoration:underline; }
   .softband { background:var(--creamsicle); border-radius:12px; padding:26px 24px; text-align:center; margin-bottom:10px; }
+  footer { max-width:880px; margin:0 auto; padding:0 22px 28px; }
+  .band.foot { text-align:center; color:#fff; font-size:14px; }
+  .uze-link { color:var(--orange); text-decoration:none; }
   .softband h3 { margin:0; }
   .softband .sub { color:var(--ink); }
   details.faq { border-top:1px solid var(--line); padding:10px 0; }
@@ -204,6 +207,7 @@
     <div id="plist" style="margin-top:10px"></div>
   </section>
 </main>
+<footer><div class="band foot">© 2026 <a class="uze-link" href="https://uzemarkets.com">UZE</a>markets</div></footer>
 <script>
 const $ = (id) => document.getElementById(id);
 const api = async (path, opts = {}) => {

@@ -88,6 +88,9 @@ try {
   ok("design: black pill buttons, Georgia serif display, reversed ink header band, creamsicle soft band",
     pageHtml.includes("border-radius:999px") && pageHtml.includes("Georgia") &&
     pageHtml.includes('class="band"') && pageHtml.includes('class="softband"'));
+  ok("design: standard footer — ink band, © line, tangerine UZE linking to uzemarkets.com (no underline)",
+    pageHtml.includes("<footer>") && pageHtml.includes("© 2026") &&
+    pageHtml.includes('class="uze-link"') && pageHtml.includes('href="https://uzemarkets.com"'));
 
   ok("catalog without session -> 401", (await call("/api/catalog")).status === 401);
   const before = comms().length;
