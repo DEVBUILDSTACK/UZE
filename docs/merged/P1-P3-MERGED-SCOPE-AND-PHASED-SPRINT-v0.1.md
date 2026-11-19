@@ -1,0 +1,119 @@
+# Merged P1 + P3 — Scope and Phased Sprint v0.1
+
+**Status: FOR JAMES'S TAP (the merge).** Produced by SoSem, 2026-11-18, on James's directive of 20:05 ET: a full SoSem detailed merge of the P1 and P3 Scope(s)/Phased Sprint(s).
+**Addressee:** James.
+
+**Label mapping (read first).** In James's labels: **P1 = Scope 1** — the Talent platform / UZE Dev Library line (directive v3.1; `docs/talent/`). **P3 = Scope 3** — UZE Instant MCP (`docs/instant-mcp/`), the new scope, accepted as filed when the DeepSeek diagnosis loop closed on 2026-11-18. **P2 = Scope 2 (P2 Assessment) is SEPARATED** — per James's direction it is addressed on its own track and is **not** merged here; its seam with this program is specified in §6 and nothing else in this document governs it.
+
+**Sources merged:** Scope 1 — `CONSOLIDATED-SCOPE-v3.1.md`, `BUILD-SCOPE-AND-PHASED-SPRINT-v1.0.md`, the Vercel-DB/permissions addendum, the talent commercial-models addendum (all `docs/talent/`). Scope 3 — `SCOPE-3-UZE-INSTANT-MCP-SCOPE-AND-PHASED-SPEC-v0.1.md` as amended by the composite ingestion and the diagnosis outcome (`docs/talent/DIAGNOSIS-COMPOSITE-FEEDBACK-2026-11-18.md`, `DEEPSEEK-RESPONSE-DIAGNOSIS-FIXES-2026-11-18.md`). Where this merge and a source differ, the source governs until James taps the merge.
+
+---
+
+## 1. The merged program, in one paragraph
+
+One platform, two surfaces. **Scope 1 is the system of record**: the permissioned talent platform — discovery (the Dev Library), placement (dual-track), settlement (escrow) — with its human surface, its chronicle, and its developer/talent data layer already built and live. **Scope 3 is the productized access layer over that platform and its sibling verticals**: one MCP endpoint, two tiers, a tier-gated tool catalog, sold through the AI directories. The Dev Library is where humans browse, configure, and sign; the Instant MCP is where agents discover, provision, and call. They share one Event store discipline, one gating pattern, one rail law, one storage doctrine, and one operator. Merging the scopes merges the build order — it does not merge their taps, and it does not pull the separated P2 track into either.
+
+## 2. State of record, per scope
+
+**Scope 1 (P1) — built in part, live in part.**
+- Phase 0 (extension/scope): FILED. Phase 1 (reading room / Dev Library): **BUILT, DEPLOYED, DB-BACKED** — live at dev.uzemarkets.com behind the email-allowlist gate; Neon Postgres attached and seeded (5 professionals + owner test persona, 59 repo grants); rehearsal 40 passed / 0 failed; the Resend mailer, webhook receiver, and lifecycle engine are built.
+- Outstanding on Scope 1 as filed: the Resend key placement (values held in a paused session; two routes to completion, both James's — see §7), `LIBRARY_MASTER_TOKEN` unset (admin API closed in production), the owner OTP end-to-end test (runs the moment the mailer arms). Phases 2–6 not started; **Phase 2 is the separated P2 track** (§6); Phase 6's gate is closed by James's own design until placement + payment are proven live and he taps it open.
+
+**Scope 3 (P3) — filed, diagnosed, inert.**
+- Scope + phased specification v0.1 filed; DeepSeek composite feedback #1 ingested; the diagnosis loop closed with all five discrepancies (X1–X5) fixed or reframed. The catalog stands at **9 base + 9 vertical = 18 tools**; Filebase/Pinata is the operating pinning home with UZE-IPFS as the conditional target state; the directory recommendation is the two-tier structure; the "<30 seconds" figure is withheld pending measurement.
+- Outstanding on Scope 3: James's tap and the **seven rulings** (naming; directory priority; publish_redacted placement; premium structure; markup framework; approver timing; IPFS home). Nothing in Scope 3 has been built.
+
+## 3. Why the merge is one program, not two
+
+1. **Scope 3's Markets tier sells access to what Scope 1 operates.** The Talent vertical tools (`submit_assessment`, `score_assessment`, `publish_assessment_outcome`, `sealed_bid_assignment` on talent engagements) are calls into the talent platform's placement and settlement machinery. Without Scope 1's Phase 3/4 substance (dual-track placement, escrow settlement), the Markets tier's talent surface is a catalog without an operation behind it.
+2. **Scope 1's settlement phase and Scope 3's settlement tools are the same machinery at two surfaces.** Escrow creation and milestone release exist once — in the platform — and are exposed to humans through the console and to agents through the MCP, per the dual-surface contract: the console is a view over the API, never a parallel path.
+3. **The gating pattern is identical.** User pre-authorization limits, enforcement before execution, vertical-side gates, revoke cascade at the boundary — Scope 1's lifecycle/revoke machinery and Scope 3's three-layer gating are one pattern with two instances. Building them once, in one sequence, prevents the drift that two separate sprints would guarantee.
+4. **The dependencies are shared.** NEAR AI Cloud (compute + the credits blocker), the storage doctrine (Filebase/Pinata operating; UZE-IPFS conditional), the rail law, the chronicle/Event discipline, and James's gates bind both scopes identically. One phased sprint sequences those dependencies once.
+
+## 4. Shared foundations (stated once, governing both scopes)
+
+- **Chronicle.** Every action — human or agent, executed, refused, or revoked — is a chronicle Event in one discipline. Status is derived, never written. The audit trail is the same store pattern for a developer's lifecycle transition and an agent's tool call.
+- **Gating.** Three layers wherever value or access moves: (1) the principal's pre-authorization with explicit limits, (2) enforcement before execution, (3) the vertical's own gates, never bypassed. Revocation cascades atomically at the next boundary. Human gates (the class of the human-`promotedBy` rule; P2's two gates on the separated track) are never delegated to an agent.
+- **Dual-surface contract.** Autonomous-first for money and execution (the API is the contract); human-first for judgment (configuration, approval, borderline review). The console is a view over the API.
+- **Rail law.** USDC on Solana is the default for everything; cascade USDC Base → USDG Robinhood Chain → Tempo/Stripe CASH only where none of the first three is available, and never inside SigLayer/TradeLayer. x402 meters per-call; NEAR staking buys access windows; the two are distinct products. Settlement of record conforms everywhere in this program.
+- **Storage.** Filebase/Pinata is the operating pinning home. UZE-IPFS (real IPFS on NEAR Cloud) is the target state, conditional on the four-point P0 verification (persistent CID-verifiable nodes; retrieved CID = published CID; persistence guarantees; per-GB-pin cost inside the Markets envelope) and on NEAR AI Cloud credits. A bucket is never labeled IPFS. Publication is redaction-by-construction: three-store separation, triangulation mitigation, minimum-anonymity-set checks.
+- **Access regimes.** NoGate for base provisioning (identity = agent's email; credential = wallet payment signature). The separated P2 track's KYC/KYB for configuring employers applies on that track. Markets-tier tool access is governed by the §4 gating, not by a second identity regime (Scope 3 open item 5 / ruling set, James's to confirm).
+- **Naming.** Product names per Scope 3 §1 (subject to ruling 1). Keys and secrets carry descriptive names with environment (testnet/mainnet; sandbox/production), date, and a reason word for a same-day second key, per James's convention of record.
+- **Boundaries.** The DeepSeek information boundary holds (labels only in external material). No correspondence or credentials in any repo. Nothing publishes, sends, spends, or enables a rail without the applicable tap from James.
+
+## 5. The merged phased sprint
+
+Merged phases are labeled **M0–M5** so they never collide with either scope's own phase numbers. Each entry names its source phases, its deliverables, and its exit criteria. Each merged phase starts on its own tap, per the standing cadence.
+
+### M0 — Arming and verification
+*Sources: Scope 1 close-out items; Scope 3 Phase 0.*
+- Scope 1: Resend key + webhook secret placed (either route, §7) → deploy dispatched → mailer verified armed; owner OTP end-to-end test completed at dev.uzemarkets.com; `LIBRARY_MASTER_TOKEN` placed and the admin API opened.
+- Scope 3 P0: NEAR AI Cloud provisioning verified end-to-end (API surface, KVM tiers, **actual spin-up time measured** — the number, whatever it is, replaces the withheld claim); the four-point IPFS verification run (or its failure recorded, making Filebase/Pinata permanent); MCP protocol conformance spike against the Claude reference implementation; the NEAR credits resolution path stated (credits are the shared blocker for live NEAR surfaces).
+- **Exit:** the Dev Library sends real mail through its own wire and the owner test passes; Scope 3's factual basis (provisioning, timing, storage, credits) is measured, not asserted.
+
+### M1 — Scope 1 Phase 3: dual-track placement + Role × Realm taxonomy
+*Source: Scope 1 Phase 3 (the separated P2 track is Phase 2 — not in this merge, §6).*
+- Track A (internal technical, never placed) and Track B (external placement: AUG/OUTSTAFF/PLACE/PROJECT × REMOTE/HYBRID/MIXED/ONSITE) live in the platform, with the commercial models of record (outstaffing — UZE pays talent, bills client; placement — fee of at least one month's salary, client pays the individual) and the confidentiality doctrine enforced by the desk (no identity exposure before signed engagement + deposit).
+- The Role × Realm taxonomy (11 Roles × 6 Realms, up to five pairs, PRIMARY→QUINARY) enforced in data and UI; developer lifecycle and roadmap binding carried from the built phases.
+- **Exit:** a Track B engagement can be opened, staffed blind through the desk, and tracked end-to-end in the console — settlement itself lands in M3.
+
+### M2 — Scope 3 Phase 1: core MCP + Instance tier
+*Source: Scope 3 Phase 1.*
+- The endpoint at `mcp.uzemarkets.com`: wallet-bound auth, the **9 base tools** (5 core + 4 settlement), x402 per-call metering, pre-authorization limits with MCP-side enforcement, revoke cascade, every call a chronicle Event. Own-docs/direct-config listing live from this phase.
+- **Exit:** an external agent (Claude reference client) provisions, meters, and terminates a UZE Instance against the real endpoint, inside user-set limits, with the full call history in the chronicle.
+
+### M3 — Settlement substrate, then Markets vertical tools
+*Sources: Scope 1 Phase 4 (NEAR marketplace + escrow); Scope 3 Phase 2 (Markets tier).*
+- First the substrate: NEAR-intent marketplace mechanics and escrow milestone settlement operating in the platform (the same machinery M1's engagements settle through), rails per the rail law.
+- Then the Markets tier's vertical tools on top of it: the six trading/SigLayer/Arcium tools (`sealed_bid_assignment`, `open_position`, `close_position`, `sign_attestation`, `open_dispute`, `publish_redacted`) executing strictly inside the verticals' own gates. The three **Talent tools are built against the separated P2 track's interfaces and activate when that track lands** (§6) — they ship dark, not absent.
+- **Exit:** a Markets-tier agent completes an escrow-backed engagement settlement and one vertical operation end-to-end, inside limits, with unwind paths demonstrated.
+
+### M4 — Discovery + hardening I
+*Sources: Scope 3 Phase 3 (directories); Scope 1 Phase 5 (hardening).*
+- Directory listings in the two-tier order (ruling 2): Tier 1 Anthropic → Smithery → Cursor/Windsurf; Tier 2 OpenAI → Perplexity → DeepSeek → Venice → Kimi → Hostinger → community. Uniform listing content; no unmeasured claims (X5 discipline).
+- Platform hardening across both surfaces: tenant/agent isolation adversarial pass, limit-enforcement and revoke-cascade testing, redaction/triangulation audit of everything published.
+- **Exit:** listings live in Tier 1; the hardening report is filed with evidence, not narrative.
+
+### M5 — Compatibility matrix + the open-repo gate
+*Sources: Scope 3 Phase 4; Scope 1 Phase 6.*
+- Compatibility matrix executed per client (Claude reference; OpenAI function-call parity; Gemini parameter encoding; popular open-source MCP clients). Compatibility is claimed only for green cells.
+- Scope 1 Phase 6 — the open-repo gate — is **James's tap alone**, on its filed conditions: HR placement + payment proven live (M3's exit is the evidence). Nothing in this merge opens it.
+- **Exit:** the matrix is published with its evidence; the gate decision is James's, taken on the M3 record.
+
+## 6. The P2 seam (Scope 2 — separated, per James's direction)
+
+The P2 Assessment scope/phased sprint stands **separate** from this merge and is addressed on its own track (James: focus of late this evening into tomorrow's build, alongside the AEInfo track). This merged program touches it at exactly three interface points, and nowhere else:
+
+1. **Assessment records → placement.** M1's placement machinery consumes assessment outcomes keyed to Role × Realm pairs from the P2 track's system of record. Until that track lands, placement runs on the platform's existing signals; the interface is the keyed record, not a shared build.
+2. **The three Talent MCP tools.** M3 builds them against the P2 track's published interfaces (assessment state machine, two-gate flow, publisher) and they **activate when the P2 track lands** — the tools' gating inherits P2's two console-only human gates unchanged.
+3. **The publisher.** One publication layer serves both programs (Filebase/Pinata operating; UZE-IPFS conditional target). The P2 track owns its redaction spec; this program consumes the publisher as a service.
+
+No merged phase blocks on the separated track except Talent-tool activation in M3, which is designed to ship dark. The P2 track's tap, rulings (5–7 in the consolidated set), and 13-day sprint are its own.
+
+## 7. Rulings and gates carried into the merge
+
+| Item | Governs | State |
+|---|---|---|
+| Ruling 1 — tier naming | M2 onward (all public surfaces) | James's; DeepSeek recommends as proposed |
+| Ruling 2 — directory priority | M4 | James's; two-tier structure recommended |
+| Ruling 3 — publish_redacted placement | M3 | James's; Markets-only recommended |
+| Ruling 4 — premium structure | M2/M3 metering | James's; per-call + % of notional recommended |
+| Ruling 5 — markup framework | M1 (placement pricing) | James's; publish-now/quarterly-fill recommended |
+| Ruling 6 — approver of record timing | Separated P2 track (noted here for the M3 seam) | James's; name at Phase 3 entry recommended |
+| Ruling 7 — IPFS home | M0 verification; all publication | James's; UZE-IPFS target / Filebase-Pinata operating recommended |
+| Resend placement | M0 entry | Two routes open, both James's (live-browser sign-in, or placement from his own sessions) |
+| LIBRARY_MASTER_TOKEN | M0 | James-provided value |
+| NEAR AI Cloud credits | M0, M3 | Org credits outstanding; resolution path stated in M0 |
+| Scope 1 Phase 6 gate | M5 | James's tap alone, on filed conditions |
+
+## 8. Sequencing note — the AEInfo track and tonight's focus
+
+Per James's direction of 2026-11-18: the P2 scope is addressed separately beginning late this evening, and the imminent build focus is the **AEInfo track — completing the mocks of the global football / American soccer development to go live, followed by the other currently supported World.xyz surfaces — under the placeholder brand naming "AEInfo-Prediction UZEmarkets."** This merged program's sprints sequence behind that focus; nothing in this document displaces it, and the merge is filed so the program is ready to run when James turns to it.
+
+## 9. Invariants (restated once for the merged program)
+
+Every transition emits an Event; status is derived, never written. Revocation cascades are atomic at the boundary. Human gates are signed by named humans and never delegated. Redaction is by construction, and publication never carries names, emails, or company names. The talent is never exposed before signed engagement + deposit. Agents act only inside their principal's pre-authorized limits, and James's gates bind every publish, send, spend, and rail enable across both scopes. Filed records govern over summaries of them.
+
+---
+
+*Prepared by SoSem, 2026-11-18. The merge is a planning instrument: on James's tap it becomes the build order for Scopes 1 and 3, each phase starting on its own tap, with Scope 2 (P2) proceeding on its separated track.*
