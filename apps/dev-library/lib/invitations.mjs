@@ -68,8 +68,8 @@ export function diagramsAttachmentFor(email) {
   const full = ALL_ORG_KEYS.every(k => (c.orgs || []).includes(k));
   if (!full) return { attachmentNote: "No visibility-consistent diagrams file exists for this contributor's sections — nothing attached." };
   if (String(email).toLowerCase() === PRINCIPAL_EMAIL)
-    return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "eco/content/diagrams-jonathan.md" }] };
-  return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "eco/content/diagrams-owners.md" }] };
+    return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "diagram-md:jonathan" }] };
+  return { attachments: [{ filename: "UZE-ecosystem-diagrams.md", file: "diagram-md:owners" }] };
 }
 
 // Compose (queue) the invitation an email's grants call for.

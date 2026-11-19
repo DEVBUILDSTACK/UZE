@@ -42,6 +42,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { load, save } from "./store.mjs";
+import { HUMAN_SURFACE_PNG_B64, AGENTIC_SURFACE_PNG_B64 } from "./diagram-images.mjs";
+import { DIAGRAMS_JONATHAN_MD, DIAGRAMS_OWNERS_MD, DIAGRAMS_FULL_MD } from "./eco-content.mjs";
 
 const APP_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -327,7 +329,16 @@ export async function sendMail(entry) {
   if (entry.attachments?.length) {
     payload.attachments = entry.attachments.map(a => ({
       filename: a.filename,
-      content: fs.readFileSync(path.join(APP_ROOT, a.file)).toString("base64"),
+      // A "diagram:" token names one of the design-surface
+      // pictures carried as data in lib/diagram-images.mjs (they
+      // are never loose files — see that module); anything else
+      // is an app-relative file read at send time.
+      content: a.file === "diagram:human" ? HUMAN_SURFACE_PNG_B64.replace(/\s/g, "")
+        : a.file === "diagram:agentic" ? AGENTIC_SURFACE_PNG_B64.replace(/\s/g, "")
+        : a.file === "diagram-md:jonathan" ? Buffer.from(DIAGRAMS_JONATHAN_MD, "utf8").toString("base64")
+        : a.file === "diagram-md:owners" ? Buffer.from(DIAGRAMS_OWNERS_MD, "utf8").toString("base64")
+        : a.file === "diagram-md:full" ? Buffer.from(DIAGRAMS_FULL_MD, "utf8").toString("base64")
+        : fs.readFileSync(path.join(APP_ROOT, a.file)).toString("base64"),
     }));
   }
   const r = await fetch(API_URL(), {

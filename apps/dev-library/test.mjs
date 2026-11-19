@@ -77,11 +77,20 @@ try {
   ok("page footer: the three surfaces ride as quiet gray hover links above the ink band (James, 2026-11-19)",
     pageHtml.includes('class="brow"') && pageHtml.includes('>THE TALENT DESK</a>') && pageHtml.includes('>DEV LIBRARY</a>') &&
     pageHtml.includes('>BUILDER COLLABORATOR</a>') && pageHtml.includes('.brow a:hover { color:var(--ink);'));
-  ok("FAQ: macro section served on the page, all ten topics present",
+  ok("FAQ: macro section served on the page, all eleven topics present",
     ["Access &amp; sign-in", "Browsing the catalog", "The samples", "Commenting &amp; suggesting",
      "Tracks &amp; expertise", "Engagements &amp; the money models", "Assessments (Scope 2)",
      "Access changes &amp; resets", "The two addresses — the UZE Dev Library &amp; UZE Buildr Team",
+     "The two design surfaces — in pictures",
      "Contact — the desk"].every(t => faqSection.includes(t)));
+  // The design-surface pictures (James, 2026-11-19): knowledge-base
+  // material behind the session — never public like the hero.
+  const diaAnon = await fetch(B + "/diagrams/human-design-surface.png", { redirect: "manual" });
+  ok("diagrams: signed-out redirects to the door (OTP-gated, not public)", diaAnon.status === 302);
+  ok("macro FAQ carries the pictures entry with both gated doors",
+    faqSection.includes("The two design surfaces — in pictures") &&
+    faqSection.includes('href="/diagrams/human-design-surface.png"') &&
+    faqSection.includes('href="/diagrams/agentic-design-surface.png"'));
   ok("FAQ: macro section covers the second address per-address — UZE Buildr Team at buildr-eco.uzemarkets.com, its own sign-in, ecosystem first",
     faqSection.includes("buildr-eco.uzemarkets.com") && faqSection.includes("UZE Buildr Team") &&
     faqSection.includes("dev.uzemarkets.com") && faqSection.includes("Email me a sign-in code") &&

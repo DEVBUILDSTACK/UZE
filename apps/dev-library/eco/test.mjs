@@ -184,6 +184,10 @@ try {
     faq.text.includes("Team overview — completed") && faq.text.includes("Pick up where you left off") &&
     faq.text.includes("Your other surface") && faq.text.includes("Not your section") &&
     faq.text.includes("Sign out") && faq.text.includes("desk@uzemarkets.com"));
+  ok("A: the micro FAQ links the two design-surface pictures (James, 2026-11-19)",
+    faq.text.includes('href="/diagrams/human-design-surface.png"') &&
+    faq.text.includes('href="/diagrams/agentic-design-surface.png"') &&
+    faq.text.includes("no code in them"));
   ok("A: the micro FAQ names the pillars as pillars and links to the surface pages where they live",
     faq.text.includes("Pillar 1 — One canonical source of values") &&
     faq.text.includes("Pillar 4 — The car wash: no page deploys unwashed") &&
@@ -317,7 +321,7 @@ try {
     dualAttText.includes("Diagram 1") && dualAttText.includes("Diagram 3"));
   const dualEntry = comms(tmpB).filter(x => x.to === "dual@test.dev" && x.kind === "invitation_dual").pop();
   ok("B: the attachment is recorded on the comms entry",
-    !!dualEntry && Array.isArray(dualEntry.attachments) && dualEntry.attachments[0].file === "eco/content/diagrams-owners.md");
+    !!dualEntry && Array.isArray(dualEntry.attachments) && dualEntry.attachments[0].file === "diagram-md:owners");
 
   // The uze@ test persona: the bundled data ALSO carries James's
   // owner persona at this address with a library grant, so the
@@ -406,7 +410,16 @@ try {
   ok("C: a full-visibility principal's composed invitation records the diagrams attachment",
     !!jonEntry && Array.isArray(jonEntry.attachments) && jonEntry.attachments[0].filename === "UZE-ecosystem-diagrams.md");
   ok("C: the principal's attachment is HIS cut — UZE + L2Launch, DFI/FVC excluded (James, 2026-11-19)",
-    !!jonEntry && jonEntry.attachments[0].file === "eco/content/diagrams-jonathan.md");
+    !!jonEntry && jonEntry.attachments[0].file === "diagram-md:jonathan");
+  // Visibility doctrine guard (James, 2026-11-19): the gated
+  // content must NEVER exist as loose files in the app tree —
+  // the deployment's static layer serves loose files publicly.
+  ok("C: no loose gated content files exist under eco/content (static-layer exposure guard)",
+    !fs.existsSync(new URL("./content/diagrams.md", import.meta.url)) &&
+    !fs.existsSync(new URL("./content/diagrams-jonathan.md", import.meta.url)) &&
+    !fs.existsSync(new URL("./content/diagrams-owners.md", import.meta.url)) &&
+    !fs.existsSync(new URL("./content/human.html", import.meta.url)) &&
+    !fs.existsSync(new URL("./content/agentic.html", import.meta.url)));
 
   // The library grant flow itself honors the dual rule.
   const grant = await Cc.call("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "dual2@test.dev" } });

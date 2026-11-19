@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { load, save, chronicle } from "./lib/store.mjs";
 import { findDeveloper, requestCode, verifyCode, signSession, readSession, visibleMocks } from "./lib/gate.mjs";
 import { drainComms, sendEntryNow } from "./lib/mailer.mjs";
+import { HUMAN_SURFACE_PNG_B64, AGENTIC_SURFACE_PNG_B64 } from "./lib/diagram-images.mjs";
 import { applyWebhook, webhookConfigured } from "./lib/webhook.mjs";
 import * as life from "./lib/lifecycle.mjs";
 import * as adv from "./lib/advisors.mjs";
@@ -229,6 +230,17 @@ ${scopeCards}
     if (p === "/mock/venue-ticketing" && req.method === "GET") {
       res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300", "x-robots-tag": "noindex" });
       return res.end(VENUE_UI_HTML);
+    }
+    // The two design-surface pictures (James, 2026-11-19):
+    // knowledge-base material behind the session — the same gate
+    // as the samples. Carried as data (lib/diagram-images.mjs),
+    // never loose files the static layer would serve publicly.
+    if ((p === "/diagrams/human-design-surface.png" || p === "/diagrams/agentic-design-surface.png") && req.method === "GET") {
+      const d = sessionOf(req);
+      if (!d) { res.writeHead(302, { location: "/" }); return res.end(); }
+      const b64 = p.includes("human") ? HUMAN_SURFACE_PNG_B64 : AGENTIC_SURFACE_PNG_B64;
+      res.writeHead(200, { "content-type": "image/png", "cache-control": "private, max-age=300" });
+      return res.end(Buffer.from(b64.replace(/\s/g, ""), "base64"));
     }
     if (p.startsWith("/samples/") && req.method === "GET") {
       const d = sessionOf(req);
