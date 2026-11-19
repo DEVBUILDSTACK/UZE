@@ -82,7 +82,7 @@ export function revokeAll(email, reason = "") {
     for (const s of x.source) if (!s.revokedAt) s.revokedAt = new Date().toISOString();
     x.sessionEpoch = (x.sessionEpoch || 0) + 1; setStage(x, "revoked"); });
   commsSend(email, "revocation", "Your Dev Library access has been reset",
-    "Your reading-room and source access have been reset to zero. Your involvement history is retained in the project chronicle.");
+    "Your Dev Library and source access have been reset to zero. Your involvement history is retained in the project chronicle.");
   chronicle("revoke-all", { email, reason }); return d;
 }
 // Access-affecting change for one developer (e.g. clearance change):

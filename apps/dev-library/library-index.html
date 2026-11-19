@@ -270,7 +270,7 @@ async function enter() {
   if (me.status !== 200) return;
   $("signin").classList.add("hidden"); $("room").classList.remove("hidden");
   const d = me.body.developer;
-  $("who").innerHTML = "<b>" + d.name + "</b> · " + d.email + " · track " + d.track + " · stage " + d.stage;
+  $("who").innerHTML = "<b>" + d.name + "</b> · " + d.email + " · track " + d.track + " · stage " + d.stage.replace("reading-room", "dev-library");
   const f = await api("/api/facets");
   const fill = (id, vals) => { const s = $(id); vals.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; s.appendChild(o); }); };
   fill("f-topic", f.body.topics || []); fill("f-date", f.body.dates || []); fill("f-repo", f.body.repos || []); fill("f-track", f.body.tracks || []);
@@ -344,8 +344,8 @@ $("mload").onclick = async () => {
   if (r.status !== 200) { $("mmsg").textContent = "Master token not accepted."; $("mmsg").className = "err"; return; }
   $("mmsg").textContent = "";
   $("mlist").innerHTML = (b.developers || []).map(d =>
-    "<div class='comment'><b>" + d.name + "</b> · " + d.email + " · track " + d.track + " · stage " + d.stage +
-    "<br>Reading room: " + (d.readingRoom ? "YES" : "no") + " · GitHub source: " + (d.source.length ? d.source.join(", ") : "none") +
+    "<div class='comment'><b>" + d.name + "</b> · " + d.email + " · track " + d.track + " · stage " + d.stage.replace("reading-room", "dev-library") +
+    "<br>Dev Library: " + (d.readingRoom ? "YES" : "no") + " · GitHub source: " + (d.source.length ? d.source.join(", ") : "none") +
     "<br>Expertise: " + ((d.pairs || []).length ? d.pairs.map(p => p.role + " × " + p.realm + " (" + p.rank + ")").join(" · ") : (d.expertise || []).join(", ") || "none recorded") + "</div>").join("") || "No developers yet.";
 };
 const mfetch = async (path, opts = {}) => {

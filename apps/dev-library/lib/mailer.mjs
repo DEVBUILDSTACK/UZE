@@ -78,10 +78,12 @@ export function renderText(entry) {
   return `${GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${SIGN_OFF}\n${entry.siteUrl || LIBRARY_URL}\n\nUZEmarkets`;
 }
 
-// Naming rule (James, 2026-11-18): "the reading room" is internal
-// language only — it never appears in external copy. External name
-// is the UZE Dev Library, full stop. No headline rides the desk
-// emails; the copy opens with the greeting.
+// Naming rule (James, 2026-11-18; completed 2026-11-19): the term
+// "reading room" is RETIRED from all writing and email, ecosystem-
+// wide — the surface is the UZE Dev Library, full stop. It survives
+// only as a code identifier (the readingRoom field, the grant
+// route), never in copy. No headline rides the desk emails; the
+// copy opens with the greeting.
 const HEADLINE = {};
 const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SERIF = "Georgia,'Times New Roman',serif";

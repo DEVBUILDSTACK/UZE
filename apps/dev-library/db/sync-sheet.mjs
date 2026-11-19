@@ -32,8 +32,8 @@ const row = (r) => [r.org, r.repo_url, r.developer_name, r.developer_email, r.re
 const ledger = [["Org", "Repo URL", "Name", "Email", "Date recorded", "Permission", "", "Date modified", "", "Date removed", "Removed"],
   ...perms.map(row), ...removed.map(row)];
 const classLabel = { PRIOR_TEAM: "Prior team dev", PEER_PROSPECT: "Peer prospect dev", COLD_RECRUIT: "Cold peer dev recruit" };
-const gatingLabel = { "not-granted": "Not seeded yet", granted: "Reading-room access granted", revoked: "Revoked — reset to zero" };
-const statusRows = [["Name", "Email", "GitHub", "Class", "Repos with access", "Reading-room gating status", "Notes"],
+const gatingLabel = { "not-granted": "Not seeded yet", granted: "Dev Library access granted", revoked: "Revoked — reset to zero" };
+const statusRows = [["Name", "Email", "GitHub", "Class", "Repos with access", "Dev Library gating status", "Notes"],
   ...status.map(s => [s.name, s.email, s.github_username || "", classLabel[s.dev_class] || s.dev_class,
     s.access_summary || "0", gatingLabel[s.gating_status] || s.gating_status,
     [s.expertise_summary, s.notes].filter(Boolean).join(" ")])];
