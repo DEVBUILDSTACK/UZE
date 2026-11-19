@@ -91,6 +91,8 @@ try {
   ok("design: standard footer — ink band, © line, tangerine UZE linking to uzemarkets.com (no underline)",
     pageHtml.includes("<footer>") && pageHtml.includes("© 2026") &&
     pageHtml.includes('class="uze-link"') && pageHtml.includes('href="https://uzemarkets.com"'));
+  ok("design: no off-palette status hues — feedback renders in the palette (ink + tangerine marker), never red/green",
+    !pageHtml.includes("#b02a37") && !pageHtml.includes("#2e7d32"));
 
   ok("catalog without session -> 401", (await call("/api/catalog")).status === 401);
   const before = comms().length;
