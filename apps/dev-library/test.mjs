@@ -58,6 +58,25 @@ try {
   const heroGif = await fetch(B + "/hero.gif");
   ok("hero.gif served (hosted email imagery, public)", heroGif.status === 200 && (heroGif.headers.get("content-type") || "").includes("image/gif"));
 
+  // ---- FAQ: one macro section on the page + a per-sample How-To
+  // generated from each mock's catalog fields at render time ----
+  const pageHtml = await (await fetch(B + "/")).text();
+  const faqAt = pageHtml.indexOf('id="faq"');
+  const faqSection = faqAt >= 0 ? pageHtml.slice(faqAt, pageHtml.indexOf("</section>", faqAt)) : "";
+  ok("FAQ: macro section served on the page, all nine topics present",
+    ["Access &amp; sign-in", "Browsing the catalog", "The samples", "Commenting &amp; suggesting",
+     "Tracks &amp; expertise", "Engagements &amp; the money models", "Assessments (Scope 2)",
+     "Access changes &amp; resets", "Contact — the desk"].every(t => faqSection.includes(t)));
+  ok("FAQ: macro section names the desk as the contact and carries the exact-address sign-in rule",
+    faqSection.includes("desk@uzemarkets.com") && faqSection.includes("character for character") &&
+    faqSection.includes("no password"));
+  const faqGenAt = pageHtml.indexOf("[faq-sample:start]");
+  const faqGen = faqGenAt >= 0 ? pageHtml.slice(faqGenAt, pageHtml.indexOf("[faq-sample:end]")) : "";
+  ok("FAQ: per-sample generator ships in the page and the catalog render calls it for every card",
+    faqGen.includes("How-To — about this sample") && pageHtml.includes("sampleFaq(m)"));
+  ok("FAQ: no internal naming in FAQ copy (macro section + per-sample generator)",
+    !/reading room/i.test(faqSection) && !/reading room/i.test(faqGen));
+
   ok("catalog without session -> 401", (await call("/api/catalog")).status === 401);
   const before = comms().length;
   await call("/api/request-code", { method: "POST", body: { email: "ghost@nowhere.test" } });
@@ -75,6 +94,10 @@ try {
   const ina = await signIn("ina@test.dev");
   const cat = await call("/api/catalog", { cookie: ina });
   ok("internal dev sees BOTH + INTERNAL_ONLY mocks", cat.body.mocks.length === 2);
+  ok("FAQ: every catalog entry carries the fields its per-sample FAQ renders from",
+    cat.body.mocks.length > 0 && cat.body.mocks.every(m =>
+      !!m.title && !!m.topic && !!m.repo && !!m.date && m.version != null &&
+      typeof m.description === "string" && Array.isArray(m.changelog)));
   ok("topic filter works", (await call("/api/catalog?topic=Internal", { cookie: ina })).body.mocks.length === 1);
   ok("repo filter works", (await call("/api/catalog?repo=DEVBUILDSTACK/uze-aeinfo-prediction-markets", { cookie: ina })).body.mocks.length === 1);
   ok("track filter works", (await call("/api/catalog?track=INTERNAL_ONLY", { cookie: ina })).body.mocks.length === 1);

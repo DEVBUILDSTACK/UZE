@@ -26,6 +26,11 @@
   textarea { width:100%; min-height:70px; }
   .comment { border-top:1px solid var(--line); padding:8px 0; font-size:14px; }
   a { color:var(--orange); }
+  details.faq { border-top:1px solid var(--line); padding:10px 0; }
+  details.faq summary { cursor:pointer; font-weight:bold; font-size:16px; }
+  details.faq p, details.faq-sample p { margin:8px 0; font-size:14px; line-height:1.45; }
+  details.faq-sample { margin-top:12px; border-top:1px solid var(--line); padding-top:10px; }
+  details.faq-sample summary { cursor:pointer; font-weight:bold; font-size:14px; color:var(--orange); }
 </style>
 </head>
 <body>
@@ -45,6 +50,51 @@
       <button id="verify" class="alt">Verify</button>
       <span id="signmsg"></span>
     </div>
+  </section>
+
+  <section id="faq" class="card">
+    <h3 style="margin-top:0">How-To &amp; FAQ</h3>
+    <p class="sub" style="margin-bottom:6px">How the Library works — and how the UZE talent desk around it works. Open a topic.</p>
+    <details class="faq"><summary>Access &amp; sign-in</summary>
+      <p><b>How do I sign in?</b><br>Enter the email address your access was granted to, choose "Email me a code", and enter the 6-digit code that arrives. Codes are one-time and live for 15 minutes. There is no password to keep.</p>
+      <p><b>I requested a code and nothing arrived. What went wrong?</b><br>The address must match the granted address exactly, character for character. A similar-looking address — a different mailbox at the same domain — is not on the list, and the page stays silent rather than say so: no code is issued and nothing is sent. Use the exact address on your invitation from the desk, and check your spam folder.</p>
+      <p><b>My code did not check out, or it expired.</b><br>Request a fresh code and use the newest one — asking for a new code replaces the one before it, and each code works once, within 15 minutes of being sent.</p>
+    </details>
+    <details class="faq"><summary>Browsing the catalog</summary>
+      <p><b>How do I narrow the list?</b><br>Four filters sit above the catalog: Topic, Date, Repository, and Track. Each one narrows the samples shown; they combine, and setting one back to "all" clears that filter.</p>
+      <p><b>Why can I not see a sample a colleague can see?</b><br>What you see is set by your track and by any per-sample clearance on your record. Internal-only samples never appear in placement-track views, and the same holds in reverse.</p>
+    </details>
+    <details class="faq"><summary>The samples</summary>
+      <p><b>What is a sample?</b><br>A plain-language description and a working mock of something built across DEVBUILDSTACK. The Library holds descriptions and mocks only — never source.</p>
+      <p><b>Where does the source live?</b><br>On GitHub, behind its own gate. Library access and source access are two separate grants, and source is granted per repository. If a source link answers 404, that is the gate working: you do not hold that repository yet.</p>
+      <p><b>A sample's name changed. Where did it go?</b><br>Names sync from the build record. When a sample is renamed, its old name is kept as an alias, and the old name still finds it.</p>
+      <p><b>What do the version and the changelog mean?</b><br>Every card carries a version number and a one-line changelog. When a sample changes, the version rises and the changelog gains a line saying what changed.</p>
+    </details>
+    <details class="faq"><summary>Commenting &amp; suggesting</summary>
+      <p><b>Can I comment before I hold any GitHub access?</b><br>Yes. Open any sample and use the Comments &amp; suggestions box. Commenting is open from your first sign-in — no GitHub access needed.</p>
+      <p><b>What happens to my suggestion?</b><br>It is recorded on the sample, and the build lead reviews every one.</p>
+    </details>
+    <details class="faq"><summary>Tracks &amp; expertise</summary>
+      <p><b>What are Track A and Track B?</b><br>Track A is the internal track: developers who build for UZE Markets itself, and who are never placed with clients. Track B is the placement track: developers the desk can staff into client engagements.</p>
+      <p><b>What is a Role × Realm pair?</b><br>Expertise recorded as a cross. The role is what you do — smart-contract developer, data scientist — and the realm is the chain or field it lives in — Lightning, NEAR AI, cross-chain. A record holds up to five pairs, ranked from primary down.</p>
+    </details>
+    <details class="faq"><summary>Engagements &amp; the money models</summary>
+      <p><b>How does a placement happen?</b><br>The desk staffs every engagement. A client describes the role needed; the desk decides who fits and records the staffing.</p>
+      <p><b>What does a client see about me?</b><br>Skills only — your Role × Realm pairs. Your name and contact details stay hidden until both of two facts are recorded: a signed engagement <i>and</i> a deposit. Only then are you revealed to that client — never before both.</p>
+      <p><b>What are the two money models?</b><br>Outstaffing: UZE Markets pays the talent and bills the client. Placement: the desk places the talent for a fee of at least one month's salary, and the client pays the talent directly.</p>
+    </details>
+    <details class="faq"><summary>Assessments (Scope 2)</summary>
+      <p><b>What is an assessment?</b><br>When an employer configures a role, an assessment is generated for that role from a curated template, filled to match the role's skills and seniority.</p>
+      <p><b>Who approves an assessment before it runs?</b><br>Two human gates, in order. Gate 1: the employer confirms the intent. Gate 2: the approver of record confirms the assessment is valid for the role. Nothing runs before both have signed, and an agent cannot sign either gate.</p>
+      <p><b>What is published about an outcome?</b><br>A redacted copy, under a pseudonym scoped to the engagement. No names, no emails, no company names — ever.</p>
+    </details>
+    <details class="faq"><summary>Access changes &amp; resets</summary>
+      <p><b>What happens when something about my access changes?</b><br>Changes to content and naming sync silently. A change that affects your access ends your session on the spot; you sign in again with a fresh code.</p>
+      <p><b>What does a reset do?</b><br>A reset removes all access — the Library and every GitHub source grant. The record of your history is preserved. Access begins again only if the desk grants it anew.</p>
+    </details>
+    <details class="faq"><summary>Contact — the desk</summary>
+      <p><b>Who do I contact, and how?</b><br>The desk: <a href="mailto:desk@uzemarkets.com">desk@uzemarkets.com</a>. All talent communication runs through the desk — questions, anything about an engagement, and suggestions that do not belong on a sample.</p>
+    </details>
   </section>
 
   <section id="room" class="hidden">
@@ -162,6 +212,39 @@ async function enter() {
   fill("f-topic", f.body.topics || []); fill("f-date", f.body.dates || []); fill("f-repo", f.body.repos || []); fill("f-track", f.body.tracks || []);
   await catalog();
 }
+// [faq-sample:start]
+// Per-sample How-To FAQ: generated from the mock's own catalog
+// fields at render time, so every sample — present and future —
+// carries one automatically. Standing questions; the answers are
+// drawn from the mock's data plus the Library's standing rules.
+function sampleFaq(m) {
+  const trackWords = {
+    BOTH: "shown to both tracks — the internal track and the placement track",
+    INTERNAL_ONLY: "internal track only — it never appears in placement-track views",
+    EXTERNAL_VISIBLE: "placement track — it is not shown in internal-only views"
+  };
+  const changes = m.changelog || [];
+  const latest = changes.length ? changes[changes.length - 1] : null;
+  const qa = (q, a) => "<p><b>" + q + "</b><br>" + a + "</p>";
+  return '<details class="faq-sample"><summary>How-To — about this sample</summary>' +
+    qa("What does this sample show?", m.description +
+      (m.objective ? " Its objective: " + m.objective : "")) +
+    qa("Which repository does it belong to, and how does source access work?",
+      "It belongs to " + m.repo + ". The Library holds the description and the mock" +
+      (m.viewLink ? ' (<a href="' + m.viewLink + '" target="_blank">view the mock</a>)' : "") +
+      "; the source lives in that repository on GitHub, behind its own gate. Library access and source access are separate grants, given per repository — if the source answers 404, that is the gate working: you do not hold that repository yet.") +
+    qa("How do I comment or suggest a change?",
+      "Open this sample and use the Comments & suggestions box. You can comment before holding any GitHub access, and the build lead reviews every suggestion.") +
+    qa("What does the version and the changelog mean?",
+      "This sample is at version " + m.version + "." +
+      (latest ? " Latest change — " + latest : "") +
+      " Each change raises the version and adds a one-line changelog entry. If a sample is renamed, its old name is kept as an alias and still finds it.") +
+    qa("Which topic and track does it sit in?",
+      "Topic: " + m.topic + " · Dated " + m.date + ". Track: " +
+      (trackWords[m.track || "BOTH"] || (m.track || "BOTH")) + ".") +
+    "</details>";
+}
+// [faq-sample:end]
 async function catalog() {
   const q = new URLSearchParams();
   for (const [id, key] of [["f-topic","topic"],["f-date","date"],["f-repo","repo"],["f-track","track"]]) { const v = $(id).value; if (v) q.set(key, v); }
@@ -170,7 +253,7 @@ async function catalog() {
     '<div class="card mock"><h3>' + m.title + '</h3>' +
     '<div class="meta"><span class="tag">' + m.topic + '</span><span class="tag">' + (m.track || "BOTH") + '</span>' + m.date + " · " + m.repo + " · v" + m.version + "</div>" +
     "<p>" + m.description + "</p>" +
-    '<button class="alt" onclick="openMock(\'' + m.slug + "')\">Open</button></div>").join("") || "<p>No mocks match.</p>";
+    '<button class="alt" onclick="openMock(\'' + m.slug + "')\">Open</button>" + sampleFaq(m) + "</div>").join("") || "<p>No mocks match.</p>";
 }
 ["f-topic","f-date","f-repo","f-track"].forEach(id => $(id).onchange = catalog);
 window.openMock = async (slug) => {
