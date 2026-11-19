@@ -85,15 +85,109 @@ export default function McpUtilityPage() {
       </div>
       <BrokeragePanel />
 
-      <h2>UZE Instant MCP</h2>
+      <h2>UZE Underwrite — the lead product MCP</h2>
       <p>
-        The second door in this directory is our own: one MCP
-        endpoint for UZE compute and settlement, in two tiers. The
-        server is built and proven — gating, metering and the
-        revoke cascade all demonstrated end to end. The public
-        endpoint opens with the January 2, 2027 launch; until then
-        there is no public endpoint to connect to, and this page
-        will say so until there is.
+        UZE Underwrite is the MCP face of the UZEmarkets
+        Autonomous Underwriting desk — one of the three matching
+        desks that make up UZEmarkets superIntelligence. It
+        underwrites Hospitality and Income real estate (the H and
+        I of the HIADR asset taxonomy) inside defined
+        micro-regions.
+      </p>
+      <p>
+        Financial claims arrive as <strong>Assuraties</strong> —
+        claims a seller or advisor stands behind — and are tested
+        before they are relied on. Performance is read in exactly
+        seven buckets, never blended:{" "}
+        <strong>
+          Revenue; Operating Expenses; Taxes; Insurance(s);
+          Interest Expense/Income; Miscellaneous Net
+          Expenses/Income; Profit (Net Income)
+        </strong>
+        . Operating Expenses never absorb Taxes, Insurance, or
+        Interest. Judgement is made only against benchmarks from
+        the <strong>same micro-region</strong>, because taxes —
+        the largest driver of micro-market variability — make
+        cross-region comparison meaningless. Claims that survive
+        the process are <strong>Assuratized</strong>:
+        reliance-grade, with the evidence trail attached.
+      </p>
+      <p>
+        <strong>Who it serves:</strong> lenders, buyers, and
+        financing partners who need an underwriting read they can
+        rely on, and sellers whose financials are strong enough
+        to be proven rather than pitched.
+      </p>
+      <p className="note">
+        Tool set (design): underwriting submission, benchmark
+        read, claim check, reliance report. Status: the
+        underwriting desk is in build on the AssurativeV2 core;
+        the MCP ships as a product MCP with the Markets tier.
+      </p>
+
+      <h2>Talent matching — the Talent MCP</h2>
+      <p>
+        Talent matching is the MCP face of the UZE Talent desk. A
+        role is configured once, as a keyed record in the{" "}
+        <strong>Role × Realm taxonomy</strong> — 11 roles across
+        6 realms of expertise, up to five Role×Realm pairs per
+        professional, ranked primary to quinary. The desk matches
+        against that taxonomy; it does not keyword-search
+        résumés.
+      </p>
+      <p>
+        Fit is <strong>proven, not asserted</strong>. From the
+        role, the system generates a skills assessment from a
+        curated template library — generation is slot-filling
+        against calibrated templates, never free invention. Two
+        human gates stand before anything runs:{" "}
+        <strong>Gate 1</strong>, the engaging employer&apos;s
+        confirmation of intent, and <strong>Gate 2</strong>, an
+        approver of record&apos;s confirmation that the
+        assessment is valid for the vertical. An agent identity
+        can satisfy neither gate. Runs are scored at a scoring
+        center — an AI grade with a human-review flag against a
+        stated threshold — and results are published{" "}
+        <strong>redacted and pseudonymous</strong>: no talent
+        names, no emails, no company names, ever, until the
+        moment identity is earned.
+      </p>
+      <p>
+        Engagement runs on two money models.{" "}
+        <strong>Outstaffing:</strong> UZE Markets pays the talent
+        and bills the client. <strong>Placement:</strong> UZE
+        places for a fee of at least one month (30 days) of
+        salary, and the client pays the individual directly.
+        Under the confidentiality doctrine, a talent target is
+        never exposed — no identity, no contact information —
+        until <strong>both</strong> a signed engagement{" "}
+        <strong>and</strong> a deposit are in hand. Until then,
+        talent is presented blind, through the desk alone.
+      </p>
+      <p>
+        The three tools — built, and live in the UZE Instant MCP:{" "}
+        <code>submit_assessment</code> (submit a role
+        configuration and generate its assessment),{" "}
+        <code>score_assessment</code> (score a run against the
+        assessment&apos;s threshold),{" "}
+        <code>publish_assessment_outcome</code> (publish the
+        outcome, redacted, under an engagement-scoped pseudonym).
+      </p>
+      <p className="note">
+        Status: the Talent system of record is built and live
+        (the UZE Dev Library is its developer instance); the
+        three tools activated on the first assessment outcome
+        published under the two gates. Production Gate 2 opens
+        per vertical as approvers of record are named.
+      </p>
+
+      <h2>UZE Instant MCP — the platform MCP</h2>
+      <p>
+        The UZE Instant MCP is the single MCP endpoint
+        (mcp.uzemarkets.com) for the UZE Instant platform, in two
+        tiers. Provision a UZE Instance, meter it, terminate it —
+        every call inside limits you set in advance, every call
+        on the record.
       </p>
       <div className="cards">
         <div className="card">
@@ -143,25 +237,32 @@ export default function McpUtilityPage() {
         <a href="https://uzemarkets.com/knowledge-base#mcp">
           Knowledge Base
         </a>
-        .
+        . Status: built and proven (gating, limits, and revoke
+        cascade demonstrated); the public endpoint opens with the
+        January 2, 2027 launch. No spin-up time is claimed until
+        provisioning is measured.
       </p>
 
       <h2>Directories</h2>
       <p>
         An MCP is only as useful as the assistants that can find
         it, so the UZE MCPs are listed as connectors in the major
-        AI directories. Listings are prepared in this order:
+        AI directories. The order of work follows the two-tier
+        structure: the Anthropic (Claude) MCP Registry first
+        (conversion), the reach tier after.
       </p>
       <p>
-        <strong>Tier 1:</strong> Anthropic (Claude) MCP Registry ·
-        Smithery · Cursor · Windsurf.
+        <strong>First:</strong> Anthropic (Claude) MCP Registry.
         <br />
-        <strong>Tier 2:</strong> OpenAI · Perplexity · Venice ·
-        DeepSeek · Kimi · Hostinger · mcp.so · mcpmarket.
+        <strong>Reach tier:</strong> OpenAI · Microsoft Copilot ·
+        Google (Duet / Gemini) · Meta (Muse) · Perplexity ·
+        Venice AI · DeepSeek · Kimi.
       </p>
       <p className="note">
-        No listing is claimed until it is live — when one goes
-        live, it will be named here as live, with its link.
+        Listings claim only compatibility that is verified when
+        the claim is made. No listing is claimed until it is live
+        — when one goes live, it will be named here as live, with
+        its link.
       </p>
     </main>
   );
