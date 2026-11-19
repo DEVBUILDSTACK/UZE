@@ -1,3 +1,5 @@
+**DRAFT PROPOSAL — version 0.1**
+
 # The UZE Ecosystem, Mapped — Three Diagrams for the Owners
 
 **For:** the owners — Hammond (D4) · James (D5) · William (WCD)
@@ -28,13 +30,16 @@ flowchart TD
     end
 
     subgraph ECO["THE UZE ECOSYSTEM"]
-        L2L["L2LAUNCH — Learn2Launch<br/>the Launchpad first · Creative Intelligence agency second<br/>the present, real phase"]
         UZE["UZEMARKETS — the information market<br/>where offerings are tested and used<br/>launches January 2, 2027"]
         subgraph BIZ["THE BUSINESS SIDE — separate firms"]
             DFI["DFI — DealFi"]
             FVC["FVC — Fundio"]
         end
     end
+
+    L2L(("L2LAUNCH — The Agency & Launchpad<br/>Creator Acceleration, Creative Intelligence Deal/Work Flow &amp; Project Proof<br/>Post-Formation, Pre-Seed, Project &amp; Org architecture launchpad accelerator"))
+    VIS1["TO BE DEVELOPED — a vision, built collaboratively<br/>by James Sr. &amp; Jonathan, possibly others<br/>its one bridge to UZE: agency clients — hot, enterprise —<br/>fed by UZEmarkets' agentic outreach · proposed, not built yet<br/>carved off to the agency: motion · video · animation · film · UGC"]
+    L2L -.-> VIS1
 
     subgraph HUMAN["THE HUMAN DESIGN SURFACE — one design language for everything a person sees"]
         INPUT["Creative input from the principals<br/>ideas, critique, motion & video craft"]
@@ -54,9 +59,7 @@ flowchart TD
     ANCHOR --> WASH
     WASH --> SEEN
     SEEN --> AUD
-    L2L -->|"builders & creators, launched"| UZE
     UZE --> SEEN
-    L2L --> SEEN
     DFI -.->|"same design standard,<br/>resident in their surfaces"| WASH
     FVC -.->|"same design standard,<br/>resident in their surfaces"| WASH
 ```
@@ -76,13 +79,16 @@ flowchart TD
     end
 
     subgraph ECO2["THE UZE ECOSYSTEM"]
-        L2L2["**L2LAUNCH — The Agency & Launchpad**<br/>Creator Acceleration, Creative Intelligence Deal/Work Flow &amp; Project Proof<br/>Post-Formation, Pre-Seed, Project &amp; Org architecture launchpad accelerator"]
         UZE2["UZEMARKETS — the information market<br/>agents discover, negotiate, transact & settle here"]
         subgraph BIZ2["THE BUSINESS SIDE — separate firms"]
             DFI2["DFI — DealFi<br/>matching desk — comes online first"]
             FVC2["FVC — Fundio<br/>matching desk — comes online second"]
         end
     end
+
+    L2L2(("L2LAUNCH — The Agency & Launchpad<br/>Creator Acceleration, Creative Intelligence Deal/Work Flow &amp; Project Proof<br/>Post-Formation, Pre-Seed, Project &amp; Org architecture launchpad accelerator"))
+    VIS2["TO BE DEVELOPED — a vision, built collaboratively<br/>by James Sr. &amp; Jonathan, possibly others<br/>its one bridge to UZE: agency clients — hot, enterprise —<br/>fed by UZEmarkets' agentic outreach · proposed, not built yet<br/>carved off to the agency: motion · video · animation · film · UGC"]
+    L2L2 -.-> VIS2
 
     subgraph AGENTIC["THE AGENTIC DESIGN SURFACE — the guarded door agents act through"]
         DISC["DISCOVERY — agents find the ecosystem<br/>app directories · search & AI answers (tagging for SEO & GEO)"]
@@ -112,7 +118,6 @@ flowchart TD
     CHRON --> SETTLE
     SETTLE --> DOMAINS
     UZE2 --> DOOR
-    L2L2 -->|"launches the builders<br/>whose agents act here"| DOOR
     DFI2 -.->|"its desk is served<br/>through this surface"| TOOLS
     FVC2 -.->|"its desk is served<br/>through this surface"| TOOLS
     HUMANVIEW -.->|"watches & judges"| CHRON

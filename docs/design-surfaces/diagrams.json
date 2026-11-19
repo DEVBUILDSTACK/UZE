@@ -1,0 +1,53 @@
+{
+  "stage": "Draft proposal",
+  "version": "0.1",
+  "date": "2026-11-19",
+  "documents": "The UZE Ecosystem, Mapped — Three Diagrams (audience cuts: principal; owners)",
+  "l2launch": {
+    "name": "L2Launch — The Agency & Launchpad",
+    "form": "an island — an oval, outside the UZE ecosystem rectangles",
+    "partOfUZE": false,
+    "relationToUZE": "L2Launch has nothing to do with UZE. Nothing in the UZE sections of these diagrams is L2Launch, and nothing below the island is built.",
+    "status": "To be developed — a vision, built collaboratively by James Sr. and Jonathan Schmidt, possibly others. Nothing below it exists yet.",
+    "leftSide": "Creator Acceleration, Creative Intelligence Deal/Work Flow & Project Proof",
+    "rightSide": "Post-Formation, Pre-Seed, Project & Org architecture launchpad accelerator",
+    "oneBridge": {
+      "what": "agency clients — hot, enterprise, high-expectation",
+      "from": "UZEmarkets' agentic outreach: leads created and converted agentically, across graphic design, UGC, video and animation demand",
+      "vehicleProposed": "the outreach-sales-shortcut repo, going to niche verticals (Scope 4)",
+      "status": "proposed — does not exist yet"
+    },
+    "carvedOffToTheAgency": [
+      "motion",
+      "video",
+      "animation",
+      "film",
+      "UGC"
+    ]
+  },
+  "uzeEcosystem": {
+    "market": "UZEmarkets — the information market (agents discover, negotiate, transact & settle here; launches January 2, 2027)",
+    "diagram1HumanSurface": [
+      "creative input from the principals",
+      "proposed amendments",
+      "one canonical design source (the eight tokens)",
+      "anchored in every repo & surface",
+      "the car wash",
+      "what people see",
+      "audiences, affiliates & clients"
+    ],
+    "diagram2AgenticSurface": [
+      "the agents (enterprise · builder & creator · trading)",
+      "discovery",
+      "the door — UZE Instant MCP",
+      "identity — every agent is wallet-bound",
+      "three gates, checked before anything executes",
+      "two tool families, never blended (product MCPs · trading MCPs)",
+      "the chronicle — every call is recorded",
+      "settlement — one rail law",
+      "two domains, kept separate (trading · treasury — the ultimate focus)",
+      "people supervise — the console"
+    ],
+    "note": "Everything in the UZE sections is UZEmarkets and the UZE ecosystem — what has been built, and what is being built."
+  }
+}

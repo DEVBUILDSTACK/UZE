@@ -1,3 +1,5 @@
+**DRAFT PROPOSAL — version 0.1**
+
 # The UZE Ecosystem, Mapped — Three Diagrams
 
 **For:** Jonathan Schmidt — Creative Intelligence Principal
@@ -28,9 +30,12 @@ flowchart TD
     end
 
     subgraph ECO["THE UZE ECOSYSTEM"]
-        L2L["L2LAUNCH — Learn2Launch<br/>the Launchpad first · Creative Intelligence agency second<br/>the present, real phase"]
         UZE["UZEMARKETS — the information market<br/>where offerings are tested and used<br/>launches January 2, 2027"]
     end
+
+    L2L(("L2LAUNCH — The Agency & Launchpad<br/>Creator Acceleration, Creative Intelligence Deal/Work Flow &amp; Project Proof<br/>Post-Formation, Pre-Seed, Project &amp; Org architecture launchpad accelerator"))
+    VIS1["TO BE DEVELOPED — a vision, built collaboratively<br/>by James Sr. &amp; Jonathan, possibly others<br/>its one bridge to UZE: agency clients — hot, enterprise —<br/>fed by UZEmarkets' agentic outreach · proposed, not built yet<br/>carved off to the agency: motion · video · animation · film · UGC"]
+    L2L -.-> VIS1
 
     subgraph HUMAN["THE HUMAN DESIGN SURFACE — one design language for everything a person sees"]
         INPUT["Creative input from the principals<br/>ideas, critique, motion & video craft"]
@@ -50,9 +55,7 @@ flowchart TD
     ANCHOR --> WASH
     WASH --> SEEN
     SEEN --> AUD
-    L2L -->|"builders & creators, launched"| UZE
     UZE --> SEEN
-    L2L --> SEEN
 ```
 
 **How to read it:** Everything a human being ever sees from this ecosystem — a web page, a film, a ticket, a client's white-label site — comes from **one** set of design values, held in one place. Nobody edits a page directly: creative input from William, Jonathan, and Joey comes back as *amendments* to that one source, the founder ratifies them, and every surface updates from the source. Before anything ships, it goes through the **car wash** — an automatic check that the colors are only the eight allowed, that it looks right on a phone and a desktop, and that the wordmark sits on one line.
@@ -70,9 +73,12 @@ flowchart TD
     end
 
     subgraph ECO2["THE UZE ECOSYSTEM"]
-        L2L2["**L2LAUNCH — The Agency & Launchpad**<br/>Creator Acceleration, Creative Intelligence Deal/Work Flow &amp; Project Proof<br/>Post-Formation, Pre-Seed, Project &amp; Org architecture launchpad accelerator"]
         UZE2["UZEMARKETS — the information market<br/>agents discover, negotiate, transact & settle here"]
     end
+
+    L2L2(("L2LAUNCH — The Agency & Launchpad<br/>Creator Acceleration, Creative Intelligence Deal/Work Flow &amp; Project Proof<br/>Post-Formation, Pre-Seed, Project &amp; Org architecture launchpad accelerator"))
+    VIS2["TO BE DEVELOPED — a vision, built collaboratively<br/>by James Sr. &amp; Jonathan, possibly others<br/>its one bridge to UZE: agency clients — hot, enterprise —<br/>fed by UZEmarkets' agentic outreach · proposed, not built yet<br/>carved off to the agency: motion · video · animation · film · UGC"]
+    L2L2 -.-> VIS2
 
     subgraph AGENTIC["THE AGENTIC DESIGN SURFACE — the guarded door agents act through"]
         DISC["DISCOVERY — agents find the ecosystem<br/>app directories · search & AI answers (tagging for SEO & GEO)"]
@@ -102,7 +108,6 @@ flowchart TD
     CHRON --> SETTLE
     SETTLE --> DOMAINS
     UZE2 --> DOOR
-    L2L2 -->|"launches the builders<br/>whose agents act here"| DOOR
     HUMANVIEW -.->|"watches & judges"| CHRON
 ```
 
