@@ -115,6 +115,114 @@ try {
   ok("chronicle preserved: add, contact, grants, comment, rename, reprompt, revoke all present",
     ["developer-added", "contact", "grant-reading-room", "grant-source", "comment", "mock-renamed", "reprompt", "revoke-all"].every(t => types.includes(t)));
   ok("revocation notice queued from desk@", comms().some(s => s.kind === "revocation" && s.from === "desk@uzemarkets.com" && s.status === "queued"));
+
+  // ---- M1: Role × Realm taxonomy + dual-track placement ----
+  await call("/api/admin/add-developer", { method: "POST", master: true, body: { name: "Abe Internal", email: "abe@test.dev", track: "INTERNAL_ONLY" } });
+  const sx = await call("/api/admin/set-expertise", { method: "POST", master: true, body: { email: "xan@test.dev",
+    pairs: [{ role: "SMART_CONTRACT_DEV", realm: "LIGHTNING" }, { role: "FULL_STACK_DEV", realm: "NEAR_AI" }] } });
+  ok("M1 taxonomy: pairs set with PRIMARY/SECONDARY ranks", sx.status === 200 &&
+    sx.body.developer.pairs.length === 2 && sx.body.developer.pairs[0].rank === "PRIMARY" &&
+    sx.body.developer.pairs[1].rank === "SECONDARY" && sx.body.developer.pairs[0].role === "SMART_CONTRACT_DEV");
+  ok("M1 taxonomy: realm list mirrors the pairs", JSON.stringify(sx.body.developer.expertise) === JSON.stringify(["LIGHTNING", "NEAR_AI"]));
+  await call("/api/admin/set-expertise", { method: "POST", master: true, body: { email: "abe@test.dev",
+    pairs: [{ role: "BLOCKCHAIN_DEV", realm: "CROSS_CHAIN" }] } });
+  const six = await call("/api/admin/set-expertise", { method: "POST", master: true, body: { email: "xan@test.dev",
+    pairs: [1, 2, 3, 4, 5, 6].map(i => ({ role: "OTHER_ROLE", realm: ["LIGHTNING", "NFT_WALLETS", "NEAR_AI", "CROSS_CHAIN", "LIGHTER", "OTHER_REALM"][i - 1] })) } });
+  ok("M1 taxonomy: a 6th pair is rejected (I1 ceiling)", six.status === 500 && /5 pairs/.test(six.body.error || ""));
+  const badRole = await call("/api/admin/set-expertise", { method: "POST", master: true, body: { email: "xan@test.dev", pairs: [{ role: "WIZARD", realm: "LIGHTNING" }] } });
+  ok("M1 taxonomy: invalid role rejected", badRole.status === 500 && /invalid role/.test(badRole.body.error || ""));
+  const badRealm = await call("/api/admin/set-expertise", { method: "POST", master: true, body: { email: "xan@test.dev", pairs: [{ role: "OTHER_ROLE", realm: "MARS" }] } });
+  ok("M1 taxonomy: invalid realm rejected", badRealm.status === 500 && /invalid realm/.test(badRealm.body.error || ""));
+  const dup = await call("/api/admin/set-expertise", { method: "POST", master: true, body: { email: "xan@test.dev",
+    pairs: [{ role: "OTHER_ROLE", realm: "LIGHTNING" }, { role: "OTHER_ROLE", realm: "LIGHTNING" }] } });
+  ok("M1 taxonomy: duplicate pair rejected", dup.status === 500 && /duplicate pair/.test(dup.body.error || ""));
+  const xanAfter = (await call("/api/admin/developers", adm)).body.developers.find(d => d.email === "xan@test.dev");
+  ok("M1 taxonomy: rejected writes leave the record untouched", xanAfter.pairs.length === 2 && xanAfter.pairs[0].role === "SMART_CONTRACT_DEV");
+  const pairFilter = await call("/api/admin/developers?role=SMART_CONTRACT_DEV&realm=LIGHTNING", adm);
+  ok("M1 filter: SMART_CONTRACT_DEV × LIGHTNING returns exactly the holders",
+    pairFilter.body.developers.some(d => d.email === "xan@test.dev") &&
+    !pairFilter.body.developers.some(d => ["abe@test.dev", "ina@test.dev"].includes(d.email)));
+  const realmFilter = await call("/api/admin/developers?realm=CROSS_CHAIN", adm);
+  ok("M1 filter: realm-only filter works", realmFilter.body.developers.some(d => d.email === "abe@test.dev") &&
+    !realmFilter.body.developers.some(d => d.email === "xan@test.dev"));
+  await call("/api/admin/set-track", { method: "POST", master: true, body: { email: "abe@test.dev", track: "EXTERNAL_PLACED" } });
+  const abeBack = await call("/api/admin/set-track", { method: "POST", master: true, body: { email: "abe@test.dev", track: "INTERNAL_ONLY" } });
+  ok("M1 tracks: transitions both directions, logged", abeBack.status === 200 && abeBack.body.developer.track === "INTERNAL_ONLY");
+
+  const noFee = await call("/api/admin/engagements", { method: "POST", master: true, body: { title: "Solana dev", clientName: "Harbor Hotels (test)", service: "PLACE", deployment: "REMOTE", commercialModel: "PLACEMENT" } });
+  ok("M1 engagement: PLACEMENT without a fee is rejected", noFee.status === 500 && /at least 1 month/.test(noFee.body.error || ""));
+  const lowFee = await call("/api/admin/engagements", { method: "POST", master: true, body: { title: "Solana dev", clientName: "Harbor Hotels (test)", service: "PLACE", deployment: "REMOTE", commercialModel: "PLACEMENT", feeMonths: 0.5 } });
+  ok("M1 engagement: PLACEMENT fee under 1 month is rejected", lowFee.status === 500);
+  const blended = await call("/api/admin/engagements", { method: "POST", master: true, body: { title: "Solana dev", clientName: "Harbor Hotels (test)", service: "OUTSTAFF", deployment: "REMOTE", commercialModel: "OUTSTAFFING", feeMonths: 1 } });
+  ok("M1 engagement: fee under OUTSTAFFING is rejected (models never blended)", blended.status === 500 && /PLACEMENT model only/.test(blended.body.error || ""));
+  const opened = await call("/api/admin/engagements", { method: "POST", master: true, body: { title: "Solana smart-contract dev", clientName: "Harbor Hotels (test)", service: "PLACE", deployment: "REMOTE", commercialModel: "PLACEMENT", feeMonths: 1.5 } });
+  ok("M1 engagement: opens in state OPEN (derived)", opened.status === 200 && opened.body.engagement.state === "OPEN" && opened.body.engagement.revealed === false);
+  const engId = opened.body.engagement.id;
+  const staffA = await call(`/api/admin/engagements/${engId}/staff`, { method: "POST", master: true, body: { email: "abe@test.dev" } });
+  ok("M1 staffing: Track A (INTERNAL_ONLY) talent is never placed", staffA.status === 500 && /never placed/.test(staffA.body.error || ""));
+  const staffed = await call(`/api/admin/engagements/${engId}/staff`, { method: "POST", master: true, body: { email: "xan@test.dev" } });
+  ok("M1 staffing: desk staffs a Track B developer", staffed.status === 200 && staffed.body.engagement.state === "STAFFED");
+  const blind1 = await call(`/api/admin/engagements/${engId}/client-view`, adm);
+  const blindJson = JSON.stringify(blind1.body.view);
+  ok("M1 blind view: skills visible, identity absent before signed+deposit",
+    blind1.body.view.revealed === false && blind1.body.view.talent.pairs.length === 2 &&
+    !blindJson.includes("Xan External") && !blindJson.includes("xan@test.dev"));
+  const earlyDeposit = await call(`/api/admin/engagements/${engId}/deposit`, { method: "POST", master: true, body: { ref: "dep-early" } });
+  ok("M1 lifecycle: deposit before signing is refused", earlyDeposit.status === 500 && /after the engagement is signed/.test(earlyDeposit.body.error || ""));
+  const signed = await call(`/api/admin/engagements/${engId}/sign`, { method: "POST", master: true, body: { ref: "sig-001" } });
+  ok("M1 lifecycle: signing moves STAFFED -> SIGNED", signed.status === 200 && signed.body.engagement.state === "SIGNED");
+  const blind2 = await call(`/api/admin/engagements/${engId}/client-view`, adm);
+  ok("M1 blind view: still blind after signing alone", blind2.body.view.revealed === false &&
+    !JSON.stringify(blind2.body.view).includes("xan@test.dev"));
+  const deposited = await call(`/api/admin/engagements/${engId}/deposit`, { method: "POST", master: true, body: { ref: "dep-001" } });
+  ok("M1 lifecycle: deposit completes ACTIVE + revealed", deposited.status === 200 &&
+    deposited.body.engagement.state === "ACTIVE" && deposited.body.engagement.revealed === true);
+  const shown = await call(`/api/admin/engagements/${engId}/client-view`, adm);
+  ok("M1 reveal: identity present only after signed + deposit",
+    shown.body.view.revealed === true && shown.body.view.talent.name === "Xan External" && shown.body.view.talent.email === "xan@test.dev");
+  const closed = await call(`/api/admin/engagements/${engId}/close`, { method: "POST", master: true, body: {} });
+  ok("M1 lifecycle: close from ACTIVE -> CLOSED (derived)", closed.status === 200 && closed.body.engagement.state === "CLOSED");
+  const staffClosed = await call(`/api/admin/engagements/${engId}/staff`, { method: "POST", master: true, body: { email: "xan@test.dev" } });
+  ok("M1 lifecycle: a closed engagement cannot be staffed", staffClosed.status === 500);
+  const opened2 = await call("/api/admin/engagements", { method: "POST", master: true, body: { title: "NEAR AI engineer (outstaffed)", clientName: "Harbor Hotels (test)", service: "OUTSTAFF", deployment: "HYBRID", commercialModel: "OUTSTAFFING" } });
+  const eng2 = opened2.body.engagement.id;
+  await call(`/api/admin/engagements/${eng2}/staff`, { method: "POST", master: true, body: { email: "xan@test.dev" } });
+  const cancelled = await call(`/api/admin/engagements/${eng2}/cancel`, { method: "POST", master: true, body: { reason: "client paused" } });
+  ok("M1 lifecycle: OUTSTAFFING engagement staffs and cancels clean", opened2.body.engagement.feeMonths === null &&
+    cancelled.status === 200 && cancelled.body.engagement.state === "CANCELLED");
+  const list = await call("/api/admin/engagements", adm);
+  ok("M1 tracking: desk list tracks engagements end-to-end", list.body.engagements.length === 2 &&
+    list.body.engagements.find(e => e.id === engId).history.length >= 5);
+  const chron2 = await call("/api/admin/chronicle", adm);
+  const types2 = chron2.body.entries.map(e => e.type);
+  ok("M1 chronicle: every transition emitted an Event",
+    ["expertise-set", "track-set", "engagement-opened", "engagement-staffed", "engagement-signed",
+     "engagement-deposit", "engagement-revealed", "engagement-closed", "engagement-cancelled"].every(t => types2.includes(t)));
+  if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+    // DB mode: the typed tables carry the taxonomy + engagement facts.
+    // The write-through flush completes after each response is sent
+    // (the server wrapper awaits it post-response), and the persist
+    // chain re-writes whole documents — so poll for the rows, the
+    // same discipline phase 2 uses for the mail drain.
+    const pg = (await import("pg")).default;
+    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL });
+    const pollRows = async (sql, params, want) => {
+      const t0 = Date.now();
+      while (Date.now() - t0 < 20000) {
+        const { rows } = await pool.query(sql, params);
+        if (want(rows)) return rows;
+        await new Promise(r => setTimeout(r, 150));
+      }
+      return (await pool.query(sql, params)).rows;
+    };
+    const xp = await pollRows("SELECT role, realm, rank FROM developer_expertise WHERE email='xan@test.dev' ORDER BY ordinal", [], r => r.length === 2);
+    ok("M1 DB: developer_expertise rows written through (2 pairs, PRIMARY first)",
+      xp.length === 2 && xp[0].role === "SMART_CONTRACT_DEV" && xp[0].rank === "PRIMARY");
+    const er = await pollRows("SELECT commercial_model, fee_months, signed_at IS NOT NULL AS s, deposit_at IS NOT NULL AS d FROM engagement WHERE id=$1", [engId], r => r.length === 1);
+    ok("M1 DB: engagement row carries fee + signed + deposit facts",
+      er.length === 1 && er[0].commercial_model === "PLACEMENT" && Number(er[0].fee_months) === 1.5 && er[0].s && er[0].d);
+    await pool.end();
+  }
 } finally {
   srv.kill();
   fs.rmSync(tmp, { recursive: true, force: true });
