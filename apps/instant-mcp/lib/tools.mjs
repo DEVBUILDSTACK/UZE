@@ -37,9 +37,12 @@ export const CATALOG = {
   sign_attestation: { tier: "markets", status: "dark", price: 100, description: "[Available M3] Sign a SigLayer attestation (Markets tier).", inputSchema: { type: "object", properties: {} } },
   open_dispute: { tier: "markets", status: "dark", price: 100, description: "[Available M3] Open a SigLayer dispute (Markets tier).", inputSchema: { type: "object", properties: {} } },
   publish_redacted: { tier: "markets", status: "dark", price: 100, description: "[Available M3] Publish a redacted engagement record via the publication layer (Markets tier).", inputSchema: { type: "object", properties: {} } },
-  submit_assessment: { tier: "markets", status: "dark", price: 100, description: "[Available M3] Submit a Talent assessment role configuration (Markets tier; activates with the separated P2 track).", inputSchema: { type: "object", properties: {} } },
-  score_assessment: { tier: "markets", status: "dark", price: 100, description: "[Available M3] Score a Talent assessment (Markets tier; activates with the separated P2 track).", inputSchema: { type: "object", properties: {} } },
-  publish_assessment_outcome: { tier: "markets", status: "dark", price: 100, description: "[Available M3] Publish a redacted Talent assessment outcome (Markets tier; activates with the separated P2 track).", inputSchema: { type: "object", properties: {} } },
+  submit_assessment: { tier: "markets", status: "live", price: 100, description: "Submit a Talent assessment role configuration to the P2 system of record (Markets tier; LIVE — activated under amendment S2 by the first outcome published under the two gates). The record is created UNGATED: Gate 1 (employer intent) and Gate 2 (approver of record) are human signatures in the console; no tool call can satisfy them.",
+    inputSchema: { type: "object", properties: { role_config: { type: "object", description: "employerRef, vertical (HOSPITALITY | CRE_UNDERWRITING), title, seniority, market, skills[], pairs[{role, realm}] keyed to the Role × Realm taxonomy" } }, required: ["role_config"] } },
+  score_assessment: { tier: "markets", status: "live", price: 100, description: "Read the scored Talent assessment record for one talent DID (Markets tier; LIVE under amendment S2). Refuses with gates_not_passed unless the assessment's two human gates have passed.",
+    inputSchema: { type: "object", properties: { assessment_id: { type: "string" }, talent_did: { type: "string" } }, required: ["assessment_id", "talent_did"] } },
+  publish_assessment_outcome: { tier: "markets", status: "live", price: 100, description: "Publish a redacted Talent assessment outcome — publish_redacted wired to the assessment engagement (Markets tier; LIVE under amendment S2). Refuses unless both gates passed and the cohort meets the minimum anonymity set. The artifact carries no name, no email, no company name — ever.",
+    inputSchema: { type: "object", properties: { assessment_id: { type: "string" }, run_id: { type: "string" } }, required: ["assessment_id"] } },
 };
 
 export const BASE_TOOLS = Object.entries(CATALOG).filter(([, t]) => t.tier === "base").map(([n]) => n);
@@ -52,10 +55,11 @@ export function priceOf(name, args = {}) {
   return t.price;
 }
 
-// Handlers for the 7 LIVE base tools. A handler returns either
+// Handlers for the LIVE tools (7 base + the 3 Talent tools,
+// activated under amendment S2). A handler returns either
 // { result } or { refusal: { reason, message } } (ownership failures are
 // refusals and are chronicled as such by the dispatcher).
-export function makeHandlers({ store, provisioner, chronicle }) {
+export function makeHandlers({ store, provisioner, chronicle, talent }) {
   const own = (session, instance_id) => {
     const inst = store.getInstance(instance_id);
     if (!inst) return { refusal: { reason: "not_found", message: `no such instance: ${instance_id}` } };
@@ -73,7 +77,7 @@ export function makeHandlers({ store, provisioner, chronicle }) {
           { id: "instance", ...TIERS.instance, tools: toolsFor("instance") },
           { id: "markets", ...TIERS.markets, tools: toolsFor("markets") },
         ],
-        note: "Settlement tools (create_escrow, release_milestone): available M3. Vertical tools: available M3. Provisioning in M2 runs on a LOCAL MOCK — NEAR AI Cloud pending M0-B credits.",
+        note: "Settlement tools (create_escrow, release_milestone): available M3. Talent vertical tools (submit_assessment, score_assessment, publish_assessment_outcome): LIVE — activated under amendment S2 by the first P2 outcome published under the two human gates; they execute against the P2 system of record and inherit its gates. Other vertical tools: available M3. Provisioning in M2 runs on a LOCAL MOCK — NEAR AI Cloud pending M0-B credits.",
       } };
     },
 
@@ -123,6 +127,28 @@ export function makeHandlers({ store, provisioner, chronicle }) {
         status: "recorded",
       };
       return { result: payment, detail: { amount, currency } };
+    },
+
+    // --- Talent vertical (P2, Scope 2) — LIVE under amendment S2.
+    // The handlers are thin calls into the P2 system of record;
+    // the two human gates live there and cannot be satisfied here.
+    async submit_assessment(session, args) {
+      if (!talent) return { refusal: { reason: "talent_api_unreachable", message: "no Talent client configured" } };
+      const out = await talent.submitAssessment(args?.role_config || {});
+      if (!out.refusal) chronicle.append("talent.assessment_submitted", { principal: session.wallet, detail: { assessment: out.result.assessment?.id } });
+      return out;
+    },
+
+    async score_assessment(session, args) {
+      if (!talent) return { refusal: { reason: "talent_api_unreachable", message: "no Talent client configured" } };
+      return talent.scoreAssessment({ assessment_id: args?.assessment_id, talent_did: args?.talent_did });
+    },
+
+    async publish_assessment_outcome(session, args) {
+      if (!talent) return { refusal: { reason: "talent_api_unreachable", message: "no Talent client configured" } };
+      const out = await talent.publishOutcome({ assessment_id: args?.assessment_id, run_id: args?.run_id });
+      if (!out.refusal) chronicle.append("talent.outcome_published", { principal: session.wallet, detail: { cid: out.result.cid } });
+      return out;
     },
   };
 }

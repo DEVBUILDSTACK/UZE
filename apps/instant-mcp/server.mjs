@@ -14,6 +14,7 @@ import { Store } from "./lib/store.mjs";
 import { Auth } from "./lib/auth.mjs";
 import { MockProvisioner } from "./lib/provisioner.mjs";
 import { makeHandlers } from "./lib/tools.mjs";
+import { createTalentClient } from "./lib/talent-client.mjs";
 import { createDispatcher } from "./lib/mcp.mjs";
 import { base58Decode } from "./lib/base58.mjs";
 
@@ -27,8 +28,9 @@ export function buildContext() {
   const store = new Store(path.join(DATA_DIR, "state.json"));
   const auth = new Auth(chronicle);
   const provisioner = new MockProvisioner(store);
-  const handlers = makeHandlers({ store, provisioner, chronicle });
-  return { chronicle, store, auth, provisioner, handlers };
+  const talent = createTalentClient();
+  const handlers = makeHandlers({ store, provisioner, chronicle, talent });
+  return { chronicle, store, auth, provisioner, handlers, talent };
 }
 
 const ctx = buildContext();

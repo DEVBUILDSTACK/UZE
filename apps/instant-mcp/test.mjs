@@ -220,6 +220,74 @@ check("(iii) cascade is chronicled (principal.revoked + session.revoked + refusa
   }
 }
 
+// ---------- Talent activation (P2 Sprint 1 / amendment S2) ----------
+// The three Talent tools went LIVE when the P2 loop proof published
+// its first outcome under the two human gates. Here they execute
+// against the real P2 system of record (apps/dev-library, booted
+// in-process on an ephemeral port) — and inherit its gates.
+{
+  const dlData = fs.mkdtempSync(path.join(os.tmpdir(), "talent-api-"));
+  const dlSrc = path.join(ROOT, "..", "dev-library");
+  for (const f of fs.readdirSync(path.join(dlSrc, "data"))) fs.copyFileSync(path.join(dlSrc, "data", f), path.join(dlData, f));
+  process.env.LIBRARY_DATA = dlData;
+  process.env.LIBRARY_MASTER_TOKEN = "talent-test-master";
+  process.env.LIBRARY_SECRET = "talent-test-secret";
+  const dl = await import(path.join(dlSrc, "server.mjs"));
+  await new Promise((r) => dl.default.listen(0, r));
+  const DL = `http://127.0.0.1:${dl.default.address().port}`;
+  process.env.TALENT_API_URL = DL;
+  process.env.TALENT_API_MASTER_TOKEN = "talent-test-master";
+  const dlCall = async (p, b) => {
+    const res = await fetch(DL + p, { method: "POST", headers: { "content-type": "application/json", "x-master-token": "talent-test-master" }, body: JSON.stringify(b || {}) });
+    return { status: res.status, body: await res.json() };
+  };
+  const dlGet = async (p) => {
+    const res = await fetch(DL + p, { headers: { "x-master-token": "talent-test-master" } });
+    return { status: res.status, body: await res.json() };
+  };
+  // Seed the system of record: 5 candidates, one gated assessment, 5 runs.
+  for (let i = 1; i <= 5; i++)
+    await dlCall("/api/admin/add-developer", { name: `Talent Cand ${i}`, email: `tc${i}@talent.test`, track: "EXTERNAL_PLACED" });
+  const rcBody = { employerRef: "MCP Test Employer", vertical: "CRE_UNDERWRITING", title: "CRE Financial Underwriting Analyst",
+    seniority: "senior", market: "India", skills: ["underwriting", "noi", "valuation"],
+    pairs: [{ role: "DATA_SCIENTIST", realm: "OTHER_REALM" }] };
+  const rc = await dlCall("/api/admin/role-configs", rcBody);
+  const gen = await dlCall(`/api/admin/role-configs/${rc.body.roleConfig.id}/generate`, {});
+  const gatedId = gen.body.assessment.id;
+  await dlCall(`/api/admin/assessments/${gatedId}/gate1`, { signer: { name: "Employer One", kind: "human" } });
+  await dlCall(`/api/admin/assessments/${gatedId}/gate2`, { signer: { name: "Approver One", kind: "human" }, viaMasterTest: true });
+  const gatedView = await dlGet(`/api/admin/assessments/${gatedId}`);
+  const dims = gatedView.body.assessment.instrument.dimensions;
+  const responses = Object.fromEntries(dims.map((d) => [d.key, { score: 88, evidence: "activation proof" }]));
+  for (let i = 1; i <= 5; i++)
+    await dlCall(`/api/admin/assessments/${gatedId}/runs`, { talentEmail: `tc${i}@talent.test`, responses });
+  const runsView = await dlGet(`/api/admin/assessments/${gatedId}`);
+  const talentDid = runsView.body.runs[0].talentDid;
+  check("S2 setup: P2 record is gate-passed with scored runs", gatedView.body.assessment.state === "APPROVED" && runsView.body.runs.length === 5, JSON.stringify(gatedView.body.assessment?.state));
+
+  // submit executes — and creates an UNGATED record (the gates are
+  // human acts in the console; the tool cannot carry them).
+  const submitted = toolPayload(await callTool("submit_assessment", { role_config: rcBody }, tokenC));
+  check("S2 submit_assessment EXECUTES against the P2 system of record", !!submitted?.assessment?.id && submitted.assessment.state === "GENERATED", JSON.stringify(submitted));
+  const ungatedId = submitted?.assessment?.id;
+  const scoreUngated = toolPayload(await callTool("score_assessment", { assessment_id: ungatedId, talent_did: talentDid }, tokenC));
+  check("S2 score_assessment REFUSES a non-gate-passed record (gates_not_passed)",
+    scoreUngated?.refused === true && scoreUngated?.reason === "gates_not_passed", JSON.stringify(scoreUngated));
+  const pubUngated = toolPayload(await callTool("publish_assessment_outcome", { assessment_id: ungatedId }, tokenC));
+  check("S2 publish_assessment_outcome REFUSES a non-gate-passed record",
+    pubUngated?.refused === true && pubUngated?.reason === "gates_not_passed", JSON.stringify(pubUngated));
+  const scored = toolPayload(await callTool("score_assessment", { assessment_id: gatedId, talent_did: talentDid }, tokenC));
+  check("S2 score_assessment EXECUTES against a gate-passed record", scored?.score === 88 && scored?.talentDid === talentDid, JSON.stringify(scored));
+  const published = toolPayload(await callTool("publish_assessment_outcome", { assessment_id: gatedId }, tokenC));
+  check("S2 publish_assessment_outcome EXECUTES — redacted artifact, content-addressed",
+    (published?.cid || "").startsWith("sha256:") && (published?.artifact?.pseudonym || "").startsWith("talent-") &&
+    !JSON.stringify(published).includes("tc1@talent.test") && !JSON.stringify(published).includes("MCP Test Employer"), JSON.stringify(published));
+  const tierRefused = toolPayload(await callTool("submit_assessment", { role_config: rcBody }, tokenF));
+  check("S2 tier gate still binds: an Instance principal cannot call the Talent tools",
+    tierRefused?.refused === true && tierRefused?.reason === "tier_gate", JSON.stringify(tierRefused));
+  dl.default.close();
+}
+
 server.close();
 console.log(`\nRESULT: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
