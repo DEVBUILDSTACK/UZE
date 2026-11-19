@@ -15,6 +15,8 @@ import { drainComms } from "./lib/mailer.mjs";
 import { applyWebhook, webhookConfigured } from "./lib/webhook.mjs";
 import * as life from "./lib/lifecycle.mjs";
 import * as eng from "./lib/engagements.mjs";
+import * as asm from "./lib/assessments.mjs";
+import { loadPublications, findPublication, publicView } from "./lib/publisher.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8734;
@@ -154,6 +156,20 @@ const handleRequest = async (req, res) => {
       return send(res, r.ok ? 200 : 401, r);
     }
 
+    // --- the public publication viewer (P2 §2.6/§4): the published
+    // copy proves an engagement exists and is progressing; it
+    // identifies nobody. Public by design — the artifacts are
+    // redacted by construction in lib/publisher.mjs, which holds no
+    // identity-store read path. ---
+    if (p === "/api/publications" && req.method === "GET") {
+      return send(res, 200, { publications: loadPublications().map(publicView) });
+    }
+    if (p.startsWith("/api/publications/") && req.method === "GET") {
+      const pub = findPublication(decodeURIComponent(p.slice("/api/publications/".length)));
+      if (!pub) return send(res, 404, { error: "publication not found" });
+      return send(res, 200, { publication: publicView(pub) });
+    }
+
     // --- master control (SoSem; x-master-token) ---
     if (p.startsWith("/api/admin/")) {
       if (!isMaster(req)) return send(res, 403, { error: "master only" });
@@ -176,10 +192,59 @@ const handleRequest = async (req, res) => {
         if (!e) return send(res, 404, { error: "engagement not found" });
         return send(res, 200, engMatch[2] ? { view: eng.clientView(e) } : { engagement: eng.deskView(e) });
       }
+      // --- P2 Assessment (Scope 2, separated track): desk surface ---
+      if (p === "/api/admin/role-configs" && req.method === "GET") {
+        return send(res, 200, { roleConfigs: asm.loadRoleConfigs() });
+      }
+      if (p === "/api/admin/assessments" && req.method === "GET") {
+        return send(res, 200, { assessments: asm.loadAssessments().map(asm.assessmentView) });
+      }
+      const asmMatch = p.match(/^\/api\/admin\/assessments\/([^/]+)$/);
+      if (asmMatch && req.method === "GET") {
+        const a = asm.findAssessment(asmMatch[1]);
+        if (!a) return send(res, 404, { error: "assessment not found" });
+        return send(res, 200, { assessment: asm.assessmentView(a),
+          runs: asm.loadRuns().filter(r => r.assessmentId === a.id) });
+      }
+      if (p === "/api/admin/approvers" && req.method === "GET") {
+        return send(res, 200, { approvers: asm.loadApprovers(), config: asm.assessmentConfig() });
+      }
+      const engOutcomes = p.match(/^\/api\/admin\/engagements\/([^/]+)\/assessment-outcomes$/);
+      if (engOutcomes && req.method === "GET") {
+        return send(res, 200, { outcomes: asm.outcomeForEngagement(engOutcomes[1]) });
+      }
       if (req.method === "POST") {
         const b = await body(req);
         if (p === "/api/admin/rename-mock") return send(res, 200, { ok: true, mock: life.renameMock(b.slug, b) });
         if (p === "/api/admin/engagements") return send(res, 200, { ok: true, engagement: eng.deskView(eng.openEngagement(b)) });
+        // --- P2 Assessment POST surface ---
+        if (p === "/api/admin/role-configs") return send(res, 200, { ok: true, roleConfig: asm.createRoleConfig(b) });
+        if (p === "/api/admin/approvers") return send(res, 200, { ok: true, approvers: asm.setApprover(b.vertical, b.names) });
+        const rcGen = p.match(/^\/api\/admin\/role-configs\/([^/]+)\/generate$/);
+        if (rcGen) return send(res, 200, { ok: true, assessment: asm.assessmentView(asm.generateAssessment(rcGen[1], { by: b.by || "console" })) });
+        const asmAction = p.match(/^\/api\/admin\/assessments\/([^/]+)\/(gate1|gate2|regenerate|runs|score-by-talent|publish-outcome)$/);
+        if (asmAction) {
+          const [, aid, action] = asmAction;
+          if (action === "gate1") {
+            const out = b.decision === "return" ? asm.returnGate1(aid, b) : asm.signGate1(aid, b);
+            return send(res, 200, { ok: true, assessment: asm.assessmentView(out) });
+          }
+          if (action === "gate2") {
+            const out = b.decision === "return" ? asm.returnGate2(aid, b) : asm.signGate2(aid, b);
+            return send(res, 200, { ok: true, assessment: asm.assessmentView(out) });
+          }
+          if (action === "regenerate") return send(res, 200, { ok: true, assessment: asm.assessmentView(asm.regenerateAssessment(aid, { by: b.by || "console" })) });
+          if (action === "runs") return send(res, 200, { ok: true, run: asm.recordRun({ assessmentId: aid, ...b }) });
+          if (action === "score-by-talent") return send(res, 200, { ok: true, score: asm.scoreByTalent({ assessmentId: aid, talentDid: b.talentDid }) });
+          if (action === "publish-outcome") return send(res, 200, { ok: true, publication: await asm.publishOutcomeForAssessment(aid, { runId: b.runId || null }) });
+        }
+        const runAction = p.match(/^\/api\/admin\/runs\/([^/]+)\/(attach-engagement|quote|publish)$/);
+        if (runAction) {
+          const [, rid, action] = runAction;
+          if (action === "attach-engagement") return send(res, 200, { ok: true, run: asm.attachToEngagement(rid, b.engagementId) });
+          if (action === "quote") return send(res, 200, { ok: true, quote: asm.quotePathA(rid, b) });
+          if (action === "publish") return send(res, 200, { ok: true, publication: await asm.publishRunOutcome(rid) });
+        }
         const engAction = p.match(/^\/api\/admin\/engagements\/([^/]+)\/(staff|unstaff|sign|deposit|close|cancel)$/);
         if (engAction) {
           const [, id, action] = engAction;

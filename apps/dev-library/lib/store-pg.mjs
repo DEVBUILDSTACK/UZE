@@ -101,6 +101,40 @@ async function persist(name, obj) {
       await q(`INSERT INTO comment (slug,by_email,at,text,dedupe) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (dedupe) DO NOTHING`,
         [c.slug, c.by, c.at, c.text, dedupe(c)]);
     }
+  } else if (name === "assessments.json") {
+    await q(`INSERT INTO assessment_meta (id,data) VALUES (1,$1)
+             ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data`,
+      [JSON.stringify({ config: obj.config || {}, approvers: obj.approvers || {}, quotes: obj.quotes || [] })]);
+    for (const rc of obj.roleConfigs || []) {
+      await q(`INSERT INTO role_config (id,employer_ref,vertical,title,created_at,data) VALUES ($1,$2,$3,$4,$5,$6)
+               ON CONFLICT (id) DO UPDATE SET employer_ref=EXCLUDED.employer_ref, vertical=EXCLUDED.vertical,
+                 title=EXCLUDED.title, data=EXCLUDED.data`,
+        [rc.id, rc.employerRef, rc.vertical, rc.title, rc.createdAt, JSON.stringify(rc)]);
+    }
+    for (const a of obj.assessments || []) {
+      await q(`INSERT INTO assessment (id,role_config_id,template_id,gate1_at,gate2_at,created_at,data)
+               VALUES ($1,$2,$3,$4,$5,$6,$7)
+               ON CONFLICT (id) DO UPDATE SET role_config_id=EXCLUDED.role_config_id, template_id=EXCLUDED.template_id,
+                 gate1_at=EXCLUDED.gate1_at, gate2_at=EXCLUDED.gate2_at, data=EXCLUDED.data`,
+        [a.id, a.roleConfigId, a.templateId,
+         a.gate1?.decision === "signed" ? a.gate1.at : null,
+         a.gate2?.decision === "signed" ? a.gate2.at : null,
+         a.createdAt || new Date().toISOString(), JSON.stringify(a)]);
+    }
+    for (const r of obj.runs || []) {
+      await q(`INSERT INTO assessment_run (id,assessment_id,talent_did,score,human_review,taken_at,data)
+               VALUES ($1,$2,$3,$4,$5,$6,$7)
+               ON CONFLICT (id) DO UPDATE SET assessment_id=EXCLUDED.assessment_id, talent_did=EXCLUDED.talent_did,
+                 score=EXCLUDED.score, human_review=EXCLUDED.human_review, taken_at=EXCLUDED.taken_at, data=EXCLUDED.data`,
+        [r.id, r.assessmentId, r.talentDid, r.score, r.humanReviewFlag, r.takenAt, JSON.stringify(r)]);
+    }
+  } else if (name === "publications.json") {
+    for (const p of obj.publications || []) {
+      await q(`INSERT INTO publication (id,cid,pseudonym,cohort_key,published_at,data) VALUES ($1,$2,$3,$4,$5,$6)
+               ON CONFLICT (id) DO UPDATE SET cid=EXCLUDED.cid, pseudonym=EXCLUDED.pseudonym,
+                 cohort_key=EXCLUDED.cohort_key, data=EXCLUDED.data`,
+        [p.id, p.cid, p.pseudonym, p.cohortKey, p.publishedAt, JSON.stringify(p)]);
+    }
   }
 }
 
@@ -110,7 +144,7 @@ export async function initPgStore() {
   const { rows: mockCount } = await pool.query("SELECT count(*)::int AS n FROM mock");
   if (devCount[0].n === 0 && mockCount[0].n === 0) {
     // First boot on an empty DB: adopt the working set as the record.
-    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json"]) {
+    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json", "assessments.json", "publications.json"]) {
       await persist(name, load(name));
     }
   } else {
@@ -129,6 +163,24 @@ export async function initPgStore() {
     save("comments.json", { version: 1, comments: comments.rows.map(r => ({ slug: r.slug, by: r.by, at: new Date(r.at).toISOString(), text: r.text })) });
     const engs = await pool.query("SELECT data FROM engagement ORDER BY created_at");
     save("engagements.json", { version: 1, engagements: engs.rows.map(r => r.data) });
+    // P2 documents: rebuild only when the DB actually holds P2 state
+    // (an existing production DB predates these tables' rows; its
+    // working-set seeds then stand until the first P2 write).
+    const rcCount = await pool.query("SELECT count(*)::int AS n FROM role_config");
+    const pubCount = await pool.query("SELECT count(*)::int AS n FROM publication");
+    const metaRows = await pool.query("SELECT data FROM assessment_meta WHERE id=1");
+    if (rcCount.rows[0].n || pubCount.rows[0].n || metaRows.rows.length) {
+      const meta = metaRows.rows[0]?.data || {};
+      const curA = load("assessments.json");
+      const rcs = await pool.query("SELECT data FROM role_config ORDER BY created_at");
+      const asms = await pool.query("SELECT data FROM assessment ORDER BY created_at");
+      const runs = await pool.query("SELECT data FROM assessment_run ORDER BY taken_at");
+      save("assessments.json", { version: 1,
+        config: meta.config || curA.config || {}, approvers: meta.approvers || {}, quotes: meta.quotes || [],
+        roleConfigs: rcs.rows.map(r => r.data), assessments: asms.rows.map(r => r.data), runs: runs.rows.map(r => r.data) });
+      const pubs = await pool.query("SELECT data FROM publication ORDER BY published_at");
+      save("publications.json", { version: 1, publications: pubs.rows.map(r => r.data) });
+    }
   }
   setPersister((name, obj) => { chain = chain.then(() => persist(name, obj)).catch(e => console.error("pg persist failed:", name, e.message)); });
   return pool;

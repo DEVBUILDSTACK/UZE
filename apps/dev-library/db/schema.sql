@@ -147,3 +147,56 @@ CREATE TABLE IF NOT EXISTS comment (
   text     text NOT NULL,
   dedupe   text UNIQUE NOT NULL
 );
+
+-- P2 Assessment (Scope 2, separated track — Sprint 1): role configs,
+-- generated assessments behind the two human gates, scored runs, and
+-- the publication store. Typed columns carry the gate/score facts;
+-- the full records ride in `data`. The publication table is the
+-- publication store of the three-store separation: pseudonym, cohort
+-- key, content address, banded artifact — no name, email, or company
+-- column exists in it, by design (P2 §4).
+CREATE TABLE IF NOT EXISTS role_config (
+  id           text PRIMARY KEY,
+  employer_ref text NOT NULL,
+  vertical     text NOT NULL CHECK (vertical IN ('HOSPITALITY','CRE_UNDERWRITING')),
+  title        text NOT NULL,
+  created_at   timestamptz NOT NULL,
+  data         jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS assessment (
+  id             text PRIMARY KEY,
+  role_config_id text NOT NULL,
+  template_id    text NOT NULL,
+  gate1_at       timestamptz,
+  gate2_at       timestamptz,
+  created_at     timestamptz NOT NULL,
+  data           jsonb NOT NULL DEFAULT '{}'::jsonb,
+  CHECK (gate2_at IS NULL OR gate1_at IS NOT NULL)
+);
+
+CREATE TABLE IF NOT EXISTS assessment_run (
+  id            text PRIMARY KEY,
+  assessment_id text NOT NULL,
+  talent_did    text NOT NULL,
+  score         numeric,
+  human_review  boolean,
+  taken_at      timestamptz NOT NULL,
+  data          jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS publication (
+  id           text PRIMARY KEY,
+  cid          text,
+  pseudonym    text NOT NULL,
+  cohort_key   text NOT NULL,
+  published_at timestamptz NOT NULL,
+  data         jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+-- Doc-level P2 state that is not a record: the scoring/publication
+-- config, the per-vertical approver registry, and Path A quotes.
+CREATE TABLE IF NOT EXISTS assessment_meta (
+  id   int PRIMARY KEY CHECK (id = 1),
+  data jsonb NOT NULL DEFAULT '{}'::jsonb
+);
