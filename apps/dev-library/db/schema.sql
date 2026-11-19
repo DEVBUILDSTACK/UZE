@@ -201,15 +201,28 @@ CREATE TABLE IF NOT EXISTS assessment_meta (
   data jsonb NOT NULL DEFAULT '{}'::jsonb
 );
 
+-- Organizations are first-class (James's steering, 2026-11-19):
+-- contacts attach to organizations. The registry is seeded from
+-- db/orgs.mjs; advisor records carry an org KEY referencing it.
+CREATE TABLE IF NOT EXISTS org (
+  key      text PRIMARY KEY,                  -- DFI | FVC | UZE | L2Launch
+  name     text NOT NULL,
+  acronym  text,
+  position int  NOT NULL DEFAULT 0,
+  data     jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
 -- L2L & Ecosystem Advisors (James's directive, 2026-11-19): a roster
 -- parallel to the Developer List but distinct — no tracks, no
 -- expertise pairs, no grants, no sign-in lifecycle. Typed columns
 -- carry the roster fields; the full record rides in `data`, as with
--- the developer and engagement tables.
+-- the developer and engagement tables. `org` is an org-registry key.
+-- Email is OPTIONAL — unique only when present (a Postgres UNIQUE
+-- column admits any number of NULLs, which is exactly the rule).
 CREATE TABLE IF NOT EXISTS advisor (
   id       text PRIMARY KEY,
   name     text NOT NULL,
-  email    text UNIQUE NOT NULL,              -- lowercased
+  email    text UNIQUE,                       -- lowercased, nullable
   title    text,
   org      text,
   base     text,
@@ -217,3 +230,7 @@ CREATE TABLE IF NOT EXISTS advisor (
   added_at timestamptz NOT NULL,
   data     jsonb NOT NULL DEFAULT '{}'::jsonb
 );
+-- The advisor table first shipped (2026-11-19) with email NOT NULL;
+-- keep an already-created table in step. A no-op where the column
+-- is already nullable.
+ALTER TABLE advisor ALTER COLUMN email DROP NOT NULL;

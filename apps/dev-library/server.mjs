@@ -15,6 +15,7 @@ import { drainComms, sendEntryNow } from "./lib/mailer.mjs";
 import { applyWebhook, webhookConfigured } from "./lib/webhook.mjs";
 import * as life from "./lib/lifecycle.mjs";
 import * as adv from "./lib/advisors.mjs";
+import * as orgreg from "./lib/orgs.mjs";
 import * as eng from "./lib/engagements.mjs";
 import * as asm from "./lib/assessments.mjs";
 import { loadPublications, findPublication, publicView } from "./lib/publisher.mjs";
@@ -202,6 +203,9 @@ const handleRequest = async (req, res) => {
       if (p === "/api/admin/advisors" && req.method === "GET") {
         return send(res, 200, { advisors: adv.loadAdvisors() });
       }
+      if (p === "/api/admin/orgs" && req.method === "GET") {
+        return send(res, 200, { orgs: orgreg.loadOrgs() });
+      }
       // --- engagements (M1): desk surface + the blind client view ---
       const engMatch = p.match(/^\/api\/admin\/engagements(?:\/([^/]+)(\/client-view)?)?$/);
       if (engMatch && req.method === "GET") {
@@ -235,7 +239,7 @@ const handleRequest = async (req, res) => {
         const b = await body(req);
         if (p === "/api/admin/rename-mock") return send(res, 200, { ok: true, mock: life.renameMock(b.slug, b) });
         if (p === "/api/admin/advisors") return send(res, 200, { ok: true, advisor: adv.addAdvisor(b) });
-        if (p === "/api/admin/advisors/remove") return send(res, 200, { ok: true, advisor: adv.removeAdvisor(b.email) });
+        if (p === "/api/admin/advisors/remove") return send(res, 200, { ok: true, advisor: adv.removeAdvisor(b.email || b.id) });
         if (p === "/api/admin/engagements") return send(res, 200, { ok: true, engagement: eng.deskView(eng.openEngagement(b)) });
         // --- P2 Assessment POST surface ---
         if (p === "/api/admin/role-configs") return send(res, 200, { ok: true, roleConfig: asm.createRoleConfig(b) });

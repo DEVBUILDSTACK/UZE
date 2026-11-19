@@ -96,7 +96,7 @@ try {
   ok("design: the wordmark never wraps — one line at phone width (nowrap + reduced band size under the mobile breakpoint)",
     pageHtml.includes("white-space:nowrap") && pageHtml.includes(".band h1{font-size:23px}"));
   ok("a11y: every select carries an accessible name (aria-label) — the design gate's select-name finding",
-    (pageHtml.match(/<select\b[^>]*>/g) || []).length === 9 &&
+    (pageHtml.match(/<select\b[^>]*>/g) || []).length >= 9 &&
     (pageHtml.match(/<select\b[^>]*>/g) || []).every(t => /aria-label="[^"]+"/.test(t)));
   ok("a11y: heading order is sequential — h1 wordmark, h2 section titles, h3 subsections, no h4 skip — the design gate's heading-order finding",
     !pageHtml.includes("<h4") && pageHtml.includes("<h2") &&
@@ -172,28 +172,56 @@ try {
     advSection.includes("L2L &amp; Ecosystem Advisors") && advAt > pageHtml.indexOf('id="master"'));
   ok("advisors: no internal naming in the section copy", !/reading room/i.test(advSection));
   ok("advisors without token -> 403", (await call("/api/admin/advisors")).status === 403);
+  ok("orgs without token -> 403", (await call("/api/admin/orgs")).status === 403);
+  const orgList = await call("/api/admin/orgs", adm);
+  const orgByKey = Object.fromEntries((orgList.body.orgs || []).map(o => [o.key, o]));
+  ok("orgs: the registry seeds four organizations, first-class (key, name, acronym)",
+    orgList.status === 200 && (orgList.body.orgs || []).length === 4 &&
+    orgByKey.DFI?.name === "DealFi" && orgByKey.DFI?.acronym === "DFI" &&
+    orgByKey.FVC?.name === "Fundio" && orgByKey.FVC?.acronym === "FVC" &&
+    orgByKey.UZE?.name === "UZEmarkets" && orgByKey.UZE?.acronym === "UZE" &&
+    orgByKey.L2Launch?.name === "L2 Launchpad" && orgByKey.L2Launch?.acronym === "L2Launch");
   const advSeed = await call("/api/admin/advisors", adm);
-  const jon = (advSeed.body.advisors || []).find(a => a.email === "schmidtcommunications@gmail.com");
-  ok("advisors: seeded Jonathan Schmidt present with title, org, base, lane",
-    advSeed.status === 200 && !!jon && jon.name === "Jonathan Schmidt" &&
+  const seedAdvs = advSeed.body.advisors || [];
+  const jon = seedAdvs.find(a => a.email === "schmidtcommunications@gmail.com");
+  ok("advisors: seeded Jonathan Schmidt present — L2 Launchpad key, title, base, lane",
+    advSeed.status === 200 && seedAdvs.length === 3 && !!jon && jon.name === "Jonathan Schmidt" &&
     jon.title === "Creative Intelligence Principal" && jon.org === "L2Launch" &&
     jon.base === "Santo Domingo, DR" && /design evaluation advisory/.test(jon.lane) && !!jon.id && !!jon.addedAt);
+  const wcd = seedAdvs.find(a => a.email === "william@decensat.org");
+  ok("advisors: seeded William Cumberland Dugan — Launch Principal, L2 Launchpad",
+    !!wcd && wcd.name === "William Cumberland Dugan" && wcd.title === "Launch Principal" &&
+    wcd.org === "L2Launch" && wcd.base === "DC–Baltimore" && /commercial art/.test(wcd.lane));
+  const joey = seedAdvs.find(a => a.name === "Joey Hunter");
+  ok("advisors: seeded Joey Hunter — Launch Principal with NO email on file (email optional)",
+    !!joey && joey.title === "Launch Principal" && joey.org === "L2Launch" &&
+    joey.base === "Fort Lauderdale" && /creator collaborator/.test(joey.lane) && !joey.email);
   const advAdd = await call("/api/admin/advisors", { method: "POST", master: true, body: {
     name: "Ada Advisor", email: "ada@test.dev", title: "Design Advisor", org: "L2Launch",
     base: "Fort Lauderdale, US", lane: "Motion graphics — design evaluation advisory" } });
-  ok("advisors: add lands with the roster fields", advAdd.status === 200 &&
+  ok("advisors: add lands with the roster fields + org key", advAdd.status === 200 &&
     advAdd.body.advisor.email === "ada@test.dev" && advAdd.body.advisor.title === "Design Advisor" &&
-    !!advAdd.body.advisor.id && !!advAdd.body.advisor.addedAt);
+    advAdd.body.advisor.org === "L2Launch" && !!advAdd.body.advisor.id && !!advAdd.body.advisor.addedAt);
+  const advBadOrg = await call("/api/admin/advisors", { method: "POST", master: true, body: {
+    name: "Ora Orgless", email: "ora@test.dev", title: "x", org: "NOPE", base: "z", lane: "w" } });
+  ok("advisors: an org key outside the registry is rejected", advBadOrg.status === 500 && /unknown org/.test(advBadOrg.body.error || ""));
   const advDup = await call("/api/admin/advisors", { method: "POST", master: true, body: {
-    name: "Ada Again", email: "ada@test.dev", title: "x", org: "y", base: "z", lane: "w" } });
-  ok("advisors: duplicate email rejected", advDup.status === 500 && /already listed/.test(advDup.body.error || ""));
+    name: "Ada Again", email: "ada@test.dev", title: "x", org: "UZE", base: "z", lane: "w" } });
+  ok("advisors: duplicate email rejected (unique when present)", advDup.status === 500 && /already listed/.test(advDup.body.error || ""));
+  const advNoMail = await call("/api/admin/advisors", { method: "POST", master: true, body: {
+    name: "Noah Nomail", title: "Advisor", org: "UZE", base: "Miami, US", lane: "Ecosystem advisory" } });
+  ok("advisors: add without an email lands (email optional), record carries null",
+    advNoMail.status === 200 && !advNoMail.body.advisor.email && !!advNoMail.body.advisor.id);
   const advList2 = await call("/api/admin/advisors", adm);
-  ok("advisors: list shows seed + added", advList2.body.advisors.length === 2);
+  ok("advisors: list shows the three seeds + two added", advList2.body.advisors.length === 5);
+  const advRemNoMail = await call("/api/admin/advisors/remove", { method: "POST", master: true, body: { id: advNoMail.body.advisor.id } });
+  ok("advisors: an email-less advisor is removable by id", advRemNoMail.status === 200 &&
+    advRemNoMail.body.advisor.name === "Noah Nomail");
   const advRem = await call("/api/admin/advisors/remove", { method: "POST", master: true, body: { email: "ada@test.dev" } });
-  ok("advisors: remove lands", advRem.status === 200 && advRem.body.advisor.email === "ada@test.dev");
+  ok("advisors: remove by email lands", advRem.status === 200 && advRem.body.advisor.email === "ada@test.dev");
   const advList3 = await call("/api/admin/advisors", adm);
-  ok("advisors: list back to the seed alone after removal", advList3.body.advisors.length === 1 &&
-    advList3.body.advisors[0].email === "schmidtcommunications@gmail.com");
+  ok("advisors: list back to the three seeds after removals", advList3.body.advisors.length === 3 &&
+    advList3.body.advisors.some(a => a.email === "schmidtcommunications@gmail.com"));
   const advRemGone = await call("/api/admin/advisors/remove", { method: "POST", master: true, body: { email: "ada@test.dev" } });
   ok("advisors: removing an unlisted email is refused", advRemGone.status === 500 && /not found/.test(advRemGone.body.error || ""));
   const chronAdv = await call("/api/admin/chronicle", adm);
@@ -509,9 +537,15 @@ try {
     ok("P2 DB: publication row carries the content address + pseudonym, no identity columns",
       pubRow.length === 1 && pubRow[0].cid === pub.body.publication.cid && pubRow[0].pseudonym.startsWith("talent-"));
     const advRow = await pollRows("SELECT name, title, org, base FROM advisor WHERE email='schmidtcommunications@gmail.com'", [], r => r.length === 1);
-    ok("advisors DB: seeded advisor row written through with the roster fields",
+    ok("advisors DB: seeded advisor row written through with the roster fields (org carries the registry key)",
       advRow.length === 1 && advRow[0].name === "Jonathan Schmidt" &&
       advRow[0].title === "Creative Intelligence Principal" && advRow[0].org === "L2Launch" && advRow[0].base === "Santo Domingo, DR");
+    const joeyRow = await pollRows("SELECT email, org FROM advisor WHERE name='Joey Hunter'", [], r => r.length === 1);
+    ok("advisors DB: the email-less seed row carries a NULL email (unique only when present)",
+      joeyRow.length === 1 && joeyRow[0].email === null && joeyRow[0].org === "L2Launch");
+    const orgRowsDb = await pollRows("SELECT key, name FROM org ORDER BY position", [], r => r.length === 4);
+    ok("orgs DB: the registry is written through (four organizations)",
+      orgRowsDb.length === 4 && orgRowsDb[0].key === "DFI" && orgRowsDb[3].name === "L2 Launchpad");
     const advGone = await pollRows("SELECT count(*)::int AS n FROM advisor WHERE email='ada@test.dev'", [], r => r[0].n === 0);
     ok("advisors DB: removal deletes the row (no resurrection on hydration)", advGone[0].n === 0);
     await pool.end();

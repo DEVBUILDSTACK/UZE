@@ -175,7 +175,7 @@
       <input id="advtitle" placeholder="Title" size="28">
     </div>
     <div class="row" style="margin-top:8px">
-      <input id="advorg" placeholder="Organization" size="20">
+      <select id="advorg" aria-label="Advisor organization"></select>
       <input id="advbase" placeholder="Base (city, country)" size="20">
       <input id="advlane" placeholder="Lane — what they advise on" size="44">
     </div>
@@ -353,17 +353,31 @@ $("xtset").onclick = async () => {
   if (r.status === 200) $("mload").onclick();
 };
 // ---- L2L & Ecosystem Advisors (master-facing roster) ----
+// Organizations are first-class: advisor records carry an org key;
+// the registry supplies the names and fills the add form's select.
+let orgNames = {};
+async function loadOrgs() {
+  const r = await mfetch("/api/admin/orgs");
+  if (r.status !== 200) return;
+  orgNames = Object.fromEntries((r.body.orgs || []).map(o => [o.key, o.name]));
+  const sel = $("advorg");
+  if (!sel.options.length) (r.body.orgs || []).forEach(o => {
+    const op = document.createElement("option"); op.value = o.key; op.textContent = o.name; sel.appendChild(op);
+  });
+}
 async function loadAdvisorList() {
   const r = await mfetch("/api/admin/advisors");
   if (r.status !== 200) { $("advmsg").textContent = "Master token not accepted."; $("advmsg").className = "err"; return; }
+  await loadOrgs();
   $("advmsg").textContent = "";
   $("advlist").innerHTML = (r.body.advisors || []).map(a =>
-    "<div class='comment'><b>" + a.name + "</b> · " + a.title + " · " + a.org +
-    "<br>" + a.email + " · " + a.base + "<br>Lane: " + a.lane +
-    "<br><button class='alt' onclick=\"advRemove('" + a.email + "')\">Remove</button></div>").join("") || "No advisors yet.";
+    "<div class='comment'><b>" + a.name + "</b> · " + a.title + " · " + (orgNames[a.org] || a.org) +
+    "<br>" + (a.email ? a.email + " · " : "") + a.base + "<br>Lane: " + a.lane +
+    "<br><button class='alt' onclick=\"advRemove('" + (a.email || a.id) + "')\">Remove</button></div>").join("") || "No advisors yet.";
 }
 $("advload").onclick = loadAdvisorList;
 $("advadd").onclick = async () => {
+  if (!$("advorg").options.length) await loadOrgs();
   const r = await mfetch("/api/admin/advisors", { method: "POST", body: JSON.stringify({
     name: $("advname").value, email: $("advemail").value, title: $("advtitle").value,
     org: $("advorg").value, base: $("advbase").value, lane: $("advlane").value }) });

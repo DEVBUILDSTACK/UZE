@@ -130,23 +130,33 @@ async function persist(name, obj) {
     }
   } else if (name === "advisors.json") {
     // The roster is small and removal is a real operation (there is
-    // no tombstone), so the write-through reconciles: rows whose
-    // email left the working set are deleted, the rest upserted.
+    // no tombstone), so the write-through reconciles BY ID: rows
+    // whose id left the working set are deleted, the rest upserted.
+    // (By id, not email — email is optional on this roster.)
     const list = obj.advisors || [];
     if (list.length) {
-      await q(`DELETE FROM advisor WHERE email NOT IN (${list.map((_, i) => `$${i + 1}`).join(",")})`,
-        list.map(a => a.email.toLowerCase()));
+      await q(`DELETE FROM advisor WHERE id NOT IN (${list.map((_, i) => `$${i + 1}`).join(",")})`,
+        list.map(a => a.id));
     } else {
       await q(`DELETE FROM advisor`);
     }
     for (const a of list) {
       await q(`INSERT INTO advisor (id,name,email,title,org,base,lane,added_at,data)
                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-               ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name, title=EXCLUDED.title,
-                 org=EXCLUDED.org, base=EXCLUDED.base, lane=EXCLUDED.lane,
+               ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, email=EXCLUDED.email,
+                 title=EXCLUDED.title, org=EXCLUDED.org, base=EXCLUDED.base, lane=EXCLUDED.lane,
                  added_at=EXCLUDED.added_at, data=EXCLUDED.data`,
-        [a.id, a.name, a.email.toLowerCase(), a.title || null, a.org || null, a.base || null,
-         a.lane || null, a.addedAt, JSON.stringify(a)]);
+        [a.id, a.name, a.email ? a.email.toLowerCase() : null, a.title || null, a.org || null,
+         a.base || null, a.lane || null, a.addedAt, JSON.stringify(a)]);
+    }
+  } else if (name === "orgs.json") {
+    // The registry only grows by seed/code updates; upserts suffice
+    // (there is no removal operation for organizations).
+    for (const o of obj.orgs || []) {
+      await q(`INSERT INTO org (key,name,acronym,position,data) VALUES ($1,$2,$3,$4,$5)
+               ON CONFLICT (key) DO UPDATE SET name=EXCLUDED.name, acronym=EXCLUDED.acronym,
+                 position=EXCLUDED.position, data=EXCLUDED.data`,
+        [o.key, o.name, o.acronym || null, o.position || 0, JSON.stringify(o)]);
     }
   } else if (name === "publications.json") {
     for (const p of obj.publications || []) {
@@ -164,7 +174,7 @@ export async function initPgStore() {
   const { rows: mockCount } = await pool.query("SELECT count(*)::int AS n FROM mock");
   if (devCount[0].n === 0 && mockCount[0].n === 0) {
     // First boot on an empty DB: adopt the working set as the record.
-    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json", "assessments.json", "publications.json", "advisors.json"]) {
+    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json", "assessments.json", "publications.json", "advisors.json", "orgs.json"]) {
       await persist(name, load(name));
     }
   } else {
@@ -211,16 +221,35 @@ export async function initPgStore() {
       const pubs = await pool.query("SELECT data FROM publication ORDER BY published_at");
       save("publications.json", { version: 1, publications: pubs.rows.map(r => r.data) });
     }
-    // Advisors (2026-11-19): rebuild from the DB when it holds
-    // roster rows. An existing production DB's advisor table starts
-    // empty — there, adopt the working-set seed so the roster lands
-    // in the record instead of being wiped by an empty hydration.
-    const advCount = await pool.query("SELECT count(*)::int AS n FROM advisor");
-    if (advCount.rows[0].n) {
-      const advs = await pool.query("SELECT data FROM advisor ORDER BY added_at, email");
-      save("advisors.json", { version: 1, advisors: advs.rows.map(r => r.data) });
-    } else {
+    // Organizations (2026-11-19): the registry only grows by seed —
+    // upsert the bundled registry first (new keys land), then
+    // rebuild the working set from the table.
+    await persist("orgs.json", load("orgs.json"));
+    const orgRows = await pool.query("SELECT data FROM org ORDER BY position, key");
+    if (orgRows.rows.length) save("orgs.json", { version: 1, orgs: orgRows.rows.map(r => r.data) });
+    // Advisors (2026-11-19): the DB is the record for what it
+    // holds, and bundled seeds the DB does not hold yet are merged
+    // in by id (new seeds ship with the code — without the merge, a
+    // DB that already holds one seed would hydrate over the rest
+    // and they would never land). Desk-added records are never in
+    // the bundle, so the merge cannot resurrect a desk removal of
+    // anything but a seed record — the same standing-record
+    // semantics db/seed.mjs applies to the professionals.
+    const advRows = await pool.query("SELECT data FROM advisor ORDER BY added_at, email");
+    const fromDb = advRows.rows.map(r => r.data);
+    if (!fromDb.length) {
       await persist("advisors.json", load("advisors.json"));
+    } else {
+      const seedAdv = load("advisors.json").advisors || [];
+      const haveIds = new Set(fromDb.map(a => a.id));
+      const fresh = seedAdv.filter(a => !haveIds.has(a.id));
+      if (fresh.length) {
+        const merged = [...fromDb, ...fresh];
+        save("advisors.json", { version: 1, advisors: merged });
+        await persist("advisors.json", { version: 1, advisors: merged });
+      } else {
+        save("advisors.json", { version: 1, advisors: fromDb });
+      }
     }
   }
   setPersister((name, obj) => { chain = chain.then(() => persist(name, obj)).catch(e => console.error("pg persist failed:", name, e.message)); });
