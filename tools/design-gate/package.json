@@ -1,0 +1,11 @@
+{
+  "name": "uze-design-gate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pre-ship design verification gate for UZE pages — palette lint, renders, wordmark one-line check, axe floor.",
+  "dependencies": {
+    "puppeteer-core": "^23.11.1",
+    "axe-core": "^4.10.2"
+  }
+}

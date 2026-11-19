@@ -34,13 +34,62 @@ on:
     paths:
       - "apps/dev-library/**"
       - ".github/workflows/deploy-dev-library.yml"
+      - "tools/design-gate/**"
+      - "design-wash.json"
+      - "DESIGN.md"
 
 concurrency:
   group: deploy-dev-library
   cancel-in-progress: false
 
 jobs:
+  # DESIGN CAR WASH (added 2026-11-19 — HUMAN ECOSYSTEM DESIGN, Stage 1):
+  # every page listed in design-wash.json is washed against the canonical
+  # tokens before any deploy — palette lint, 420px + 1280px renders,
+  # wordmark one-line check, axe floor. The deploy job below `needs:` this
+  # job, so a failed wash fails the deploy. Gate: tools/design-gate
+  # (pinned vendored copy of the canonical gate; see its VENDORED.md).
+  design-car-wash:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install gate dependencies (local to the gate, never global)
+        run: npm install --no-workspaces --no-audit --no-fund --prefix tools/design-gate
+      - name: Point the gate at the runner's Chrome
+        run: |
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME_BIN" ]; then
+            echo "::error::No Chrome/Chromium on this runner — the wash cannot render."
+            exit 2
+          fi
+          echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
+      - name: Run the wash — every listed page must pass
+        run: |
+          FAIL=0
+          for page in $(node -e "console.log(JSON.parse(require('fs').readFileSync('design-wash.json','utf8')).pages.join(' '))"); do
+            echo "── Washing: $page"
+            node tools/design-gate/gate.mjs "$page" --out "design-wash-out/$(echo "$page" | tr '/' '_')"
+            rc=$?
+            if [ $rc -ne 0 ]; then
+              echo "::error::Design wash FAILED for $page (gate exit $rc). Named failures are in the gate output above and in its report artifact."
+              FAIL=1
+            fi
+          done
+          exit $FAIL
+      - name: Keep the wash evidence (reports + screenshots)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-wash-evidence
+          path: design-wash-out/
+          if-no-files-found: ignore
+
   dev-library-vercel:
+    needs: design-car-wash
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
