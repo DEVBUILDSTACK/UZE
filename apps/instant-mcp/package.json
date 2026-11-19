@@ -1,0 +1,1 @@
+{"description":"UZE Instant MCP — Scope 3 Phase 1 (merged program M2): core MCP server + Instance tier. Zero-dependency Node. Provisioning is a LOCAL MOCK pending M0-B (NEAR AI Cloud credits).","name":"uze-instant-mcp","private":true,"scripts":{"start":"node server.mjs","start:stdio":"node server.mjs --stdio","test":"node test.mjs"},"type":"module","version":"0.1.0"}

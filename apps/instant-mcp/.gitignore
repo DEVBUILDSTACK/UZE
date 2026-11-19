@@ -1,0 +1,3 @@
+# Runtime state (chronicle + store) is local-only, never committed.
+data/chronicle.jsonl
+data/state.json
