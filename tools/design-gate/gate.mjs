@@ -2,12 +2,18 @@
 /**
  * UZE design gate — pre-ship verification for UZE-branded pages.
  *
- *   node gate.mjs <page-file-or-local-url> [--out <dir>]
+ *   node gate.mjs <page-file-or-local-url> [--out <dir>] [--wordmark <css-selector>]
  *
  * Checks (house system: ~/workspace/custom-skills/uze-design-system/SKILL.md):
  *   1. Palette lint   — every hex color in the page source must be a house token.
+ *                       For URL targets the page's same-origin stylesheets are
+ *                       fetched and linted too (a served app's palette lives in
+ *                       its CSS, not its HTML).
  *   2. Renders        — full-page screenshots at 420px and 1280px, saved beside the report.
- *   3. Wordmark check — the header wordmark (header h1) must render on ONE line at 420px:
+ *   3. Wordmark check — the wordmark must render on ONE line at 420px. Default
+ *                       target is the header h1; --wordmark names the element
+ *                       that carries the wordmark on component-built sites
+ *                       (e.g. --wordmark ".wordmark"). The check is the same:
  *                       (a) it must carry white-space:nowrap (house rule §2 — the guarantee),
  *                       (b) measured on the live render it must occupy exactly one line
  *                       (rendered height vs line-height) with no horizontal overflow.
@@ -41,9 +47,12 @@ const WIDTHS = [420, 1280];
 const args = process.argv.slice(2);
 const outFlag = args.indexOf('--out');
 const outDirArg = outFlag >= 0 ? args[outFlag + 1] : null;
-const target = args.find((a) => !a.startsWith('--') && a !== outDirArg);
+const wmFlag = args.indexOf('--wordmark');
+const wordmarkSelector = wmFlag >= 0 ? args[wmFlag + 1] : null;
+const flagValues = new Set([outDirArg, wordmarkSelector].filter(Boolean));
+const target = args.find((a) => !a.startsWith('--') && !flagValues.has(a));
 if (!target) {
-  console.error('usage: node gate.mjs <page-file-or-local-url> [--out <dir>]');
+  console.error('usage: node gate.mjs <page-file-or-local-url> [--out <dir>] [--wordmark <css-selector>]');
   process.exit(2);
 }
 
@@ -81,8 +90,38 @@ const lines = [];
 const say = (s = '') => { lines.push(s); console.log(s); };
 
 // ---------- 1. palette lint ----------
+// For URL targets, a served app's palette lives in its stylesheets, not its
+// HTML — fetch every same-origin stylesheet the page links and lint it too.
+// Script contents are excluded from the HTML corpus: a served page's inline
+// scripts are framework/runtime payloads (Next.js embeds its own default
+// error-page CSS — body{color:#000} — in every page's data payload; that is
+// framework boilerplate, not authored design). Authored colors still lint:
+// they render through stylesheets, <style> elements, and style attributes,
+// all of which stay in the corpus. File targets lint whole — a static
+// authored page's scripts are the author's own.
+let lintText = sourceText;
+let cssCount = 0;
+if (isUrl) {
+  lintText = sourceText.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+  const base = new URL(target);
+  const hrefs = new Set();
+  for (const m of sourceText.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi)) {
+    const h = /href=["']([^"']+)["']/i.exec(m[0]);
+    if (h) hrefs.add(h[1]);
+  }
+  for (const h of hrefs) {
+    try {
+      const u = new URL(h, base);
+      if (u.origin !== base.origin) continue;
+      const css = await (await fetch(u)).text();
+      lintText += `\n${css}`;
+      cssCount += 1;
+    } catch { /* an unfetchable sheet is a render problem the screenshots will show */ }
+  }
+}
 say(`DESIGN GATE — ${targetLabel}`);
 say('');
+if (isUrl) say(`[OK]   palette corpus — page HTML + ${cssCount} same-origin stylesheet(s)`);
 const hexRe = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b/g;
 const normalize = (raw) => {
   let h = raw.slice(1).toLowerCase();
@@ -91,12 +130,22 @@ const normalize = (raw) => {
   return `#${h}`;
 };
 const seen = new Map(); // normalized -> {count, raws:Set}
-for (const m of sourceText.matchAll(hexRe)) {
+let transparentCount = 0;
+for (const m of lintText.matchAll(hexRe)) {
+  // A fully transparent hex (alpha 00 — e.g. #0000, the minified form of
+  // `color: transparent` for gradient-clipped text) renders as no color at
+  // all; it is not a hue and is counted separately, never a violation.
+  // Semi-transparent colors still lint on their RGB: a black scrim must be
+  // an ink scrim.
+  let h = m[0].slice(1).toLowerCase();
+  if (h.length === 3 || h.length === 4) h = h.split('').map((c) => c + c).join('');
+  if (h.length === 8 && h.endsWith('00')) { transparentCount += 1; continue; }
   const n = normalize(m[0]);
   const e = seen.get(n) || { count: 0, raws: new Set() };
   e.count += 1; e.raws.add(m[0]);
   seen.set(n, e);
 }
+if (transparentCount) say(`[OK]   palette lint — ${transparentCount} fully transparent hex(es) ignored (alpha 00 renders as no color)`);
 const offenders = [...seen.entries()].filter(([n]) => !TOKENS.has(n));
 if (offenders.length === 0) {
   say(`[PASS] palette lint — ${seen.size} distinct hex value(s), all house tokens`);
@@ -150,8 +199,10 @@ try {
 
     if (width === 420) {
       // ----- 3. wordmark one-line check (measured on the live render) -----
-      const wm = await page.evaluate(() => {
-        const el = document.querySelector('header h1') || document.querySelector('h1');
+      const wm = await page.evaluate((sel) => {
+        const el = sel
+          ? document.querySelector(sel)
+          : document.querySelector('header h1') || document.querySelector('h1');
         if (!el) return null;
         const cs = getComputedStyle(el);
         let lh = parseFloat(cs.lineHeight);
@@ -166,9 +217,11 @@ try {
           whiteSpace: cs.whiteSpace,
           fontSize: cs.fontSize,
         };
-      });
+      }, wordmarkSelector);
       if (!wm) {
-        const msg = 'wordmark check: no header h1 found on the page';
+        const msg = wordmarkSelector
+          ? `wordmark check: selector "${wordmarkSelector}" matched no element on the page`
+          : 'wordmark check: no header h1 found on the page';
         failures.push(msg);
         say(`[FAIL] ${msg}`);
       } else if (wm.whiteSpace !== 'nowrap') {

@@ -10,8 +10,13 @@ design errors on a phone after deploy.
 
 ```bash
 cd ~/workspace/tools/design-gate
-node gate.mjs <page-file-or-local-url> [--out <dir>]
+node gate.mjs <page-file-or-local-url> [--out <dir>] [--wordmark <css-selector>]
 ```
+
+- `--wordmark` (v0.2, 2026-11-19): on component-built sites the wordmark is not
+  the header `h1` — pass the CSS selector of the element that carries it
+  (uze-web: `--wordmark ".wordmark"`) and the one-line check measures that
+  element instead. The rule checked is identical.
 
 - Target: a local HTML file, or a URL on `localhost` / `127.0.0.1` (serve the app
   locally first). Public URLs are refused: the sandbox Chrome binary cannot reach
@@ -35,11 +40,22 @@ node gate.mjs <page-file-or-local-url> [--out <dir>]
    `#ffffff` white. Any other value is a named failure with its occurrence count.
    This is the check that makes the 2026-11-18 red/green status colors
    (`#b02a37` / `#2e7d32`) a build failure instead of a screenshot review.
+   For URL targets (v0.2) the page's same-origin stylesheets are fetched and
+   linted with the HTML — a served app's palette lives in its CSS — while
+   inline script contents are excluded (framework payloads, e.g. Next.js's
+   embedded default error-page CSS, are not authored design; authored colors
+   render through stylesheets, style elements, and style attributes, which
+   all stay in the corpus). A fully
+   transparent hex (alpha `00`, e.g. the minified `#0000` of
+   `color: transparent`) renders as no color and is counted, never a
+   violation; semi-transparent colors lint on their RGB, so a black scrim
+   must be an ink scrim.
 2. **Renders.** Full-page screenshots at 420px (phone) and 1280px (desktop),
    saved beside the report for the builder's own visual pass (house skill §6.1–6.2:
    the screenshots are looked at, not just produced).
-3. **Wordmark one-line check at 420px**, measured on the live render of the header
-   `h1`, in two parts:
+3. **Wordmark one-line check at 420px**, measured on the live render of the
+   wordmark element — the header `h1` by default, or the element named by
+   `--wordmark <css-selector>` — in two parts:
    - the wordmark must carry `white-space: nowrap` (computed style; house rule §2).
      This is the guarantee: rendered fit in one engine is font-metric luck — the
      2026-11-18 wrap reached a phone whose render differed from desktop Chromium —
@@ -58,13 +74,13 @@ injected into the rendered page from its local file (`node_modules/axe-core/axe.
 — no network needed at gate time.
 
 Axe findings are currently **report-only (WARN, not a gate failure)**, deliberately:
-the Dev Library page carries two known findings (see PROOF-2026-11-19.md —
-`select-name`, critical, the filter `<select>`s have no accessible name; and
-`heading-order`, moderate). Failing every build on findings that predate the gate
-would train everyone to ignore the gate. **Known next step:** fix those two findings
-in the page, then promote axe violations of impact `critical`/`serious` to hard
-failures in `gate.mjs`. Until then the floor exists, is printed on every run, and
-cannot silently regress without showing up in a report.
+failing every build on findings that predate the gate would train everyone to
+ignore the gate. The Dev Library page's two original findings (`select-name`,
+`heading-order`) were fixed 2026-11-19 and that page now runs at 0 violations;
+uze-web carries report-only findings of its own (see its Stage 1 wash report).
+**Known next step:** promote axe violations of impact `critical`/`serious` to
+hard failures in `gate.mjs`. Until then the floor exists, is printed on every
+run, and cannot silently regress without showing up in a report.
 
 ## Proof
 

@@ -10,7 +10,82 @@ on:
     branches: [main]
 
 jobs:
+  # DESIGN CAR WASH — uze-web (added 2026-11-19 — HUMAN ECOSYSTEM DESIGN,
+  # Stage 1 second wire): builds the app the way CI builds it (standalone),
+  # serves it locally, and washes every route listed in design-wash.json
+  # "urls" against the canonical tokens — palette lint (rendered HTML +
+  # stylesheets), 420px + 1280px renders, wordmark one-line check on the
+  # .wordmark element, axe floor. web-vercel `needs:` this job, so a failed
+  # wash fails the deploy. Gate: tools/design-gate (pinned vendored copy of
+  # the canonical gate; see its VENDORED.md).
+  design-car-wash-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install gate dependencies (local to the gate, never global)
+        run: npm install --no-workspaces --no-audit --no-fund --prefix tools/design-gate
+      - name: Point the gate at the runner's Chrome
+        run: |
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME_BIN" ]; then
+            echo "::error::No Chrome/Chromium on this runner — the wash cannot render."
+            exit 2
+          fi
+          echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
+      - name: Install + build uze-web (standalone, as CI builds it)
+        working-directory: ./apps/uze-web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          mkdir -p .next/standalone/apps/uze-web/.next
+          cp -r .next/static .next/standalone/apps/uze-web/.next/static
+          cp -r public .next/standalone/apps/uze-web/public
+      - name: Serve the built app locally
+        working-directory: ./apps/uze-web
+        run: |
+          PORT=3100 nohup node .next/standalone/apps/uze-web/server.js > /tmp/uze-web-wash-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null http://localhost:3100/; then echo "server up"; break; fi
+            sleep 2
+          done
+          curl -s -o /dev/null -w "wash target home: %{http_code}\n" http://localhost:3100/
+      - name: Run the wash — every listed route must pass
+        run: |
+          ENTRIES=$(node -e "const d=JSON.parse(require('fs').readFileSync('design-wash.json','utf8')); for (const e of d.urls||[]) console.log(e.url + '|' + (e.wordmark||''))")
+          FAIL=0
+          while IFS='|' read -r url wm; do
+            [ -z "$url" ] && continue
+            echo "── Washing: $url"
+            SLUG=$(echo "$url" | sed 's|http://localhost:3100||; s|^/$|home|; s|^/||; s|/|_|g')
+            if [ -n "$wm" ]; then
+              node tools/design-gate/gate.mjs "$url" --wordmark "$wm" --out "design-wash-out/web-$SLUG"
+            else
+              node tools/design-gate/gate.mjs "$url" --out "design-wash-out/web-$SLUG"
+            fi
+            rc=$?
+            if [ $rc -ne 0 ]; then
+              echo "::error::Design wash FAILED for $url (gate exit $rc). Named failures are in the gate output above and in its report artifact."
+              FAIL=1
+            fi
+          done <<< "$ENTRIES"
+          exit $FAIL
+      - name: Keep the wash evidence (reports + screenshots)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-wash-web-evidence
+          path: design-wash-out/
+          if-no-files-found: ignore
+
   web-vercel:
+    needs: design-car-wash-web
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:

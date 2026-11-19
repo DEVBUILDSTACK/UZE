@@ -111,7 +111,18 @@ paint is tenant property.
 - Branded surfaces in this repo: `apps/dev-library` (UZE Dev Library —
   dev.uzemarkets.com) and `apps/uze-web` (uzemarkets.com).
 - Wash targets (pages the workflow gates): see `design-wash.json` —
-  Stage 1 wires `apps/dev-library/public/index.html` first; the uze-web
-  wire follows in Stage 1 (its pages are server-rendered; the wash target
-  is set when its rendered output is gated).
+  `apps/dev-library/public/index.html` (file target, washed by the
+  `design-car-wash` job in deploy-dev-library.yml) and the uze-web routes
+  `/`, `/mcp-utility`, `/knowledge-base` (URL targets against the locally
+  served production build, washed by the `design-car-wash-web` job in
+  deploy.yml; wordmark measured on the `.wordmark` element).
+- **uze-web wash state at wiring (2026-11-19): FAILING on four hexes, by
+  record.** The wordmark passes (nowrap, one line) and the clear
+  violations were fixed at wiring (pure-black hover and scrim → ink;
+  debug red `#d64545` → ink). What remains is a working tint/shade
+  practice the eight-token set does not cover: link shade `#c24e00`,
+  button hover shade `#e05f00`, banner tint `#fff4ec`, ombre end
+  `#ff9e45` — held for James's ruling (ratify as named derivative tokens
+  in `tokens.json`, or flatten to the eight). Until he rules, the wash
+  holds uze-web deploys — that is the gate working as ratified.
 - Tenant deployments: none.
