@@ -163,6 +163,56 @@ const handleRequest = async (req, res) => {
       return send(res, 200, { developer: publicDev(d) });
     }
 
+    // --- scope status (session required): the multi-scope
+    // performance report, rendered on this host from the same data
+    // file the Buildr Team surface renders (eco/scope-report.json),
+    // so an engaged developer reads it in their dev login while a
+    // contributor reads it on the Buildr Team surface (James,
+    // 2026-11-19). Refreshed nightly at the developer-day mark. ---
+    if (p === "/scope-status" && req.method === "GET") {
+      const d = sessionOf(req);
+      if (!d) { res.writeHead(302, { location: "/" }); return res.end(); }
+      const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const R = JSON.parse(fs.readFileSync(path.join(ROOT, "eco", "scope-report.json"), "utf8"));
+      const scopeCards = R.scopes.map((s) => `
+<section class="card"><h2>${esc(s.id)} — ${esc(s.name)}</h2>
+<p class="lede">${esc(s.description)}</p>
+<p><strong>Tier A — scope &amp; phased specs:</strong> ${esc(s.tierA)}</p>
+<p><strong>Tier B — build:</strong> ${esc(s.tierB)}</p>
+<p><strong>Tier C — to final audited production: ${esc(String(s.tierC))}%</strong></p>
+<p><strong>Stage:</strong> ${esc(s.stage)}</p>
+<h3>Blockers</h3>
+${s.blockers.map((b) => `<p>— <strong>${esc(b.kind)}:</strong> ${esc(b.text)}</p>`).join("")}
+</section>`).join("");
+      const actRows = R.activity.repos.map((x) => `<p>— <strong>${esc(x.repo)}</strong> (${esc(x.scope)}): last push ${esc(x.pushedAt)}; pushes, last 24h: ${x.pushes24h.length ? x.pushes24h.map((pp) => `${esc(pp.author)} ×${esc(String(pp.n))}`).join(" · ") : "no pushes in the window"}; open pull requests: ${esc(String(x.openPrs))}; open items (issues + PRs, as GitHub counts them): ${esc(String(x.openItems))}.</p>`).join("");
+      const page = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scope status · UZE Dev Library</title>
+<style>
+:root{--orange:#ff6b00;--cream:#f5f2ee;--creamsicle:#FDEEE2;--ink:#1a1a1a;--muted:#6b655e;--line:#ddd5c9}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 48px}
+.band{background:var(--ink);border-radius:14px;padding:22px 26px;color:#fff}
+.band h1{font-family:Georgia,'Times New Roman',serif;font-size:27px;margin:0;font-weight:700;white-space:nowrap}
+.uze{color:var(--orange)}.eyebrow{font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-top:18px}
+.card h2{font-family:Georgia,'Times New Roman',serif;font-size:21px;margin:0 0 8px}
+.card h3{font-family:Georgia,'Times New Roman',serif;font-size:17px;margin:18px 0 6px}
+.card p{line-height:1.65;margin:0 0 12px}.card p.lede{font-size:17px}
+a{color:var(--ink);font-weight:600}
+</style></head><body><div class="wrap">
+<header class="band"><h1><span class="uze">UZE</span> Dev Library</h1><div class="eyebrow">SCOPE STATUS — THE MULTI-SCOPE PERFORMANCE REPORT</div></header>
+<section class="card"><h2>Where the work stands</h2>
+<p class="lede">Where the code is moving, where deployment is moving, and where we are hung up — blockers classified: technical · financial · talent · agreement · grant.</p>
+<p>Updated ${esc(R.updated)}. ${esc(R.devDayNote)}</p>
+<p><a href="/">← Back to the UZE Dev Library</a></p></section>
+${scopeCards}
+<section class="card"><h2>Repository drill-down</h2><p>${esc(R.activity.windowNote)}</p>${actRows}</section>
+</div></body></html>`;
+      res.writeHead(200, { "content-type": "text/html" });
+      return res.end(page);
+    }
+
     // --- the room (session required) ---
     if (p === "/api/catalog" && req.method === "GET") {
       const d = sessionOf(req); if (!d) return send(res, 401, { error: "no session" });

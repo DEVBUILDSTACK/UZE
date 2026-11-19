@@ -57,6 +57,17 @@ try {
   ok("hero.jpg served (hosted email imagery, public)", heroJpg.status === 200 && (heroJpg.headers.get("content-type") || "").includes("image/jpeg"));
   const heroGif = await fetch(B + "/hero.gif");
   ok("hero.gif served (hosted email imagery, public)", heroGif.status === 200 && (heroGif.headers.get("content-type") || "").includes("image/gif"));
+  const swoop = await fetch(B + "/swoop.png");
+  ok("swoop.png served (the Tri-Swoop email lockup, public)", swoop.status === 200 && (swoop.headers.get("content-type") || "").includes("image/png"));
+
+  // Scope status on this host (James, 2026-11-19): signed-in devs
+  // read the same report the Buildr Team surface renders.
+  const ssAnon = await fetch(B + "/scope-status", { redirect: "manual" });
+  ok("scope-status: signed-out redirects to the door", ssAnon.status === 302);
+  const idx = await (await fetch(B + "/")).text();
+  ok("macro FAQ carries the scope-status entry with both surfaces' doors",
+    idx.includes("Scope status — where the work stands") && idx.includes('href="/scope-status"') &&
+    idx.includes("buildr-eco.uzemarkets.com/scopes"));
 
   // ---- FAQ: one macro section on the page + a per-sample How-To
   // generated from each mock's catalog fields at render time ----
@@ -127,6 +138,11 @@ try {
   ok("invitations queued (not sent)", comms().filter(s => s.kind === "invitation" && ["ina@test.dev", "xan@test.dev"].includes(s.to)).length === 2 && comms().every(s => s.status === "queued"));
 
   const ina = await signIn("ina@test.dev");
+  const ss = await fetch(B + "/scope-status", { headers: { cookie: ina } });
+  const ssText = await ss.text();
+  ok("scope-status: renders all four scopes + the drill-down, signed in",
+    ss.status === 200 && ssText.includes("Scope 1") && ssText.includes("Scope 4") &&
+    ssText.includes("Repository drill-down") && ssText.includes("10:29 PM EST"));
   const cat = await call("/api/catalog", { cookie: ina });
   ok("internal dev sees BOTH + INTERNAL_ONLY mocks", cat.body.mocks.length === 2);
   ok("FAQ: every catalog entry carries the fields its per-sample FAQ renders from",
