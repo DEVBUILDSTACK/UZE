@@ -216,7 +216,7 @@ export function renderHtml(entry) {
     </div>
     <div style="margin-top:28px">
       <div style="font-size:22px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span class="em-text" style="color:#1a1a1a">markets</span></div>
-      <div class="em-muted" style="font-size:11px;letter-spacing:2.5px;color:#6b655e;margin-top:2px">${esc(entry.footerEyebrow || "THE TALENT DESK · DEV LIBRARY")}</div>
+      <div class="em-muted" style="font-size:10px;letter-spacing:1px;color:#6b655e;margin-top:2px;white-space:nowrap">${entry.footerEyebrow ? esc(entry.footerEyebrow) : `THE TALENT DESK · DEV LIBRARY · <a href="https://buildr-eco.uzemarkets.com" style="color:#6b655e;text-decoration:none">BUILDER COLLABORATOR</a>`}</div>
     </div>`
     : `<div class="em-div" style="border-top:1px solid #ddd5c9;margin-top:24px;padding-top:14px">
       <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">The UZE Markets Desk · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")} · ${LINK(SITE, SITEL)}</p>

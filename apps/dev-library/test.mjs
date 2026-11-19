@@ -635,7 +635,7 @@ try {
     inv.html.indexOf("Join us on WhatsApp") > inv.html.indexOf("font-size:22px"));
   ok("naming rule: no external copy says 'reading room' (James, 2026-11-18)",
     !!inv && !/reading room/i.test(inv.html) && !/reading room/i.test(inv.text) &&
-    inv.html.includes(">DEV LIBRARY<") && inv.html.includes("THE TALENT DESK · DEV LIBRARY") &&
+    inv.html.includes(">DEV LIBRARY<") && inv.html.includes("THE TALENT DESK · DEV LIBRARY · <a href=\"https://buildr-eco.uzemarkets.com\"") && inv.html.includes(">BUILDER COLLABORATOR</a>") &&
     inv.html.includes("Sign-in is by an"));
   const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
   ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));
