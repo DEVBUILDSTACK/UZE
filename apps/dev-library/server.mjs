@@ -27,7 +27,13 @@ import { composeInvitation, invitationKindFor } from "./lib/invitations.mjs";
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8734;
 const MASTER = process.env.LIBRARY_MASTER_TOKEN || "";
-const INDEX = fs.readFileSync(path.join(ROOT, "public", "index.html"), "utf8");
+// The library page lives OUTSIDE any static-served directory on
+// purpose: Vercel serves public/ files before the rewrite reaches
+// this function, and the eco host (buildr-eco.uzemarkets.com) must
+// route "/" through the host check below — a static index would put
+// the Dev Library page at the Buildr Team root. The function serves
+// these exact bytes for the library host, as before.
+const INDEX = fs.readFileSync(path.join(ROOT, "library-index.html"), "utf8");
 
 const send = (res, code, obj, headers = {}) => {
   res.writeHead(code, { "content-type": "application/json", ...headers });
