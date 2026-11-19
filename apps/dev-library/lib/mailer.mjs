@@ -252,8 +252,13 @@ ${STYLE_BLOCK}
 <tr><td align="center" style="padding:28px 12px">
 <table role="presentation" class="em-card" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="border-collapse:separate;width:600px;max-width:600px;background-color:#ffffff;border:1px solid #ddd5c9;border-radius:14px">
 <tr><td bgcolor="#1a1a1a" style="background-color:#1a1a1a;border-top-left-radius:14px;border-top-right-radius:14px;padding:20px 34px">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="padding-right:14px;vertical-align:middle"><img src="https://dev.uzemarkets.com/swoop.png" width="29" height="34" alt="UZEmarkets Tri-Swoop" style="display:block;border:0" /></td>
+<td style="vertical-align:middle">
 <div style="font-size:21px;font-weight:800;letter-spacing:-0.2px"><span style="color:#ff6b00">UZE</span><span style="color:#ffffff">markets</span></div>
 <div style="font-size:10px;letter-spacing:2.5px;color:#b8b0a4;margin-top:3px">${esc(entry.bandLabel || "DEV LIBRARY")}</div>
+</td>
+</tr></table>
 </td></tr>
 ${heroRow}
 <tr><td class="em-pad" style="padding:28px 34px 24px">

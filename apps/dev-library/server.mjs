@@ -119,10 +119,10 @@ const handleRequest = async (req, res) => {
     // without a session). Hosted on our own domain per the design
     // spec — hero.jpg is the static 1200x400 (2x) hero, hero.gif the
     // animated version whose first frame is that same design. ---
-    if ((p === "/hero.jpg" || p === "/hero.gif") && req.method === "GET") {
+    if ((p === "/hero.jpg" || p === "/hero.gif" || p === "/swoop.png") && req.method === "GET") {
       const file = path.join(ROOT, "assets", p.slice(1));
       if (!fs.existsSync(file)) return send(res, 404, { error: "not found" });
-      res.writeHead(200, { "content-type": p.endsWith(".gif") ? "image/gif" : "image/jpeg",
+      res.writeHead(200, { "content-type": p.endsWith(".gif") ? "image/gif" : p.endsWith(".png") ? "image/png" : "image/jpeg",
         "cache-control": "public, max-age=86400" });
       return res.end(fs.readFileSync(file));
     }
