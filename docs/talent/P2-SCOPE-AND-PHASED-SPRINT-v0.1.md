@@ -1,6 +1,7 @@
 # P2 Assessment — Scope and Phased Sprint v0.1 (Separated Track)
 
-**Status: SEPARATED TRACK — FOR JAMES'S TAP.** This document consolidates the P2 Assessment track into a single build-order instrument. **It authorizes nothing by itself**: no build begins before James's tap on this track, and the tap — when it comes — authorizes no send, no spend, no rail enable, and no real grant; those keep their own gates. P2 is **Scope 2** in the consolidated set. Per James's direction it stands **separate** from the merged P1 + P3 program (`docs/merged/P1-P3-MERGED-SCOPE-AND-PHASED-SPRINT-v0.1.md`); its seam with that program is specified in §5 of this document and nowhere else.
+**Status: SEPARATED TRACK — TAPPED BY JAMES, verbally, 2026-11-18 21:26 ET** ("with the P2 scope and phased sprint that's filed, I'm tapping it verbally… one instrument for the separated track, it's tapped. Execute."). Execution begins on the tap; the tap authorizes the build in this document — no send, no spend, no rail enable, and no real grant; those keep their own gates.
+**Original status (pre-tap): SEPARATED TRACK — FOR JAMES'S TAP.** This document consolidates the P2 Assessment track into a single build-order instrument. **It authorizes nothing by itself**: no build begins before James's tap on this track, and the tap — when it comes — authorizes no send, no spend, no rail enable, and no real grant; those keep their own gates. P2 is **Scope 2** in the consolidated set. Per James's direction it stands **separate** from the merged P1 + P3 program (`docs/merged/P1-P3-MERGED-SCOPE-AND-PHASED-SPRINT-v0.1.md`); its seam with that program is specified in §5 of this document and nowhere else.
 Produced by SoSem, 2026-11-18.
 **Addressee:** James.
 
