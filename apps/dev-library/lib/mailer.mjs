@@ -162,7 +162,12 @@ export function renderHtml(entry) {
   const preheader = entry.preheader || PREHEADER[entry.kind] || "";
   const code = (entry.kind === "otp" || entry.kind === "eco-otp") && entry.body.match(/is (\d{6})\./)?.[1];
   const pText = (inner) => `<p class="em-text" style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#1a1a1a">${inner}</p>`;
-  const paras = esc(entry.body).split(/\n+/).filter(Boolean).map(pText).join("");
+  // Bare URLs in a body render as house links (letters carry links
+  // in prose — an advisor's mock-up link above all). Escape first,
+  // then linkify; the plain-text part keeps the raw URL.
+  const linkify = (s) => s.replace(/(https:\/\/[^\s<]+)/g,
+    (u) => `<a href="${u}" style="color:#ff6b00;font-weight:700;text-decoration:underline">${u}</a>`);
+  const paras = esc(entry.body).split(/\n+/).filter(Boolean).map((p) => pText(linkify(p))).join("");
   const headline = desk && HEADLINE[entry.kind]
     ? `<h1 class="em-head" style="margin:0 0 18px;font-family:${SERIF};font-size:29px;line-height:1.2;font-weight:700;color:#1a1a1a">${HEADLINE[entry.kind]}</h1>` : "";
   const codeBlock = code ? `<div class="em-code" style="text-align:center;margin:22px 0;padding:20px;background-color:#f5f2ee;border:1px solid #ddd5c9;border-radius:10px"><span class="em-code-num" style="font-size:34px;font-weight:800;letter-spacing:8px;color:#1a1a1a">${code}</span></div>` : "";

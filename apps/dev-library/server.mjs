@@ -220,6 +220,16 @@ ${scopeCards}
     // (the venue ticketing UI inside the agent-acquisition sample,
     // James, 2026-11-19: two faces, the human flow and the agent
     // underneath). Basename + .html only; nothing else is served. ---
+    // The advisor mock link (James, 2026-11-19): an advisor is
+    // someone we send a LINK to a mock-up — human face only, no
+    // sign-in (there is no advisor surface), no code, no repo.
+    // This route is public BY DESIGN and serves only the venue
+    // mock-up; everything else in the library stays behind the
+    // session.
+    if (p === "/mock/venue-ticketing" && req.method === "GET") {
+      res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300", "x-robots-tag": "noindex" });
+      return res.end(VENUE_UI_HTML);
+    }
     if (p.startsWith("/samples/") && req.method === "GET") {
       const d = sessionOf(req);
       if (!d) { res.writeHead(302, { location: "/" }); return res.end(); }

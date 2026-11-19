@@ -168,6 +168,19 @@ try {
     JSON.stringify(byClass("dev-external").sort()) === JSON.stringify(["dipanshuhappy@gmail.com", "mnithin1422@gmail.com"]) &&
     (cls.body.people.find(p => p.email === "uze@uzemarkets.com") || {}).greeting === "Hammond");
 
+  // The advisor mock link: public by design (an advisor gets a
+  // link, not a sign-in), human face only.
+  const mk = await fetch(B + "/mock/venue-ticketing");
+  ok("advisor mock link: the venue UI serves publicly at /mock/venue-ticketing",
+    mk.status === 200 && (await mk.text()).includes("Venue Ticketing"));
+  // Letters linkify bare URLs in the HTML part; the text part
+  // keeps the raw URL.
+  const { renderHtml: rH, renderText: rT } = await import("./lib/mailer.mjs");
+  const probe = { kind: "letter", to: "x@example.com", subject: "s", body: "See it here: https://dev.uzemarkets.com/mock/venue-ticketing — that is the whole of it." };
+  ok("letter body: a bare URL renders as a link in HTML, stays raw in text",
+    rH(probe).includes('<a href="https://dev.uzemarkets.com/mock/venue-ticketing"') &&
+    rT(probe).includes("https://dev.uzemarkets.com/mock/venue-ticketing") && !rT(probe).includes("<a href"));
+
   const ata = await call("/api/mock/agent-ticket-acquisition", { cookie: ina });
   ok("agent-acquisition sample carries its two faces (humanView + the verbal summary)",
     ata.status === 200 && ata.body.mock.humanView?.file === "venue-ticketing-ui.html" &&
