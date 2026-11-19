@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const ROWS = [
   {
     name: "Talent systems",
@@ -32,6 +34,16 @@ export default function C3EnterpriseServices() {
             </div>
           </div>
         ))}
+      </div>
+      <div className="c3-cards">
+        <Link href="/c3-admin-hub/enterprise-services/scope-performance" className="c3-card">
+          <span className="c3-card-name">Project Scope Performance and Status</span>
+          <span className="c3-card-line">
+            The multi-scope performance report — Scopes 1–4 with their
+            tiers, stages, and classified blockers, plus the repository
+            drill-down. Refreshed nightly at the developer-day mark.
+          </span>
+        </Link>
       </div>
     </>
   );
