@@ -97,6 +97,48 @@ CREATE TABLE IF NOT EXISTS otp_code (
   expires_at bigint NOT NULL                -- epoch ms
 );
 
+-- Role × Realm taxonomy (M1): the typed mirror of each developer's
+-- pairs, written through from the developer record. The taxonomy is
+-- enforced HERE, in the data: role/realm/rank value sets, the 1–5
+-- ordinal bound, ordinal 1 ⇔ PRIMARY (I1), no duplicate (role, realm).
+CREATE TABLE IF NOT EXISTS developer_expertise (
+  email   text NOT NULL,
+  ordinal int  NOT NULL CHECK (ordinal BETWEEN 1 AND 5),
+  role    text NOT NULL CHECK (role IN ('DIGITAL_DESIGN_DEV','FULL_STACK_DEV','FRONT_END_DEV',
+            'BLOCKCHAIN_DEV','SMART_CONTRACT_DEV','BLOCKCHAIN_CTO','DEVELOPER_ADVOCATE',
+            'TALENT_HR_SPECIALIST','DATA_SCIENTIST','AI_SI_SPECIALIST','OTHER_ROLE')),
+  realm   text NOT NULL CHECK (realm IN ('LIGHTNING','NFT_WALLETS','NEAR_AI','CROSS_CHAIN','LIGHTER','OTHER_REALM')),
+  rank    text NOT NULL CHECK (rank IN ('PRIMARY','SECONDARY','TERTIARY','QUATERNARY','QUINARY')),
+  PRIMARY KEY (email, ordinal),
+  UNIQUE (email, role, realm),
+  CHECK ((ordinal = 1) = (rank = 'PRIMARY'))
+);
+
+-- Track B engagements (M1): typed columns carry the facts the state
+-- is derived from; the full record rides in `data`. The reveal order
+-- is enforced in the data: no deposit without a signature first.
+-- Engagements run on invoice through M3 (amendment C2) — no payment
+-- columns exist here by design.
+CREATE TABLE IF NOT EXISTS engagement (
+  id               text PRIMARY KEY,
+  title            text NOT NULL,
+  client_name      text NOT NULL,
+  service          text NOT NULL CHECK (service IN ('AUG','OUTSTAFF','PLACE','PROJECT')),
+  deployment       text NOT NULL CHECK (deployment IN ('REMOTE','HYBRID','MIXED','ONSITE')),
+  commercial_model text NOT NULL CHECK (commercial_model IN ('OUTSTAFFING','PLACEMENT')),
+  fee_months       numeric,
+  developer_email  text,
+  signed_at        timestamptz,
+  deposit_at       timestamptz,
+  closed_at        timestamptz,
+  cancelled_at     timestamptz,
+  created_at       timestamptz NOT NULL,
+  data             jsonb NOT NULL DEFAULT '{}'::jsonb,
+  CHECK ((commercial_model = 'PLACEMENT') = (fee_months IS NOT NULL)),
+  CHECK (commercial_model <> 'PLACEMENT' OR fee_months >= 1),
+  CHECK (deposit_at IS NULL OR signed_at IS NOT NULL)
+);
+
 CREATE TABLE IF NOT EXISTS comment (
   id       bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   slug     text NOT NULL,

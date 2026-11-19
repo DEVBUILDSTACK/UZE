@@ -2,6 +2,7 @@
 // Every operation writes the chronicle. Revocation resets access to
 // zero and preserves the history — the chronicle is never rewritten.
 import { load, save, chronicle, commsSend } from "./store.mjs";
+import { validatePairs, TRACKS } from "./taxonomy.mjs";
 
 const STAGES = ["prospect", "contacted", "recruiting", "reading-room", "source-access", "revoked"];
 function mutate(email, fn) {
@@ -14,16 +15,36 @@ function setStage(d, stage) {
   d.stage = stage; d.stageHistory = d.stageHistory || [];
   d.stageHistory.push({ stage, at: new Date().toISOString() });
 }
-export function addDeveloper({ name, email, expertise = [], roadmapExempt = false, track = "EITHER" }) {
+export function addDeveloper({ name, email, expertise = [], pairs = null, roadmapExempt = false, track = "EITHER" }) {
   const db = load("developers.json");
   if (db.developers.some(x => x.email.toLowerCase() === email.toLowerCase())) throw new Error("already listed: " + email);
-  const d = { name, email, expertise: expertise.slice(0, 5), roadmapExempt, track,
+  const normPairs = pairs ? validatePairs(pairs) : [];
+  const d = { name, email, expertise: normPairs.length ? [...new Set(normPairs.map(p => p.realm))] : expertise.slice(0, 5),
+    pairs: normPairs, roadmapExempt, track,
     contact: { email: { done: false, at: null }, whatsapp: { done: false, at: null } },
     readingRoom: { active: false, grantedAt: null, revokedAt: null },
     source: [], sessionEpoch: 0, roadmap: null, stage: "prospect", stageHistory: [{ stage: "prospect", at: new Date().toISOString() }] };
   db.developers.push(d); save("developers.json", db);
-  chronicle("developer-added", { email, name, expertise: d.expertise });
+  chronicle("developer-added", { email, name, expertise: d.expertise, pairs: d.pairs });
   return d;
+}
+// Role × Realm taxonomy (I1): up to five pairs, PRIMARY → QUINARY by
+// position, no duplicate (role, realm). The realm list (`expertise`)
+// is kept as the derived mirror of the pairs so the existing filters
+// and UI keep reading one shape.
+export function setExpertise(email, pairsInput) {
+  const pairs = validatePairs(pairsInput);
+  const d = mutate(email, (x) => { x.pairs = pairs; x.expertise = [...new Set(pairs.map(p => p.realm))]; });
+  chronicle("expertise-set", { email, pairs }); return d;
+}
+// Track transitions are routine by the desk and logged (BUILD-SCOPE
+// §A.7 item 2): INTERNAL_ONLY = Track A (never placed), EXTERNAL_PLACED
+// = Track B, EITHER = available to both.
+export function setTrack(email, track) {
+  if (!TRACKS.includes(track)) throw new Error("invalid track: " + track);
+  let from = null;
+  const d = mutate(email, (x) => { from = x.track || "EITHER"; x.track = track; });
+  chronicle("track-set", { email, from, to: track }); return d;
 }
 export function markContact(email, channel) { // channel: "email" | "whatsapp" — the only two doors
   if (!["email", "whatsapp"].includes(channel)) throw new Error("contact channel must be email or whatsapp");

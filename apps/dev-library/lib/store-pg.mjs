@@ -58,6 +58,24 @@ async function persist(name, obj) {
          d.sessionEpoch || 0, d.roadmap || null, !!d.roadmapExempt, JSON.stringify(d)]);
       await q(`UPDATE developer_status SET gating_status=$2 WHERE email=$1`,
         [d.email.toLowerCase(), d.readingRoom?.active ? "granted" : (d.stage === "revoked" ? "revoked" : "not-granted")]);
+      await q(`DELETE FROM developer_expertise WHERE email=$1`, [d.email.toLowerCase()]);
+      for (const p of d.pairs || []) {
+        await q(`INSERT INTO developer_expertise (email,ordinal,role,realm,rank) VALUES ($1,$2,$3,$4,$5)`,
+          [d.email.toLowerCase(), p.ordinal, p.role, p.realm, p.rank]);
+      }
+    }
+  } else if (name === "engagements.json") {
+    for (const e of obj.engagements) {
+      await q(`INSERT INTO engagement (id,title,client_name,service,deployment,commercial_model,fee_months,
+                 developer_email,signed_at,deposit_at,closed_at,cancelled_at,created_at,data)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+               ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, client_name=EXCLUDED.client_name,
+                 service=EXCLUDED.service, deployment=EXCLUDED.deployment, commercial_model=EXCLUDED.commercial_model,
+                 fee_months=EXCLUDED.fee_months, developer_email=EXCLUDED.developer_email,
+                 signed_at=EXCLUDED.signed_at, deposit_at=EXCLUDED.deposit_at, closed_at=EXCLUDED.closed_at,
+                 cancelled_at=EXCLUDED.cancelled_at, data=EXCLUDED.data`,
+        [e.id, e.title, e.clientName, e.service, e.deployment, e.commercialModel, e.feeMonths,
+         e.developerEmail, e.signedAt, e.depositAt, e.closedAt, e.cancelledAt, e.createdAt, JSON.stringify(e)]);
     }
   } else if (name === "mocks.json") {
     for (const m of obj.mocks) {
@@ -92,7 +110,7 @@ export async function initPgStore() {
   const { rows: mockCount } = await pool.query("SELECT count(*)::int AS n FROM mock");
   if (devCount[0].n === 0 && mockCount[0].n === 0) {
     // First boot on an empty DB: adopt the working set as the record.
-    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json"]) {
+    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json"]) {
       await persist(name, load(name));
     }
   } else {
@@ -109,6 +127,8 @@ export async function initPgStore() {
     save("comms-log.json", { version: 1, sender: "desk@uzemarkets.com", sends: sends.rows.map(r => r.data) });
     const comments = await pool.query("SELECT slug, by_email AS by, at, text FROM comment ORDER BY id");
     save("comments.json", { version: 1, comments: comments.rows.map(r => ({ slug: r.slug, by: r.by, at: new Date(r.at).toISOString(), text: r.text })) });
+    const engs = await pool.query("SELECT data FROM engagement ORDER BY created_at");
+    save("engagements.json", { version: 1, engagements: engs.rows.map(r => r.data) });
   }
   setPersister((name, obj) => { chain = chain.then(() => persist(name, obj)).catch(e => console.error("pg persist failed:", name, e.message)); });
   return pool;
