@@ -192,6 +192,23 @@ try {
     faq.text.includes('href="/surfaces/human"') && faq.text.includes('href="/surfaces/agentic"') &&
     faq.text.includes("Diagram code") && faq.text.includes("not a third surface"));
   ok("A: no internal naming on the micro FAQ", !/reading room/i.test(faq.text));
+
+  // The living scope-status report (James, 2026-11-19): post-OTP
+  // only, rendered from eco/scope-report.json — the four scopes with
+  // tiers, stage and classified blockers, plus the repo drill-down.
+  const unauthScopes = await A.page("/scopes");
+  ok("A: unauthenticated /scopes redirects to the door",
+    unauthScopes.status === 302 && unauthScopes.location === "/");
+  const scopes = await A.page("/scopes", { cookie: jCookie });
+  ok("A: the scope-status page renders all four scopes with tiers, stage and blockers",
+    scopes.status === 200 && scopes.text.includes("Scope 1") && scopes.text.includes("Scope 4") &&
+    scopes.text.includes("Tier C — to final audited production: 95%") &&
+    scopes.text.includes("Production (pre-revenue)") && scopes.text.includes("Agreement:") &&
+    scopes.text.includes("Financial:") && scopes.text.includes("Grant:"));
+  ok("A: the scope-status page carries the repository drill-down and the dev-day mark",
+    scopes.text.includes("Repository drill-down") && scopes.text.includes("10:29 PM EST") &&
+    scopes.text.includes("outreach-sales-shortcut"));
+  ok("A: no internal naming on the scope-status page", !/reading room/i.test(scopes.text));
   ok("A: home nav and the how-it-works card carry the door to the micro FAQ",
     jHome.text.includes('href="/faq"') && jHome.text.includes("How Buildr Team works — step by step"));
 

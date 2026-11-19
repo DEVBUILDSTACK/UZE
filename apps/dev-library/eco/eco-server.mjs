@@ -38,6 +38,11 @@ for (const name of ["human", "agentic", "diagrams", "overview"]) {
   FRAGMENTS[name] = fs.readFileSync(path.join(HERE, "content", `${name}.html`), "utf8");
 }
 
+// The living scope-status report (James, 2026-11-19): a data file,
+// refreshed nightly at the developer-day mark (10:29 PM EST) by the
+// scope-status cron — this module only renders it.
+const SCOPE_REPORT = JSON.parse(fs.readFileSync(path.join(HERE, "scope-report.json"), "utf8"));
+
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const STYLE = `
@@ -121,7 +126,7 @@ const STEP_LABELS = {
 const STEP_ORDER = Object.keys(STEP_LABELS);
 
 function navHtml(contributor, active) {
-  const items = [["/", "Home"], ["/ecosystem", "Ecosystem"], ["/surfaces/human", "Human surface"], ["/surfaces/agentic", "Agentic surface"], ["/faq", "How it works"]];
+  const items = [["/", "Home"], ["/ecosystem", "Ecosystem"], ["/scopes", "Scope status"], ["/surfaces/human", "Human surface"], ["/surfaces/agentic", "Agentic surface"], ["/faq", "How it works"]];
   for (const r of ORG_ROUTES) if (canSeeOrg(contributor, r.key)) items.push([`/org/${r.slug}`, r.acronym === "L2L" ? "L2Launch" : r.name]);
   return `<nav class="sections" aria-label="Sections">${items.map(([href, label]) =>
     `<a href="${href}"${href === active ? ' aria-current="page"' : ""}>${esc(label)}</a>`).join("")}</nav>`;
@@ -218,6 +223,7 @@ function homePage(contributor) {
   const progress = deriveProgress(contributor);
   const tiles = [
     ["/ecosystem", "The Ecosystem", "The verbal overview and the three diagrams — the whole picture, both surfaces woven through it."],
+    ["/scopes", "Scope status", "The living multi-scope performance report — where the code is, where deployment is, and the blockers, refreshed nightly."],
     ["/surfaces/human", "Human Design Surface", "The design language every person sees: one canonical source, eight values, the car wash."],
     ["/surfaces/agentic", "Agentic Design Surface", "The surface built for software agents: one guarded door, the chronicle, the treasury focus."],
   ];
@@ -341,6 +347,40 @@ function faqPage(contributor) {
   return layout({ title: "How it works", contributor, active: "/faq", body });
 }
 
+function scopesPage(contributor) {
+  const r = SCOPE_REPORT;
+  const scopeCards = r.scopes.map((s) => `
+<section class="card">
+<h2>${esc(s.id)} — ${esc(s.name)}</h2>
+<p class="lede">${esc(s.description)}</p>
+<p><strong>Tier A — scope &amp; phased specs:</strong> ${esc(s.tierA)}</p>
+<p><strong>Tier B — build:</strong> ${esc(s.tierB)}</p>
+<p><strong>Tier C — to final audited production: ${esc(String(s.tierC))}%</strong></p>
+<p><strong>Stage:</strong> ${esc(s.stage)}</p>
+<h3>Blockers</h3>
+${s.blockers.map((b) => `<p>— <strong>${esc(b.kind)}:</strong> ${esc(b.text)}</p>`).join("")}
+</section>`).join("");
+  const actRows = r.activity.repos.map((x) => {
+    const pushes = x.pushes24h.length
+      ? x.pushes24h.map((p) => `${esc(p.author)} ×${esc(String(p.n))}`).join(" · ")
+      : "no pushes in the window";
+    return `<p>— <strong>${esc(x.repo)}</strong> (${esc(x.scope)}): last push ${esc(x.pushedAt)}; pushes, last 24h: ${pushes}; open pull requests: ${esc(String(x.openPrs))}; open items (issues + PRs, as GitHub counts them): ${esc(String(x.openItems))}.</p>`;
+  }).join("");
+  const body = `
+<section class="card">
+<h2>Scope status — the multi-scope performance report</h2>
+<p class="lede">Where the code is moving, where deployment is moving, and where we are hung up — the same page for an engineer and for a principal. Blockers are classified: technical · financial · talent · agreement · grant.</p>
+<p>Updated ${esc(r.updated)}. ${esc(r.devDayNote)}</p>
+</section>
+${scopeCards}
+<section class="card">
+<h2>Repository drill-down</h2>
+<p>${esc(r.activity.windowNote)}</p>
+${actRows}
+</section>`;
+  return layout({ title: "Scope status", contributor, active: "/scopes", body });
+}
+
 function messagePage(contributor, title, text) {
   const body = `<section class="card"><h2>${esc(title)}</h2><p>${esc(text)}</p><p><a href="/">← Home</a></p></section>`;
   return layout({ title, contributor, body });
@@ -421,6 +461,10 @@ export async function handleEcoRequest(req, res, { send, body, ecoAdmin }) {
     if (req.method === "GET" && p === "/faq") {
       const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
       return html(res, 200, faqPage(c));
+    }
+    if (req.method === "GET" && p === "/scopes") {
+      const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
+      return html(res, 200, scopesPage(c));
     }
     if (req.method === "GET" && (p === "/surfaces/human" || p === "/surfaces/agentic")) {
       const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
