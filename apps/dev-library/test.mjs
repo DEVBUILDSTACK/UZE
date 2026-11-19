@@ -70,6 +70,9 @@ try {
   ok("FAQ: macro section names the desk as the contact and carries the exact-address sign-in rule",
     faqSection.includes("desk@uzemarkets.com") && faqSection.includes("character for character") &&
     faqSection.includes("no password"));
+  ok("FAQ: macro section is the UZE Dev Partner FAQ, framed for this page and its dev partners (not a global UZE FAQ)",
+    faqSection.includes("UZE Dev Partner FAQ") && faqSection.includes("For development partners") &&
+    faqSection.includes("how this page") && !faqSection.includes("How-To &amp; FAQ"));
   const faqGenAt = pageHtml.indexOf("[faq-sample:start]");
   const faqGen = faqGenAt >= 0 ? pageHtml.slice(faqGenAt, pageHtml.indexOf("[faq-sample:end]")) : "";
   ok("FAQ: per-sample generator ships in the page and the catalog render calls it for every card",
