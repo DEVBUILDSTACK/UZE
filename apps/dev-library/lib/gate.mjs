@@ -28,9 +28,11 @@ export async function requestCode(email) {
   const pg = await otpStore();
   if (pg) await pg.setOtp(email.toLowerCase(), sha(code), Date.now() + 15 * 60 * 1000);
   else codes.set(email.toLowerCase(), { hash: sha(code), expires: Date.now() + 15 * 60 * 1000 });
-  commsSend(email, "otp", "Your Dev Library sign-in code",
+  const entry = commsSend(email, "otp", "Your Dev Library sign-in code",
     `Your one-time sign-in code for the UZE Dev Library is ${code}. It expires in 15 minutes. If you were not expecting this, ignore this email.`);
-  return { sent: true };
+  // entryId lets the caller (server.mjs) attempt this entry's send
+  // synchronously, inside the request — see lib/mailer.mjs.
+  return { sent: true, entryId: entry.id };
 }
 export async function verifyCode(email, code) {
   const pg = await otpStore();

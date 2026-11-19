@@ -158,7 +158,17 @@ export async function initPgStore() {
     const entries = await pool.query("SELECT data FROM chronicle_entry ORDER BY id");
     save("chronicle.json", { version: 1, entries: entries.rows.map(r => r.data) });
     const sends = await pool.query("SELECT data FROM comms_send ORDER BY id");
-    save("comms-log.json", { version: 1, sender: "desk@uzemarkets.com", sends: sends.rows.map(r => r.data) });
+    // comms_send holds one row per STATE an entry passes through
+    // (persist's dedupe key is the whole entry JSON), so the same
+    // entry id appears several times — including stale "queued"
+    // snapshots of entries that later sent. Latest snapshot wins
+    // (rows arrive in id order, so the last row per id is current);
+    // without this, every cold start re-materializes the clogged
+    // multi-state log and the drain wastes its budget re-attempting
+    // snapshots of mail that already went out.
+    const byId = new Map();
+    for (const r of sends.rows) byId.set(r.data.id, r.data);
+    save("comms-log.json", { version: 1, sender: "desk@uzemarkets.com", sends: [...byId.values()] });
     const comments = await pool.query("SELECT slug, by_email AS by, at, text FROM comment ORDER BY id");
     save("comments.json", { version: 1, comments: comments.rows.map(r => ({ slug: r.slug, by: r.by, at: new Date(r.at).toISOString(), text: r.text })) });
     const engs = await pool.query("SELECT data FROM engagement ORDER BY created_at");

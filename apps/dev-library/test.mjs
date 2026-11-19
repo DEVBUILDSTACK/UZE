@@ -520,10 +520,28 @@ try {
   const v = await call2("/api/verify", { method: "POST", body: { email: "mia@test.dev", code: delivered } });
   ok("the delivered code signs in", v.status === 200 && !!v.cookie);
 
+  // OTP sends synchronously (2026-11-19 fix): the code's send is
+  // attempted inside the request-code request and its outcome
+  // persisted before the response returns — the general queue can
+  // no longer starve it. Proof: with a fresh developer, once the
+  // grant's own drain has settled (invitation marked sent), the
+  // comms log ALREADY shows the OTP entry sent, with the provider
+  // id, at the moment the request-code response returns — this
+  // read is deliberately NOT polled.
+  await call2("/api/admin/add-developer", { method: "POST", master: true, body: { name: "Ola Ontime", email: "ola@test.dev", track: "EITHER", expertise: ["NEAR_AI"] } });
+  await call2("/api/admin/grant-reading-room", { method: "POST", master: true, body: { email: "ola@test.dev" } });
+  await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "ola@test.dev"); return e && e.status === "sent" ? e : null; }, 10000);
+  await call2("/api/request-code", { method: "POST", body: { email: "ola@test.dev" } });
+  const olaOtp = comms2().filter((s) => s.kind === "otp" && s.to === "ola@test.dev").pop();
+  ok("OTP attempted in-request: log shows sent + provider id when the response returns",
+    !!olaOtp && olaOtp.status === "sent" && String(olaOtp.providerId || "").startsWith("stub-msg-"));
+
   await call2("/api/admin/revoke-all", { method: "POST", master: true, body: { email: "mia@test.dev", reason: "stub failure rehearsal" } });
   const revLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "revocation" && s.to === "mia@test.dev"); return e && e.attempts >= 1 ? e : null; });
   ok("failed send stays queued, attempt + error recorded (never dropped)",
     !!revLog && revLog.status === "queued" && !!revLog.lastError);
+  ok("failed send records the mail API status + response body (diagnosable evidence)",
+    !!revLog && /mail API 500/.test(revLog.lastError || "") && /stub failure/.test(revLog.lastError || ""));
 
   // Phase 3 — delivery webhooks: a Svix-signed delivered event lands
   // on the comms entry it belongs to; a replay is deduped; a forged
@@ -554,5 +572,124 @@ try {
   stub.close();
   fs.rmSync(tmp2, { recursive: true, force: true });
 }
+// ---- Phase 2b: drain hygiene against a seeded, clogged log ----
+// The 2026-11-18/19 production failure, rehearsed: the log holds
+// duplicate snapshots of the same entry (the DB write-through
+// stores one row per state), stale "queued" snapshots of mail that
+// already sent, and more queued entries than one drain may attempt.
+// The drain must dedupe (latest state wins), never re-send a stale
+// snapshot, take OTP entries before older invitations, cap its
+// attempts, and record a timeout distinctly. JSON mode only: in DB
+// mode the server hydrates its working set from the shared test DB,
+// so a file-seeded log cannot be staged there — the same behaviors
+// are covered here, and DB-mode hydration applies the same
+// latest-wins dedupe on its read path (lib/store-pg.mjs).
+if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+  console.log("SKIP phase 2b: seeded-log rehearsal runs in JSON mode (DB mode hydrates from the shared test DB)");
+} else {
+  const received3 = [];
+  const stub3 = http.createServer((req, res) => {
+    let s = ""; req.on("data", (c) => (s += c)); req.on("end", () => {
+      const payload = JSON.parse(s || "{}");
+      received3.push(payload);
+      if ((payload.subject || "").includes("hang")) {
+        // Answer long after the mailer's 8s abort: the send must be
+        // recorded as a timeout, distinctly.
+        setTimeout(() => { try {
+          res.writeHead(200, { "content-type": "application/json" });
+          res.end(JSON.stringify({ id: "stub3-late" }));
+        } catch { /* the caller long since aborted */ } }, 12000);
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ id: "stub3-msg-" + received3.length }));
+    });
+  });
+  await new Promise((r) => stub3.listen(0, "127.0.0.1", r));
+  const tmp3 = fs.mkdtempSync(path.join(os.tmpdir(), "devlib-test3-"));
+  fs.cpSync(path.join(ROOT, "data"), tmp3, { recursive: true });
+  const seedEntry = (id, at, kind, subject, extra = {}) => ({ id, at, from: "desk@uzemarkets.com",
+    to: `${id}@test.dev`, kind, subject, status: "queued",
+    body: kind === "otp" ? "Your one-time sign-in code for the UZE Dev Library is 123456. It expires in 15 minutes." : "Seeded rehearsal entry.", ...extra });
+  const T = (h, m = 0) => `2026-11-18T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00.000Z`;
+  fs.writeFileSync(path.join(tmp3, "comms-log.json"), JSON.stringify({ version: 1, sender: "desk@uzemarkets.com", sends: [
+    // dup1: a queued snapshot followed by its sent snapshot — the
+    // stale queued row must never be sent again.
+    seedEntry("dup1", T(10), "invitation", "seed-dup1"),
+    seedEntry("dup1", T(10), "invitation", "seed-dup1", { status: "sent", providerId: "stub-old-1", sentAt: T(10, 1) }),
+    // dup2: the same queued OTP snapshot twice — send exactly once.
+    seedEntry("dup2", T(9), "otp", "seed-otp-dup"),
+    seedEntry("dup2", T(9), "otp", "seed-otp-dup"),
+    seedEntry("old1", T(10, 30), "invitation", "seed-inv-old1"),
+    seedEntry("old2", T(11, 30), "invitation", "seed-inv-old2"),
+    seedEntry("otpnew", T(12), "otp", "seed-otp-new"),
+    seedEntry("cap1", T(13, 0), "invitation", "seed-cap1"),
+    seedEntry("cap2", T(13, 1), "invitation", "seed-cap2"),
+    seedEntry("cap3", T(13, 2), "invitation", "seed-cap3"),
+    seedEntry("cap4", T(13, 3), "invitation", "seed-cap4"),
+    seedEntry("cap5", T(13, 4), "invitation", "seed-cap5"),
+    seedEntry("cap6", T(13, 5), "invitation", "seed-cap6"),
+    seedEntry("cap7", T(13, 6), "invitation", "seed-cap7"),
+    seedEntry("cap8", T(13, 7), "invitation", "seed-cap8"),
+    seedEntry("cap9", T(13, 8), "invitation", "seed-cap9"),
+  ] }, null, 1));
+  const PORT3 = 18736;
+  const env3 = { ...process.env, PORT: String(PORT3), LIBRARY_DATA: tmp3,
+    LIBRARY_MASTER_TOKEN: "test-master", LIBRARY_SECRET: "test-secret",
+    RESEND_API_KEY: "test-key", RESEND_API_URL: `http://127.0.0.1:${stub3.address().port}/emails` };
+  const srv3 = spawn("node", ["server.mjs"], { cwd: ROOT, env: env3, stdio: "pipe" });
+  const B3 = `http://127.0.0.1:${PORT3}`;
+  const call3 = async (p, { method = "GET", body } = {}) => {
+    const r = await fetch(B3 + p, { method, headers: { "content-type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined });
+    return { status: r.status, body: await r.json().catch(() => ({})) };
+  };
+  const comms3 = () => JSON.parse(fs.readFileSync(path.join(tmp3, "comms-log.json"), "utf8")).sends;
+  const waitFor3 = async (fn, ms = 6000) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < ms) { const v = fn(); if (v) return v; await new Promise(r => setTimeout(r, 100)); }
+    return fn();
+  };
+  try {
+    for (let i = 0; i < 50; i++) { try { const r = await fetch(B3 + "/"); if (r.ok) break; } catch { await new Promise(r => setTimeout(r, 100)); } }
+    await call3("/api/signout", { method: "POST" }); // any POST drains the queue (post-response)
+    await waitFor3(() => received3.length >= 10 && comms3().find((s) => s.id === "cap6")?.status === "sent");
+    const subjects3 = received3.map((x) => x.subject);
+    ok("drain priority: OTP entries send before older invitations, oldest-first within kind",
+      JSON.stringify(subjects3.slice(0, 5)) === JSON.stringify(
+        ["seed-otp-dup", "seed-otp-new", "seed-inv-old1", "seed-inv-old2", "seed-cap1"]));
+    ok("drain dedupe: a duplicated queued snapshot is sent exactly once",
+      subjects3.filter((s) => s === "seed-otp-dup").length === 1);
+    ok("drain dedupe: a stale queued snapshot of an already-sent entry is never re-sent",
+      !subjects3.includes("seed-dup1"));
+    const log3 = comms3();
+    const dup1Rows = log3.filter((s) => s.id === "dup1");
+    ok("drain dedupe: the log heals to one row per entry, latest state wins",
+      dup1Rows.length === 1 && dup1Rows[0].status === "sent" && dup1Rows[0].providerId === "stub-old-1" &&
+      log3.filter((s) => s.id === "dup2").length === 1 && log3.length === 14);
+    ok("drain cap: attempts stop at 10 per drain — the tail stays queued, unattempted",
+      received3.length === 10 &&
+      ["cap7", "cap8", "cap9"].every((id) => { const e = log3.find((s) => s.id === id);
+        return e && e.status === "queued" && !e.attempts; }));
+
+    // A send the API never answers: recorded as a timeout,
+    // distinctly, and the drain still works through its cap.
+    const clog = JSON.parse(fs.readFileSync(path.join(tmp3, "comms-log.json"), "utf8"));
+    clog.sends.push(seedEntry("hang1", T(8), "invitation", "seed-hang"));
+    fs.writeFileSync(path.join(tmp3, "comms-log.json"), JSON.stringify(clog, null, 1));
+    await call3("/api/signout", { method: "POST" });
+    const hang = await waitFor3(() => { const e = comms3().find((s) => s.id === "hang1");
+      return e && e.lastError ? e : null; }, 15000);
+    ok("timeout recorded distinctly: lastError names the timeout, attempt counted, entry stays queued",
+      !!hang && /^timeout:/.test(hang.lastError) && hang.attempts === 1 && hang.status === "queued");
+    ok("drain continues past a timed-out send within its attempt cap",
+      ["cap7", "cap8", "cap9"].every((id) => comms3().find((s) => s.id === id)?.status === "sent"));
+  } finally {
+    srv3.kill();
+    stub3.close();
+    fs.rmSync(tmp3, { recursive: true, force: true });
+  }
+}
+
 console.log(`\nRESULT: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

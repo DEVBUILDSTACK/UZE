@@ -11,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { load, save, chronicle } from "./lib/store.mjs";
 import { findDeveloper, requestCode, verifyCode, signSession, readSession, visibleMocks } from "./lib/gate.mjs";
-import { drainComms } from "./lib/mailer.mjs";
+import { drainComms, sendEntryNow } from "./lib/mailer.mjs";
 import { applyWebhook, webhookConfigured } from "./lib/webhook.mjs";
 import * as life from "./lib/lifecycle.mjs";
 import * as eng from "./lib/engagements.mjs";
@@ -84,7 +84,19 @@ const handleRequest = async (req, res) => {
     // --- the door ---
     if (p === "/api/request-code" && req.method === "POST") {
       const { email } = await body(req);
-      if (email) await requestCode(String(email)); // generic answer either way
+      if (email) {
+        const r = await requestCode(String(email)); // generic answer either way
+        // The code sends SYNCHRONOUSLY: the attempt and its outcome
+        // (status / provider id / error) are persisted before this
+        // response returns, so the general queue — drained after the
+        // response, oldest entries first — can never starve an OTP
+        // behind stale entries again. The id is excluded from this
+        // request's drain so it is not attempted twice.
+        if (r && r.entryId) {
+          await sendEntryNow(r.entryId).catch(() => {});
+          (req._commsAttempted ??= new Set()).add(r.entryId);
+        }
+      }
       return send(res, 200, { ok: true });
     }
     if (p === "/api/verify" && req.method === "POST") {
@@ -280,13 +292,16 @@ const handleRequest = async (req, res) => {
 
 // After a mutating request: (1) the comms queue drains — sends fire
 // at the moment of the event when the mail key is configured, and the
-// log records what actually went out; (2) in DB mode the write-through
-// lands before the invocation completes — the record is durable,
-// not hoped (the drain runs first so sent statuses persist too).
+// log records what actually went out (drainComms dedupes the log,
+// sends OTP entries first, and caps attempts per invocation so a
+// clogged queue cannot burn the function budget); (2) in DB mode the
+// write-through lands before the invocation completes — the record
+// is durable, not hoped (the drain runs first so sent statuses
+// persist too).
 const server = http.createServer(async (req, res) => {
   await handleRequest(req, res);
   if (req.method === "POST") {
-    await drainComms().catch(() => {});
+    await drainComms({ excludeIds: req._commsAttempted || new Set() }).catch(() => {});
     if (flushFn) await flushFn();
   }
 });

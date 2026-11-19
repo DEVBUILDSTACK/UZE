@@ -1,10 +1,27 @@
 // The comms desk's sending arm. Every comms entry is first written
 // to the log as "queued" (lib/store.mjs commsSend — the per-developer
-// record). When RESEND_API_KEY is present, drainComms() sends each
-// queued entry at the moment of the event that created it (the server
-// drains after every POST) and marks it "sent" with the provider id.
+// record). When RESEND_API_KEY is present, sends fire at the moment
+// of the event that created them, by two paths:
+//   (1) OTP codes send SYNCHRONOUSLY — sendEntryNow() is awaited
+//       inside the request-code handler, so the attempt and its
+//       outcome are persisted before the response returns; the
+//       general queue can never starve a sign-in code.
+//   (2) Everything else goes through drainComms() (the server drains
+//       after every POST): the log is deduped first (the DB
+//       write-through stores one row per state an entry passes
+//       through, so hydration can load stale "queued" snapshots of
+//       entries that later sent — latest state wins), OTP entries
+//       go first, then oldest-first, and ATTEMPTS are capped per
+//       drain so a run of failures cannot burn the whole function
+//       budget the way the old successes-only cap allowed (the
+//       2026-11-18/19 production starvation: stale snapshots × the
+//       8s fetch timeout vs the 30s function limit, the invocation
+//       killed mid-drain before save(), OTPs at the tail of the
+//       queue never attempted).
 // Without the key the queue simply holds — nothing is ever silently
-// dropped, and the log always shows what actually went out.
+// dropped, and the log always shows what actually went out. Every
+// failure records the mail API's HTTP status and a truncated
+// response body (or a distinctly-worded timeout) in lastError.
 //
 // Sender identity is desk@uzemarkets.com (James, 2026-11-18: the
 // mailbox is live and operational on his iCloud+ domain; the app
@@ -213,6 +230,18 @@ ${whatsappRow}
 </html>`;
 }
 
+export const SEND_TIMEOUT_MS = 8000;
+const truncate = (s, n = 300) => { s = String(s ?? ""); return s.length > n ? s.slice(0, n) + "…" : s; };
+
+// The recorded text of a failed send. A timeout/abort is recorded
+// distinctly — a bare "the operation was aborted" is not evidence:
+// the next reader must be able to tell a slow API from a refused one.
+function sendErrorText(e) {
+  if (e && (e.name === "TimeoutError" || e.name === "AbortError"))
+    return `timeout: no response from the mail API within ${SEND_TIMEOUT_MS}ms (fetch aborted)`;
+  return String((e && e.message) || e);
+}
+
 export async function sendMail(entry) {
   const r = await fetch(API_URL(), {
     method: "POST",
@@ -225,33 +254,94 @@ export async function sendMail(entry) {
     body: JSON.stringify({ from: FROM(), to: [entry.to], subject: entry.subject,
       text: renderText(entry), html: renderHtml(entry),
       tags: [{ name: "app", value: "dev-library" }, { name: "kind", value: entry.kind }] }),
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
   });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(`mail API ${r.status}: ${data.message || data.name || "send failed"}`);
+  const raw = await r.text().catch(() => "");
+  let data = {}; try { data = JSON.parse(raw); } catch { /* body kept raw for the error text */ }
+  // Diagnosability: a refusal carries the HTTP status AND the body —
+  // the status alone (or worse, "timeout") is not acceptable evidence.
+  if (!r.ok) throw new Error(`mail API ${r.status}: ${truncate(data.message || data.name || raw || "send failed")}`);
   return data.id || null;
 }
 
-// Send every queued comms entry, oldest first. A failed send stays
-// queued with the attempt recorded — the next drain retries it.
-export async function drainComms(max = 20) {
-  if (!mailConfigured()) return { configured: false, sent: 0 };
-  const log = load("comms-log.json");
-  let sent = 0, changed = false;
-  for (const entry of log.sends) {
-    if (sent >= max) break;
-    if (entry.status !== "queued") continue;
-    try {
-      entry.providerId = await sendMail(entry);
-      entry.status = "sent";
-      entry.sentAt = new Date().toISOString();
-      sent++;
-    } catch (e) {
-      entry.attempts = (entry.attempts || 0) + 1;
-      entry.lastError = String(e.message || e);
-    }
-    changed = true;
+// Attempt one entry's send, mutating the entry with the outcome.
+// Returns true when the entry was sent. The caller persists.
+async function attemptSend(entry) {
+  try {
+    entry.providerId = await sendMail(entry);
+    entry.status = "sent";
+    entry.sentAt = new Date().toISOString();
+    delete entry.lastError;
+    return true;
+  } catch (e) {
+    entry.attempts = (entry.attempts || 0) + 1;
+    entry.lastAttemptAt = new Date().toISOString();
+    entry.lastError = sendErrorText(e);
+    return false;
   }
-  if (changed) save("comms-log.json", log);
-  return { configured: true, sent };
+}
+
+// The log can hold the same entry more than once: the DB
+// write-through (lib/store-pg.mjs) stores one comms_send row per
+// state an entry passes through — its dedupe key is the whole entry
+// JSON — and hydration loads every snapshot back. Latest state
+// wins: the last row for an id is the entry's current truth, and a
+// stale "queued" snapshot of an entry that later sent must never
+// be sent again. Result is in creation order.
+export function dedupeSends(sends) {
+  const byId = new Map();
+  for (const s of sends) byId.set(s.id, s);
+  return [...byId.values()].sort((a, b) => String(a.at).localeCompare(String(b.at)));
+}
+
+// Send one queued entry NOW, by id, persisting the outcome before
+// returning. The OTP path uses this (server.mjs awaits it inside
+// the request-code handler): a sign-in code is attempted inside the
+// request that created it, so the general queue can never starve
+// it. Returns the entry, or null when unconfigured/unknown.
+export async function sendEntryNow(id) {
+  if (!mailConfigured()) return null;
+  const log = load("comms-log.json");
+  const deduped = dedupeSends(log.sends);
+  const healed = deduped.length !== log.sends.length;
+  log.sends = deduped;
+  const entry = log.sends.find((s) => s.id === id);
+  if (!entry) { if (healed) save("comms-log.json", log); return null; }
+  if (entry.status === "queued") { await attemptSend(entry); save("comms-log.json", log); }
+  else if (healed) save("comms-log.json", log);
+  return entry;
+}
+
+// Drain the queue: dedupe first (latest state wins), then attempt
+// at most `maxAttempts` sends — OTP entries first (a sign-in code
+// is worthless in 15 minutes), the rest oldest-first. ATTEMPTS are
+// capped, not successes: the old successes-only cap let a clogged
+// queue of failing stale entries burn the entire invocation budget
+// (8s per timeout against a 30s function limit) and the invocation
+// died before save(), losing even the attempt bookkeeping. The log
+// is therefore also persisted after EVERY attempt: if the platform
+// kills an invocation mid-drain, the attempts already made are on
+// record and the next drain resumes where this one stopped. A
+// failed send stays queued with the attempt recorded — the next
+// drain retries it. `excludeIds` skips entries already attempted
+// inside the current request (the synchronous OTP send).
+export async function drainComms({ maxAttempts = 10, excludeIds = new Set() } = {}) {
+  if (!mailConfigured()) return { configured: false, sent: 0, attempted: 0 };
+  const log = load("comms-log.json");
+  const deduped = dedupeSends(log.sends);
+  const healed = deduped.length !== log.sends.length;
+  log.sends = deduped;
+  if (healed) save("comms-log.json", log); // the heal persists even if nothing is attempted
+  const queued = log.sends
+    .filter((e) => e.status === "queued" && !excludeIds.has(e.id))
+    .sort((a, b) => (a.kind === "otp" ? 0 : 1) - (b.kind === "otp" ? 0 : 1)
+      || String(a.at).localeCompare(String(b.at)));
+  let sent = 0, attempted = 0;
+  for (const entry of queued) {
+    if (attempted >= maxAttempts) break;
+    attempted++;
+    if (await attemptSend(entry)) sent++;
+    save("comms-log.json", log);
+  }
+  return { configured: true, sent, attempted };
 }
