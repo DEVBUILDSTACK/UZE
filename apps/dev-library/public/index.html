@@ -106,6 +106,33 @@
     <div id="elist" style="margin-top:10px"></div>
     <pre id="eview" class="hidden" style="white-space:pre-wrap;font-size:13px"></pre>
   </section>
+
+  <section id="assessments" class="card">
+    <h3 style="margin-top:0">Assessments — P2 desk (Scope 2)</h3>
+    <p class="sub" style="margin-bottom:10px">Employers configure a role; the generator fills a curated template; <b>two human gates</b> sign before anything runs — Gate 1 employer intent, Gate 2 approver-of-record validity. Outcomes publish redacted under engagement-scoped pseudonyms.</p>
+    <div class="row">
+      <input id="remployer" placeholder="Employer (internal record only)" size="26">
+      <select id="rvertical"><option>CRE_UNDERWRITING</option><option>HOSPITALITY</option></select>
+      <input id="rtitle" placeholder="Role title" size="30">
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="rseniority" placeholder="Seniority" size="12">
+      <input id="rmarket" placeholder="Market (e.g. India)" size="16">
+      <input id="rskills" placeholder="Skills, comma separated" size="34">
+      <input id="rpairs" placeholder="DATA_SCIENTIST×OTHER_REALM" size="30">
+      <button id="rcreate">Configure role</button>
+      <span id="rmsg"></span>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="signer" placeholder="Human signer name (gates)" size="26">
+      <label class="sub"><input id="mastertest" type="checkbox"> master test/proof context (Gate 2 only, while no approver of record is configured)</label>
+      <button id="aload" class="alt">Load assessments</button>
+    </div>
+    <div id="alist" style="margin-top:10px"></div>
+    <h4>Published outcomes (public, redacted)</h4>
+    <div class="row"><button id="pload" class="alt">Load publications</button></div>
+    <div id="plist" style="margin-top:10px"></div>
+  </section>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -238,6 +265,58 @@ window.engClientView = async (id) => {
   v.textContent = "CLIENT VIEW (exactly what the client sees):\n" + JSON.stringify(r.body.view, null, 1);
   v.scrollIntoView({ behavior: "smooth" });
 };
+// ---- P2 Assessment desk ----
+$("rcreate").onclick = async () => {
+  const pairs = $("rpairs").value.split(",").map(s => s.trim()).filter(Boolean).map(s => {
+    const [role, realm] = s.split("×").map(x => x.trim()); return { role, realm };
+  });
+  const r = await mfetch("/api/admin/role-configs", { method: "POST", body: JSON.stringify({
+    employerRef: $("remployer").value, vertical: $("rvertical").value, title: $("rtitle").value,
+    seniority: $("rseniority").value, market: $("rmarket").value,
+    skills: $("rskills").value.split(",").map(s => s.trim()).filter(Boolean), pairs }) });
+  if (r.status !== 200) { $("rmsg").textContent = r.body.error || "Failed."; $("rmsg").className = "err"; return; }
+  const g = await mfetch("/api/admin/role-configs/" + r.body.roleConfig.id + "/generate", { method: "POST", body: "{}" });
+  $("rmsg").textContent = g.status === 200 ? "Role configured; assessment generated from " + g.body.assessment.templateId + "." : (g.body.error || "Generation failed.");
+  $("rmsg").className = g.status === 200 ? "ok" : "err";
+  if (g.status === 200) loadAssessments();
+};
+async function loadAssessments() {
+  const r = await mfetch("/api/admin/assessments");
+  if (r.status !== 200) { $("rmsg").textContent = "Master token not accepted."; $("rmsg").className = "err"; return; }
+  $("alist").innerHTML = (r.body.assessments || []).map(a =>
+    "<div class='comment'><b>" + a.instrument.title + "</b> · " + a.templateId + " · state: <b>" + a.state + "</b>" +
+    (a.gate1 ? "<br>Gate 1: " + a.gate1.decision + " by " + a.gate1.by : "") +
+    (a.gate2 ? "<br>Gate 2: " + a.gate2.decision + " by " + a.gate2.by + " (" + (a.gate2.basis || "") + ")" : "") +
+    "<br><button class='alt' onclick=\"asmGate('" + a.id + "','gate1','sign')\">Gate 1 sign</button> " +
+    "<button class='alt' onclick=\"asmGate('" + a.id + "','gate1','return')\">Gate 1 return</button> " +
+    "<button class='alt' onclick=\"asmGate('" + a.id + "','gate2','sign')\">Gate 2 sign</button> " +
+    "<button class='alt' onclick=\"asmGate('" + a.id + "','gate2','return')\">Gate 2 return</button> " +
+    "<button class='alt' onclick=\"asmPublish('" + a.id + "')\">Publish latest outcome</button></div>").join("") || "No assessments yet.";
+}
+$("aload").onclick = loadAssessments;
+window.asmGate = async (id, gate, decision) => {
+  const name = $("signer").value;
+  if (!name) { $("rmsg").textContent = "Enter the human signer's name first — the gates are human-signed."; $("rmsg").className = "err"; return; }
+  const body = { signer: { name, kind: "human" }, decision };
+  if (gate === "gate2") body.viaMasterTest = $("mastertest").checked;
+  const r = await mfetch("/api/admin/assessments/" + id + "/" + gate, { method: "POST", body: JSON.stringify(body) });
+  $("rmsg").textContent = r.status === 200 ? gate + " " + decision + " recorded." : (r.body.error || "Failed.");
+  $("rmsg").className = r.status === 200 ? "ok" : "err";
+  if (r.status === 200) loadAssessments();
+};
+window.asmPublish = async (id) => {
+  const r = await mfetch("/api/admin/assessments/" + id + "/publish-outcome", { method: "POST", body: "{}" });
+  $("rmsg").textContent = r.status === 200 ? "Outcome published: " + r.body.publication.cid : (r.body.error || "Failed.");
+  $("rmsg").className = r.status === 200 ? "ok" : "err";
+  if (r.status === 200) loadPublications();
+};
+async function loadPublications() {
+  const r = await api("/api/publications");
+  $("plist").innerHTML = (r.body.publications || []).map(p =>
+    "<div class='comment'><b>" + p.pseudonym + "</b> · " + p.vertical + " · " + p.role + "×" + p.realm +
+    " · grade band " + p.gradeBand + " · " + p.day + "<br>" + p.validity + "<br><span class='sub'>" + p.cid + "</span></div>").join("") || "Nothing published yet.";
+}
+$("pload").onclick = loadPublications;
 enter();
 </script>
 </body>

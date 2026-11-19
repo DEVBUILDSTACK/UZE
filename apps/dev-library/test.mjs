@@ -198,6 +198,198 @@ try {
   ok("M1 chronicle: every transition emitted an Event",
     ["expertise-set", "track-set", "engagement-opened", "engagement-staffed", "engagement-signed",
      "engagement-deposit", "engagement-revealed", "engagement-closed", "engagement-cancelled"].every(t => types2.includes(t)));
+  // ---- P2: Assessment (Scope 2, separated track) — Sprint 1 ----
+  // Structural provability: the publisher holds NO identity-store
+  // read path — its imports are the document store (its own file),
+  // the pinning adapters, and node:crypto. Nothing else.
+  const pubSrc = fs.readFileSync(path.join(ROOT, "lib", "publisher.mjs"), "utf8");
+  const pubImports = pubSrc.split("\n").filter(l => l.startsWith("import"));
+  ok("P2 publisher: imports reach no identity module (gate/lifecycle/engagements/assessments)",
+    pubImports.length >= 2 && pubImports.every(l => !/gate\.mjs|lifecycle|engagements|assessments|developers/.test(l)) &&
+    pubImports.some(l => /store\.mjs/.test(l)) && pubImports.some(l => /pinning\.mjs/.test(l)));
+  const pinning = await import("./lib/pinning.mjs");
+  const inertErr = await pinning.filebasePinataAdapter.pin("{}").catch(e => e);
+  ok("P2 pinning: Filebase/Pinata adapter is INERT without credentials (no network attempted)",
+    inertErr instanceof Error && /INERT/.test(inertErr.message));
+
+  for (const [name, email] of [["Cara Candidate", "cand1@test.dev"], ["Cand Two", "cand2@test.dev"],
+      ["Cand Three", "cand3@test.dev"], ["Cand Four", "cand4@test.dev"], ["Cand Five", "cand5@test.dev"],
+      ["Rex Retake", "rex@test.dev"]]) {
+    await call("/api/admin/add-developer", { method: "POST", master: true, body: { name, email, track: "EXTERNAL_PLACED" } });
+  }
+  const respFor = (assessment, score) => Object.fromEntries(
+    assessment.instrument.dimensions.map(d => [d.key, { score, evidence: "rehearsal evidence" }]));
+
+  // P2-1 intake: keyed Role record; the taxonomy is the key space.
+  const badPairCfg = await call("/api/admin/role-configs", { method: "POST", master: true, body: {
+    employerRef: "Harbor Hotels (test)", vertical: "CRE_UNDERWRITING", title: "Analyst", pairs: [{ role: "WIZARD", realm: "OTHER_REALM" }] } });
+  ok("P2-1 intake: invalid Role × Realm pair rejected (M1 taxonomy reused)", badPairCfg.status === 500 && /invalid role/.test(badPairCfg.body.error || ""));
+  const noPairCfg = await call("/api/admin/role-configs", { method: "POST", master: true, body: {
+    employerRef: "Harbor Hotels (test)", vertical: "CRE_UNDERWRITING", title: "Analyst", pairs: [] } });
+  ok("P2-1 intake: a role record requires at least one keying pair", noPairCfg.status === 500 && /at least one Role/.test(noPairCfg.body.error || ""));
+  const rcRes = await call("/api/admin/role-configs", { method: "POST", master: true, body: {
+    employerRef: "Harbor Hotels (test)", vertical: "CRE_UNDERWRITING", title: "CRE Financial Underwriting Analyst",
+    seniority: "senior", market: "India", engagementMode: "PLACE",
+    skills: ["underwriting", "noi", "valuation", "financial statement analysis"],
+    pairs: [{ role: "DATA_SCIENTIST", realm: "OTHER_REALM" }] } });
+  ok("P2-1 intake: role configured end-to-end as a keyed Role record",
+    rcRes.status === 200 && rcRes.body.roleConfig.pairs[0].rank === "PRIMARY" && rcRes.body.roleConfig.workHistoryRequired === true);
+  const rcId = rcRes.body.roleConfig.id;
+
+  // P2-2 generation: extraction -> selection -> slot-filling.
+  const gen = await call(`/api/admin/role-configs/${rcId}/generate`, { method: "POST", master: true, body: {} });
+  const asmId = gen.body.assessment.id;
+  ok("P2-2 generator: CRE role selects the underwriting template, DealFi screens included",
+    gen.status === 200 && gen.body.assessment.templateId === "tpl_cre_underwriting_analyst_v1" &&
+    gen.body.assessment.instrument.dimensions.some(d => d.key === "dealfi_acquisition_screens") &&
+    gen.body.assessment.instrument.screens.length === 4 && gen.body.assessment.state === "GENERATED");
+  ok("P2-2 generator: slot-filling parameterizes prompts from the role (no authored instrument)",
+    gen.body.assessment.instrument.dimensions[0].prompt.includes("CRE Financial Underwriting Analyst") &&
+    !gen.body.assessment.instrument.dimensions[0].prompt.includes("{title}"));
+
+  // P2-3 gates: order, human-only, approver registry.
+  const asmView = async () => (await call(`/api/admin/assessments/${asmId}`, adm)).body.assessment;
+  const earlyRun = await call(`/api/admin/assessments/${asmId}/runs`, { method: "POST", master: true, body: { talentEmail: "cand1@test.dev", responses: respFor(gen.body.assessment, 90) } });
+  ok("P2-3 gates: a run before both gates is refused", earlyRun.status === 500 && /nothing runs before both gates/.test(earlyRun.body.error || ""));
+  const g2early = await call(`/api/admin/assessments/${asmId}/gate2`, { method: "POST", master: true, body: { signer: { name: "Approver One", kind: "human" }, viaMasterTest: true } });
+  ok("P2-3 gates: Gate 2 before Gate 1 is refused", g2early.status === 500 && /cannot precede Gate 1/.test(g2early.body.error || ""));
+  const g1agent = await call(`/api/admin/assessments/${asmId}/gate1`, { method: "POST", master: true, body: { signer: { name: "Agent Smith", kind: "agent" } } });
+  ok("P2-3 gates: an agent identity cannot sign Gate 1", g1agent.status === 500 && /agent cannot sign/.test(g1agent.body.error || ""));
+  const g1ret = await call(`/api/admin/assessments/${asmId}/gate1`, { method: "POST", master: true, body: { signer: { name: "Employer One", kind: "human" }, decision: "return" } });
+  ok("P2-3 gates: a Gate 1 return sends the instrument back (RETURNED)", g1ret.status === 200 && g1ret.body.assessment.state === "RETURNED");
+  const regen = await call(`/api/admin/assessments/${asmId}/regenerate`, { method: "POST", master: true, body: {} });
+  ok("P2-3 gates: regeneration clears the gate facts, history keeps them",
+    regen.status === 200 && regen.body.assessment.state === "GENERATED" && regen.body.assessment.instrumentVersion === 2 &&
+    regen.body.assessment.gate1 === null && regen.body.assessment.history.some(h => h.event === "assessment-gate1-returned"));
+  const g1 = await call(`/api/admin/assessments/${asmId}/gate1`, { method: "POST", master: true, body: { signer: { name: "Employer One", kind: "human" } } });
+  ok("P2-3 gates: Gate 1 human signature lands (GATE1_SIGNED)", g1.status === 200 && g1.body.assessment.state === "GATE1_SIGNED");
+  const g2noreg = await call(`/api/admin/assessments/${asmId}/gate2`, { method: "POST", master: true, body: { signer: { name: "Approver One", kind: "human" } } });
+  ok("P2-3 gates: Gate 2 refuses while no approver of record is configured (ruling 6 unsettled)",
+    g2noreg.status === 500 && /no approver of record is configured/.test(g2noreg.body.error || ""));
+  const g2 = await call(`/api/admin/assessments/${asmId}/gate2`, { method: "POST", master: true, body: { signer: { name: "Approver One", kind: "human" }, viaMasterTest: true } });
+  ok("P2-3 gates: master test/proof context signs Gate 2, basis recorded",
+    g2.status === 200 && g2.body.assessment.state === "APPROVED" && g2.body.assessment.gate2.basis === "master-test");
+  // The registry path (second seed vertical): configured approver only.
+  const hospCfg = await call("/api/admin/role-configs", { method: "POST", master: true, body: {
+    employerRef: "Harbor Hotels (test)", vertical: "HOSPITALITY", title: "Front Desk Agent",
+    seniority: "mid", market: "India", skills: ["front desk", "guest service", "pms"],
+    pairs: [{ role: "TALENT_HR_SPECIALIST", realm: "OTHER_REALM" }] } });
+  const hospGen = await call(`/api/admin/role-configs/${hospCfg.body.roleConfig.id}/generate`, { method: "POST", master: true, body: {} });
+  const hospId = hospGen.body.assessment.id;
+  ok("P2-2 generator: hospitality role selects the hospitality template",
+    hospGen.body.assessment.templateId === "tpl_hospitality_front_desk_v1");
+  await call("/api/admin/approvers", { method: "POST", master: true, body: { vertical: "HOSPITALITY", names: ["Hana Approver"] } });
+  await call(`/api/admin/assessments/${hospId}/gate1`, { method: "POST", master: true, body: { signer: { name: "Employer One", kind: "human" } } });
+  const g2wrong = await call(`/api/admin/assessments/${hospId}/gate2`, { method: "POST", master: true, body: { signer: { name: "Wrong Person", kind: "human" }, viaMasterTest: true } });
+  ok("P2-3 gates: a configured registry binds Gate 2 to the named approver (master-test does not override it)",
+    g2wrong.status === 500 && /not the approver of record/.test(g2wrong.body.error || ""));
+  const g2reg = await call(`/api/admin/assessments/${hospId}/gate2`, { method: "POST", master: true, body: { signer: { name: "Hana Approver", kind: "human" } } });
+  ok("P2-3 gates: the approver of record signs Gate 2 (basis: registry)",
+    g2reg.status === 200 && g2reg.body.assessment.state === "APPROVED" && g2reg.body.assessment.gate2.basis === "registry");
+
+  // P2-4 runs + scoring center.
+  const asmFull = await asmView();
+  const runFor = async (email, score, takenAt) => call(`/api/admin/assessments/${asmId}/runs`,
+    { method: "POST", master: true, body: { talentEmail: email, responses: respFor(asmFull, score), ...(takenAt ? { takenAt } : {}) } });
+  const r1 = await runFor("cand1@test.dev", 92);
+  ok("P2-4 scoring: a run grades end-to-end, keyed to the PRIMARY pair, validity as gap acknowledgment",
+    r1.status === 200 && r1.body.run.score === 92 && r1.body.run.gradeBand === "90-100" &&
+    r1.body.run.humanReviewFlag === false && r1.body.run.pair.role === "DATA_SCIENTIST" && r1.body.run.pair.realm === "OTHER_REALM" &&
+    r1.body.run.validity.form === "gap" && r1.body.run.reviewThreshold === 70 && r1.body.run.talentDid.startsWith("did:uze:talent_"));
+  const run1Id = r1.body.run.id, cand1Did = r1.body.run.talentDid;
+  const r2 = await runFor("cand2@test.dev", 73);
+  ok("P2-4 scoring: a borderline result raises the human-review flag at the stated threshold",
+    r2.status === 200 && r2.body.run.score === 73 && r2.body.run.humanReviewFlag === true);
+  for (const [email, score] of [["cand3@test.dev", 85], ["cand4@test.dev", 85], ["cand5@test.dev", 85]]) await runFor(email, score);
+  // Retake policy: window refusal, then two retakes, then the ceiling.
+  const rex1 = await runFor("rex@test.dev", 60, "2025-01-05");
+  ok("P2-4 retakes: the first run lands", rex1.status === 200);
+  const rexEarly = await runFor("rex@test.dev", 65, "2025-01-20");
+  ok("P2-4 retakes: a retake inside six months is refused and logged",
+    rexEarly.status === 500 && /one retake per six months/.test(rexEarly.body.error || ""));
+  ok("P2-4 retakes: retake 1 after the window lands", (await runFor("rex@test.dev", 66, "2025-08-01")).status === 200);
+  ok("P2-4 retakes: retake 2 after the window lands", (await runFor("rex@test.dev", 67, "2026-03-01")).status === 200);
+  const rexThird = await runFor("rex@test.dev", 68, "2026-09-15");
+  ok("P2-4 retakes: a third retake is refused by the policy (maximum two total)",
+    rexThird.status === 500 && /maximum two retakes total/.test(rexThird.body.error || ""));
+
+  // P2-5/P2-6 hooks: Path A quote + Path B attachment + disclosure.
+  const runsOf = async () => (await call(`/api/admin/assessments/${asmId}`, adm)).body.runs;
+  const cand3Run = (await runsOf()).find(r => r.talentEmail === "cand3@test.dev");
+  const quote = await call(`/api/admin/runs/${cand3Run.id}/quote`, { method: "POST", master: true, body: { market: "India", laborRate: 1000, markupPct: 20 } });
+  ok("P2-6 quote: Path A composes from the band of record and locks (1000 @ 20% -> 1200)",
+    quote.status === 200 && quote.body.quote.billedRate === 1200 && !!quote.body.quote.lockedAt);
+  const quoteOut = await call(`/api/admin/runs/${cand3Run.id}/quote`, { method: "POST", master: true, body: { market: "India", laborRate: 1000, markupPct: 30 } });
+  ok("P2-6 quote: a markup outside the band of record is refused", quoteOut.status === 500 && /outside the band of record/.test(quoteOut.body.error || ""));
+  const quoteNone = await call(`/api/admin/runs/${cand3Run.id}/quote`, { method: "POST", master: true, body: { market: "Atlantis", laborRate: 1000 } });
+  ok("P2-6 quote: a market with no band of record is refused, never invented (ruling 5)",
+    quoteNone.status === 500 && /no markup band of record/.test(quoteNone.body.error || ""));
+
+  // P2-6 (publisher): min-anonymity refusal on a lone cohort first.
+  const hospRun = await call(`/api/admin/assessments/${hospId}/runs`, { method: "POST", master: true,
+    body: { talentEmail: "cand1@test.dev", responses: respFor(hospGen.body.assessment, 80) } });
+  const lonePub = await call(`/api/admin/runs/${hospRun.body.run.id}/publish`, { method: "POST", master: true, body: {} });
+  ok("P2 publisher: a cohort below the minimum anonymity set (5) does not publish",
+    lonePub.status === 500 && /below the minimum anonymity set/.test(lonePub.body.error || ""));
+  const pub = await call(`/api/admin/runs/${run1Id}/publish`, { method: "POST", master: true, body: {} });
+  const art = pub.body.publication?.artifact || {};
+  const artJson = JSON.stringify(art);
+  ok("P2 publisher: the CRE outcome publishes — content-addressed, pseudonymous, banded",
+    pub.status === 200 && pub.body.publication.cid.startsWith("sha256:") && pub.body.publication.adapter === "local-sha256" &&
+    art.pseudonym?.startsWith("talent-") && art.gradeBand === "90-100" && !("score" in art));
+  ok("P2 publisher: redaction holds — no talent name, no email, no company name in the artifact",
+    !artJson.includes("Cara Candidate") && !artJson.includes("cand1@test.dev") && !artJson.includes("Harbor Hotels"));
+  ok("P2 publisher: validity is stated only in the enforced form (gap acknowledgment)",
+    typeof art.validity === "string" && art.validity.startsWith("gap acknowledged:"));
+  const pubList = await call("/api/publications");
+  ok("P2 viewer: the public viewer serves the redacted copy without any session",
+    pubList.status === 200 && pubList.body.publications.some(p => p.id === pub.body.publication.id) &&
+    !JSON.stringify(pubList.body).includes("cand1@test.dev"));
+
+  // Disclosure through the M1 machinery: pseudonym before signing,
+  // identity at engagement + deposit.
+  const p2eng = await call("/api/admin/engagements", { method: "POST", master: true, body: {
+    title: "Underwriting analyst (assessed)", clientName: "Harbor Hotels (test)", service: "PLACE",
+    deployment: "REMOTE", commercialModel: "PLACEMENT", feeMonths: 1 } });
+  const p2engId = p2eng.body.engagement.id;
+  await call(`/api/admin/engagements/${p2engId}/staff`, { method: "POST", master: true, body: { email: "xan@test.dev" } });
+  await call(`/api/admin/runs/${run1Id}/attach-engagement`, { method: "POST", master: true, body: { engagementId: p2engId } });
+  const outBlind = await call(`/api/admin/engagements/${p2engId}/assessment-outcomes`, adm);
+  const blindOutcomeJson = JSON.stringify(outBlind.body.outcomes);
+  ok("P2 disclosure: outcome under pseudonym before signing — identity absent",
+    outBlind.body.outcomes.length === 1 && outBlind.body.outcomes[0].revealed === false &&
+    outBlind.body.outcomes[0].talent === null && outBlind.body.outcomes[0].pseudonym.startsWith("talent-") &&
+    !blindOutcomeJson.includes("Cara Candidate") && !blindOutcomeJson.includes("cand1@test.dev"));
+  ok("P2 disclosure: the engagement-scoped pseudonym differs from the assessment-scoped one",
+    outBlind.body.outcomes[0].pseudonym !== art.pseudonym);
+  await call(`/api/admin/engagements/${p2engId}/sign`, { method: "POST", master: true, body: { ref: "sig-p2" } });
+  await call(`/api/admin/engagements/${p2engId}/deposit`, { method: "POST", master: true, body: { ref: "dep-p2" } });
+  const outShown = await call(`/api/admin/engagements/${p2engId}/assessment-outcomes`, adm);
+  ok("P2 disclosure: identity revealed at engagement + deposit, and not before",
+    outShown.body.outcomes[0].revealed === true && outShown.body.outcomes[0].talent.name === "Cara Candidate" &&
+    outShown.body.outcomes[0].talent.email === "cand1@test.dev");
+
+  // The score seam (MCP score_assessment reads through this):
+  const scored = await call(`/api/admin/assessments/${asmId}/score-by-talent`, { method: "POST", master: true, body: { talentDid: cand1Did } });
+  ok("P2 seam: score-by-talent returns the scored record for a gate-passed assessment",
+    scored.status === 200 && scored.body.score.score === 92 && scored.body.score.talentDid === cand1Did);
+  const ungatedCfg = await call("/api/admin/role-configs", { method: "POST", master: true, body: {
+    employerRef: "Harbor Hotels (test)", vertical: "CRE_UNDERWRITING", title: "Junior Analyst",
+    skills: ["noi"], pairs: [{ role: "DATA_SCIENTIST", realm: "OTHER_REALM" }] } });
+  const ungatedGen = await call(`/api/admin/role-configs/${ungatedCfg.body.roleConfig.id}/generate`, { method: "POST", master: true, body: {} });
+  const ungatedScore = await call(`/api/admin/assessments/${ungatedGen.body.assessment.id}/score-by-talent`,
+    { method: "POST", master: true, body: { talentDid: cand1Did } });
+  ok("P2 seam: score-by-talent refuses against a non-gate-passed record",
+    ungatedScore.status === 500 && /gates not passed/.test(ungatedScore.body.error || ""));
+
+  const chron3 = await call("/api/admin/chronicle", adm);
+  const types3 = chron3.body.entries.map(e => e.type);
+  ok("P2 chronicle: every transition emitted an Event",
+    ["role-config-created", "assessment-generated", "assessment-gate1-signed", "assessment-gate2-signed",
+     "assessment-gate1-returned", "assessment-regenerated", "assessment-approver-set", "assessment-run-scored",
+     "assessment-retake-refused", "assessment-quote-locked", "assessment-attached-engagement",
+     "assessment-outcome-published"].every(t => types3.includes(t)));
+
   if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
     // DB mode: the typed tables carry the taxonomy + engagement facts.
     // The write-through flush completes after each response is sent
@@ -221,6 +413,16 @@ try {
     const er = await pollRows("SELECT commercial_model, fee_months, signed_at IS NOT NULL AS s, deposit_at IS NOT NULL AS d FROM engagement WHERE id=$1", [engId], r => r.length === 1);
     ok("M1 DB: engagement row carries fee + signed + deposit facts",
       er.length === 1 && er[0].commercial_model === "PLACEMENT" && Number(er[0].fee_months) === 1.5 && er[0].s && er[0].d);
+    const rcRow = await pollRows("SELECT vertical FROM role_config WHERE id=$1", [rcId], r => r.length === 1);
+    ok("P2 DB: role_config row written through", rcRow.length === 1 && rcRow[0].vertical === "CRE_UNDERWRITING");
+    const aRow = await pollRows("SELECT gate1_at IS NOT NULL AS g1, gate2_at IS NOT NULL AS g2 FROM assessment WHERE id=$1", [asmId], r => r.length === 1 && r[0].g1 && r[0].g2);
+    ok("P2 DB: assessment row carries both gate facts (gate2_at set only with gate1_at)",
+      aRow.length === 1 && aRow[0].g1 && aRow[0].g2);
+    const runRows = await pollRows("SELECT count(*)::int AS n FROM assessment_run WHERE assessment_id=$1", [asmId], r => r[0].n >= 8);
+    ok("P2 DB: assessment_run rows written through (cohort + retakes)", runRows[0].n >= 8);
+    const pubRow = await pollRows("SELECT cid, pseudonym FROM publication WHERE id=$1", [pub.body.publication.id], r => r.length === 1);
+    ok("P2 DB: publication row carries the content address + pseudonym, no identity columns",
+      pubRow.length === 1 && pubRow[0].cid === pub.body.publication.cid && pubRow[0].pseudonym.startsWith("talent-"));
     await pool.end();
   }
 } finally {
