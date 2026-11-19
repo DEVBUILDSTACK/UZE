@@ -75,7 +75,11 @@ const CTA_TEXT = `Stay close — ${CTA_LINKS.map(([label, url]) => `${label}: ${
 Share the weekly edition, and leave us feedback or a kind word on those channels. Our affiliate WhatsApp group opens soon.`;
 
 export function renderText(entry) {
-  return `${GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${SIGN_OFF}\n${entry.siteUrl || LIBRARY_URL}\n\nUZEmarkets`;
+  // The greeting resolution is the SAME as renderHtml's — an
+  // entry's greetingText (Hello "First Name", or an explicit
+  // greeting) governs both parts. (The dashboard caught the text
+  // part greeting bare "Hello," on the Bruno proof, 2026-11-19.)
+  return `${entry.greetingText || GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${SIGN_OFF}\n${entry.siteUrl || LIBRARY_URL}\n\nUZEmarkets`;
 }
 
 // Naming rule (James, 2026-11-18; completed 2026-11-19): the term

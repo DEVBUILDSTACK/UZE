@@ -31,12 +31,16 @@ export function chronicle(type, fields) {
 // Address-name rulings (James, 2026-11-19): the greeting name is
 // not always the display name's first token. D4 — Hammond James
 // Dugan IV, the founder SoSem deals with — is addressed "Hammond",
-// never "James" (that is his son, D5). Keyed by email; every other
-// recipient resolves from their roster record.
-const ADDRESS_NAME = { "uze@uzemarkets.com": "Hammond" };
+// never "James" (that is his son, D5). The classification layer
+// (lib/classifications.mjs) carries each person's greeting name
+// and is consulted first; the rosters resolve everyone else.
 function firstNameFor(email) {
   const em = String(email || "").toLowerCase();
-  if (ADDRESS_NAME[em]) return ADDRESS_NAME[em];
+  try {
+    const people = load("classifications.json").people || [];
+    const c = people.find((p) => (p.email || "").toLowerCase() === em);
+    if (c && c.greeting) return c.greeting;
+  } catch { /* no classification layer in this data dir */ }
   const clean = (n) => String(n || "").replace(/\([^)]*\)/g, "").trim().split(/\s+/)[0] || null;
   try {
     const c = (load("eco-contributors.json").contributors || []).find((x) => (x.email || "").toLowerCase() === em);

@@ -152,6 +152,22 @@ try {
   const pvText = await pv.text();
   ok("sample preview: the venue ticketing UI serves, signed in",
     pv.status === 200 && pvText.includes("Venue Ticketing"));
+  ok("sample preview: no loose .html file for the static layer to expose",
+    !fs.existsSync(path.join(ROOT, "samples", "venue-ticketing-ui.html")));
+  // The classification layer (James, 2026-11-19): owners,
+  // principal, advisor, dev internal vs external — master-only.
+  ok("classifications without master -> 403", (await call("/api/admin/classifications")).status === 403);
+  const cls = await call("/api/admin/classifications", { master: true });
+  const byClass = (c) => (cls.body.people || []).filter(p => p.class === c).map(p => p.email);
+  ok("classification layer: owners are the family three, principal is Jonathan alone, advisor is Bruno, devs split internal/external",
+    cls.status === 200 &&
+    JSON.stringify(byClass("owner").sort()) === JSON.stringify(["james@decensat.org", "uze@uzemarkets.com", "william@decensat.org"]) &&
+    JSON.stringify(byClass("principal")) === JSON.stringify(["schmidtcommunications@gmail.com"]) &&
+    JSON.stringify(byClass("advisor")) === JSON.stringify(["brunocsalles@gmail.com"]) &&
+    JSON.stringify(byClass("dev-internal").sort()) === JSON.stringify(["rohansinglawork@gmail.com", "shradeshjain123@gmail.com"]) &&
+    JSON.stringify(byClass("dev-external").sort()) === JSON.stringify(["dipanshuhappy@gmail.com", "mnithin1422@gmail.com"]) &&
+    (cls.body.people.find(p => p.email === "uze@uzemarkets.com") || {}).greeting === "Hammond");
+
   const ata = await call("/api/mock/agent-ticket-acquisition", { cookie: ina });
   ok("agent-acquisition sample carries its two faces (humanView + the verbal summary)",
     ata.status === 200 && ata.body.mock.humanView?.file === "venue-ticketing-ui.html" &&
@@ -642,7 +658,7 @@ try {
   const inv = await waitFor(() => received.find((x) => (x.to || []).includes("mia@test.dev") && (x.subject || "").includes("access to the UZE Dev Library")));
   ok("mail configured: invitation SENT at the grant event, from desk@", !!inv && String(inv.from).includes("desk@uzemarkets.com"));
   ok("invitation is branded: greeting, tangerine, library link, desk signature",
-    !!inv && inv.html.includes("Dear Development Partner,") && inv.html.includes("#ff6b00") &&
+    !!inv && inv.html.includes("Dear Development Partner,") && inv.text.includes("Dear Development Partner,") && inv.html.includes("#ff6b00") &&
     inv.html.includes("dev.uzemarkets.com") && inv.html.includes("The UZE Markets Desk") &&
     inv.text.includes("The UZE Markets Desk"));
   ok("house CTAs sit above the signature, logo underneath (James's layout rule)",
@@ -683,7 +699,7 @@ try {
   const delivered = otpMail && otpMail.text.match(/sign-in code for the UZE Dev Library is (\d{6})/)[1];
   ok("sign-in code SENT at the request event", !!delivered);
   ok("code email is branded and shows the code large",
-    !!delivered && otpMail.html.includes(delivered) && otpMail.html.includes("Hello Mia,"));
+    !!delivered && otpMail.html.includes(delivered) && otpMail.html.includes("Hello Mia,") && otpMail.text.includes("Hello Mia,"));
   ok("code email stays lean: no hero, no button row, no banners",
     !!delivered && !otpMail.html.includes("hero.gif") && !otpMail.html.includes("#25D366") &&
     !otpMail.html.includes("Listen to the podcast") && !otpMail.html.includes("Join the conversation"));

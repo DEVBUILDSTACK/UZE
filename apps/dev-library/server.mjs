@@ -15,6 +15,7 @@ import { drainComms, sendEntryNow } from "./lib/mailer.mjs";
 import { applyWebhook, webhookConfigured } from "./lib/webhook.mjs";
 import * as life from "./lib/lifecycle.mjs";
 import * as adv from "./lib/advisors.mjs";
+import * as cls from "./lib/classifications.mjs";
 import * as orgreg from "./lib/orgs.mjs";
 import * as eng from "./lib/engagements.mjs";
 import * as asm from "./lib/assessments.mjs";
@@ -23,6 +24,7 @@ import { handleEcoRequest, isEcoHost } from "./eco/eco-server.mjs";
 import { loadContributors, publicView as ecoPublicView, addContributor as addEcoContributor } from "./lib/eco-contributors.mjs";
 import { progressForAll, noteLibrarySignIn } from "./lib/eco-flow.mjs";
 import { composeInvitation, invitationKindFor } from "./lib/invitations.mjs";
+import { VENUE_UI_HTML } from "./lib/venue-ui.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8734;
@@ -222,11 +224,14 @@ ${scopeCards}
       const d = sessionOf(req);
       if (!d) { res.writeHead(302, { location: "/" }); return res.end(); }
       const base = path.basename(p.slice("/samples/".length));
-      if (!base.endsWith(".html")) return send(res, 404, { error: "not found" });
-      const file = path.join(ROOT, "samples", base);
-      if (!fs.existsSync(file)) return send(res, 404, { error: "not found" });
-      res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300" });
-      return res.end(fs.readFileSync(file));
+      // The venue UI is served from an imported string, never a
+      // loose file — the deployment's static layer serves loose
+      // files publicly and would bypass this gate (2026-11-19).
+      if (base === "venue-ticketing-ui.html") {
+        res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300" });
+        return res.end(VENUE_UI_HTML);
+      }
+      return send(res, 404, { error: "not found" });
     }
 
     // --- the room (session required) ---
@@ -315,6 +320,11 @@ ${scopeCards}
       // from the Developer List — no tracks, grants, or sign-in) ---
       if (p === "/api/admin/advisors" && req.method === "GET") {
         return send(res, 200, { advisors: adv.loadAdvisors() });
+      }
+      // --- the classification layer (James, 2026-11-19): owners,
+      // principals, advisors, internal vs external developers ---
+      if (p === "/api/admin/classifications" && req.method === "GET") {
+        return send(res, 200, { people: cls.loadClassifications(), labels: cls.CLASS_LABELS });
       }
       if (p === "/api/admin/orgs" && req.method === "GET") {
         return send(res, 200, { orgs: orgreg.loadOrgs() });

@@ -200,6 +200,16 @@
     </div>
   </section>
 
+  <section id="classes" class="card">
+    <h2 style="margin-top:0">People — by class</h2>
+    <p class="sub" style="margin-bottom:10px">The classification layer: who is who, above the rosters. Owners — the family. Principals. Advisors. Developers, internal and external. The layer also carries each person's greeting name — the name their email opens with. Managed with the Master control token.</p>
+    <div class="row">
+      <button id="clsload" class="alt">Load classifications</button>
+      <span id="clsmsg"></span>
+    </div>
+    <div id="clslist" style="margin-top:10px"></div>
+  </section>
+
   <section id="engagements" class="card">
     <h2 style="margin-top:0">Engagements — Track B placement desk</h2>
     <p class="sub" style="margin-bottom:10px">Staffing is the desk's call. The client view stays blind — skills only — until the engagement is signed <i>and</i> a deposit is recorded.</p>
@@ -398,6 +408,19 @@ async function loadAdvisorList() {
     "<br><button class='alt' onclick=\"advRemove('" + (a.email || a.id) + "')\">Remove</button></div>").join("") || "No advisors yet.";
 }
 $("advload").onclick = loadAdvisorList;
+async function loadClassList() {
+  const r = await mfetch("/api/admin/classifications");
+  if (r.status !== 200) { $("clsmsg").textContent = r.body.error || "Master token required."; $("clsmsg").className = "err"; return; }
+  const labels = r.body.labels || {};
+  const order = ["owner", "principal", "advisor", "dev-internal", "dev-external"];
+  $("clslist").innerHTML = order.map(c =>
+    "<h3>" + (labels[c] || c) + "</h3>" +
+    (r.body.people || []).filter(p => p.class === c).map(p =>
+      "<div class='comment'><b>" + p.name + "</b> · " + (p.email || "no email on file") +
+      " · greeted \u201cHello " + p.greeting + ",\u201d · " + (p.org || "") +
+      (p.note ? "<br>" + p.note : "") + "</div>").join("")).join("") || "No classifications yet.";
+}
+$("clsload").onclick = loadClassList;
 $("advadd").onclick = async () => {
   if (!$("advorg").options.length) await loadOrgs();
   const r = await mfetch("/api/admin/advisors", { method: "POST", body: JSON.stringify({
