@@ -68,3 +68,17 @@ With the tap and the rulings, the P2 sprint 1 runs the composite's reordered 13-
 ---
 
 *Prepared by SoSem, 2026-11-18. Filed records govern; this note is the diagnosis of record for DeepSeek composite feedback #1.*
+
+---
+
+## Outcome — DeepSeek's response to this diagnosis (2026-11-18; by addition)
+
+DeepSeek accepted the diagnosis in full and fixed all five discrepancies; its response is filed as received at `docs/talent/DEEPSEEK-RESPONSE-DIAGNOSIS-FIXES-2026-11-18.md`. Status of the §5 items:
+
+- **X1 — CLOSED.** No tool struck. The catalog stands at **9 base + 9 vertical = 18** (Instance 9, Markets 18); DeepSeek's labels are corrected, the undercount owned as a transcription error. Both candidate tools (`list_tiers()`, `pay_via_x402()`) are defended as legitimate tools and remain.
+- **X2 — REFRAMED, recommendation stands.** UZE-IPFS is the **target state**, conditional on (a) P0 verification and (b) NEAR AI Cloud credits. **Filebase/Pinata is the operating home** from the start; the publisher, redaction discipline, and three-store separation are identical either way. DeepSeek's four-point P0 verification checklist (persistent CID-verifiable nodes; retrieved CID matches published CID; persistence guarantees; per-GB-pin cost inside the Markets envelope) is adopted into P0. If verification fails, Filebase/Pinata becomes permanent and the UZE-IPFS brand applies to the publisher layer we operate, not the infrastructure underneath.
+- **X3 — CONCURRENCE ON RECORD.** DeepSeek confirms supersession is scoped to its own contribution stream; James's rulings and the filed specifications govern.
+- **X4 — RECOMMENDATION OF RECORD UPDATED.** The flat priority is replaced by a **two-tier structure** — Tier 1 (conversion): Anthropic registry → Smithery → Cursor/Windsurf; Tier 2 (reach): OpenAI → Perplexity → DeepSeek → Venice → Kimi → Hostinger → mcp.so/mcpmarket. James's standing list is fully included. Ruling 2 remains James's; this structure is what he rules against.
+- **X5 — CONDUCT RULE AGREED.** "Instant" stays as a brand word; the numeric claim is withheld from every surface until P0 measures actual provisioning time, and the measured number (whatever it is) is what may be claimed.
+
+The seven rulings remain James's. DeepSeek's reads (recommendations on all seven) are in its filed response, §"The seven rulings — my read, briefly." The package stands inert until James's tap and rulings.
