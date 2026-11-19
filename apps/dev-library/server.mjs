@@ -14,6 +14,7 @@ import { findDeveloper, requestCode, verifyCode, signSession, readSession, visib
 import { drainComms } from "./lib/mailer.mjs";
 import { applyWebhook, webhookConfigured } from "./lib/webhook.mjs";
 import * as life from "./lib/lifecycle.mjs";
+import * as eng from "./lib/engagements.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8734;
@@ -37,7 +38,7 @@ const sessionOf = (req) => {
 };
 const isMaster = (req) => MASTER && req.headers["x-master-token"] === MASTER;
 const publicDev = (d) => d && ({ name: d.name, email: d.email, track: d.track || "EITHER", stage: d.stage,
-  expertise: d.expertise, readingRoom: d.readingRoom.active,
+  expertise: d.expertise, pairs: d.pairs || [], readingRoom: d.readingRoom.active,
   source: d.source.filter((s) => !s.revokedAt).map((s) => s.repo) });
 
 // DB mode (DATABASE_URL set): the talent data layer is the durable
@@ -157,16 +158,46 @@ const handleRequest = async (req, res) => {
     if (p.startsWith("/api/admin/")) {
       if (!isMaster(req)) return send(res, 403, { error: "master only" });
       if (p === "/api/admin/developers" && req.method === "GET") {
-        return send(res, 200, { developers: load("developers.json").developers.map(publicDev) });
+        let devs = load("developers.json").developers;
+        // Expertise filters (P3 D3): role and/or realm; both together
+        // match the exact Role×Realm pair.
+        const role = url.searchParams.get("role"), realm = url.searchParams.get("realm");
+        if (role || realm) devs = devs.filter(d => (d.pairs || []).some(pr =>
+          (!role || pr.role === role) && (!realm || pr.realm === realm)));
+        return send(res, 200, { developers: devs.map(publicDev) });
       }
       if (p === "/api/admin/chronicle" && req.method === "GET") return send(res, 200, load("chronicle.json"));
       if (p === "/api/admin/comms" && req.method === "GET") return send(res, 200, load("comms-log.json"));
+      // --- engagements (M1): desk surface + the blind client view ---
+      const engMatch = p.match(/^\/api\/admin\/engagements(?:\/([^/]+)(\/client-view)?)?$/);
+      if (engMatch && req.method === "GET") {
+        if (!engMatch[1]) return send(res, 200, { engagements: eng.loadEngagements().map(eng.deskView) });
+        const e = eng.findEngagement(engMatch[1]);
+        if (!e) return send(res, 404, { error: "engagement not found" });
+        return send(res, 200, engMatch[2] ? { view: eng.clientView(e) } : { engagement: eng.deskView(e) });
+      }
       if (req.method === "POST") {
         const b = await body(req);
         if (p === "/api/admin/rename-mock") return send(res, 200, { ok: true, mock: life.renameMock(b.slug, b) });
+        if (p === "/api/admin/engagements") return send(res, 200, { ok: true, engagement: eng.deskView(eng.openEngagement(b)) });
+        const engAction = p.match(/^\/api\/admin\/engagements\/([^/]+)\/(staff|unstaff|sign|deposit|close|cancel)$/);
+        if (engAction) {
+          const [, id, action] = engAction;
+          const run = {
+            staff: () => eng.staffEngagement(id, b.email),
+            unstaff: () => eng.unstaffEngagement(id),
+            sign: () => eng.recordSigned(id, b.ref || null),
+            deposit: () => eng.recordDeposit(id, b.ref || null),
+            close: () => eng.closeEngagement(id),
+            cancel: () => eng.cancelEngagement(id, b.reason || ""),
+          }[action];
+          return send(res, 200, { ok: true, engagement: eng.deskView(run()) });
+        }
         const ops = {
           "/api/admin/add-developer": () => life.addDeveloper(b),
           "/api/admin/mark-contact": () => life.markContact(b.email, b.channel),
+          "/api/admin/set-expertise": () => life.setExpertise(b.email, b.pairs),
+          "/api/admin/set-track": () => life.setTrack(b.email, b.track),
           "/api/admin/grant-reading-room": () => life.grantReadingRoom(b.email),
           "/api/admin/grant-source": () => life.grantSource(b.email, b.repo, b.roadmap || null),
           "/api/admin/revoke-all": () => life.revokeAll(b.email, b.reason || ""),

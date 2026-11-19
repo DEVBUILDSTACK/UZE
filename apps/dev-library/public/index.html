@@ -70,6 +70,41 @@
       <span id="mmsg"></span>
     </div>
     <div id="mlist" style="margin-top:10px"></div>
+    <h4>Expertise & track (Role × Realm, up to 5 pairs)</h4>
+    <div class="row">
+      <input id="xemail" type="email" placeholder="developer@email" size="26">
+      <input id="xpairs" placeholder="SMART_CONTRACT_DEV×LIGHTNING, FULL_STACK_DEV×NEAR_AI" size="46">
+      <button id="xset" class="alt">Set expertise</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="xtrack">
+        <option value="EITHER">EITHER</option>
+        <option value="EXTERNAL_PLACED">EXTERNAL_PLACED (Track B)</option>
+        <option value="INTERNAL_ONLY">INTERNAL_ONLY (Track A)</option>
+      </select>
+      <button id="xtset" class="alt">Set track</button>
+      <span id="xmsg"></span>
+    </div>
+  </section>
+
+  <section id="engagements" class="card">
+    <h3 style="margin-top:0">Engagements — Track B placement desk</h3>
+    <p class="sub" style="margin-bottom:10px">Staffing is the desk's call. The client view stays blind — skills only — until the engagement is signed <i>and</i> a deposit is recorded.</p>
+    <div class="row">
+      <input id="etitle" placeholder="Role needed (e.g. Solana smart-contract dev)" size="34">
+      <input id="eclient" placeholder="Client name" size="22">
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="eservice"><option>AUG</option><option>OUTSTAFF</option><option>PLACE</option><option>PROJECT</option></select>
+      <select id="edeploy"><option>REMOTE</option><option>HYBRID</option><option>MIXED</option><option>ONSITE</option></select>
+      <select id="emodel"><option>OUTSTAFFING</option><option>PLACEMENT</option></select>
+      <input id="efee" type="number" min="1" step="0.5" placeholder="fee months (PLACEMENT)" size="20">
+      <button id="eopen">Open engagement</button>
+      <button id="eload" class="alt">Load engagements</button>
+      <span id="emsg"></span>
+    </div>
+    <div id="elist" style="margin-top:10px"></div>
+    <pre id="eview" class="hidden" style="white-space:pre-wrap;font-size:13px"></pre>
   </section>
 </main>
 <script>
@@ -136,7 +171,72 @@ $("mload").onclick = async () => {
   $("mmsg").textContent = "";
   $("mlist").innerHTML = (b.developers || []).map(d =>
     "<div class='comment'><b>" + d.name + "</b> · " + d.email + " · track " + d.track + " · stage " + d.stage +
-    "<br>Reading room: " + (d.readingRoom ? "YES" : "no") + " · GitHub source: " + (d.source.length ? d.source.join(", ") : "none") + "</div>").join("") || "No developers yet.";
+    "<br>Reading room: " + (d.readingRoom ? "YES" : "no") + " · GitHub source: " + (d.source.length ? d.source.join(", ") : "none") +
+    "<br>Expertise: " + ((d.pairs || []).length ? d.pairs.map(p => p.role + " × " + p.realm + " (" + p.rank + ")").join(" · ") : (d.expertise || []).join(", ") || "none recorded") + "</div>").join("") || "No developers yet.";
+};
+const mfetch = async (path, opts = {}) => {
+  const r = await fetch(path, { headers: { "content-type": "application/json", "x-master-token": $("mtoken").value }, ...opts });
+  return { status: r.status, body: await r.json().catch(() => ({})) };
+};
+$("xset").onclick = async () => {
+  const pairs = $("xpairs").value.split(",").map(s => s.trim()).filter(Boolean).map(s => {
+    const [role, realm] = s.split("×").map(x => (x || "").trim());
+    return { role, realm };
+  });
+  const r = await mfetch("/api/admin/set-expertise", { method: "POST", body: JSON.stringify({ email: $("xemail").value, pairs }) });
+  $("xmsg").textContent = r.status === 200 ? "Expertise set." : (r.body.error || "Failed.");
+  $("xmsg").className = r.status === 200 ? "ok" : "err";
+  if (r.status === 200) $("mload").onclick();
+};
+$("xtset").onclick = async () => {
+  const r = await mfetch("/api/admin/set-track", { method: "POST", body: JSON.stringify({ email: $("xemail").value, track: $("xtrack").value }) });
+  $("xmsg").textContent = r.status === 200 ? "Track set." : (r.body.error || "Failed.");
+  $("xmsg").className = r.status === 200 ? "ok" : "err";
+  if (r.status === 200) $("mload").onclick();
+};
+async function loadEngagements() {
+  const r = await mfetch("/api/admin/engagements");
+  if (r.status !== 200) { $("emsg").textContent = "Master token not accepted."; $("emsg").className = "err"; return; }
+  $("emsg").textContent = "";
+  $("elist").innerHTML = (r.body.engagements || []).map(e =>
+    "<div class='comment'><b>" + e.title + "</b> · " + e.clientName + " · " + e.service + " / " + e.deployment + " / " + e.commercialModel +
+    (e.commercialModel === "PLACEMENT" ? " · fee " + e.feeMonths + " mo" : "") +
+    "<br>State: <b>" + e.state + "</b>" + (e.developerEmail ? " · staffed: " + e.developerEmail : " · unstaffed") +
+    " · client view: " + (e.revealed ? "REVEALED" : "blind") +
+    "<br><button class='alt' onclick=\"engAct('" + e.id + "','staff')\">Staff…</button> " +
+    "<button class='alt' onclick=\"engAct('" + e.id + "','unstaff')\">Unstaff</button> " +
+    "<button class='alt' onclick=\"engAct('" + e.id + "','sign')\">Record signed</button> " +
+    "<button class='alt' onclick=\"engAct('" + e.id + "','deposit')\">Record deposit</button> " +
+    "<button class='alt' onclick=\"engClientView('" + e.id + "')\">Client view</button> " +
+    "<button class='alt' onclick=\"engAct('" + e.id + "','close')\">Close</button> " +
+    "<button class='alt' onclick=\"engAct('" + e.id + "','cancel')\">Cancel</button></div>").join("") || "No engagements yet.";
+}
+$("eload").onclick = loadEngagements;
+$("eopen").onclick = async () => {
+  const fee = $("efee").value === "" ? null : Number($("efee").value);
+  const r = await mfetch("/api/admin/engagements", { method: "POST", body: JSON.stringify({
+    title: $("etitle").value, clientName: $("eclient").value, service: $("eservice").value,
+    deployment: $("edeploy").value, commercialModel: $("emodel").value, feeMonths: fee }) });
+  $("emsg").textContent = r.status === 200 ? "Engagement opened." : (r.body.error || "Failed.");
+  $("emsg").className = r.status === 200 ? "ok" : "err";
+  if (r.status === 200) loadEngagements();
+};
+window.engAct = async (id, action) => {
+  const body = {};
+  if (action === "staff") { body.email = prompt("Developer email to staff:"); if (!body.email) return; }
+  if (action === "sign") body.ref = prompt("Signed-engagement reference (optional):") || null;
+  if (action === "deposit") body.ref = prompt("Deposit reference (optional):") || null;
+  if (action === "cancel") body.reason = prompt("Cancel reason:") || "";
+  const r = await mfetch("/api/admin/engagements/" + id + "/" + action, { method: "POST", body: JSON.stringify(body) });
+  if (r.status !== 200) { $("emsg").textContent = r.body.error || "Failed."; $("emsg").className = "err"; return; }
+  loadEngagements();
+};
+window.engClientView = async (id) => {
+  const r = await mfetch("/api/admin/engagements/" + id + "/client-view");
+  const v = $("eview");
+  v.classList.remove("hidden");
+  v.textContent = "CLIENT VIEW (exactly what the client sees):\n" + JSON.stringify(r.body.view, null, 1);
+  v.scrollIntoView({ behavior: "smooth" });
 };
 enter();
 </script>
