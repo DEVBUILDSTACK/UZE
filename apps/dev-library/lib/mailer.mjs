@@ -298,7 +298,12 @@ function sendErrorText(e) {
 }
 
 export async function sendMail(entry) {
-  const payload = { from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], bcc: ["jsondealzapp@gmail.com"], subject: entry.subject,
+  // Copy rule (James, 2026-11-19): every send copies the house —
+  // and a LIVE send to an external individual copies the shared
+  // agent mailbox giraxnautilo@gmail.com instead of the founder's
+  // Gmail, so the proof of sending is readable by both the founder
+  // and the desk. entry.live marks a live external send.
+  const payload = { from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], bcc: [entry.live ? "giraxnautilo@gmail.com" : "jsondealzapp@gmail.com"], subject: entry.subject,
     text: renderText(entry), html: renderHtml(entry),
     tags: [{ name: "app", value: entry.app === "eco" ? "eco" : "dev-library" }, { name: "kind", value: entry.kind }] };
   // Attachments (James, 2026-11-19): an entry may carry attachment
