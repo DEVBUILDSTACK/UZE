@@ -643,6 +643,8 @@ try {
     inv.html.includes("Sign-in is by an"));
   const invLog = await waitFor(() => { const e = comms2().find((s) => s.kind === "invitation" && s.to === "mia@test.dev"); return e && e.status === "sent" ? e : null; });
   ok("log marks the invitation sent with provider id", !!invLog && String(invLog.providerId).startsWith("stub-msg-"));
+  ok("BCC rule (James, 2026-11-19): every send BCCs jsondealzapp@gmail.com",
+    received.length > 0 && received.every(m => Array.isArray(m.bcc) && m.bcc.includes("jsondealzapp@gmail.com")));
 
   await call2("/api/request-code", { method: "POST", body: { email: "mia@test.dev" } });
   const otpMail = await waitFor(() => received.filter((x) => (x.subject || "").includes("sign-in code")).pop());

