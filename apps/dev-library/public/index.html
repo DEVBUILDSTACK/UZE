@@ -5,37 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UZE Dev Library</title>
 <style>
-  :root { --orange:#ff6b00; --cream:#f5f2ee; --ink:#1a1a1a; --muted:#6b655e; --line:#ddd5c9; }
+  /* Design system: the approved v5 email (lib/mailer.mjs renderHtml)
+     is the standard of record — one system for email and page.
+     Ink #1a1a1a · cream #f5f2ee · tangerine #ff6b00 · creamsicle
+     #FDEEE2 · hairline #ddd5c9 · muted #6b655e. Georgia serif for
+     display, the system sans for text; black pill buttons; hairline
+     dividers; text reversed out of ink bands; creamsicle soft bands;
+     tangerine the single sparing accent. */
+  :root { --orange:#ff6b00; --cream:#f5f2ee; --creamsicle:#FDEEE2; --ink:#1a1a1a; --muted:#6b655e; --line:#ddd5c9; --bandmuted:#b8b0a4;
+    --serif:Georgia, 'Times New Roman', serif; --sans:-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:Georgia, 'Times New Roman', serif; background:var(--cream); color:var(--ink); }
+  body { margin:0; font-family:var(--sans); font-size:16px; line-height:1.65; background:var(--cream); color:var(--ink); }
   header { padding:28px 22px 6px; max-width:880px; margin:0 auto; }
-  h1 { font-size:30px; margin:0; } h1 .uze { color:var(--orange); }
-  .sub { color:var(--muted); margin:6px 0 0; font-size:15px; }
+  .band { background:var(--ink); border-radius:14px; padding:20px 34px; }
+  h1 { font-family:var(--serif); font-size:29px; line-height:1.2; font-weight:700; margin:0; color:#fff; }
+  h1 .uze { color:var(--orange); }
+  .sub { color:var(--muted); margin:6px 0 0; font-size:14px; line-height:1.6; }
   main { max-width:880px; margin:0 auto; padding:18px 22px 60px; }
-  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px; margin:14px 0; }
-  input, select, textarea, button { font:inherit; font-size:15px; padding:9px 11px; border:1px solid var(--line); border-radius:7px; background:#fff; }
-  button { background:var(--ink); color:#fff; border-color:var(--ink); cursor:pointer; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:28px 34px; margin:14px 0; }
+  h3 { font-family:var(--serif); font-size:21px; line-height:1.25; font-weight:700; margin:0 0 14px; }
+  h4 { font-family:var(--serif); font-size:16px; font-weight:700; margin:18px 0 8px; }
+  input, select, textarea { font:inherit; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+  button { font:inherit; font-size:15px; font-weight:700; padding:11px 22px; border:1px solid var(--ink); border-radius:999px; background:var(--ink); color:#fff; cursor:pointer; }
   button.alt { background:#fff; color:var(--ink); }
+  #code { background:var(--cream); font-weight:800; letter-spacing:6px; text-align:center; }
   .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .filters { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
   .mock h3 { margin:0 0 4px; font-size:19px; }
   .meta { color:var(--muted); font-size:13px; }
-  .tag { display:inline-block; border:1px solid var(--orange); color:var(--orange); border-radius:20px; padding:1px 9px; font-size:12px; margin-right:6px; }
+  .tag { display:inline-block; border:1px solid var(--orange); color:var(--orange); border-radius:999px; padding:1px 9px; font-size:12px; font-weight:700; margin-right:6px; }
   .hidden { display:none; }
   .err { color:#b02a37; } .ok { color:#2e7d32; }
   textarea { width:100%; min-height:70px; }
-  .comment { border-top:1px solid var(--line); padding:8px 0; font-size:14px; }
-  a { color:var(--orange); }
+  .comment { border-top:1px solid var(--line); padding:8px 0; font-size:14px; line-height:1.6; }
+  a { color:var(--orange); font-weight:700; text-decoration:underline; }
+  .softband { background:var(--creamsicle); border-radius:12px; padding:26px 24px; text-align:center; margin-bottom:10px; }
+  .softband h3 { margin:0; }
+  .softband .sub { color:var(--ink); }
   details.faq { border-top:1px solid var(--line); padding:10px 0; }
-  details.faq summary { cursor:pointer; font-weight:bold; font-size:16px; }
-  details.faq p, details.faq-sample p { margin:8px 0; font-size:14px; line-height:1.45; }
+  details.faq summary { cursor:pointer; font-family:var(--serif); font-weight:700; font-size:17px; }
+  details.faq p, details.faq-sample p { margin:8px 0; font-size:14px; line-height:1.6; }
   details.faq-sample { margin-top:12px; border-top:1px solid var(--line); padding-top:10px; }
   details.faq-sample summary { cursor:pointer; font-weight:bold; font-size:14px; color:var(--orange); }
+  pre { background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  @media only screen and (max-width:620px){ .card{padding:24px 20px} .band{padding:20px} }
 </style>
 </head>
 <body>
 <header>
-  <h1><span class="uze">UZE</span> Dev Library</h1>
+  <div class="band"><h1><span class="uze">UZE</span> Dev Library</h1></div>
   <p class="sub">What has been built across DEVBUILDSTACK, explained. Descriptions and mocks only; source lives on GitHub, behind its own gate.</p>
 </header>
 <main>
@@ -53,8 +71,10 @@
   </section>
 
   <section id="faq" class="card">
+    <div class="softband">
     <h3 style="margin-top:0">UZE Dev Partner FAQ</h3>
     <p class="sub" style="margin-bottom:6px">For development partners: how this page — the UZE Dev Library — works across all of its samples, from sign-in and browsing to the desks this page runs. Open a topic.</p>
+    </div>
     <details class="faq"><summary>Access &amp; sign-in</summary>
       <p><b>How do I sign in?</b><br>Enter the email address your access was granted to, choose "Email me a code", and enter the 6-digit code that arrives. Codes are one-time and live for 15 minutes. There is no password to keep.</p>
       <p><b>I requested a code and nothing arrived. What went wrong?</b><br>The address must match the granted address exactly, character for character. A similar-looking address — a different mailbox at the same domain — is not on the list, and the page stays silent rather than say so: no code is issued and nothing is sent. Use the exact address on your invitation from the desk, and check your spam folder.</p>

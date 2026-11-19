@@ -80,6 +80,15 @@ try {
   ok("FAQ: no internal naming in FAQ copy (macro section + per-sample generator)",
     !/reading room/i.test(faqSection) && !/reading room/i.test(faqGen));
 
+  // ---- Design system: the page carries the approved v5 email's
+  // tokens (lib/mailer.mjs renderHtml is the standard of record), so
+  // the page and the email cannot silently drift apart ----
+  ok("design: served page carries the email design tokens (ink, cream, tangerine, creamsicle, hairline, muted)",
+    ["#1a1a1a", "#f5f2ee", "#ff6b00", "#FDEEE2", "#ddd5c9", "#6b655e"].every(t => pageHtml.includes(t)));
+  ok("design: black pill buttons, Georgia serif display, reversed ink header band, creamsicle soft band",
+    pageHtml.includes("border-radius:999px") && pageHtml.includes("Georgia") &&
+    pageHtml.includes('class="band"') && pageHtml.includes('class="softband"'));
+
   ok("catalog without session -> 401", (await call("/api/catalog")).status === 401);
   const before = comms().length;
   await call("/api/request-code", { method: "POST", body: { email: "ghost@nowhere.test" } });
