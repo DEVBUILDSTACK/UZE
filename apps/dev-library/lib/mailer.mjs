@@ -79,7 +79,11 @@ export function renderText(entry) {
   // entry's greetingText (Hello "First Name", or an explicit
   // greeting) governs both parts. (The dashboard caught the text
   // part greeting bare "Hello," on the Bruno proof, 2026-11-19.)
-  return `${entry.greetingText || GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${SIGN_OFF}\n${entry.siteUrl || LIBRARY_URL}\n\nUZEmarkets`;
+  // A personal sign-off name (James, 2026-11-19 — e.g. "James Sr."
+  // on principal/owner letters) sits below the body and above the
+  // desk signature.
+  const signoff = entry.signoffName ? `${entry.signoffName}\n\n` : "";
+  return `${entry.greetingText || GREETING[entry.kind] || "Hello,"}\n\n${entry.body}\n\n${CTA_TEXT}\n\n${signoff}${SIGN_OFF}\n${entry.siteUrl || LIBRARY_URL}\n\nUZEmarkets`;
 }
 
 // Naming rule (James, 2026-11-18; completed 2026-11-19): the term
@@ -224,6 +228,7 @@ export function renderHtml(entry) {
     <p class="em-muted" style="text-align:center;margin:10px 0 0;font-size:13px;color:#6b655e;line-height:1.5">Share the weekly edition, and leave us feedback or a kind word on those channels. Our affiliate WhatsApp group opens soon.</p>` : "";
   const signature = desk
     ? `<div style="margin-top:28px">
+      ${entry.signoffName ? `<p class="em-text" style="margin:0 0 14px;color:#1a1a1a">${esc(entry.signoffName)}</p>` : ""}
       <p class="em-text" style="margin:0 0 2px;color:#1a1a1a">Warm regards,</p>
       <p class="em-text" style="margin:0;font-weight:700;color:#1a1a1a">The UZE Markets Desk</p>
       <p class="em-muted" style="margin:0;color:#6b655e;font-size:13px">Global Support &amp; Contact · ${LINK("mailto:desk@uzemarkets.com", "desk@uzemarkets.com")}</p>
@@ -303,9 +308,16 @@ export async function sendMail(entry) {
   // agent mailbox giraxnautilo@gmail.com instead of the founder's
   // Gmail, so the proof of sending is readable by both the founder
   // and the desk. entry.live marks a live external send.
-  const payload = { from: entry.app === "eco" ? ECO_FROM() : FROM(), to: [entry.to], bcc: [entry.live ? "giraxnautilo@gmail.com" : "jsondealzapp@gmail.com"], subject: entry.subject,
+  // Sender rule (James, 2026-11-19): mail to a PRINCIPAL or an
+  // OWNER is sent from uze@uzemarkets.com and its replies return
+  // to uze@ — an entry carries fromEmail/fromName/replyTo to say
+  // so; the desk signature block still shows the desk contact.
+  const from = entry.fromEmail ? (entry.fromName ? `${entry.fromName} <${entry.fromEmail}>` : entry.fromEmail)
+    : entry.app === "eco" ? ECO_FROM() : FROM();
+  const payload = { from, to: [entry.to], bcc: [entry.live ? "giraxnautilo@gmail.com" : "jsondealzapp@gmail.com"], subject: entry.subject,
     text: renderText(entry), html: renderHtml(entry),
     tags: [{ name: "app", value: entry.app === "eco" ? "eco" : "dev-library" }, { name: "kind", value: entry.kind }] };
+  if (entry.replyTo) payload.reply_to = entry.replyTo;
   // Attachments (James, 2026-11-19): an entry may carry attachment
   // descriptors ({ filename, file } — file is app-relative; the
   // content ships with the app). The mailer resolves them at send
