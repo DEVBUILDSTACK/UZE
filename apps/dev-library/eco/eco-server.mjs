@@ -116,7 +116,7 @@ const STEP_LABELS = {
 const STEP_ORDER = Object.keys(STEP_LABELS);
 
 function navHtml(contributor, active) {
-  const items = [["/", "Home"], ["/ecosystem", "Ecosystem"], ["/surfaces/human", "Human surface"], ["/surfaces/agentic", "Agentic surface"]];
+  const items = [["/", "Home"], ["/ecosystem", "Ecosystem"], ["/surfaces/human", "Human surface"], ["/surfaces/agentic", "Agentic surface"], ["/faq", "How it works"]];
   for (const r of ORG_ROUTES) if (canSeeOrg(contributor, r.key)) items.push([`/org/${r.slug}`, r.acronym === "L2L" ? "L2Launch" : r.name]);
   return `<nav class="sections" aria-label="Sections">${items.map(([href, label]) =>
     `<a href="${href}"${href === active ? ' aria-current="page"' : ""}>${esc(label)}</a>`).join("")}</nav>`;
@@ -257,6 +257,7 @@ ${otherSurface}
 <p>Sign-in is by email and a one-time code — no GitHub, no password to keep. You see the sections your role carries; the rest are not hidden links, they are simply not yours to open.</p>
 <p>You experience these surfaces as a <strong>tenant of the design standard</strong>: the values may be presented per the standard — the structure never changes. One design language, amended by its principals, washed before it is seen.</p>
 <p>Underneath both surfaces — not a third surface — runs the <strong>programmatic logic: system scale, not control</strong> — and the programmatic core inside each container is the standing priority. The Ecosystem page states it in full, under "The programmatic core."</p>
+<p>Every screen in order, with the exact buttons named: <a href="/faq" style="color:var(--ink);font-weight:600">How Buildr Team works — step by step</a>.</p>
 </section>`;
   return layout({ title: "Home", contributor, active: "/", body });
 }
@@ -302,6 +303,36 @@ ${ORG_PAGES[route.key]}
 <p style="margin-top:16px"><a href="/ecosystem">← Back to the Ecosystem overview</a></p>
 </section>`;
   return layout({ title: `${route.acronym} — ${route.name}`, contributor, active: `/org/${route.slug}`, body });
+}
+
+function faqPage(contributor) {
+  const body = `
+<section class="card doc">
+<h2>How Buildr Team works — step by step</h2>
+<p class="lede">Every screen in the order you meet it, with the exact buttons named. Nine short steps.</p>
+<h3>1. Signing in — your email, then a code</h3>
+<p>Open <strong>buildr-eco.uzemarkets.com</strong>. Type the exact email address your access was granted to into the <strong>Email address</strong> field and tap <strong>Email me a sign-in code</strong>. A 6-digit code arrives at that address. Type it into the <strong>One-time code</strong> field and tap <strong>Sign in</strong> — your home opens. There is no password, and no GitHub account. A code lives for 15 minutes; if yours does not check out, tap <strong>Email me a sign-in code</strong> again and use the newest code.</p>
+<h3>2. Your home — your name, your sections</h3>
+<p>Your home opens on a card with your name, your role and your email, and <strong>Sign out</strong> at the right. Under it, <strong>Your sections</strong> shows a tile for everything you can open. The pills along the top are the same doors: <strong>Home</strong>, <strong>Ecosystem</strong>, <strong>Human surface</strong>, <strong>Agentic surface</strong>, then your organizations, then <strong>How it works</strong> — this page.</p>
+<h3>3. Start with the Ecosystem overview</h3>
+<p>Tap <strong>Ecosystem</strong> in the pills, or the <strong>The Ecosystem</strong> tile on your home. The page opens with the verbal overview — read it first; it is the whole picture in words. The three diagrams follow below it on the same page.</p>
+<h3>4. Marking the overview complete</h3>
+<p>At the bottom of the Ecosystem page, a band asks <strong>Finished the overview?</strong> When you have taken in the overview and the three diagrams, tap the black button <strong>Team overview — completed</strong>. The click is the record: the band then shows the date it was recorded. If you also hold the Dev Partner Library, your home leads with <strong>Pick up where you left off</strong> until your path through both surfaces is done — you never have to remember where you stopped.</p>
+<h3>5. The two design surfaces — and their pillars</h3>
+<p>Tap <strong>Human surface</strong> or <strong>Agentic surface</strong> in the pills to read each document in full. Each document ends with an addendum of <strong>pillars</strong> — the load-bearing principles, named as pillars, not summarized here: read them where they live.</p>
+<p>The <a href="/surfaces/human">Human Design Surface</a> carries seven: <strong>Pillar 1 — One canonical source of values</strong> · <strong>Pillar 2 — Palette only: no hue exists outside the tokens</strong> · <strong>Pillar 3 — The wordmark never wraps</strong> · <strong>Pillar 4 — The car wash: no page deploys unwashed</strong> · <strong>Pillar 5 — White-label by token override only: the sensitivity stays resident</strong> · <strong>Pillar 6 — Advisory input as ratified amendments, never page edits</strong> · <strong>Pillar 7 — Judgment stays human: the three-second test and the looked-at render</strong>.</p>
+<p>The <a href="/surfaces/agentic">Agentic Design Surface</a> carries three Fundamental Pillars: <strong>Pillar 1 — Agentic trading harnesses and terminals</strong> · <strong>Pillar 2 — Market reasoning models and data assets — a real edge</strong> · <strong>Pillar 3 — Identity, audit trails, and performance-verification infrastructure for non-human financial decision-makers</strong>. Its second addendum keeps trading and treasury separate — treasury is the ultimate focus.</p>
+<p>On the Ecosystem page, under each diagram, tap <strong>Diagram code</strong> to open the diagram's code. That code is the machine-readable seed — the form the future agent access is built from.</p>
+<h3>6. The programmatic core — under both surfaces</h3>
+<p>Still on the Ecosystem page, below the diagrams, sits a creamsicle band: <strong>The programmatic core — under both surfaces</strong>. It is the logic of continual efficiency and continual scale that both surfaces stand on. It is not a third surface — there is no third door to open, and nothing extra for you to do with it. It is simply how the work underneath everything you see here is run.</p>
+<h3>7. Your organization sections</h3>
+<p>The pills <strong>UZE</strong>, <strong>L2Launch</strong>, <strong>DealFi</strong> and <strong>Fundio</strong> open your organization sections — each one states that organization's place in the architecture and how the two surfaces touch it. You see only the sections your role carries. If you follow an address to a section that is not yours, the page answers <strong>Not your section</strong>. Nothing is broken: it is simply not one of yours. The Ecosystem level above the sections is open to every contributor.</p>
+<h3>8. Holding both surfaces — the library comes second</h3>
+<p>If you also hold access to the UZE Dev Partner Library, your home carries a creamsicle band, <strong>Your other surface</strong>, with the button <strong>Continue to the UZE Dev Partner Library →</strong>. The order is deliberate: start with the ecosystem — the whole picture — then continue to the library, where the work itself lives. The library is a separate door at dev.uzemarkets.com and asks for its own sign-in code when you arrive; a code for one surface never opens the other.</p>
+<h3>9. Signing out — and getting help</h3>
+<p>Tap <strong>Sign out</strong> in the top card of your home. To return, open buildr-eco.uzemarkets.com and sign in again with a fresh code — step 1. Anything stuck — a code that never arrives, a section you believe should be yours — write to the desk: <a href="mailto:desk@uzemarkets.com">desk@uzemarkets.com</a>.</p>
+</section>`;
+  return layout({ title: "How it works", contributor, active: "/faq", body });
 }
 
 function messagePage(contributor, title, text) {
@@ -380,6 +411,10 @@ export async function handleEcoRequest(req, res, { send, body, ecoAdmin }) {
       const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
       recordFlowEvent(c, "overview_viewed");
       return html(res, 200, ecosystemPage(c));
+    }
+    if (req.method === "GET" && p === "/faq") {
+      const c = ecoSessionOf(req); if (!c) return redirect(res, "/");
+      return html(res, 200, faqPage(c));
     }
     if (req.method === "GET" && (p === "/surfaces/human" || p === "/surfaces/agentic")) {
       const c = ecoSessionOf(req); if (!c) return redirect(res, "/");

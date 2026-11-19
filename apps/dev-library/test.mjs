@@ -63,10 +63,17 @@ try {
   const pageHtml = await (await fetch(B + "/")).text();
   const faqAt = pageHtml.indexOf('id="faq"');
   const faqSection = faqAt >= 0 ? pageHtml.slice(faqAt, pageHtml.indexOf("</section>", faqAt)) : "";
-  ok("FAQ: macro section served on the page, all nine topics present",
+  ok("FAQ: macro section served on the page, all ten topics present",
     ["Access &amp; sign-in", "Browsing the catalog", "The samples", "Commenting &amp; suggesting",
      "Tracks &amp; expertise", "Engagements &amp; the money models", "Assessments (Scope 2)",
-     "Access changes &amp; resets", "Contact — the desk"].every(t => faqSection.includes(t)));
+     "Access changes &amp; resets", "The two addresses — this library &amp; UZE Buildr Team",
+     "Contact — the desk"].every(t => faqSection.includes(t)));
+  ok("FAQ: macro section covers the second address per-address — UZE Buildr Team at buildr-eco.uzemarkets.com, its own sign-in, ecosystem first",
+    faqSection.includes("buildr-eco.uzemarkets.com") && faqSection.includes("UZE Buildr Team") &&
+    faqSection.includes("dev.uzemarkets.com") && faqSection.includes("Email me a sign-in code") &&
+    faqSection.includes("One-time code") && faqSection.includes("Your other surface") &&
+    faqSection.includes("Continue to the UZE Dev Partner Library") &&
+    faqSection.includes("L2 Launchpad") && faqSection.includes("DealFi") && faqSection.includes("Fundio"));
   ok("FAQ: macro section names the desk as the contact and carries the exact-address sign-in rule",
     faqSection.includes("desk@uzemarkets.com") && faqSection.includes("character for character") &&
     faqSection.includes("no password"));

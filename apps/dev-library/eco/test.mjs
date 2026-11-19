@@ -170,6 +170,29 @@ try {
     (await A.page("/surfaces/human", { cookie: jCookie })).text.includes("Pillar") &&
     (await A.page("/surfaces/agentic", { cookie: jCookie })).status === 200);
 
+  // The micro FAQ: post-OTP only, step by step in the app's own
+  // labels, pillars named as pillars with doors to the surfaces.
+  const unauthFaq = await A.page("/faq");
+  ok("A: unauthenticated /faq redirects to the door (the micro FAQ is post-OTP only)",
+    unauthFaq.status === 302 && unauthFaq.location === "/");
+  const faq = await A.page("/faq", { cookie: jCookie });
+  ok("A: the micro FAQ renders signed-in, step by step, in the app's own labels",
+    faq.status === 200 && faq.text.includes("How Buildr Team works — step by step") &&
+    faq.text.includes("Email me a sign-in code") && faq.text.includes("One-time code") &&
+    faq.text.includes("Team overview — completed") && faq.text.includes("Pick up where you left off") &&
+    faq.text.includes("Your other surface") && faq.text.includes("Not your section") &&
+    faq.text.includes("Sign out") && faq.text.includes("desk@uzemarkets.com"));
+  ok("A: the micro FAQ names the pillars as pillars and links to the surface pages where they live",
+    faq.text.includes("Pillar 1 — One canonical source of values") &&
+    faq.text.includes("Pillar 4 — The car wash: no page deploys unwashed") &&
+    faq.text.includes("Pillar 7 — Judgment stays human") &&
+    faq.text.includes("Pillar 2 — Market reasoning models and data assets — a real edge") &&
+    faq.text.includes('href="/surfaces/human"') && faq.text.includes('href="/surfaces/agentic"') &&
+    faq.text.includes("Diagram code") && faq.text.includes("not a third surface"));
+  ok("A: no internal naming on the micro FAQ", !/reading room/i.test(faq.text));
+  ok("A: home nav and the how-it-works card carry the door to the micro FAQ",
+    jHome.text.includes('href="/faq"') && jHome.text.includes("How Buildr Team works — step by step"));
+
   // Dual-holder flow: the tracked sequence binds dual-holders only.
   const dualCookie = await ecoSignIn(A, tmpA, "dual@test.dev");
   const me = await A.call("/api/eco/me", { cookie: dualCookie });
