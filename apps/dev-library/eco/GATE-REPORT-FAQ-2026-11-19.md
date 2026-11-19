@@ -76,3 +76,13 @@ Notes:
   "Your other surface", "Not your section", "Sign out").
 - Step 5 names the pillars as pillars and links to the surface pages
   where the pillar addenda live; the FAQ does not summarize them.
+
+## Addendum — naming correction (2026-11-19, James's direction)
+
+The surface is named in full wherever it is named: "the UZE Dev Library",
+never bare "the library". Corrected in the macro topic title and closing
+answer on the Dev Library page, and in micro-FAQ step 8 (heading + body)
+in the eco app; the pinned topic title in test.mjs updated to match.
+Rewash after the correction: Dev Library page — GATE PASS (exit 0);
+micro FAQ /faq rendered signed-in from the running app — GATE PASS
+(exit 0). Suites: 147/0 and 71/0.

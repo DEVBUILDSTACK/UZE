@@ -66,7 +66,7 @@ try {
   ok("FAQ: macro section served on the page, all ten topics present",
     ["Access &amp; sign-in", "Browsing the catalog", "The samples", "Commenting &amp; suggesting",
      "Tracks &amp; expertise", "Engagements &amp; the money models", "Assessments (Scope 2)",
-     "Access changes &amp; resets", "The two addresses — this library &amp; UZE Buildr Team",
+     "Access changes &amp; resets", "The two addresses — the UZE Dev Library &amp; UZE Buildr Team",
      "Contact — the desk"].every(t => faqSection.includes(t)));
   ok("FAQ: macro section covers the second address per-address — UZE Buildr Team at buildr-eco.uzemarkets.com, its own sign-in, ecosystem first",
     faqSection.includes("buildr-eco.uzemarkets.com") && faqSection.includes("UZE Buildr Team") &&
