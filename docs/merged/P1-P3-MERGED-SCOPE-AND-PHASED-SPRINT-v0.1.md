@@ -1,6 +1,7 @@
 # Merged P1 + P3 — Scope and Phased Sprint v0.1
 
-**Status: FOR JAMES'S TAP (the merge).** Produced by SoSem, 2026-11-18, on James's directive of 20:05 ET: a full SoSem detailed merge of the P1 and P3 Scope(s)/Phased Sprint(s).
+**Status: TAPPED by James, 2026-11-18 20:17 ET — with amendments A1–A6.** This document, as amended by the audit-ingestion section at its end, is the build order for Scopes 1 and 3. The tap authorizes no send, no spend, no rail enable, no real grant, and not the Phase 6 open-repo gate; those keep their own gates. The seven rulings in §7 remain James's to rule individually; the tap adopted the amendments, not the rulings. M0-A step 1 (state confirmation, per C7) is complete — record at `docs/merged/M0A-STATE-CONFIRMATION-2026-11-18.md`; M0-A's remaining steps wait on the two owner acts named there.
+Produced by SoSem, 2026-11-18, on James's directive of 20:05 ET: a full SoSem detailed merge of the P1 and P3 Scope(s)/Phased Sprint(s).
 **Addressee:** James.
 
 **Label mapping (read first).** In James's labels: **P1 = Scope 1** — the Talent platform / UZE Dev Library line (directive v3.1; `docs/talent/`). **P3 = Scope 3** — UZE Instant MCP (`docs/instant-mcp/`), the new scope, accepted as filed when the DeepSeek diagnosis loop closed on 2026-11-18. **P2 = Scope 2 (P2 Assessment) is SEPARATED** — per James's direction it is addressed on its own track and is **not** merged here; its seam with this program is specified in §6 and nothing else in this document governs it.
