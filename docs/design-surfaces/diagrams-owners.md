@@ -17,7 +17,7 @@ A short verbal overview accompanies these diagrams, and the two design-surface d
 
 ---
 
-## Diagram 1 — The ecosystem, and the human design surface flowing through it
+## Diagram 1 — The ecosystem, and what UZEmarkets is: the front end
 
 ```mermaid
 flowchart TD
@@ -41,30 +41,24 @@ flowchart TD
     VIS1["TO BE DEVELOPED — a vision, built collaboratively<br/>by James Sr. &amp; Jonathan, possibly others<br/>its one bridge to UZE: agency clients — hot, enterprise —<br/>fed by UZEmarkets' agentic outreach · proposed, not built yet<br/>carved off to the agency: motion · video · animation · film · UGC"]
     L2L -.-> VIS1
 
-    subgraph HUMAN["THE HUMAN DESIGN SURFACE — one design language for everything a person sees"]
-        INPUT["Creative input from the principals<br/>ideas, critique, motion & video craft"]
-        AMEND["Proposed amendments<br/>input returns as amendments — never one-off page edits"]
-        TOKENS["ONE canonical design source<br/>the eight tokens: tangerine, cream, ink, creamsicle…<br/>no other colors exist anywhere"]
-        ANCHOR["Anchored in every repo & surface<br/>the same values, linked — never copied"]
-        WASH["THE CAR WASH<br/>every page is checked before it ships:<br/>palette · phone & desktop renders · the wordmark on one line"]
-        SEEN["WHAT PEOPLE SEE<br/>UZEmarkets pages · the Dev Library · L2Launch films & ticket art<br/>white-label client surfaces — values change, the standard stays"]
+    subgraph FRONT["UZEMARKETS — THE FRONT END"]
+        F1["AGENTIC OUTREACH &amp; LEAD-GEN CONVERSION<br/>the front end solution — agents create leads, and convert them"]
+        F2["TALENT MARKETPLACE<br/>to source creatives"]
+        F3["THE WORK<br/>graphic design · animation · illustration<br/>video production · video editing · sound editing<br/>UGC · on-site global expertise · photography &amp; video execution"]
+        F4["ENTERPRISE DEMAND<br/>hot, high-expectation clients — for L2Launch Creative Intelligence<br/>&amp; principal expertise"]
+        F5["THE CORE FOCUS INITIATIVE<br/>convert &amp; generate revenue within 120 days<br/>and maintain — beginning June 30, 2027"]
     end
 
-    AUD["Audiences, affiliates & clients"]
-
-    PEOPLE --> INPUT
-    INPUT --> AMEND
-    AMEND -->|"the founder ratifies"| TOKENS
-    TOKENS --> ANCHOR
-    ANCHOR --> WASH
-    WASH --> SEEN
-    SEEN --> AUD
-    UZE --> SEEN
+    UZE --> F1
+    F1 --> F2
+    F2 --> F3
+    F3 --> F4
+    F4 --> F5
     DFI -.->|"same design standard,<br/>resident in their surfaces"| WASH
     FVC -.->|"same design standard,<br/>resident in their surfaces"| WASH
 ```
 
-**How to read it:** Everything a human being ever sees from this ecosystem — a web page, a film, a ticket, a client's white-label site — comes from **one** set of design values, held in one place. Nobody edits a page directly: creative input from William, Jonathan, and Joey comes back as *amendments* to that one source, the founder ratifies them, and every surface updates from the source. Before anything ships, it goes through the **car wash** — an automatic check that the colors are only the eight allowed, that it looks right on a phone and a desktop, and that the wordmark sits on one line. DFI and FVC are separate firms on the business side; the same design standard lives inside their surfaces too.
+**How to read it:** UZEmarkets is the front end. Its agentic outreach creates leads and converts them; its talent marketplace sources the creatives; and the demand it wins is enterprise demand — hot, high-expectation clients — for L2Launch Creative Intelligence and principal expertise, across graphic design, animation, illustration, video production, video editing, sound editing, UGC, on-site global expertise, and photography & video execution. The core focus initiative: convert and generate revenue within 120 days, and maintain — beginning June 30, 2027. The oval at the left is L2Launch itself: an island, deliberately outside the UZE rectangles — nothing in the UZE sections is L2Launch, and nothing under the island is built yet. DFI and FVC are separate firms on the business side; the same design standard lives inside their surfaces too.
 
 ---
 

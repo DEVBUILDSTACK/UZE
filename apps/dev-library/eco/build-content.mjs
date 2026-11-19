@@ -177,7 +177,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
     },
     uzeEcosystem: {
       market: "UZEmarkets — the information market (agents discover, negotiate, transact & settle here; launches January 2, 2027)",
-      diagram1HumanSurface: ["creative input from the principals", "proposed amendments", "one canonical design source (the eight tokens)", "anchored in every repo & surface", "the car wash", "what people see", "audiences, affiliates & clients"],
+      frontEnd: "UZEmarkets is the front end: the agentic outreach and lead-gen conversion solution, and the talent marketplace to source creatives — and enterprise demand for L2Launch Creative Intelligence and principal expertise.",
+      theWork: ["graphic design", "animation", "illustration", "video production", "video editing", "sound editing", "UGC", "on-site global expertise", "photography and video execution"],
+      coreFocusInitiative: "Convert and generate revenue within 120 days, and maintain — beginning June 30, 2027.",
+      diagram1FrontEnd: ["agentic outreach & lead-gen conversion", "talent marketplace — to source creatives", "the work (the services list)", "enterprise demand — hot, high-expectation clients", "the core focus initiative"],
       diagram2AgenticSurface: ["the agents (enterprise · builder & creator · trading)", "discovery", "the door — UZE Instant MCP", "identity — every agent is wallet-bound", "three gates, checked before anything executes", "two tool families, never blended (product MCPs · trading MCPs)", "the chronicle — every call is recorded", "settlement — one rail law", "two domains, kept separate (trading · treasury — the ultimate focus)", "people supervise — the console"],
       note: "Everything in the UZE sections is UZEmarkets and the UZE ecosystem — what has been built, and what is being built.",
     },
