@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import SiteNav from "@/components/site-nav";
+import McpStrip from "@/components/mcp-strip";
 import SiteFooter from "@/components/site-footer";
 import Providers from "@/components/providers";
 import "./globals.css";
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <SiteNav />
           {children}
+          <McpStrip />
           <SiteFooter />
         </Providers>
       </body>

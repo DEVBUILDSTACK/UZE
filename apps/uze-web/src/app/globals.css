@@ -646,6 +646,118 @@ form button,
   font-size: 0.9rem;
 }
 
+/* MCP Tooling & Directories strip — sits immediately above the
+ * site footer on every page (James, 2026-11-18): the MCP families
+ * with their true statuses, the directory listing program in
+ * preparation order, and pill links to the Directory page and the
+ * Knowledge Base MCP entry, in the footer's pill family. */
+.mcp-strip {
+  max-width: 62rem;
+  margin: 3rem auto 0;
+  padding: 2.2rem 1.25rem 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.mcp-strip h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.35rem;
+  text-align: center;
+}
+
+.mcp-strip .mcp-strip-lede {
+  color: var(--muted);
+  text-align: center;
+  margin: 0 auto 1.4rem;
+  max-width: 40rem;
+}
+
+.mcp-strip-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+
+.mcp-strip-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
+.mcp-strip-item h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.02rem;
+}
+
+.mcp-strip-item p {
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+.mcp-strip-item .mcp-strip-status {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.mcp-strip-rule {
+  text-align: center;
+  font-weight: 600;
+  margin: 1.3rem 0 0;
+}
+
+.mcp-strip-dirs {
+  margin-top: 1.1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.mcp-strip-dirs p {
+  margin: 0.3rem 0;
+}
+
+.mcp-strip-dirs strong {
+  color: var(--text);
+}
+
+.mcp-strip-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: center;
+  margin-top: 1.2rem;
+}
+
+.mcp-strip-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.mcp-strip-links a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.mcp-strip-links .link-glyph {
+  font-size: 0.85em;
+  line-height: 1;
+}
+
 /* Landing hero (James, 2026-11-10) — Altitude grammar, POD coloration. */
 .hero {
   padding: 3.2rem 0 1.5rem;

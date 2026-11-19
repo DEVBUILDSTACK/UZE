@@ -84,6 +84,85 @@ export default function McpUtilityPage() {
         </div>
       </div>
       <BrokeragePanel />
+
+      <h2>UZE Instant MCP</h2>
+      <p>
+        The second door in this directory is our own: one MCP
+        endpoint for UZE compute and settlement, in two tiers. The
+        server is built and proven — gating, metering and the
+        revoke cascade all demonstrated end to end. The public
+        endpoint opens with the January 2, 2027 launch; until then
+        there is no public endpoint to connect to, and this page
+        will say so until there is.
+      </p>
+      <div className="cards">
+        <div className="card">
+          <h3>UZE Instance</h3>
+          <p className="meta">The base tier — compute + settlement</p>
+          <p>
+            Branded compute with settlement built in, and the nine
+            base tools below. No vertical access: this tier is the
+            general-purpose door.
+          </p>
+        </div>
+        <div className="card">
+          <h3>UZE Markets Instance</h3>
+          <p className="meta">The premium tier — the verticals</p>
+          <p>
+            Everything in UZE Instance, plus the TradeLayer,
+            SigLayer and Arcium pathways and the nine vertical
+            tools — the Talent assessment tools among them.
+          </p>
+        </div>
+      </div>
+      <h3>The 18 tools</h3>
+      <p>
+        <strong>Nine base tools.</strong> Seven are live in the
+        build: <code>provision_instance</code>,{" "}
+        <code>get_credentials</code>, <code>terminate_instance</code>,{" "}
+        <code>get_status</code>, <code>list_tiers</code>,{" "}
+        <code>query_balance</code> and <code>pay_via_x402</code>. Two
+        arrive with the settlement phase: <code>create_escrow</code>{" "}
+        and <code>release_milestone</code>.
+      </p>
+      <p>
+        <strong>Nine vertical tools</strong> ride the Markets tier —
+        the TradeLayer, SigLayer and Arcium pathways, and the
+        Talent assessment tools: <code>submit_assessment</code>,{" "}
+        <code>score_assessment</code> and{" "}
+        <code>publish_assessment_outcome</code>. A tool your tier
+        does not carry is refused before it runs, and the refusal
+        is recorded like every other call.
+      </p>
+      <p className="note">
+        Every call is fenced three ways — the limits you
+        pre-authorize, the MCP&apos;s own enforcement of those
+        limits before anything executes, and each vertical&apos;s
+        own gates — and every call is written to the chronicle.
+        The full mechanics are detailed in the{" "}
+        <a href="https://uzemarkets.com/knowledge-base#mcp">
+          Knowledge Base
+        </a>
+        .
+      </p>
+
+      <h2>Directories</h2>
+      <p>
+        An MCP is only as useful as the assistants that can find
+        it, so the UZE MCPs are listed as connectors in the major
+        AI directories. Listings are prepared in this order:
+      </p>
+      <p>
+        <strong>Tier 1:</strong> Anthropic (Claude) MCP Registry ·
+        Smithery · Cursor · Windsurf.
+        <br />
+        <strong>Tier 2:</strong> OpenAI · Perplexity · Venice ·
+        DeepSeek · Kimi · Hostinger · mcp.so · mcpmarket.
+      </p>
+      <p className="note">
+        No listing is claimed until it is live — when one goes
+        live, it will be named here as live, with its link.
+      </p>
     </main>
   );
 }
