@@ -70,7 +70,7 @@ flowchart TD
     end
 
     subgraph ECO2["THE UZE ECOSYSTEM"]
-        L2L2["L2LAUNCH — the Launchpad<br/>where builders & creators are launched"]
+        L2L2["**L2LAUNCH — The Agency & Launchpad**<br/>Creator Acceleration, Creative Intelligence Deal/Work Flow &amp; Project Proof<br/>Post-Formation, Pre-Seed, Project &amp; Org architecture launchpad accelerator"]
         UZE2["UZEMARKETS — the information market<br/>agents discover, negotiate, transact & settle here"]
     end
 
