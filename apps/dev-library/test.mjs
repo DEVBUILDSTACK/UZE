@@ -95,6 +95,12 @@ try {
     !pageHtml.includes("#b02a37") && !pageHtml.includes("#2e7d32"));
   ok("design: the wordmark never wraps — one line at phone width (nowrap + reduced band size under the mobile breakpoint)",
     pageHtml.includes("white-space:nowrap") && pageHtml.includes(".band h1{font-size:23px}"));
+  ok("a11y: every select carries an accessible name (aria-label) — the design gate's select-name finding",
+    (pageHtml.match(/<select\b[^>]*>/g) || []).length === 9 &&
+    (pageHtml.match(/<select\b[^>]*>/g) || []).every(t => /aria-label="[^"]+"/.test(t)));
+  ok("a11y: heading order is sequential — h1 wordmark, h2 section titles, h3 subsections, no h4 skip — the design gate's heading-order finding",
+    !pageHtml.includes("<h4") && pageHtml.includes("<h2") &&
+    pageHtml.indexOf("<h1") < pageHtml.indexOf("<h2") && pageHtml.indexOf("<h2") < pageHtml.indexOf("<h3"));
 
   ok("catalog without session -> 401", (await call("/api/catalog")).status === 401);
   const before = comms().length;
@@ -157,6 +163,43 @@ try {
   ok("chronicle preserved: add, contact, grants, comment, rename, reprompt, revoke all present",
     ["developer-added", "contact", "grant-reading-room", "grant-source", "comment", "mock-renamed", "reprompt", "revoke-all"].every(t => types.includes(t)));
   ok("revocation notice queued from desk@", comms().some(s => s.kind === "revocation" && s.from === "desk@uzemarkets.com" && s.status === "queued"));
+
+  // ---- L2L & Ecosystem Advisors: a roster distinct from the
+  // Developer List — no tracks, no pairs, no grants, no sign-in ----
+  const advAt = pageHtml.indexOf('id="advisors"');
+  const advSection = advAt >= 0 ? pageHtml.slice(advAt, pageHtml.indexOf('id="engagements"', advAt)) : "";
+  ok("advisors: section present in served page, after Master control",
+    advSection.includes("L2L &amp; Ecosystem Advisors") && advAt > pageHtml.indexOf('id="master"'));
+  ok("advisors: no internal naming in the section copy", !/reading room/i.test(advSection));
+  ok("advisors without token -> 403", (await call("/api/admin/advisors")).status === 403);
+  const advSeed = await call("/api/admin/advisors", adm);
+  const jon = (advSeed.body.advisors || []).find(a => a.email === "schmidtcommunications@gmail.com");
+  ok("advisors: seeded Jonathan Schmidt present with title, org, base, lane",
+    advSeed.status === 200 && !!jon && jon.name === "Jonathan Schmidt" &&
+    jon.title === "Creative Intelligence Principal" && jon.org === "L2Launch" &&
+    jon.base === "Santo Domingo, DR" && /design evaluation advisory/.test(jon.lane) && !!jon.id && !!jon.addedAt);
+  const advAdd = await call("/api/admin/advisors", { method: "POST", master: true, body: {
+    name: "Ada Advisor", email: "ada@test.dev", title: "Design Advisor", org: "L2Launch",
+    base: "Fort Lauderdale, US", lane: "Motion graphics — design evaluation advisory" } });
+  ok("advisors: add lands with the roster fields", advAdd.status === 200 &&
+    advAdd.body.advisor.email === "ada@test.dev" && advAdd.body.advisor.title === "Design Advisor" &&
+    !!advAdd.body.advisor.id && !!advAdd.body.advisor.addedAt);
+  const advDup = await call("/api/admin/advisors", { method: "POST", master: true, body: {
+    name: "Ada Again", email: "ada@test.dev", title: "x", org: "y", base: "z", lane: "w" } });
+  ok("advisors: duplicate email rejected", advDup.status === 500 && /already listed/.test(advDup.body.error || ""));
+  const advList2 = await call("/api/admin/advisors", adm);
+  ok("advisors: list shows seed + added", advList2.body.advisors.length === 2);
+  const advRem = await call("/api/admin/advisors/remove", { method: "POST", master: true, body: { email: "ada@test.dev" } });
+  ok("advisors: remove lands", advRem.status === 200 && advRem.body.advisor.email === "ada@test.dev");
+  const advList3 = await call("/api/admin/advisors", adm);
+  ok("advisors: list back to the seed alone after removal", advList3.body.advisors.length === 1 &&
+    advList3.body.advisors[0].email === "schmidtcommunications@gmail.com");
+  const advRemGone = await call("/api/admin/advisors/remove", { method: "POST", master: true, body: { email: "ada@test.dev" } });
+  ok("advisors: removing an unlisted email is refused", advRemGone.status === 500 && /not found/.test(advRemGone.body.error || ""));
+  const chronAdv = await call("/api/admin/chronicle", adm);
+  const advTypes = chronAdv.body.entries.map(e => e.type);
+  ok("advisors: add + remove emitted chronicle Events",
+    advTypes.includes("advisor-added") && advTypes.includes("advisor-removed"));
 
   // ---- M1: Role × Realm taxonomy + dual-track placement ----
   await call("/api/admin/add-developer", { method: "POST", master: true, body: { name: "Abe Internal", email: "abe@test.dev", track: "INTERNAL_ONLY" } });
@@ -465,6 +508,12 @@ try {
     const pubRow = await pollRows("SELECT cid, pseudonym FROM publication WHERE id=$1", [pub.body.publication.id], r => r.length === 1);
     ok("P2 DB: publication row carries the content address + pseudonym, no identity columns",
       pubRow.length === 1 && pubRow[0].cid === pub.body.publication.cid && pubRow[0].pseudonym.startsWith("talent-"));
+    const advRow = await pollRows("SELECT name, title, org, base FROM advisor WHERE email='schmidtcommunications@gmail.com'", [], r => r.length === 1);
+    ok("advisors DB: seeded advisor row written through with the roster fields",
+      advRow.length === 1 && advRow[0].name === "Jonathan Schmidt" &&
+      advRow[0].title === "Creative Intelligence Principal" && advRow[0].org === "L2Launch" && advRow[0].base === "Santo Domingo, DR");
+    const advGone = await pollRows("SELECT count(*)::int AS n FROM advisor WHERE email='ada@test.dev'", [], r => r[0].n === 0);
+    ok("advisors DB: removal deletes the row (no resurrection on hydration)", advGone[0].n === 0);
     await pool.end();
   }
 } finally {

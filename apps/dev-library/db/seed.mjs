@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 import { PROFESSIONALS, SCAN_DATE } from "./professionals.mjs";
+import { ADVISORS } from "./advisors.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -52,8 +53,18 @@ for (const p of PROFESSIONALS) {
       [repo, "https://github.com/DEVBUILDSTACK/" + repo, p.email, p.name, permission, SCAN_DATE]);
   }
 }
+// The L2L & Ecosystem Advisors roster (db/advisors.mjs) — a distinct
+// roster from the Developer List; seeded as directed, nothing else.
+for (const a of ADVISORS) {
+  await pool.query(
+    `INSERT INTO advisor (id,name,email,title,org,base,lane,added_at,data)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+     ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name, title=EXCLUDED.title,
+       org=EXCLUDED.org, base=EXCLUDED.base, lane=EXCLUDED.lane, data=EXCLUDED.data`,
+    [a.id, a.name, a.email.toLowerCase(), a.title, a.org, a.base, a.lane, a.addedAt, JSON.stringify(a)]);
+}
 const counts = {};
-for (const t of ["developer", "developer_status", "repo_permission"]) {
+for (const t of ["developer", "developer_status", "repo_permission", "advisor"]) {
   counts[t] = (await pool.query(`SELECT count(*)::int AS n FROM ${t}`)).rows[0].n;
 }
 console.log("seeded:", JSON.stringify(counts));

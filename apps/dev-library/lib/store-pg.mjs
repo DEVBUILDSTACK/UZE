@@ -128,6 +128,26 @@ async function persist(name, obj) {
                  score=EXCLUDED.score, human_review=EXCLUDED.human_review, taken_at=EXCLUDED.taken_at, data=EXCLUDED.data`,
         [r.id, r.assessmentId, r.talentDid, r.score, r.humanReviewFlag, r.takenAt, JSON.stringify(r)]);
     }
+  } else if (name === "advisors.json") {
+    // The roster is small and removal is a real operation (there is
+    // no tombstone), so the write-through reconciles: rows whose
+    // email left the working set are deleted, the rest upserted.
+    const list = obj.advisors || [];
+    if (list.length) {
+      await q(`DELETE FROM advisor WHERE email NOT IN (${list.map((_, i) => `$${i + 1}`).join(",")})`,
+        list.map(a => a.email.toLowerCase()));
+    } else {
+      await q(`DELETE FROM advisor`);
+    }
+    for (const a of list) {
+      await q(`INSERT INTO advisor (id,name,email,title,org,base,lane,added_at,data)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+               ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name, title=EXCLUDED.title,
+                 org=EXCLUDED.org, base=EXCLUDED.base, lane=EXCLUDED.lane,
+                 added_at=EXCLUDED.added_at, data=EXCLUDED.data`,
+        [a.id, a.name, a.email.toLowerCase(), a.title || null, a.org || null, a.base || null,
+         a.lane || null, a.addedAt, JSON.stringify(a)]);
+    }
   } else if (name === "publications.json") {
     for (const p of obj.publications || []) {
       await q(`INSERT INTO publication (id,cid,pseudonym,cohort_key,published_at,data) VALUES ($1,$2,$3,$4,$5,$6)
@@ -144,7 +164,7 @@ export async function initPgStore() {
   const { rows: mockCount } = await pool.query("SELECT count(*)::int AS n FROM mock");
   if (devCount[0].n === 0 && mockCount[0].n === 0) {
     // First boot on an empty DB: adopt the working set as the record.
-    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json", "assessments.json", "publications.json"]) {
+    for (const name of ["developers.json", "mocks.json", "chronicle.json", "comms-log.json", "comments.json", "engagements.json", "assessments.json", "publications.json", "advisors.json"]) {
       await persist(name, load(name));
     }
   } else {
@@ -190,6 +210,17 @@ export async function initPgStore() {
         roleConfigs: rcs.rows.map(r => r.data), assessments: asms.rows.map(r => r.data), runs: runs.rows.map(r => r.data) });
       const pubs = await pool.query("SELECT data FROM publication ORDER BY published_at");
       save("publications.json", { version: 1, publications: pubs.rows.map(r => r.data) });
+    }
+    // Advisors (2026-11-19): rebuild from the DB when it holds
+    // roster rows. An existing production DB's advisor table starts
+    // empty — there, adopt the working-set seed so the roster lands
+    // in the record instead of being wiped by an empty hydration.
+    const advCount = await pool.query("SELECT count(*)::int AS n FROM advisor");
+    if (advCount.rows[0].n) {
+      const advs = await pool.query("SELECT data FROM advisor ORDER BY added_at, email");
+      save("advisors.json", { version: 1, advisors: advs.rows.map(r => r.data) });
+    } else {
+      await persist("advisors.json", load("advisors.json"));
     }
   }
   setPersister((name, obj) => { chain = chain.then(() => persist(name, obj)).catch(e => console.error("pg persist failed:", name, e.message)); });

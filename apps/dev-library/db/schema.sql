@@ -200,3 +200,20 @@ CREATE TABLE IF NOT EXISTS assessment_meta (
   id   int PRIMARY KEY CHECK (id = 1),
   data jsonb NOT NULL DEFAULT '{}'::jsonb
 );
+
+-- L2L & Ecosystem Advisors (James's directive, 2026-11-19): a roster
+-- parallel to the Developer List but distinct — no tracks, no
+-- expertise pairs, no grants, no sign-in lifecycle. Typed columns
+-- carry the roster fields; the full record rides in `data`, as with
+-- the developer and engagement tables.
+CREATE TABLE IF NOT EXISTS advisor (
+  id       text PRIMARY KEY,
+  name     text NOT NULL,
+  email    text UNIQUE NOT NULL,              -- lowercased
+  title    text,
+  org      text,
+  base     text,
+  lane     text,
+  added_at timestamptz NOT NULL,
+  data     jsonb NOT NULL DEFAULT '{}'::jsonb
+);

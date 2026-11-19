@@ -23,15 +23,15 @@
   .sub { color:var(--muted); margin:6px 0 0; font-size:14px; line-height:1.6; }
   main { max-width:880px; margin:0 auto; padding:18px 22px 60px; }
   .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:28px 34px; margin:14px 0; }
-  h3 { font-family:var(--serif); font-size:21px; line-height:1.25; font-weight:700; margin:0 0 14px; }
-  h4 { font-family:var(--serif); font-size:16px; font-weight:700; margin:18px 0 8px; }
+  h2 { font-family:var(--serif); font-size:21px; line-height:1.25; font-weight:700; margin:0 0 14px; }
+  h3 { font-family:var(--serif); font-size:16px; font-weight:700; margin:18px 0 8px; }
   input, select, textarea { font:inherit; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
   button { font:inherit; font-size:15px; font-weight:700; padding:11px 22px; border:1px solid var(--ink); border-radius:999px; background:var(--ink); color:#fff; cursor:pointer; }
   button.alt { background:#fff; color:var(--ink); }
   #code { background:var(--cream); font-weight:800; letter-spacing:6px; text-align:center; }
   .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .filters { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
-  .mock h3 { margin:0 0 4px; font-size:19px; }
+  .mock h2 { margin:0 0 4px; font-size:19px; }
   .meta { color:var(--muted); font-size:13px; }
   .tag { display:inline-block; border:1px solid var(--orange); color:var(--orange); border-radius:999px; padding:1px 9px; font-size:12px; font-weight:700; margin-right:6px; }
   .hidden { display:none; }
@@ -43,7 +43,7 @@
   footer { max-width:880px; margin:0 auto; padding:0 22px 28px; }
   .band.foot { text-align:center; color:#fff; font-size:14px; }
   .uze-link { color:var(--orange); text-decoration:none; }
-  .softband h3 { margin:0; }
+  .softband h2 { margin:0; }
   .softband .sub { color:var(--ink); }
   details.faq { border-top:1px solid var(--line); padding:10px 0; }
   details.faq summary { cursor:pointer; font-family:var(--serif); font-weight:700; font-size:17px; }
@@ -61,7 +61,7 @@
 </header>
 <main>
   <section id="signin" class="card">
-    <h3 style="margin-top:0">Sign in</h3>
+    <h2 style="margin-top:0">Sign in</h2>
     <div class="row">
       <input id="email" type="email" placeholder="your@email" size="30">
       <button id="req">Email me a code</button>
@@ -75,7 +75,7 @@
 
   <section id="faq" class="card">
     <div class="softband">
-    <h3 style="margin-top:0">UZE Dev Partner FAQ</h3>
+    <h2 style="margin-top:0">UZE Dev Partner FAQ</h2>
     <p class="sub" style="margin-bottom:6px">For development partners: how this page — the UZE Dev Library — works across all of its samples, from sign-in and browsing to the desks this page runs. Open a topic.</p>
     </div>
     <details class="faq"><summary>Access &amp; sign-in</summary>
@@ -126,31 +126,31 @@
       <button id="signout" class="alt">Sign out</button>
     </div>
     <div class="filters">
-      <select id="f-topic"><option value="">Topic — all</option></select>
-      <select id="f-date"><option value="">Date — all</option></select>
-      <select id="f-repo"><option value="">Repository — all</option></select>
-      <select id="f-track"><option value="">Track — all</option></select>
+      <select id="f-topic" aria-label="Filter by topic"><option value="">Topic — all</option></select>
+      <select id="f-date" aria-label="Filter by date"><option value="">Date — all</option></select>
+      <select id="f-repo" aria-label="Filter by repository"><option value="">Repository — all</option></select>
+      <select id="f-track" aria-label="Filter by track"><option value="">Track — all</option></select>
     </div>
     <div id="catalog"></div>
     <div id="detail"></div>
   </section>
 
   <section id="master" class="card">
-    <h3 style="margin-top:0">Master control</h3>
+    <h2 style="margin-top:0">Master control</h2>
     <div class="row">
       <input id="mtoken" type="password" placeholder="master token" size="24">
       <button id="mload" class="alt">Load developer list</button>
       <span id="mmsg"></span>
     </div>
     <div id="mlist" style="margin-top:10px"></div>
-    <h4>Expertise & track (Role × Realm, up to 5 pairs)</h4>
+    <h3>Expertise & track (Role × Realm, up to 5 pairs)</h3>
     <div class="row">
       <input id="xemail" type="email" placeholder="developer@email" size="26">
       <input id="xpairs" placeholder="SMART_CONTRACT_DEV×LIGHTNING, FULL_STACK_DEV×NEAR_AI" size="46">
       <button id="xset" class="alt">Set expertise</button>
     </div>
     <div class="row" style="margin-top:8px">
-      <select id="xtrack">
+      <select id="xtrack" aria-label="Developer track">
         <option value="EITHER">EITHER</option>
         <option value="EXTERNAL_PLACED">EXTERNAL_PLACED (Track B)</option>
         <option value="INTERNAL_ONLY">INTERNAL_ONLY (Track A)</option>
@@ -160,17 +160,41 @@
     </div>
   </section>
 
+  <section id="advisors" class="card">
+    <h2 style="margin-top:0">L2L &amp; Ecosystem Advisors</h2>
+    <p class="sub" style="margin-bottom:10px">The advisory roster for Learn2Launch and the wider ecosystem — a separate list from the Developer List. Advisors hold no track, no expertise pairs, and no access grants; they advise. Managed with the Master control token.</p>
+    <div class="row">
+      <button id="advload" class="alt">Load advisors</button>
+      <span id="advmsg"></span>
+    </div>
+    <div id="advlist" style="margin-top:10px"></div>
+    <h3>Add an advisor</h3>
+    <div class="row">
+      <input id="advname" placeholder="Name" size="24">
+      <input id="advemail" type="email" placeholder="email" size="28">
+      <input id="advtitle" placeholder="Title" size="28">
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="advorg" placeholder="Organization" size="20">
+      <input id="advbase" placeholder="Base (city, country)" size="20">
+      <input id="advlane" placeholder="Lane — what they advise on" size="44">
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button id="advadd">Add advisor</button>
+    </div>
+  </section>
+
   <section id="engagements" class="card">
-    <h3 style="margin-top:0">Engagements — Track B placement desk</h3>
+    <h2 style="margin-top:0">Engagements — Track B placement desk</h2>
     <p class="sub" style="margin-bottom:10px">Staffing is the desk's call. The client view stays blind — skills only — until the engagement is signed <i>and</i> a deposit is recorded.</p>
     <div class="row">
       <input id="etitle" placeholder="Role needed (e.g. Solana smart-contract dev)" size="34">
       <input id="eclient" placeholder="Client name" size="22">
     </div>
     <div class="row" style="margin-top:8px">
-      <select id="eservice"><option>AUG</option><option>OUTSTAFF</option><option>PLACE</option><option>PROJECT</option></select>
-      <select id="edeploy"><option>REMOTE</option><option>HYBRID</option><option>MIXED</option><option>ONSITE</option></select>
-      <select id="emodel"><option>OUTSTAFFING</option><option>PLACEMENT</option></select>
+      <select id="eservice" aria-label="Engagement service"><option>AUG</option><option>OUTSTAFF</option><option>PLACE</option><option>PROJECT</option></select>
+      <select id="edeploy" aria-label="Engagement deployment"><option>REMOTE</option><option>HYBRID</option><option>MIXED</option><option>ONSITE</option></select>
+      <select id="emodel" aria-label="Engagement commercial model"><option>OUTSTAFFING</option><option>PLACEMENT</option></select>
       <input id="efee" type="number" min="1" step="0.5" placeholder="fee months (PLACEMENT)" size="20">
       <button id="eopen">Open engagement</button>
       <button id="eload" class="alt">Load engagements</button>
@@ -181,11 +205,11 @@
   </section>
 
   <section id="assessments" class="card">
-    <h3 style="margin-top:0">Assessments — P2 desk (Scope 2)</h3>
+    <h2 style="margin-top:0">Assessments — P2 desk (Scope 2)</h2>
     <p class="sub" style="margin-bottom:10px">Employers configure a role; the generator fills a curated template; <b>two human gates</b> sign before anything runs — Gate 1 employer intent, Gate 2 approver-of-record validity. Outcomes publish redacted under engagement-scoped pseudonyms.</p>
     <div class="row">
       <input id="remployer" placeholder="Employer (internal record only)" size="26">
-      <select id="rvertical"><option>CRE_UNDERWRITING</option><option>HOSPITALITY</option></select>
+      <select id="rvertical" aria-label="Assessment vertical"><option>CRE_UNDERWRITING</option><option>HOSPITALITY</option></select>
       <input id="rtitle" placeholder="Role title" size="30">
     </div>
     <div class="row" style="margin-top:8px">
@@ -202,7 +226,7 @@
       <button id="aload" class="alt">Load assessments</button>
     </div>
     <div id="alist" style="margin-top:10px"></div>
-    <h4>Published outcomes (public, redacted)</h4>
+    <h3>Published outcomes (public, redacted)</h3>
     <div class="row"><button id="pload" class="alt">Load publications</button></div>
     <div id="plist" style="margin-top:10px"></div>
   </section>
@@ -274,7 +298,7 @@ async function catalog() {
   for (const [id, key] of [["f-topic","topic"],["f-date","date"],["f-repo","repo"],["f-track","track"]]) { const v = $(id).value; if (v) q.set(key, v); }
   const r = await api("/api/catalog?" + q);
   $("catalog").innerHTML = (r.body.mocks || []).map(m =>
-    '<div class="card mock"><h3>' + m.title + '</h3>' +
+    '<div class="card mock"><h2>' + m.title + '</h2>' +
     '<div class="meta"><span class="tag">' + m.topic + '</span><span class="tag">' + (m.track || "BOTH") + '</span>' + m.date + " · " + m.repo + " · v" + m.version + "</div>" +
     "<p>" + m.description + "</p>" +
     '<button class="alt" onclick="openMock(\'' + m.slug + "')\">Open</button>" + sampleFaq(m) + "</div>").join("") || "<p>No mocks match.</p>";
@@ -285,11 +309,11 @@ window.openMock = async (slug) => {
   if (r.body.redirect) return openMock(r.body.redirect);
   if (r.status !== 200) { $("detail").innerHTML = '<div class="card err">Not available.</div>'; return; }
   const m = r.body.mock;
-  $("detail").innerHTML = '<div class="card"><h3 style="margin-top:0">' + m.title + "</h3>" +
+  $("detail").innerHTML = '<div class="card"><h2 style="margin-top:0">' + m.title + "</h2>" +
     (m.objective ? "<p><b>Objective.</b> " + m.objective + "</p>" : "") + "<p>" + m.description + "</p>" +
     '<p class="meta">Version ' + m.version + " · " + m.repo + (m.viewLink ? ' · <a href="' + m.viewLink + '" target="_blank">View the mock</a>' : "") + (m.sourceLink ? ' · <a href="' + m.sourceLink + '" target="_blank">Source (GitHub gate applies)</a>' : "") + "</p>" +
     "<p class='meta'>" + (m.changelog || []).join("<br>") + "</p>" +
-    "<h4>Comments & suggestions</h4>" + (r.body.comments || []).map(c => '<div class="comment"><b>' + c.by + "</b> · " + c.at.slice(0,10) + "<br>" + c.text + "</div>").join("") +
+    "<h3>Comments & suggestions</h3>" + (r.body.comments || []).map(c => '<div class="comment"><b>' + c.by + "</b> · " + c.at.slice(0,10) + "<br>" + c.text + "</div>").join("") +
     '<textarea id="ctext" placeholder="Suggest a refinement — the build lead reviews every one."></textarea>' +
     '<div class="row" style="margin-top:8px"><button onclick="sendComment(\'' + m.slug + "')\">Send suggestion</button></div></div>";
   $("detail").scrollIntoView({ behavior: "smooth" });
@@ -327,6 +351,31 @@ $("xtset").onclick = async () => {
   $("xmsg").textContent = r.status === 200 ? "Track set." : (r.body.error || "Failed.");
   $("xmsg").className = r.status === 200 ? "ok" : "err";
   if (r.status === 200) $("mload").onclick();
+};
+// ---- L2L & Ecosystem Advisors (master-facing roster) ----
+async function loadAdvisorList() {
+  const r = await mfetch("/api/admin/advisors");
+  if (r.status !== 200) { $("advmsg").textContent = "Master token not accepted."; $("advmsg").className = "err"; return; }
+  $("advmsg").textContent = "";
+  $("advlist").innerHTML = (r.body.advisors || []).map(a =>
+    "<div class='comment'><b>" + a.name + "</b> · " + a.title + " · " + a.org +
+    "<br>" + a.email + " · " + a.base + "<br>Lane: " + a.lane +
+    "<br><button class='alt' onclick=\"advRemove('" + a.email + "')\">Remove</button></div>").join("") || "No advisors yet.";
+}
+$("advload").onclick = loadAdvisorList;
+$("advadd").onclick = async () => {
+  const r = await mfetch("/api/admin/advisors", { method: "POST", body: JSON.stringify({
+    name: $("advname").value, email: $("advemail").value, title: $("advtitle").value,
+    org: $("advorg").value, base: $("advbase").value, lane: $("advlane").value }) });
+  $("advmsg").textContent = r.status === 200 ? "Advisor added." : (r.body.error || "Failed.");
+  $("advmsg").className = r.status === 200 ? "ok" : "err";
+  if (r.status === 200) loadAdvisorList();
+};
+window.advRemove = async (email) => {
+  const r = await mfetch("/api/admin/advisors/remove", { method: "POST", body: JSON.stringify({ email }) });
+  $("advmsg").textContent = r.status === 200 ? "Advisor removed." : (r.body.error || "Failed.");
+  $("advmsg").className = r.status === 200 ? "ok" : "err";
+  if (r.status === 200) loadAdvisorList();
 };
 async function loadEngagements() {
   const r = await mfetch("/api/admin/engagements");
