@@ -626,7 +626,7 @@ try {
   const inv = await waitFor(() => received.find((x) => (x.to || []).includes("mia@test.dev") && (x.subject || "").includes("access to the UZE Dev Library")));
   ok("mail configured: invitation SENT at the grant event, from desk@", !!inv && String(inv.from).includes("desk@uzemarkets.com"));
   ok("invitation is branded: greeting, tangerine, library link, desk signature",
-    !!inv && inv.html.includes("Hello Mia,") && inv.html.includes("#ff6b00") &&
+    !!inv && inv.html.includes("Dear Development Partner,") && inv.html.includes("#ff6b00") &&
     inv.html.includes("dev.uzemarkets.com") && inv.html.includes("The UZE Markets Desk") &&
     inv.text.includes("The UZE Markets Desk"));
   ok("house CTAs sit above the signature, logo underneath (James's layout rule)",

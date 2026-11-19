@@ -52,7 +52,12 @@ export function commsSend(to, kind, subject, body, extra = {}) {
   const log = load("comms-log.json");
   const entry = { id: `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
     at: new Date().toISOString(), from: log.sender, to, kind, subject, body, status: "queued", ...extra };
-  if (!entry.greetingText) {
+  // The exception (James, 2026-11-19): the development-partner
+  // kinds keep "Dear Development Partner," — the Dev Library grant
+  // correspondence addresses the partnership, not the person. All
+  // other kinds carry Hello "First Name".
+  const DEV_PARTNER_KINDS = ["invitation", "source-grant", "change-notice", "revocation"];
+  if (!entry.greetingText && !DEV_PARTNER_KINDS.includes(kind)) {
     const first = firstNameFor(to);
     if (first) entry.greetingText = `Hello ${first},`;
   }
