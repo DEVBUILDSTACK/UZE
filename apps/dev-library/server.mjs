@@ -213,6 +213,22 @@ ${scopeCards}
       return res.end(page);
     }
 
+    // --- sample previews (session required): a sample may carry a
+    // humanView — a self-contained HTML face served from samples/
+    // (the venue ticketing UI inside the agent-acquisition sample,
+    // James, 2026-11-19: two faces, the human flow and the agent
+    // underneath). Basename + .html only; nothing else is served. ---
+    if (p.startsWith("/samples/") && req.method === "GET") {
+      const d = sessionOf(req);
+      if (!d) { res.writeHead(302, { location: "/" }); return res.end(); }
+      const base = path.basename(p.slice("/samples/".length));
+      if (!base.endsWith(".html")) return send(res, 404, { error: "not found" });
+      const file = path.join(ROOT, "samples", base);
+      if (!fs.existsSync(file)) return send(res, 404, { error: "not found" });
+      res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300" });
+      return res.end(fs.readFileSync(file));
+    }
+
     // --- the room (session required) ---
     if (p === "/api/catalog" && req.method === "GET") {
       const d = sessionOf(req); if (!d) return send(res, 401, { error: "no session" });

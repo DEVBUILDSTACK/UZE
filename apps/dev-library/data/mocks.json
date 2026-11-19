@@ -11,16 +11,22 @@
    "repoAliases": [],
    "aliases": [],
    "clearance": [],
-   "version": 1,
+   "version": 2,
    "changelog": [
-    "v1 — 2026-11-18: initial mock, built on the real commerce engine (commerce/engine.mjs); four cases self-asserted."
+    "v1 — 2026-11-18: initial mock, built on the real commerce engine (commerce/engine.mjs); four cases self-asserted.",
+    "v2 — 2026-11-19: the venue app's human UI joins the sample as its preview — two faces: the human flow, and the agent underneath it."
    ],
    "view": "agent-acquire.html",
    "sourcePath": "core/demo-agent-acquire.mjs",
    "track": "BOTH",
    "objective": "Prove the control doctrine in code: primary only where we are seller of record or technology partner; secondary sealed bid everywhere else — at 1-seat and 4-seat scale.",
    "viewLink": "https://github.com/DEVBUILDSTACK/uze-aeinfo-prediction-markets/blob/main/agent-acquire.html",
-   "sourceLink": "https://github.com/DEVBUILDSTACK/uze-aeinfo-prediction-markets/blob/main/core/demo-agent-acquire.mjs"
+   "sourceLink": "https://github.com/DEVBUILDSTACK/uze-aeinfo-prediction-markets/blob/main/core/demo-agent-acquire.mjs",
+   "humanView": {
+    "file": "venue-ticketing-ui.html",
+    "label": "The human flow — venue ticketing"
+   },
+   "facesNote": "This sample has two faces. The human flow is the venue ticketing experience: a person chooses a price area and how many seats must sit together, the allocating engine assigns the grouped seats, and the buyer accepts or declines — a primary sale where we are the seller of record, on the stadium example built around Internacional vs São Paulo at Beira-Rio. Underneath it sits the agent: the same acquisition run headlessly — primary only where we control the sale, secondary by sealed bid everywhere else, one seat or four connected, Porto Alegre primary against Miami secondary. One engine, two doors: people buy through the flow; agents buy through the interface."
   }
  ]
 }

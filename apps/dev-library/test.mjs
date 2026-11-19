@@ -143,6 +143,19 @@ try {
   ok("scope-status: renders all four scopes + the drill-down, signed in",
     ss.status === 200 && ssText.includes("Scope 1") && ssText.includes("Scope 4") &&
     ssText.includes("Repository drill-down") && ssText.includes("10:29 PM EST"));
+
+  // Two faces (James, 2026-11-19): the agent-acquisition sample
+  // carries the venue app's human UI as its preview, session-gated.
+  const pvAnon = await fetch(B + "/samples/venue-ticketing-ui.html", { redirect: "manual" });
+  ok("sample preview: signed-out redirects to the door", pvAnon.status === 302);
+  const pv = await fetch(B + "/samples/venue-ticketing-ui.html", { headers: { cookie: ina } });
+  const pvText = await pv.text();
+  ok("sample preview: the venue ticketing UI serves, signed in",
+    pv.status === 200 && pvText.includes("Venue Ticketing"));
+  const ata = await call("/api/mock/agent-ticket-acquisition", { cookie: ina });
+  ok("agent-acquisition sample carries its two faces (humanView + the verbal summary)",
+    ata.status === 200 && ata.body.mock.humanView?.file === "venue-ticketing-ui.html" &&
+    (ata.body.mock.facesNote || "").includes("two faces") && ata.body.mock.version === 2);
   const cat = await call("/api/catalog", { cookie: ina });
   ok("internal dev sees BOTH + INTERNAL_ONLY mocks", cat.body.mocks.length === 2);
   ok("FAQ: every catalog entry carries the fields its per-sample FAQ renders from",
@@ -166,9 +179,12 @@ try {
   ok("view-as by non-master -> 403", (await call("/api/catalog?email=xan@test.dev", { cookie: ina })).status === 403);
   ok("view-as by master -> 200", (await call("/api/catalog?email=xan@test.dev", { cookie: ina, master: true })).status === 200);
 
+  const preRename = await call("/api/mock/agent-ticket-acquisition", { cookie: ina });
   await call("/api/admin/rename-mock", { method: "POST", master: true, body: { slug: "agent-ticket-acquisition", title: "Agent Ticket Acquisition — headless interface mock (renamed)", note: "title clarified in rehearsal" } });
   const redir = await call("/api/mock/agent-ticket-acquisition", { cookie: ina });
-  ok("rename keeps slug, version bumps, changelog grows", redir.body.mock.version === 2 && redir.body.mock.changelog.length === 2);
+  ok("rename keeps slug, version bumps, changelog grows",
+    redir.body.mock.version === preRename.body.mock.version + 1 &&
+    redir.body.mock.changelog.length === preRename.body.mock.changelog.length + 1);
 
   await call("/api/admin/reprompt", { method: "POST", master: true, body: { email: "ina@test.dev", note: "Access changed." } });
   ok("reprompt kills the live session (re-prompt behavior)", (await call("/api/me", { cookie: ina })).status === 401);

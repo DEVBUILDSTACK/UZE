@@ -293,6 +293,7 @@ function sampleFaq(m) {
   return '<details class="faq-sample"><summary>How-To — about this sample</summary>' +
     qa("What does this sample show?", m.description +
       (m.objective ? " Its objective: " + m.objective : "")) +
+    (m.humanView && m.facesNote ? qa("Why does this sample have two faces?", m.facesNote) : "") +
     qa("Which repository does it belong to, and how does source access work?",
       "It belongs to " + m.repo + ". The Library holds the description and the mock" +
       (m.viewLink ? ' (<a href="' + m.viewLink + '" target="_blank">view the mock</a>)' : "") +
@@ -329,6 +330,11 @@ window.openMock = async (slug) => {
     (m.objective ? "<p><b>Objective.</b> " + m.objective + "</p>" : "") + "<p>" + m.description + "</p>" +
     '<p class="meta">Version ' + m.version + " · " + m.repo + (m.viewLink ? ' · <a href="' + m.viewLink + '" target="_blank">View the mock</a>' : "") + (m.sourceLink ? ' · <a href="' + m.sourceLink + '" target="_blank">Source (GitHub gate applies)</a>' : "") + "</p>" +
     "<p class='meta'>" + (m.changelog || []).join("<br>") + "</p>" +
+    (m.humanView ? '<h3>Two faces — the human flow, and the agent underneath</h3>' +
+      (m.facesNote ? "<p>" + m.facesNote + "</p>" : "") +
+      '<p class="meta">' + (m.humanView.label || "The human flow") + "</p>" +
+      '<iframe src="/samples/' + m.humanView.file + '" title="' + (m.humanView.label || "The human flow") + '" style="width:100%;height:600px;border:1px solid var(--line);border-radius:12px;background:#fff"></iframe>' +
+      '<p class="meta">The agent underneath: the mock and source links above are this same acquisition with no human in the loop.</p>' : "") +
     "<h3>Comments & suggestions</h3>" + (r.body.comments || []).map(c => '<div class="comment"><b>' + c.by + "</b> · " + c.at.slice(0,10) + "<br>" + c.text + "</div>").join("") +
     '<textarea id="ctext" placeholder="Suggest a refinement — the build lead reviews every one."></textarea>' +
     '<div class="row" style="margin-top:8px"><button onclick="sendComment(\'' + m.slug + "')\">Send suggestion</button></div></div>";
