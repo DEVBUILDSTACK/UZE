@@ -21,7 +21,7 @@ export const ADVISORS = [
   {
     id: "adv-william-dugan",
     name: "William Cumberland Dugan",
-    email: "william@decensat.org",
+    email: "dugan.x@gmail.com",
     title: "Launch Principal",
     org: "L2Launch",
     base: "DC–Baltimore",

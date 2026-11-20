@@ -170,7 +170,7 @@ try {
   const byClass = (c) => (cls.body.people || []).filter(p => p.class === c).map(p => p.email);
   ok("classification layer: owners are the family three, principal is Jonathan alone, advisor is Bruno, devs split internal/external",
     cls.status === 200 &&
-    JSON.stringify(byClass("owner").sort()) === JSON.stringify(["james@decensat.org", "uze@uzemarkets.com", "william@decensat.org"]) &&
+    JSON.stringify(byClass("owner").sort()) === JSON.stringify(["dugan.hjd5@gmail.com", "dugan.x@gmail.com", "uze@uzemarkets.com"]) &&
     JSON.stringify(byClass("principal")) === JSON.stringify(["schmidtcommunications@gmail.com"]) &&
     JSON.stringify(byClass("advisor")) === JSON.stringify(["brunocsalles@gmail.com"]) &&
     JSON.stringify(byClass("dev-internal").sort()) === JSON.stringify(["rohansinglawork@gmail.com", "shradeshjain123@gmail.com"]) &&
@@ -268,7 +268,7 @@ try {
     advSeed.status === 200 && seedAdvs.length === 3 && !!jon && jon.name === "Jonathan Schmidt" &&
     jon.title === "Creative Intelligence Principal" && jon.org === "L2Launch" &&
     jon.base === "Santo Domingo, DR" && /design evaluation advisory/.test(jon.lane) && !!jon.id && !!jon.addedAt);
-  const wcd = seedAdvs.find(a => a.email === "william@decensat.org");
+  const wcd = seedAdvs.find(a => a.email === "dugan.x@gmail.com");
   ok("advisors: seeded William Cumberland Dugan — Launch Principal, L2 Launchpad",
     !!wcd && wcd.name === "William Cumberland Dugan" && wcd.title === "Launch Principal" &&
     wcd.org === "L2Launch" && wcd.base === "DC–Baltimore" && /commercial art/.test(wcd.lane));

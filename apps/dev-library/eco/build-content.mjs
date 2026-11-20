@@ -150,6 +150,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
   const jonathan = fs.readFileSync(path.join(repoRoot, "docs/design-surfaces/diagrams-jonathan.md"), "utf8");
   const owners = fs.readFileSync(path.join(repoRoot, "docs/design-surfaces/diagrams-owners.md"), "utf8");
   const full = fs.readFileSync(path.join(SRC_DIR, "UZE-ECOSYSTEM-MAPPING-DIAGRAMS-2026-11-19.md"), "utf8");
+  const humanSurface = fs.readFileSync(path.join(SRC_DIR, "HUMAN-DESIGN-SURFACE-FOR-UZE-ECOSYSTEM-2026-11-19.md"), "utf8");
+  const agenticSurface = fs.readFileSync(path.join(SRC_DIR, "AGENTIC-DESIGN-SURFACE-FOR-UZE-ECOSYSTEM-2026-11-19.md"), "utf8");
   // The structured JSON representation of the diagrams (James,
   // 2026-11-19): the same content as the Mermaid and the renders,
   // as data — including the L2Launch island doctrine. DRAFT
@@ -192,7 +194,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
     + `export const ECO_FRAGMENTS = ${JSON.stringify(frag)};\n`
     + `export const DIAGRAMS_JONATHAN_MD = ${JSON.stringify(jonathan)};\n`
     + `export const DIAGRAMS_OWNERS_MD = ${JSON.stringify(owners)};\n`
-    + `export const DIAGRAMS_FULL_MD = ${JSON.stringify(full)};\n`;
+    + `export const DIAGRAMS_FULL_MD = ${JSON.stringify(full)};\n`
+    + `export const HUMAN_SURFACE_MD = ${JSON.stringify(humanSurface)};\n`
+    + `export const AGENTIC_SURFACE_MD = ${JSON.stringify(agenticSurface)};\n`;
   const outPath = path.join(HERE, "..", "lib", "eco-content.mjs");
   fs.writeFileSync(outPath, mod);
   console.log(`lib/eco-content.mjs: ${mod.length} bytes`);

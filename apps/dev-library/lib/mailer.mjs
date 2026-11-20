@@ -42,8 +42,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { load, save } from "./store.mjs";
-import { HUMAN_SURFACE_PNG_B64, AGENTIC_SURFACE_PNG_B64, COMBINED_MAP_PNG_B64, WILLIAM_HUMAN_SURFACE_PNG_B64 } from "./diagram-images.mjs";
-import { DIAGRAMS_JONATHAN_MD, DIAGRAMS_OWNERS_MD, DIAGRAMS_FULL_MD } from "./eco-content.mjs";
+import { HUMAN_SURFACE_PNG_B64, AGENTIC_SURFACE_PNG_B64, COMBINED_MAP_PNG_B64, WILLIAM_HUMAN_SURFACE_PNG_B64, ORG_MAP_PNG_B64 } from "./diagram-images.mjs";
+import { DIAGRAMS_JONATHAN_MD, DIAGRAMS_OWNERS_MD, DIAGRAMS_FULL_MD, HUMAN_SURFACE_MD, AGENTIC_SURFACE_MD } from "./eco-content.mjs";
 
 const APP_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -337,6 +337,9 @@ export async function sendMail(entry) {
         : a.file === "diagram:agentic" ? AGENTIC_SURFACE_PNG_B64.replace(/\s/g, "")
         : a.file === "diagram:human-william" ? WILLIAM_HUMAN_SURFACE_PNG_B64.replace(/\s/g, "")
         : a.file === "diagram:combined" ? COMBINED_MAP_PNG_B64.replace(/\s/g, "")
+        : a.file === "diagram:org" ? ORG_MAP_PNG_B64.replace(/\s/g, "")
+        : a.file === "doc:human-surface" ? Buffer.from(HUMAN_SURFACE_MD, "utf8").toString("base64")
+        : a.file === "doc:agentic-surface" ? Buffer.from(AGENTIC_SURFACE_MD, "utf8").toString("base64")
         : a.file === "diagram-md:jonathan" ? Buffer.from(DIAGRAMS_JONATHAN_MD, "utf8").toString("base64")
         : a.file === "diagram-md:owners" ? Buffer.from(DIAGRAMS_OWNERS_MD, "utf8").toString("base64")
         : a.file === "diagram-md:full" ? Buffer.from(DIAGRAMS_FULL_MD, "utf8").toString("base64")

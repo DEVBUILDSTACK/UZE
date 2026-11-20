@@ -15,7 +15,7 @@ export const ECO_CONTRIBUTORS = [
   {
     id: "eco-james-dugan",
     name: "James Dugan (D5)",
-    email: "james@decensat.org",
+    email: "dugan.hjd5@gmail.com",
     role: "Launch Principal",
     orgs: ALL_ORGS.slice(),
     sessionEpoch: 0,
@@ -25,7 +25,7 @@ export const ECO_CONTRIBUTORS = [
   {
     id: "eco-william-dugan",
     name: "William Cumberland Dugan (WCD)",
-    email: "william@decensat.org",
+    email: "dugan.x@gmail.com",
     role: "Launch Principal",
     orgs: ALL_ORGS.slice(),
     sessionEpoch: 0,
