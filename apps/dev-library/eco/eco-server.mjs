@@ -294,6 +294,8 @@ function ecosystemPage(contributor) {
 <section class="card">
 <h2>The UZE Decensat.org Foundation</h2>
 <p>The ecosystem's impact foundation — for the passionate and performant: <strong>artists, performers, entertainers, athletes, amateur coaches, and Special Olympic performers</strong>. Programmatic support for passion: communities post pathway stories of their favorite amateurs — the ones with no likeness or image contract yet — and the community supports their training and their track to becoming professional. <strong>Be Decensat &amp; Donate</strong>, at <a href="https://decensat.org">decensat.org</a>.</p>
+<p style="margin-top:10px"><strong>First formally integrated project: Lwandi Surf</strong> — our friends at Ponta do Ouro, Mozambique: the surf school and its pathway to LA28, supported inside the Decensat.org program the site was originally built for. Beside it stands the second channel: the multi-creator support channel — programmatically sophisticated support for many creators at once.</p>
+<p style="margin-top:10px">Support moves in <strong>USDC and USDG, across Solana, Base, and Robinhood Chain</strong>.</p>
 </section>
 <section class="softband">
 <h2>The programmatic core — under both surfaces</h2>
