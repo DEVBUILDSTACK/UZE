@@ -63,7 +63,8 @@ export const TICKETS_MOCK_HTML = HEAD("Tickets — two markets") + `
 export const PREDICTION_MOCK_HTML = HEAD("Prediction markets — day-of, two markets") + `
 <section class="card"><h2>How these markets work</h2>
 <p>Prediction markets here are <b>day-of only</b>. Each market opens at midnight — as Asia turns, the first edge of the Pacific first — for that day's events, and closes when the event ends. An extension well beyond ticket sales: the same venues, the same day.</p>
-<p class="small">Sport only. Extreme sports included — skateboarding and surfing at the front, and lacrosse Sixes with them.</p></section>
+<p>World.xyz — live by API, sports only: launching 2026 with international football (soccer), plus three more by the NFL playoffs. Music event venue information and auction market innovation follow in 2027. Sixes rides with them.</p>
+<p class="small">Sport only. Extreme sports — the LA28 qualification pathways: lacrosse Sixes at the front, with skateboarding, surfing, and triathlon. The first Olympics with surfing and lacrosse Sixes together.</p></section>
 <section class="card"><h2>São Paulo — today's card</h2>
 <span class="tag">DAY-OF</span><span class="tag">Opens 00:00, Asia-Pacific edge</span>
 <div class="q"><b>Inter vs São Paulo — Inter wins?</b><div class="bar"><i style="width:57%"></i></div><span class="small">Yes 57 · No 43 (mock)</span></div>
