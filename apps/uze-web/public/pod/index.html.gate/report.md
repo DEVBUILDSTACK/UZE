@@ -1,7 +1,7 @@
 # Design gate report
 
 - Target: /home/hatch/workspace/uze-gira/monorepo/apps/uze-web/public/pod/index.html
-- When: 2026-11-20T14:51:38.249Z
+- When: 2026-11-20T15:01:42.905Z
 - Chrome: /home/hatch/.cache/puppeteer/chrome/linux-157.0.8103.50/chrome-linux64/chrome
 - Verdict: FAIL
 - Failures:
