@@ -31,7 +31,10 @@ button.on{background:#1a1a1a;color:#fff}
 footer{max-width:860px;margin:0 auto;padding:0 20px 40px;font:12px Arial,sans-serif;opacity:.7}
 </style></head><body>
 <header><div class="wm"><b>UZE</b>markets</div><p>${title} — a mock-up. Nothing here is a real sale or a real market.</p></header><main>`;
-const FOOT = `</main><footer>© 2026 UZEmarkets · Mock-up for review — prices and splits are illustrative.</footer>
+const FOOT = `<section class="card"><h2>Surf, Skate, Tri, Lax it Up</h2>
+<span class="tag">THE PATH TO LA28</span><span class="tag">UZE · DECENSAT.ORG MARKETPLACE</span>
+<p>Supporting amateur athletes on their path to LA28. Training donations over the threshold — funded programmatically by stablecoin — participate in the marketplace: <strong>Merch · Train · Supplements · Support</strong>. The UZE · decensat.org e-commerce stores marketplace for the four LA28 sports — surfing, skateboarding, triathlon, and lacrosse Sixes.</p></section>
+</main><footer>© 2026 UZEmarkets · Mock-up for review — prices and splits are illustrative.</footer>
 <script>
 document.querySelectorAll("[data-pick]").forEach(b=>b.addEventListener("click",()=>{
   const card=b.closest(".card");card.querySelectorAll("[data-pick]").forEach(x=>x.classList.remove("on"));b.classList.add("on");
