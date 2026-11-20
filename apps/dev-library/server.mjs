@@ -26,6 +26,7 @@ import { loadContributors, publicView as ecoPublicView, addContributor as addEco
 import { progressForAll, noteLibrarySignIn } from "./lib/eco-flow.mjs";
 import { composeInvitation, invitationKindFor } from "./lib/invitations.mjs";
 import { VENUE_UI_HTML } from "./lib/venue-ui.mjs";
+import { TICKETS_MOCK_HTML, PREDICTION_MOCK_HTML } from "./lib/mock-pages.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 8734;
@@ -227,6 +228,10 @@ ${scopeCards}
     // This route is public BY DESIGN and serves only the venue
     // mock-up; everything else in the library stays behind the
     // session.
+    if ((p === "/mock/tickets" || p === "/mock/prediction-markets") && req.method === "GET") {
+      res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300", "x-robots-tag": "noindex" });
+      return res.end(p === "/mock/tickets" ? TICKETS_MOCK_HTML : PREDICTION_MOCK_HTML);
+    }
     if (p === "/mock/venue-ticketing" && req.method === "GET") {
       res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300", "x-robots-tag": "noindex" });
       return res.end(VENUE_UI_HTML);
