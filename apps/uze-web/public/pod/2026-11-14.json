@@ -8,7 +8,7 @@
  "editionDate": "2026-11-14",
  "datePublished": "2026-11-14",
  "editorialPeriod": "2026-11-09/2026-11-14",
- "version": 6,
+ "version": 7,
  "status": "published — Edition 3",
  "cast": [
   "SoSim (host)",
@@ -19,8 +19,8 @@
  "audio": {
   "contentUrl": "2026-11-14-complete-v3.mp3",
   "encodingFormat": "audio/mpeg",
-  "durationSeconds": 2123,
-  "duration": "35:23",
+  "durationSeconds": 2067,
+  "duration": "34:27",
   "music": "Introduction: Burhan — To the Sun. Closing credit: MNDR — Fade Away (closing bed: the series' established outro bed)"
  },
  "humanUrl": "2026-11-14.html",
@@ -31,11 +31,11 @@
   "4:15 GotJuice: the comeback call",
   "4:58 Who pays for the build-out",
   "9:24 Consent, and the crossings",
-  "14:27 Energy: the premium unwinds",
-  "19:24 Crypto: the breakdown",
-  "23:56 The wider tape, and the map",
-  "29:00 The disagreement",
-  "31:31 The watch list, and the close"
+  "13:31 Energy: the premium unwinds",
+  "18:27 Crypto: the breakdown",
+  "23:00 The wider tape, and the map",
+  "28:03 The disagreement",
+  "30:34 The watch list, and the close"
  ],
  "previousPosting": "/pod/2026-11-07.html",
  "wordCount": 6371,
