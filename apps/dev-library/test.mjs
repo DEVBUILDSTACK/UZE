@@ -168,11 +168,12 @@ try {
   ok("classifications without master -> 403", (await call("/api/admin/classifications")).status === 403);
   const cls = await call("/api/admin/classifications", { master: true });
   const byClass = (c) => (cls.body.people || []).filter(p => p.class === c).map(p => p.email);
-  ok("classification layer: owners are the family three, principal is Jonathan alone, advisor is Bruno, devs split internal/external",
+  ok("classification layer: owners are the family three, principal is Jonathan alone, mentor is Bruno, advisor class empty, devs split internal/external",
     cls.status === 200 &&
     JSON.stringify(byClass("owner").sort()) === JSON.stringify(["dugan.hjd5@gmail.com", "dugan.x@gmail.com", "uze@uzemarkets.com"]) &&
     JSON.stringify(byClass("principal")) === JSON.stringify(["schmidtcommunications@gmail.com"]) &&
-    JSON.stringify(byClass("advisor")) === JSON.stringify(["brunocsalles@gmail.com"]) &&
+    JSON.stringify(byClass("advisor")) === JSON.stringify([]) &&
+    JSON.stringify(byClass("mentor")) === JSON.stringify(["brunocsalles@gmail.com"]) &&
     JSON.stringify(byClass("dev-internal").sort()) === JSON.stringify(["rohansinglawork@gmail.com", "shradeshjain123@gmail.com"]) &&
     JSON.stringify(byClass("dev-external").sort()) === JSON.stringify(["dipanshuhappy@gmail.com", "mnithin1422@gmail.com"]) &&
     (cls.body.people.find(p => p.email === "uze@uzemarkets.com") || {}).greeting === "Hammond");
