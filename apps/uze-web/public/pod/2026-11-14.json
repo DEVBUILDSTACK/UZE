@@ -1,61 +1,61 @@
 {
-  "@context": "https://schema.org",
-  "@type": "PodcastEpisode",
-  "name": "The Bellwether Falls, the Hike Gets Priced",
-  "series": "The Saturday POD — L2Launch · UZEmarkets",
-  "edition": "2026-11-14",
-  "editionNumber": 3,
-  "editionDate": "2026-11-14",
-  "datePublished": "2026-11-14",
-  "editorialPeriod": "2026-11-09/2026-11-14",
-  "version": 3,
-  "status": "published — Edition 3",
-  "cast": [
-    "SoSim (host)",
-    "Jay (skeptic / evidence)",
-    "CB (builder / mechanism)"
-  ],
-  "centralQuestion": "When the bellwether loses its founder and the money gets more expensive in the same week, is the build-out in trouble — or just repriced?",
-  "audio": {
-    "contentUrl": "2026-11-14-complete-v3.mp3",
-    "encodingFormat": "audio/mpeg",
-    "durationSeconds": 2504,
-    "duration": "41:44",
-    "music": "Introduction: Burhan — To the Sun. Closing credit: MNDR — Fade Away (closing bed: the series' established outro bed)"
+ "@context": "https://schema.org",
+ "@type": "PodcastEpisode",
+ "name": "The Bellwether Falls, the Hike Gets Priced",
+ "series": "The Saturday POD — L2Launch · UZEmarkets",
+ "edition": "2026-11-14",
+ "editionNumber": 3,
+ "editionDate": "2026-11-14",
+ "datePublished": "2026-11-14",
+ "editorialPeriod": "2026-11-09/2026-11-14",
+ "version": 3,
+ "status": "published — Edition 3",
+ "cast": [
+  "SoSim (host)",
+  "Jay (skeptic / evidence)",
+  "CB (builder / mechanism)"
+ ],
+ "centralQuestion": "When the bellwether loses its founder and the money gets more expensive in the same week, is the build-out in trouble — or just repriced?",
+ "audio": {
+  "contentUrl": "2026-11-14-complete-v3.mp3",
+  "encodingFormat": "audio/mpeg",
+  "durationSeconds": 2546,
+  "duration": "42:26",
+  "music": "Introduction: Burhan — To the Sun. Closing credit: MNDR — Fade Away (closing bed: the series' established outro bed)"
+ },
+ "humanUrl": "2026-11-14.html",
+ "listenUrl": "2026-11-14-listen.html",
+ "chapters": [
+  "0:00 Introduction — To the Sun",
+  "0:11 Cold open — the week in three changes",
+  "1:23 The bellwether loses its founder",
+  "6:49 Hot prints price the hike in full",
+  "10:51 GotJuice — the comeback call",
+  "11:32 The funding question, answered three ways",
+  "16:24 The consent constraint",
+  "17:46 Three crossings — tokenization, neo-clouds, orbit",
+  "20:24 Energy — the war premium unwinds on fundamentals",
+  "25:08 Crypto breaks down — and the desk goes risk-off",
+  "29:35 The wider tape — credit cracks and the protocol wire",
+  "31:29 The Americas, and the week's vertical edge",
+  "34:32 The disagreement — repriced, or regime change?",
+  "38:21 What to watch, the pathways, and the close",
+  "41:26 Outro — closing bed"
+ ],
+ "previousPosting": "/pod/2026-11-07.html",
+ "wordCount": 6371,
+ "musicCredits": [
+  {
+   "role": "introduction",
+   "artist": "Burhan",
+   "song": "To the Sun",
+   "url": "https://open.spotify.com/track/4Lb2JNnTxHrXZY5th8BOaq"
   },
-  "humanUrl": "2026-11-14.html",
-  "listenUrl": "2026-11-14-listen.html",
-  "chapters": [
-    "0:00 Introduction — To the Sun",
-    "0:11 Cold open — the week in three changes",
-    "1:22 The bellwether loses its founder",
-    "6:42 Hot prints price the hike in full",
-    "10:40 GotJuice — the comeback call",
-    "11:20 The funding question, answered three ways",
-    "16:07 The consent constraint",
-    "17:28 Three crossings — tokenization, neo-clouds, orbit",
-    "20:04 Energy — the war premium unwinds on fundamentals",
-    "24:43 Crypto breaks down — and the desk goes risk-off",
-    "29:05 The wider tape — credit cracks and the protocol wire",
-    "30:58 The Americas, and the week's vertical edge",
-    "33:57 The disagreement — repriced, or regime change?",
-    "37:42 What to watch, the pathways, and the close",
-    "40:44 Outro — closing bed"
-  ],
-  "previousPosting": "/pod/2026-11-07.html",
-  "wordCount": 6371,
-  "musicCredits": [
-    {
-      "role": "introduction",
-      "artist": "Burhan",
-      "song": "To the Sun",
-      "url": "https://open.spotify.com/track/4Lb2JNnTxHrXZY5th8BOaq"
-    },
-    {
-      "role": "closing",
-      "artist": "MNDR",
-      "song": "Fade Away",
-      "url": "https://open.spotify.com/track/58mfdGe04zPj69BHCTpTIb"
-    }
-  ]
+  {
+   "role": "closing",
+   "artist": "MNDR",
+   "song": "Fade Away",
+   "url": "https://open.spotify.com/track/58mfdGe04zPj69BHCTpTIb"
+  }
+ ]
 }
