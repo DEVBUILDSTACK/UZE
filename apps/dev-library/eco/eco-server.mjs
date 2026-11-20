@@ -291,6 +291,10 @@ function ecosystemPage(contributor) {
 <section class="card doc">${FRAGMENTS.overview}</section>
 <section class="card doc">${FRAGMENTS.diagrams}
 </section>
+<section class="card">
+<h2>The UZE Decensat.org Foundation</h2>
+<p>The ecosystem's impact foundation — for the passionate and performant: <strong>artists, performers, entertainers, athletes, amateur coaches, and Special Olympic performers</strong>. Programmatic support for passion: communities post pathway stories of their favorite amateurs — the ones with no likeness or image contract yet — and the community supports their training and their track to becoming professional. <strong>Be Decensat &amp; Donate</strong>, at <a href="https://decensat.org">decensat.org</a>.</p>
+</section>
 <section class="softband">
 <h2>The programmatic core — under both surfaces</h2>
 <p><strong>Under both surfaces — not a third surface — runs the programmatic logic:</strong> the approach of continual efficiency and scale that the human design surface and the agentic design surface alike stand on. Programmatic means <strong>system scale, not control</strong>. Smart, innovative programmatic builds are how this ecosystem grows — cost-effectively. The team is always focused on the programmatic core inside each ecosystem container: the UZE dual-plane Talent vertical; the media and Content Desk; and ticketing commerce in its two key launch planes, <strong>music and sport</strong> — which must be totally cemented and working before the ecosystem moves into Stay and the artist side of Touring.</p>
