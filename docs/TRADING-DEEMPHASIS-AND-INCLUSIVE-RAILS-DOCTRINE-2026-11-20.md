@@ -55,3 +55,12 @@ encouraged.)
 - **Donations are segregated and separate.** Donations to the
   organization are never profit and never spread; they are held
   apart, for our operations and for maintaining the repositories.
+
+## 6. Where TradeLayer and SigLayer stand (added same date, ~10:31 ET)
+The path to **TradeLayer and SigLayer is critical** — as an
+**offering to entity owners and partners, and their sysadmin
+treasurers**. Not a strategy, not a public initiative: a service
+layer for entities. Particularly with **FVC**: SigLayer is a
+critical aspect of **granting funding to L2Launch projects**, and
+the individuals involved must hold **FVC LP — FLPs, Fundio Loan
+Protocols**.
