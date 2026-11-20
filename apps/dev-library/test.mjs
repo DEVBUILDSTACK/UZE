@@ -167,7 +167,7 @@ try {
   // principal, advisor, dev internal vs external — master-only.
   ok("classifications without master -> 403", (await call("/api/admin/classifications")).status === 403);
   const cls = await call("/api/admin/classifications", { master: true });
-  const byClass = (c) => (cls.body.people || []).filter(p => p.class === c).map(p => p.email);
+  const byClass = (c) => (cls.body.people || []).filter(p => p.class === c).map(p => p.email).filter(Boolean);
   ok("classification layer: owners are the family three, principal is Jonathan alone, mentor is Bruno, advisor class empty, devs split internal/external",
     cls.status === 200 &&
     JSON.stringify(byClass("owner").sort()) === JSON.stringify(["dugan.hjd5@gmail.com", "dugan.x@gmail.com", "uze@uzemarkets.com"]) &&

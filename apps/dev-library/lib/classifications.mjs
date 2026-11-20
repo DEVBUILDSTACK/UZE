@@ -8,9 +8,11 @@
 //                unoccupied.
 //   mentor       Bruno Salles, Learn2Launch (moved from advisor by
 //                Hammond, 2026-11-20: no productization experience;
-//                the mentor seat fits). Mentors have NO repo
-//                visibility and NO code access — presented material
-//                only (renders, briefings).
+//                the mentor seat fits); Marta Carvalho, seated
+//                2026-11-20 for the productization (fabric mill,
+//                Portugal; software of her own). Mentors have NO
+//                repo visibility and NO code access — presented
+//                material only (renders, briefings).
 //   dev-internal Shradesh Jain, Rohan Singla — trusted internals
 //   dev-external Dipanshu Singh, Nithin Mengani — recruiting targets
 // OTP persistence by class (Hammond, 2026-11-20): developer OTPs do
