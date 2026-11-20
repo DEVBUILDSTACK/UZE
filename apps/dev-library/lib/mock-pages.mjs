@@ -65,23 +65,29 @@ button.on{background:#1a1a1a;color:#fff}
 .small{font:13px Arial,sans-serif;opacity:.75}
 footer{max-width:960px;margin:0 auto;padding:0 20px 40px;font:12px Arial,sans-serif;opacity:.7}
 </style></head><body>
-<header><div class="wm"><b>UZE</b>markets</div><p>Tickets — purchase, one and four, primary and secondary. A mock-up; nothing here is a real sale.</p></header><main>
+<header><div class="wm"><b>UZE</b>markets</div><p>Tickets — purchase, one, two, and five, primary and secondary. A mock-up; nothing here is a real sale.</p></header><main>
 <section class="card"><h2>Primary — São Paulo · Porto Alegre, Beira-Rio</h2>
 <span class="tag">PRIMARY MARKET</span><span class="tag">We run this sale</span>
-<p>The original mock: pick a price area on the stadium map, choose how many seats together — one, or four — and the engine allocates the actual seats. This is the primary purchase face.</p>
+<p>The original mock: pick a price area on the stadium map, choose how many seats together — one, two, or five — and the engine allocates the actual seats. This is the primary purchase face.</p>
 <iframe src="/mock/venue-ticketing" title="Primary market — venue ticketing mock"></iframe></section>
 <section class="card" id="secondary"><h2>Secondary — Miami</h2>
 <span class="tag">SECONDARY MARKET</span><span class="tag">Resale purchase, on chain</span>
-<p>The resale purchase face: passes listed by their first buyers. Pick a stand, then one seat or four together — the same pass, with its proof, transfers to you on chain.</p>
+<p>The resale purchase face: passes listed by their first buyers. Pick a stand, then one, two, or five seats together — the same pass, with its proof, transfers to you on chain. Or bid for it: the sealed-bid vault auction.</p>
 <div class="stand"><div>North Stand</div><div>East Stand</div><div>South Stand</div><div>West Stand</div></div>
-<div class="row"><button data-pick="1">One seat</button><button data-pick="4">Four seats together</button></div>
-<div class="out">Pick one seat, or four seats together.</div>
+<div class="row"><button data-pick="1">One seat</button><button data-pick="2">Two seats together</button><button data-pick="5">Five seats together</button></div>
+<div class="row"><button data-auction="1">Secondary sealed bid on-chain vault auction</button></div>
+<div class="out">Pick one, two, or five seats together — or open the sealed-bid vault auction.</div>
 <p class="small">Programmatic receipt on every pass — encrypted proof the pass is genuine and payment verified. A lifetime license for one or four seats, a full season, or a single night — the same pass carries all of them.</p></section>
 </main><footer>© 2026 UZEmarkets · Mock-up for review — prices are illustrative.</footer>
 <script>
 document.querySelectorAll("[data-pick]").forEach(b=>b.addEventListener("click",()=>{
   const card=b.closest(".card");card.querySelectorAll("[data-pick]").forEach(x=>x.classList.remove("on"));b.classList.add("on");
-  card.querySelector(".out").textContent = b.dataset.pick==="1" ? "One seat — a listed pass in the stand you picked, transferred to you on chain with its proof." : "Four seats together — a listed block of four in the stand you picked, transferred to you on chain with its proof.";
+  const n = b.dataset.pick;
+  card.querySelector(".out").textContent = n==="1" ? "One seat — a listed pass in the stand you picked, transferred to you on chain with its proof." : n + " seats together — a listed block of " + n + " in the stand you picked, transferred to you on chain with its proof.";
+}));
+document.querySelectorAll("[data-auction]").forEach(b=>b.addEventListener("click",()=>{
+  const card=b.closest(".card");
+  card.querySelector(".out").textContent = "Sealed bid vault auction: your bid is encrypted and held in the on-chain vault until the auction closes — no one sees it, not even us. The winning bid takes the pass; every other bid is returned whole. (Mock — no real bids.)";
 }));
 document.querySelectorAll(".stand div").forEach(d=>d.addEventListener("click",()=>{
   d.closest(".stand").querySelectorAll("div").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");
