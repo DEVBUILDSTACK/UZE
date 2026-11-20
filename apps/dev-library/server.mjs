@@ -228,9 +228,19 @@ ${scopeCards}
     // This route is public BY DESIGN and serves only the venue
     // mock-up; everything else in the library stays behind the
     // session.
-    if ((p === "/mock/tickets" || p === "/mock/prediction-markets") && req.method === "GET") {
+    if (p === "/mock/tickets" && req.method === "GET") {
+      // The family letters link here (James, 2026-11-19): this
+      // wrapper: the primary face is the ORIGINAL venue mock
+      // (the physical stadium seat-area selector with quantity —
+      // one seat, four seats), embedded from the Bruno route;
+      // the secondary face is the Miami resale purchase panel.
+      // No new email: the link the sons already hold lands here.
       res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300", "x-robots-tag": "noindex" });
-      return res.end(p === "/mock/tickets" ? TICKETS_MOCK_HTML : PREDICTION_MOCK_HTML);
+      return res.end(TICKETS_MOCK_HTML);
+    }
+    if (p === "/mock/prediction-markets" && req.method === "GET") {
+      res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300", "x-robots-tag": "noindex" });
+      return res.end(PREDICTION_MOCK_HTML);
     }
     if (p === "/mock/venue-ticketing" && req.method === "GET") {
       res.writeHead(200, { "content-type": "text/html", "cache-control": "private, max-age=300", "x-robots-tag": "noindex" });
