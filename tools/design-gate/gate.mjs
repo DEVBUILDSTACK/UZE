@@ -40,6 +40,10 @@ const TOKENS = new Set([
   '#6b655e', // muted
   '#b8b0a4', // band-muted
   '#ffffff', // white
+  '#ff9e45', // swoop-mid (Tri-Swoop middle band; ombre gradient mid) — ratified 2026-11-19, tokens v1.1.0
+  '#e05f00', // tangerine-deep — ratified 2026-11-19, tokens v1.1.0
+  '#c24e00', // tangerine-ember — ratified 2026-11-19, tokens v1.1.0
+  '#fff4ec', // creamsicle-pale — ratified 2026-11-19, tokens v1.1.0
 ]);
 const WIDTHS = [420, 1280];
 
