@@ -69,7 +69,7 @@ flowchart TD
     subgraph AGENTS["THE AGENTS — software acting for people & companies"]
         EA["Enterprise agents"]
         BA["Builder & creator agents"]
-        TA["Trading agents"]
+        TA["Service agents"]
     end
 
     subgraph ECO2["THE UZE ECOSYSTEM"]
@@ -91,13 +91,13 @@ flowchart TD
         GATES["THREE GATES — checked BEFORE anything executes<br/>pre-authorization → MCP enforcement → vertical gates<br/>access can be revoked at the door, instantly"]
         subgraph TOOLS["TWO TOOL FAMILIES — never blended"]
             PROD["PRODUCT MCPs<br/>UZE Underwrite · Assign · Auction"]
-            TRAD["TRADING MCPs<br/>TradeLayer · SigLayer<br/>(the Brokerage MCP is TradeLayer's door)"]
+            TRAD["ENTERPRISE SERVICES<br/>TradeLayer · SigLayer — at the agency level<br/>an included service, fee-bearing & additive"]
         end
         CHRON["THE CHRONICLE — every call is recorded<br/>who, what, when — the audit trail"]
         SETTLE["SETTLEMENT — one rail law<br/>USDC on Solana by default<br/>then Base → Robinhood USDG → Stripe CASH only if nothing else serves"]
         subgraph DOMAINS["TWO DOMAINS — kept separate, always"]
-            TRADING["DIGITAL ASSET TRADING<br/>maximizing gains · position sizing · risk tolerance<br/>NOT the ultimate focus"]
-            TREASURY["DIGITAL ASSET TREASURY — THE ULTIMATE FOCUS<br/>yield on an entity's seasonal & non-required balances<br/>enterprise treasury services"]
+            TRADING["TRADING — INCLUDED, NOT AN INITIATIVE<br/>enterprise & agency level only — never for individuals<br/>additive services, incl. swaps · nothing major"]
+            TREASURY["THE TREASURY — THE ULTIMATE FOCUS<br/>free & accessible to all applicants — inclusive USD access<br/>CASH · USDC on Solana & Base · USDG on Robinhood & Ink<br/>enterprise treasury services"]
         end
     end
 
@@ -117,7 +117,7 @@ flowchart TD
     HUMANVIEW -.->|"watches & judges"| CHRON
 ```
 
-**How to read it:** More and more business is done by software agents — programs working for companies and people. This surface is the ecosystem's front door *for them*. An agent finds us (directories and AI search), arrives at one door (the **UZE Instant MCP**), proves who it is (its identity is bound to a wallet), and passes **three gates before anything it asks for is executed**. Every single call it makes is written into the **chronicle** — a permanent record. Money settles under one law: **USDC on Solana** first. Behind the door sit two tool families that are never mixed — the *product* tools (underwriting, assigning, auctioning) and the *trading* tools — and two money domains that are never mixed either: **trading** (gains, sizing, risk — real, but *not* the focus) and **treasury** (putting a company's idle cash balances to work, safely and on the record — **the ultimate focus**). People never lose the thread: the console a human looks at is a view over the very same system, and judgment stays human.
+**How to read it:** More and more business is done by software agents — programs working for companies and people. This surface is the ecosystem's front door *for them*. An agent finds us (directories and AI search), arrives at one door (the **UZE Instant MCP**), proves who it is (its identity is bound to a wallet), and passes **three gates before anything it asks for is executed**. Every single call it makes is written into the **chronicle** — a permanent record. Money settles under one law: **USDC on Solana** first. Behind the door sit two tool families that are never mixed — the *product* tools (underwriting, assigning, auctioning) and the *enterprise services* (TradeLayer · SigLayer at the agency level — included, fee-bearing, additive) — and two money domains that are never mixed either: **the treasury** (free and accessible to all applicants — inclusive USD access: CASH, USDC on Solana and Base, USDG on Robinhood Chain and Ink — **the ultimate focus**) and **trading** (included at enterprise and agency level only, never for individuals and never promoted — an additive service, nothing major). People never lose the thread: the console a human looks at is a view over the very same system, and judgment stays human.
 
 ---
 
