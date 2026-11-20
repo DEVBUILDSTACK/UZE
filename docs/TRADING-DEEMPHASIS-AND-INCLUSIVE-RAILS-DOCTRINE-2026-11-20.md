@@ -43,3 +43,15 @@ and NEAR, as well as Solana**.
 (Education care, standing: for youth under 18, the financial
 education track is paper trading only — nothing beyond it is
 encouraged.)
+
+## 5. Gas, swaps, and donations (added same date, ~10:29 ET)
+- **Gas: we cover our gas.** On the alignment between UZE and
+  Decensat.org — the performant art and sport amateurs' resources —
+  the periodic **programmatic donations cover our gas costs, and we
+  make no spread on them**.
+- **Swaps:** where someone swaps from a debit card or a bank into
+  stablecoin, we make a **minor spread** — the additive-service case,
+  nothing major.
+- **Donations are segregated and separate.** Donations to the
+  organization are never profit and never spread; they are held
+  apart, for our operations and for maintaining the repositories.
