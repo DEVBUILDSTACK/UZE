@@ -75,7 +75,7 @@ footer{max-width:960px;margin:0 auto;padding:0 20px 40px;font:12px Arial,sans-se
 <p>The resale purchase face: passes listed by their first buyers. Pick a stand, then one, two, or five seats together — the same pass, with its proof, transfers to you on chain. Or bid for it: the sealed-bid vault auction.</p>
 <div class="stand"><div>North Stand</div><div>East Stand</div><div>South Stand</div><div>West Stand</div></div>
 <div class="row"><button data-pick="1">One seat</button><button data-pick="2">Two seats together</button><button data-pick="5">Five seats together</button></div>
-<div class="row"><button data-auction="1">Secondary sealed bid on-chain vault auction</button></div>
+<div class="row"><button data-auction="1">Secondary sealed bid on-chain vault auction</button><button data-countdown="1">Auction countdown</button></div>
 <div class="out">Pick one, two, or five seats together — or open the sealed-bid vault auction.</div>
 <p class="small">Programmatic receipt on every pass — encrypted proof the pass is genuine and payment verified. A lifetime license for one or four seats, a full season, or a single night — the same pass carries all of them.</p></section>
 </main><footer>© 2026 UZEmarkets · Mock-up for review — prices are illustrative.</footer>
@@ -84,6 +84,10 @@ document.querySelectorAll("[data-pick]").forEach(b=>b.addEventListener("click",(
   const card=b.closest(".card");card.querySelectorAll("[data-pick]").forEach(x=>x.classList.remove("on"));b.classList.add("on");
   const n = b.dataset.pick;
   card.querySelector(".out").textContent = n==="1" ? "One seat — a listed pass in the stand you picked, transferred to you on chain with its proof." : n + " seats together — a listed block of " + n + " in the stand you picked, transferred to you on chain with its proof.";
+}));
+document.querySelectorAll("[data-countdown]").forEach(b=>b.addEventListener("click",()=>{
+  const card=b.closest(".card");
+  card.querySelector(".out").textContent = "Auction countdown: the countdown never begins more than 151 calendar days before the first day of the event — festival, convention, or single event. On-ramp by the 3D venue seat selector, with KYC — or your existing UZEmarkets KYC/KYB. UZE Auction: sealed bid, encrypted by supercomputer, on-chain REE | TEE, digital NFT. Simultaneous auctions may be conducted — but every seat offered is unique: a vaulted, escrow-gated real-world asset with perpetual collectible rights, including any programmatically paired artist attendance outcome participation. (Mock — no live countdown.)";
 }));
 document.querySelectorAll("[data-auction]").forEach(b=>b.addEventListener("click",()=>{
   const card=b.closest(".card");
