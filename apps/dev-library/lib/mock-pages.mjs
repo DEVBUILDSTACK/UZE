@@ -77,6 +77,13 @@ footer{max-width:960px;margin:0 auto;padding:0 20px 40px;font:12px Arial,sans-se
 <div class="row"><button data-pick="1">One seat</button><button data-pick="2">Two seats together</button><button data-pick="5">Five seats together</button></div>
 <div class="row"><button data-auction="1">Secondary sealed bid on-chain vault auction</button><button data-countdown="1">Auction countdown</button></div>
 <div class="out">Pick one, two, or five seats together — or open the sealed-bid vault auction.</div>
+<h2 style="margin-top:22px">Engage — digital, via the NFT ticket</h2>
+<p>The ticket itself is the engagement channel. Through it:</p>
+<p>· <strong>Pre-event track drops</strong> — the artist's music lands with ticket holders before the event.<br>
+· <strong>Merch drops</strong> — holder-only merchandise, released through the ticket.<br>
+· <strong>VIP access</strong> — the pass carries its tier with it.<br>
+· <strong>Venue-geo partner offers</strong> — offers and access from partners at the venue's location, delivered to the pass.<br>
+· <strong>Consolation ticket pairs</strong> — in the sealed vault auction, the <strong>top three encrypted sealed bids following the lot's winning bid</strong> receive a consolation pair of tickets. Losing at the top still lands you in the room.</p>
 <p class="small">Programmatic receipt on every pass — encrypted proof the pass is genuine and payment verified. A lifetime license for one or four seats, a full season, or a single night — the same pass carries all of them.</p></section>
 </main><footer>© 2026 UZEmarkets · Mock-up for review — prices are illustrative.</footer>
 <script>
