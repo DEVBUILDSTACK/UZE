@@ -1291,6 +1291,19 @@ form button,
    "markets" ink on light grounds, white reversed out of black. */
 .wordmark {
   white-space: nowrap;
+  position: relative;
+  display: inline-block;
+}
+
+/* The Tri-Swoop lockup (Hammond, 2026-11-20): the mark rides above
+   and to the left of the tangerine UZE, sized to the type itself. */
+.wm-swoop {
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  transform: translate(-50%, -50%);
+  height: 0.55em;
+  width: auto;
 }
 
 .wm-uze {

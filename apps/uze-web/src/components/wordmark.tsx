@@ -8,6 +8,8 @@ export default function Wordmark({
 }) {
   return (
     <span className="wordmark">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="wm-swoop" src="/swoop.png" alt="" aria-hidden="true" />
       <span className="wm-uze">UZE</span>
       <span className={tone === "white" ? "wm-markets-w" : "wm-markets"}>
         markets

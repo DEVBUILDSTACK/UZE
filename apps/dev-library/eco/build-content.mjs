@@ -183,7 +183,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
       theWork: ["graphic design", "animation", "illustration", "video production", "video editing", "sound editing", "UGC", "on-site global expertise", "photography and video execution"],
       coreFocusInitiative: "Convert and generate revenue within 120 days, and maintain — beginning June 30, 2027.",
       diagram1FrontEnd: ["agentic outreach & lead-gen conversion", "talent marketplace — to source creatives", "the work (the services list)", "enterprise demand — hot, high-expectation clients", "the core focus initiative"],
-      diagram2AgenticSurface: ["the agents (enterprise · builder & creator · trading)", "discovery", "the door — UZE Instant MCP", "identity — every agent is wallet-bound", "three gates, checked before anything executes", "two tool families, never blended (product MCPs · trading MCPs)", "the chronicle — every call is recorded", "settlement — one rail law", "two domains, kept separate (trading · treasury — the ultimate focus)", "people supervise — the console"],
+      diagram2AgenticSurface: ["the agents (enterprise · builder & creator · service)", "discovery", "the door — UZE Instant MCP", "identity — every agent is wallet-bound", "three gates, checked before anything executes", "two tool families, never blended (product MCPs · enterprise services)", "the chronicle — every call is recorded", "settlement — one rail law", "two domains, kept separate (treasury — the ultimate focus · trading included, not promoted)", "people supervise — the console"],
       note: "Everything in the UZE sections is UZEmarkets and the UZE ecosystem — what has been built, and what is being built.",
     },
   };

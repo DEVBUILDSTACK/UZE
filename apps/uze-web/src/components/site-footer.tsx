@@ -124,9 +124,11 @@ export default function SiteFooter() {
         <span className="wordmark">
           <a
             href="https://uzemarkets.com"
-            className="wm-uze-link"
+            className="wm-uze-link" style={{ position: "relative" }}
             aria-label="UZEmarkets — home"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="wm-swoop" src="/swoop.png" alt="" aria-hidden="true" />
             <span className="wm-uze">UZE</span>
           </a>
           <span className="wm-markets">markets</span>
