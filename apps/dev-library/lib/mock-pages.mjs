@@ -87,7 +87,7 @@ document.querySelectorAll("[data-pick]").forEach(b=>b.addEventListener("click",(
 }));
 document.querySelectorAll("[data-countdown]").forEach(b=>b.addEventListener("click",()=>{
   const card=b.closest(".card");
-  card.querySelector(".out").textContent = "Auction countdown: the countdown never begins more than 151 calendar days before the first day of the event — festival, convention, or single event. On-ramp by the 3D venue seat selector, with KYC — or your existing UZEmarkets KYC/KYB. UZE Auction: sealed bid, encrypted by supercomputer, on-chain REE | TEE, digital NFT. Simultaneous auctions may be conducted — but every seat offered is unique: a vaulted, escrow-gated real-world asset with perpetual collectible rights, including any programmatically paired artist attendance outcome participation. (Mock — no live countdown.)";
+  card.querySelector(".out").textContent = "Auction countdown: the countdown never begins more than 151 calendar days before the first day of the event — festival, convention, or single event. On-ramp by the 3D venue seat selector, with KYC — or your existing UZEmarkets KYC/KYB. UZE Auction: sealed bid, encrypted by supercomputer, on-chain REE | TEE, digital NFT. Simultaneous auctions may be conducted — but every seat offered is unique: a vaulted, escrow-gated real-world asset with perpetual collectible rights, including any programmatically paired artist, performance, or team in-person attendance — or ticket-donation to a needy fan or adult as a contribution in lieu of attendance — as fractional outcome participation. (Mock — no live countdown.)";
 }));
 document.querySelectorAll("[data-auction]").forEach(b=>b.addEventListener("click",()=>{
   const card=b.closest(".card");
