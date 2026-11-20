@@ -164,8 +164,21 @@ export default function Hero() {
                 </span>
               ) : (
                 <span className="hero-pill">
-                  <span className="wm-uze">UZE</span>
-                  {s.badge.slice(3)}
+                  {/* The badge pills carry the same perfected
+                      Tri-Swoop lockup as the wordmark pill (Hammond,
+                      2026-11-20): the swoop anchors on the U of the
+                      badge's UZE, same .wm-swoop geometry. */}
+                  <span className="wordmark">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="wm-swoop"
+                      src="/swoop.png"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    <span className="wm-uze">UZE</span>
+                    {s.badge.slice(3)}
+                  </span>
                 </span>
               )}
               <h1>{s.h1}</h1>
