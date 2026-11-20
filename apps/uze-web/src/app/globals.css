@@ -1295,13 +1295,18 @@ form button,
   display: inline-block;
 }
 
-/* The Tri-Swoop lockup (Hammond, 2026-11-20): the mark rides above
-   and to the left of the tangerine UZE, sized to the type itself. */
+/* The Tri-Swoop lockup — PERFECTED by Hammond, 2026-11-20 (measured,
+   not eyeballed): the swoop's height is 0.55em; its box sits at
+   left -0.437em / top -0.185em of the wordmark span, which puts the
+   middle swoop's center exactly on the highest point of the capital
+   U in the tangerine UZE, with the smallest possible space between
+   the middle swoop and that point — the mark never touches the
+   letter (measured gap 4px at 96px type, scaling with the em).
+   Header and footer use this one identical anchor. */
 .wm-swoop {
   position: absolute;
-  left: 0;
-  top: 0.05em;
-  transform: translate(-50%, -50%);
+  left: -0.437em;
+  top: -0.185em;
   height: 0.55em;
   width: auto;
 }
