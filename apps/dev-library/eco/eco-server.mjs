@@ -57,6 +57,12 @@ body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system
 .band .eyebrow{font-size:10px;letter-spacing:2.5px;color:var(--bandmuted);margin-top:3px}
 .band h1{font-family:Georgia,'Times New Roman',serif;font-size:27px;margin:0;font-weight:700;white-space:nowrap}
 .uze{color:var(--orange)}
+/* The Tri-Swoop lockup — PERFECTED by Hammond, 2026-11-20, identical
+   to uze-web's .wm-swoop: height 0.55em; box at left -0.437em /
+   top -0.185em, middle swoop centered on the highest point of the
+   capital U, never touching. Header and footer use this one anchor. */
+.wordmark{white-space:nowrap;position:relative;display:inline-block}
+.wm-swoop{position:absolute;left:-0.437em;top:-0.185em;height:0.55em;width:auto}
 .sub{color:var(--muted);margin:14px 2px 0;line-height:1.55}
 nav.sections{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
 nav.sections a{color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px}
@@ -146,7 +152,7 @@ function layout({ title, contributor = null, active = "", body }) {
 <body>
 <div class="wrap">
 <header class="band">
-<h1><span class="uze">UZE</span> Buildr Team</h1>
+<h1><span class="wordmark"><img class="wm-swoop" src="/swoop.png" alt="" aria-hidden="true"><span class="uze">UZE</span></span> Buildr Team</h1>
 <div class="eyebrow">THE ECOSYSTEM CONTRIBUTORS' SURFACE</div>
 </header>
 ${contributor ? navHtml(contributor, active) : ""}
@@ -155,7 +161,7 @@ ${body}
 </main>
 <div class="brow"><a href="https://uzemarkets.com">THE TALENT DESK</a> · <a href="https://dev.uzemarkets.com">DEV LIBRARY</a> · <a href="https://buildr-eco.uzemarkets.com">BUILDER COLLABORATOR</a></div>
 <footer>
-<div class="wm"><span class="uze">UZE</span>markets</div>
+<div class="wm"><span class="wordmark"><img class="wm-swoop" src="/swoop.png" alt="" aria-hidden="true"><span class="uze">UZE</span></span>markets</div>
 <p class="fine">© 2026 <a href="https://uzemarkets.com">UZE</a>markets · The UZE Markets Desk · <a class="ql" href="mailto:desk@uzemarkets.com">desk@uzemarkets.com</a></p>
 </footer>
 </div>
@@ -408,6 +414,14 @@ export async function handleEcoRequest(req, res, { send, body, ecoAdmin }) {
   const url = new URL(req.url, "http://x");
   const p = url.pathname;
   try {
+    // --- the Tri-Swoop lockup asset: public, as on the Dev Library
+    // host — the shell's wordmarks reference it here too ---
+    if (p === "/swoop.png" && req.method === "GET") {
+      const file = path.join(HERE, "..", "assets", "swoop.png");
+      if (!fs.existsSync(file)) return send(res, 404, { error: "not found" });
+      res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=86400" });
+      return res.end(fs.readFileSync(file));
+    }
     // --- the master surface for this roster lives on both hosts ---
     if (p.startsWith("/api/admin/eco/") && ecoAdmin) {
       if (await ecoAdmin(req, res, url)) return;
