@@ -349,11 +349,12 @@
     <button class="mrow" onclick="go('home','talent')"><span class="mi">◉</span>Talent<span class="chev">›</span></button>
     <button class="mrow" onclick="go('bid')"><span class="mi">⇄</span>Contract Origination and Bidding<span class="chev">›</span></button>
     <button class="mrow" onclick="go('pim')"><span class="mi">↗</span>PIM<span class="chev">›</span></button>
+    <button class="mrow" onclick="go('uzecompute')"><span class="mi">⌬</span>Compute<span class="chev">›</span></button>
     <button class="mrow" onclick="toast('Stay · Venue · Play opens the leisure app (mock)')"><span class="mi">▣</span>Stay · Venue · Play<span class="chev">›</span></button>
     <button class="mrow" id="moreRow" onclick="toggleMore()"><span class="mi">•••</span>More<span class="chev">›</span></button>
     <div class="msub" id="moreSub">
       <button onclick="go('explore','uw')">Underwriting — Solutions</button>
-      <button onclick="go('compute')">Compute</button>
+      <button onclick="go('uzecompute')">Compute</button>
       <button onclick="openSheet('settingsSheet')">Settings</button>
       <button onclick="go('explore','deck')">Agent Deck</button>
       <button onclick="go('explore','c3')">C3 Hub · Admin</button>
@@ -541,6 +542,146 @@
         <p class="guard">UZE is a compute aggregator: inference and compute are aggregated and routed for you. UZE does not train models. The choices live in Settings — compute is a setting, not a business.</p>
       </section>
 
+      <!-- UZE COMPUTE — the engine surface, offered off the left nav -->
+      <section class="view" id="v-uzecompute">
+        <div class="dirhead"><h1>UZE Compute</h1></div>
+        <p class="guard" style="margin:0 2px 12px">The engine inside UZEmarkets. Compute runs the underwriting — financial and risk — and powers your research across the predictive information markets, all inside the app. Inference is routed by GIRA INFERENCE down the ladder; when every route is spent, the house fallback answers, so the work never stops.</p>
+        <div class="chips" style="margin:0 0 14px">
+          <button class="chip on" onclick="cxTab(this,'cx-overview')">Overview</button>
+          <button class="chip" onclick="cxTab(this,'cx-underwrite')">Underwrite</button>
+          <button class="chip" onclick="cxTab(this,'cx-research')">Research</button>
+          <button class="chip" onclick="cxTab(this,'cx-credits')">Credit</button>
+          <button class="chip" onclick="cxTab(this,'cx-routing')">Routing</button>
+        </div>
+
+        <div class="cxpanel" id="cx-overview">
+          <div class="hero">
+            <div class="lbl">Compute credit</div>
+            <div class="val">1,250</div>
+            <div class="delta"><b>≈ $312.50</b> of work in the app · burn-to-credit — every job priced in token and USD together</div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>What compute does here</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Financial underwriting</b><small>The money plane — P&amp;L, NOI and debt vectors, computed per property</small></span><span class="val">Run ›</span></div>
+              <div class="srow"><span class="lab"><b>Risk underwriting</b><small>The risk plane — hazard × vulnerability × exposure, priced per parcel</small></span><span class="val">Run ›</span></div>
+              <div class="srow"><span class="lab"><b>Market research</b><small>GSIML &amp; BEIML questions researched in-app, against the attested record</small></span><span class="val">Run ›</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Recent work</h2><button>›</button></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Risk underwrite — Marina Holdings<small>Surge + wind planes · routed: xAI | Grokbot</small></span><span class="val">$10.00 · Done</span></div>
+              <div class="srow"><span class="lab">Research — Q-FEAS-001<small>Miami-Dade rezoning · record assembled</small></span><span class="val">$2.50 · Done</span></div>
+              <div class="srow"><span class="lab">Financial underwrite — Coastal GC<small>P&amp;L vectors · moved down the ladder at budget</small></span><span class="val">$10.00 · Done</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Today</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Jobs run</span><span class="val">37</span></div>
+              <div class="srow"><span class="lab">Tokens served</span><span class="val">8.4M</span></div>
+              <div class="srow"><span class="lab">Top-model budget left<small>$20.00 daily · moves down at 50%</small></span><span class="val">62%</span></div>
+              <div class="usagebar"><i style="width:38%"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx-underwrite" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">UZE Underwrite reads two planes at once. Compute runs both — the verdict lands under Solutions, in Underwriting. Scope: Hospitality, Income, Commercial Real Estate — marinas and aviation first.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Financial plane</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">The money vectors: verified P&amp;L, NOI, rent rolls and debt — parsed, benchmarked against the micro-region, and priced. This is the compute the underwrite engine runs on every property.</p>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run</span><span class="val">40 credit · $10.00</span></div>
+              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Financial underwrite (mock) — pick a property')">Run a financial underwrite</button>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Risk plane</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Hazard — wind, storm surge, flooding, erosion, geologic, sea-level rise — crossed with vulnerability (construction, occupancy, protection, exposure; mitigation; elevation against base flood) and exposure (replacement cost, claims, permit history). The same shape as FEMA Risk Rating 2.0, priced on the parcel.</p>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run</span><span class="val">40 credit · $10.00</span></div>
+              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Risk underwrite (mock) — pick a parcel')">Run a risk underwrite</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx-research" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Research a predictive information market without leaving the app. GIRA INFERENCE assembles the priced record behind the question — contributors are rewarded only for information that is new, provable and verifiable.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Markets you can research</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>BEIML</b> — Q-FEAS-001<small>Miami-Dade rezoning feasibility · resolved NO, attested</small></span><span class="val">Research ›</span></div>
+              <div class="srow"><span class="lab"><b>BEIML</b> — Permit pace, Very South FL<small>Will approvals clear the quarter's band?</small></span><span class="val">Research ›</span></div>
+              <div class="srow"><span class="lab"><b>GSIML</b> — Coastal risk repricing<small>Will the SE-coast risk band move this season?</small></span><span class="val">Research ›</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Run research</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run<small>The ladder grades the question and routes it — hard questions climb, lookups stay fast</small></span><span class="val">10 credit · $2.50</span></div>
+              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Research run (mock) — the record assembles in-app')">Research a market</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx-credits" style="display:none">
+          <div class="hero">
+            <div class="lbl">Credit balance</div>
+            <div class="val">$312.50</div>
+            <div class="delta"><b>1,250</b> in credit · 5,000 burned to date · 4 burns</div>
+          </div>
+          <p class="guard" style="margin:0 2px 12px">The token is how the platform's work is bought. Hold it, burn it to credit, and the underwriting, the risk pricing and the research run. That loop — useful work, priced in the token — is what brings users to adopt it.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Burn to credit</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Credit comes only from burning the token on Solana. One transaction burns the amount; a second carries the memo binding it to your account. The burn is read back from the chain before credit lands — a burn counts only for the account it was made for.</p>
+              <button class="setbtn" style="margin:0" onclick="toast('Burn flow (mock) — your wallet signs the burn')">Burn for credit</button>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Pro</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Pro is <b>stake-held, never spent</b>: hold a stake dynamically adjusted to stay equivalent to <b>$20.00</b> — the subscription's price, held as a stake, so the gate's real cost cannot drift with the market. Pro routing, longer context, more jobs at once.</p>
+              <button class="setbtn" style="margin:0" onclick="toast('Pro stake (mock)')">Hold the Pro stake</button>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Standing</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Fallback status</span><span class="val">Ready — a worker is warm</span></div>
+              <div class="srow"><span class="lab">Send compute<small>Gift $1.00 of compute to anyone on X — credit lands in their account</small></span><span class="val">Send ›</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx-routing" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">How every job is worked. GIRA INFERENCE grades each request — length, task class, tools, context; never the content — and sends it down the ladder. Modeled on the Darwin Compute reverse-engineering, rebuilt as the platform's own routing.</p>
+          <div class="mod">
+            <div class="modhead"><h2>The ladder</h2><button>›</button></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Top</b> — plans, hard problems<small>First reach · your top-model budget applies</small></span><span class="val">xAI | Grokbot</span></div>
+              <div class="srow"><span class="lab"><b>Mid</b> — most work, tool calls<small>Reached as the top budget passes half</small></span><span class="val">OpenAI · Anthropic · Google</span></div>
+              <div class="srow"><span class="lab"><b>Fast</b> — summaries, renames, lookups</span><span class="val">Perplexity · DeepSeek · Qwen · Kimi</span></div>
+              <div class="srow"><span class="lab"><b>Reach</b> — via OpenRouter</span><span class="val">Venice AI · Microsoft — Copilot · Vercel</span></div>
+              <div class="srow"><span class="lab"><b>Fallback</b> — the house model<small>Always on · the work never stops</small></span><span class="val">On</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Routing controls</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Daily top-model budget</span><span class="val">$20.00</span></div>
+              <div class="srow"><span class="lab">Start moving down at<small>Share of the top budget remaining</small></span><span class="val">50% left</span></div>
+              <div class="usagebar"><i style="width:50%"></i></div>
+              <div class="srow"><span class="lab">Conversation stickiness<small>A job stays on its model until it is out</small></span><span class="val">On</span></div>
+              <div class="srow"><span class="lab">Pearl route<small>Useful work, consumed through GIRA INFERENCE</small></span><span class="val">Auto</span></div>
+            </div>
+          </div>
+          <p class="guard">We keep the model, token counts, cost, timing and status of each job — never the prompt or the reply. Routing to your own provider keys is free; only the house fallback and Pro draw on credit.</p>
+        </div>
+      </section>
+
       <!-- MORE -->
       <section class="view" id="v-explore">
         <div class="dirhead"><h1>Explore</h1></div>
@@ -725,6 +866,9 @@
   }
   function disconnect(){ document.body.classList.remove('connected'); $('#walletLbl').textContent='Connect'; closeSheets(); window.scrollTo(0,0); toast('Wallet disconnected'); }
   function walletTap(){ if(document.body.classList.contains('connected')) openSheet('walletSheet'); else connectWallet(); }
+
+  /* UZE Compute surface — panel switching inside the view */
+  function cxTab(btn,id){ $$('#v-uzecompute .cxpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-uzecompute .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
 
   /* views — paged by the bottom icons */
   function go(view, anchor){
