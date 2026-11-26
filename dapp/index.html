@@ -349,7 +349,17 @@
     <button class="mrow" onclick="go('home','talent')"><span class="mi">◉</span>Talent<span class="chev">›</span></button>
     <button class="mrow" onclick="go('bid')"><span class="mi">⇄</span>Contract Origination and Bidding<span class="chev">›</span></button>
     <button class="mrow" onclick="go('pim')"><span class="mi">↗</span>PIM<span class="chev">›</span></button>
-    <button class="mrow" onclick="go('uzecompute')"><span class="mi">⌬</span>Compute<span class="chev">›</span></button>
+    <button class="mrow" id="computeRow" onclick="toggleCompute()"><span class="mi">⌬</span>Compute<span class="chev">›</span></button>
+    <div class="msub" id="computeSub">
+      <button onclick="cxGo('cx2-overview')">Overview</button>
+      <button onclick="cxGo('cx2-requests')">Requests</button>
+      <button onclick="cxGo('cx2-ladder')">Ladder</button>
+      <button onclick="cxGo('cx2-credits')">Credits</button>
+      <button onclick="cxGo('cx2-upgrades')">Upgrades</button>
+      <button onclick="cxGo('cx2-keys')">Keys</button>
+      <button onclick="cxGo('cx2-connect')">Connect</button>
+      <button onclick="cxGo('cx2-playground')">Playground</button>
+    </div>
     <button class="mrow" onclick="toast('Stay · Venue · Play opens the leisure app (mock)')"><span class="mi">▣</span>Stay · Venue · Play<span class="chev">›</span></button>
     <button class="mrow" id="moreRow" onclick="toggleMore()"><span class="mi">•••</span>More<span class="chev">›</span></button>
     <div class="msub" id="moreSub">
@@ -542,160 +552,256 @@
         <p class="guard">UZE is a compute aggregator: inference and compute are aggregated and routed for you. UZE does not train models. The choices live in Settings — compute is a setting, not a business.</p>
       </section>
 
-      <!-- UZE COMPUTE — the engine surface, offered off the left nav -->
+      <!-- UZE COMPUTE — the compute surface off the left nav: the eight pages, UZE-branded -->
       <section class="view" id="v-uzecompute">
-        <div class="dirhead"><h1>UZE Compute</h1></div>
-        <p class="guard" style="margin:0 2px 12px">The engine inside UZEmarkets. Compute runs the underwriting — financial and risk — and powers your research across the predictive information markets, all inside the app. Inference is routed by GIRA INFERENCE down the ladder; when every route is spent, the house fallback answers, so the work never stops.</p>
+        <div class="dirhead"><h1>UZE Compute</h1><span class="val" style="font-weight:700">Credit $312.50</span></div>
+        <p class="guard" style="margin:0 2px 12px">The engine inside UZEmarkets. Every job — an underwriting plane, a valuation, a market research run — is graded and routed down the ladder by GIRA INFERENCE. When every route is spent, the house model answers from your credit, so the work never stops.</p>
         <div class="chips" style="margin:0 0 14px">
-          <button class="chip on" onclick="cxTab(this,'cx-overview')">Overview</button>
-          <button class="chip" onclick="cxTab(this,'cx-underwrite')">Underwrite</button>
-          <button class="chip" onclick="cxTab(this,'cx-research')">Research</button>
-          <button class="chip" onclick="cxTab(this,'cx-credits')">Credit</button>
-          <button class="chip" onclick="cxTab(this,'cx-routing')">Routing</button>
+          <button class="chip on" data-p="cx2-overview" onclick="cxTab(this,'cx2-overview')">Overview</button>
+          <button class="chip" data-p="cx2-requests" onclick="cxTab(this,'cx2-requests')">Requests</button>
+          <button class="chip" data-p="cx2-ladder" onclick="cxTab(this,'cx2-ladder')">Ladder</button>
+          <button class="chip" data-p="cx2-credits" onclick="cxTab(this,'cx2-credits')">Credits</button>
+          <button class="chip" data-p="cx2-upgrades" onclick="cxTab(this,'cx2-upgrades')">Upgrades</button>
+          <button class="chip" data-p="cx2-keys" onclick="cxTab(this,'cx2-keys')">Keys</button>
+          <button class="chip" data-p="cx2-connect" onclick="cxTab(this,'cx2-connect')">Connect</button>
+          <button class="chip" data-p="cx2-playground" onclick="cxTab(this,'cx2-playground')">Playground</button>
         </div>
 
-        <div class="cxpanel" id="cx-overview">
-          <div class="hero">
-            <div class="lbl">Compute credit</div>
-            <div class="val">1,250</div>
-            <div class="delta"><b>≈ $312.50</b> of work in the app · burn-to-credit — every job priced in token and USD together</div>
-          </div>
+        <div class="cxpanel" id="cx2-overview">
           <div class="mod">
-            <div class="modhead"><h2>What compute does here</h2></div>
+            <div class="modhead"><h2>Get started</h2><button onclick="toast('Hidden (mock)')">I'm set up, hide this</button></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Financial underwriting</b><small>The money plane — P&amp;L, NOI and debt vectors, computed per property</small></span><span class="val">Run ›</span></div>
-              <div class="srow"><span class="lab"><b>Valuation</b><small>The value plane — what the property is worth, benchmarked and priced</small></span><span class="val">Run ›</span></div>
-              <div class="srow"><span class="lab"><b>Risk underwriting</b><small>The risk plane — hazard × vulnerability × exposure, priced per parcel</small></span><span class="val">Run ›</span></div>
-              <div class="srow"><span class="lab"><b>Market research</b><small>Your own MCP, your own model — and when your own free runs out, ours takes over, on your stake</small></span><span class="val">Run ›</span></div>
-            </div>
-          </div>
-          <div class="mod">
-            <div class="modhead"><h2>Recent work</h2><button>›</button></div>
-            <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Risk underwrite — Marina Holdings<small>Surge + wind planes · routed: xAI | Grokbot</small></span><span class="val">$10.00 · Done</span></div>
-              <div class="srow"><span class="lab">Research — Q-FEAS-001<small>Miami-Dade rezoning · record assembled</small></span><span class="val">$2.50 · Done</span></div>
-              <div class="srow"><span class="lab">Financial underwrite — Coastal GC<small>P&amp;L vectors · moved down the ladder at budget</small></span><span class="val">$10.00 · Done</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>1 · Your key</b><small>uz_k…•••••••••••• · use it anywhere a tool asks for an OpenAI or Anthropic key, and for the MCP server</small></span><span class="val">Show · Copy</span></div>
+              <div class="srow"><span class="lab"><b>2 · Burn for credit</b><small>The work only runs with credit, and credit comes from burning the token from a Solana wallet</small></span><span class="val">Credits ›</span></div>
+              <div class="srow"><span class="lab"><b>3 · Run a first job</b><small>The house model answers it from your credit, no provider key needed</small></span><span class="val">Playground ›</span></div>
+              <div class="srow"><span class="lab"><b>4 · Point your tool or agent here</b><small>One key, one base URL — the ladder picks the model, so the name you send doesn't matter</small></span><span class="val">Connect ›</span></div>
+              <div class="srow"><span class="lab"><b>5 · Add your own models (optional)</b><small>Add a provider key, then put your models in order on the Ladder</small></span><span class="val">Add a key ›</span></div>
             </div>
           </div>
           <div class="mod">
             <div class="modhead"><h2>Today</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Jobs run</span><span class="val">37</span></div>
-              <div class="srow"><span class="lab">Tokens served</span><span class="val">8.4M</span></div>
-              <div class="srow"><span class="lab">Top-model budget left<small>$20.00 daily · moves down at 50%</small></span><span class="val">62%</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Jobs today<small>2.1M tokens</small></span><span class="val">37</span></div>
+              <div class="srow"><span class="lab">Spend today<small>$61.40 if all on the top model</small></span><span class="val">$22.50</span></div>
+              <div class="srow"><span class="lab">Saved today<small>By routing down the ladder</small></span><span class="val">$38.90</span></div>
+              <div class="srow"><span class="lab">Top-model budget left<small>$7.60 of $20.00 today</small></span><span class="val">62%</span></div>
               <div class="usagebar"><i style="width:38%"></i></div>
             </div>
           </div>
-        </div>
-
-        <div class="cxpanel" id="cx-underwrite" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">UZE Underwrite reads three planes at once — financials, valuation, and risk. Compute runs all three — the verdict lands under Solutions, in Underwriting. Scope: Hospitality, Income, Commercial Real Estate — marinas and aviation first.</p>
           <div class="mod">
-            <div class="modhead"><h2>Financial plane</h2></div>
+            <div class="modhead"><h2>Jobs per hour</h2></div>
             <div class="card" style="padding:16px">
-              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">The money vectors: verified P&amp;L, NOI, rent rolls and debt — parsed, benchmarked against the micro-region, and priced. This is the compute the underwrite engine runs on every property.</p>
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run</span><span class="val">40 credit · $10.00</span></div>
-              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Financial underwrite (mock) — pick a property')">Run a financial underwrite</button>
+              <div style="display:flex;align-items:flex-end;gap:2px;height:34px"><i style="height:3px"></i><i style="height:2px"></i><i style="height:4px"></i><i style="height:2px"></i><i style="height:3px"></i><i style="height:5px"></i><i style="height:4px"></i><i style="height:6px"></i><i style="height:9px"></i><i style="height:7px"></i><i style="height:12px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:11px"></i><i style="height:9px"></i><i style="height:13px"></i><i style="height:8px"></i><i style="height:6px"></i><i style="height:10px"></i><i style="height:7px"></i><i style="height:5px"></i><i style="height:4px"></i><i style="height:3px"></i><i style="height:2px"></i></div>
+              <div class="srow" style="border:none"><span class="lab"><small>Last 24 hours, by model</small></span><span class="val">now</span></div>
             </div>
           </div>
           <div class="mod">
-            <div class="modhead"><h2>Valuation plane</h2></div>
+            <div class="modhead"><h2>Recent jobs</h2><button onclick="cxGo('cx2-requests')">All requests</button></div>
             <div class="card" style="padding:16px">
-              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">What the property is worth: micro-region benchmarks, cost observations and the information layer's own priced record, computed against the parcel and its market — the value the financials are tested against.</p>
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run</span><span class="val">40 credit · $10.00</span></div>
-              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Valuation (mock) — pick a property')">Run a valuation</button>
-            </div>
-          </div>
-          <div class="mod">
-            <div class="modhead"><h2>Risk plane</h2></div>
-            <div class="card" style="padding:16px">
-              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Hazard — wind, storm surge, flooding, erosion, geologic, sea-level rise — crossed with vulnerability (construction, occupancy, protection, exposure; mitigation; elevation against base flood) and exposure (replacement cost, claims, permit history). The same shape as FEMA Risk Rating 2.0, priced on the parcel.</p>
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run</span><span class="val">40 credit · $10.00</span></div>
-              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Risk underwrite (mock) — pick a parcel')">Run a risk underwrite</button>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Risk underwrite — Marina Holdings<small>xAI | Grokbot · Hard · 42.1k tokens</small></span><span class="val">$10.00 · Served</span></div>
+              <div class="srow"><span class="lab">Research — Q-FEAS-001<small>House model · Fast · 6.2k tokens</small></span><span class="val">$2.50 · Served</span></div>
+              <div class="srow"><span class="lab">Valuation — Coastal GC<small>Anthropic · Mid · 18.7k tokens</small></span><span class="val">$10.00 · Moved ↓</span></div>
             </div>
           </div>
         </div>
 
-        <div class="cxpanel" id="cx-research" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">Research a predictive information market without leaving the app — with your own MCP, or your own choice of model and inference, working against the attested record. And like the routing it is modeled on: when your own free runs out, ours takes over — the same research continues on UZE compute, on your stake. Contributors are rewarded only for information that is new, provable and verifiable.</p>
+        <div class="cxpanel" id="cx2-requests" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Every job, what it cost and what it saved.</p>
           <div class="mod">
-            <div class="modhead"><h2>Your tools</h2></div>
+            <div class="modhead"><h2>Summary</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Your MCP server<small>Bring your own — it works against the priced record</small></span><span class="val">Connect ›</span></div>
-              <div class="srow"><span class="lab">Your choice of model<small>Any route on the ladder — your keys, your limits</small></span><span class="val">Choose ›</span></div>
-              <div class="srow"><span class="lab">When yours runs out<small>Our compute continues the job — on your stake</small></span><span class="val">Automatic</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Jobs today</span><span class="val">37</span></div>
+              <div class="srow"><span class="lab">Tokens today</span><span class="val">2.1M</span></div>
+              <div class="srow"><span class="lab">Spend today</span><span class="val">$22.50</span></div>
+              <div class="srow"><span class="lab">Saved today</span><span class="val">$38.90</span></div>
             </div>
           </div>
           <div class="mod">
-            <div class="modhead"><h2>Markets you can research</h2></div>
+            <div class="modhead"><h2>All jobs</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>BEIML</b> — Q-FEAS-001<small>Miami-Dade rezoning feasibility · resolved NO, attested</small></span><span class="val">Research ›</span></div>
-              <div class="srow"><span class="lab"><b>BEIML</b> — Permit pace, Very South FL<small>Will approvals clear the quarter's band?</small></span><span class="val">Research ›</span></div>
-              <div class="srow"><span class="lab"><b>GSIML</b> — Coastal risk repricing<small>Will the SE-coast risk band move this season?</small></span><span class="val">Research ›</span></div>
-            </div>
-          </div>
-          <div class="mod">
-            <div class="modhead"><h2>Run research</h2></div>
-            <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run<small>The ladder grades the question and routes it — hard questions climb, lookups stay fast</small></span><span class="val">10 credit · $2.50</span></div>
-              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Research run (mock) — the record assembles in-app')">Research a market</button>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">09:41 · Risk underwrite<small>xAI | Grokbot · Hard · in 31.0k / out 11.1k · 4.2s</small></span><span class="val">$10.00 · Served</span></div>
+              <div class="srow"><span class="lab">09:12 · Research — Q-FEAS-001<small>House model · Fast · in 4.8k / out 1.4k · 1.1s</small></span><span class="val">$2.50 · Served</span></div>
+              <div class="srow"><span class="lab">08:57 · Valuation — Coastal GC<small>Anthropic · Mid · in 12.3k / out 6.4k · 2.8s</small></span><span class="val">$10.00 · Moved ↓</span></div>
+              <div class="srow"><span class="lab">08:31 · Financial underwrite<small>OpenAI · Hard · in 22.9k / out 9.8k · 3.6s</small></span><span class="val">$10.00 · Served</span></div>
             </div>
           </div>
         </div>
 
-        <div class="cxpanel" id="cx-credits" style="display:none">
-          <div class="hero">
-            <div class="lbl">Credit balance</div>
-            <div class="val">$312.50</div>
-            <div class="delta"><b>1,250</b> in credit · 5,000 burned to date · 4 burns</div>
-          </div>
-          <p class="guard" style="margin:0 2px 12px">Using our compute is based on your stake of the assigned token. Stake it, and the platform's compute is yours — for the underwriting planes and for market research, including the moment your own model's free runs out and ours takes over. Credit, bought by the burn, pays per job. That loop — useful work, gated by the stake and priced in the token — is what brings users to adopt it.</p>
+        <div class="cxpanel" id="cx2-ladder" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">The models a job climbs, cheapest first. The top model is the ceiling — the ladder never climbs past it. Add a provider key to put your own models on the ladder.</p>
           <div class="mod">
-            <div class="modhead"><h2>Burn to credit</h2></div>
+            <div class="modhead"><h2>Swarm mode</h2></div>
             <div class="card" style="padding:16px">
-              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Credit comes only from burning the token on Solana. One transaction burns the amount; a second carries the memo binding it to your account. The burn is read back from the chain before credit lands — a burn counts only for the account it was made for.</p>
-              <button class="setbtn" style="margin:0" onclick="toast('Burn flow (mock) — your wallet signs the burn')">Burn for credit</button>
+              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Send one job to several models at once, then keep the best answer. It costs the sum of what the models charge.</p>
+              <div class="chips" style="margin:0"><button class="chip on">Off</button><button class="chip" onclick="toast('Swarm (mock)')">Low</button><button class="chip" onclick="toast('Swarm (mock)')">Medium</button><button class="chip" onclick="toast('Swarm (mock)')">High</button><button class="chip" onclick="toast('Swarm (mock)')">Extreme</button></div>
+              <div class="srow" style="border:none"><span class="lab"><small>Off — 1 model, 1 call</small></span><span class="val"></span></div>
             </div>
           </div>
           <div class="mod">
-            <div class="modhead"><h2>Pro</h2></div>
+            <div class="modhead"><h2>The ladder</h2><button onclick="toast('Saved (mock)')">Save changes</button></div>
             <div class="card" style="padding:16px">
-              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Pro is <b>stake-held, never spent</b>: hold a stake dynamically adjusted to stay equivalent to <b>$20.00</b> — the subscription's price, held as a stake, so the gate's real cost cannot drift with the market. Pro routing, longer context, more jobs at once.</p>
-              <button class="setbtn" style="margin:0" onclick="toast('Pro stake (mock)')">Hold the Pro stake</button>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>1 · House model</b><small>Ours · $0.10 / $0.40 per 1M tokens, in / out · the bottom rung of every ladder</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>2 · DeepSeek V4.1 Flash</b><small>$0.09 / $0.35 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>3 · Gemini 3.1 Pro</b><small>$2.00 / $12.00 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>4 · Claude Sonnet 5.5</b><small>$3.00 / $15.00 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>5 · xAI | Grokbot</b><small>$3.00 / $12.00 per 1M · <b>Top model — the ceiling</b></small></span><span class="val">⋮⋮</span></div>
             </div>
           </div>
           <div class="mod">
-            <div class="modhead"><h2>Standing</h2></div>
+            <div class="modhead"><h2>Add a model</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Fallback status</span><span class="val">Ready — a worker is warm</span></div>
-              <div class="srow"><span class="lab">Send compute<small>Gift $1.00 of compute to anyone on X — credit lands in their account</small></span><span class="val">Send ›</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="cxpanel" id="cx-routing" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">How every job is worked. GIRA INFERENCE grades each request — length, task class, tools, context; never the content — and sends it down the ladder. Modeled on the Darwin Compute reverse-engineering, rebuilt as the platform's own routing.</p>
-          <div class="mod">
-            <div class="modhead"><h2>The ladder</h2><button>›</button></div>
-            <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Top</b> — plans, hard problems<small>First reach · your top-model budget applies</small></span><span class="val">xAI | Grokbot</span></div>
-              <div class="srow"><span class="lab"><b>Mid</b> — most work, tool calls<small>Reached as the top budget passes half</small></span><span class="val">OpenAI · Anthropic · Google</span></div>
-              <div class="srow"><span class="lab"><b>Fast</b> — summaries, renames, lookups</span><span class="val">Perplexity · DeepSeek · Qwen · Kimi</span></div>
-              <div class="srow"><span class="lab"><b>Reach</b> — via OpenRouter</span><span class="val">Venice AI · Microsoft — Copilot · Vercel</span></div>
-              <div class="srow"><span class="lab"><b>Fallback</b> — the house model<small>Always on · the work never stops</small></span><span class="val">On</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">OpenRouter<small>Add a key first</small></span><span class="val">Add ›</span></div>
+              <div class="srow"><span class="lab">Anthropic<small>Add a key first</small></span><span class="val">Add ›</span></div>
+              <div class="srow"><span class="lab">OpenAI<small>Add a key first</small></span><span class="val">Add ›</span></div>
+              <div class="srow"><span class="lab">Google<small>Add a key first</small></span><span class="val">Add ›</span></div>
             </div>
           </div>
           <div class="mod">
             <div class="modhead"><h2>Routing controls</h2></div>
             <div class="card" style="padding:16px">
               <div class="srow" style="border:none;padding-top:0"><span class="lab">Daily top-model budget</span><span class="val">$20.00</span></div>
-              <div class="srow"><span class="lab">Start moving down at<small>Share of the top budget remaining</small></span><span class="val">50% left</span></div>
+              <div class="srow"><span class="lab">Start moving down at</span><span class="val">50% left</span></div>
               <div class="usagebar"><i style="width:50%"></i></div>
-              <div class="srow"><span class="lab">Conversation stickiness<small>A job stays on its model until it is out</small></span><span class="val">On</span></div>
-              <div class="srow"><span class="lab">Pearl route<small>Useful work, consumed through GIRA INFERENCE</small></span><span class="val">Auto</span></div>
+              <div class="srow"><span class="lab">House fallback</span><span class="val">On</span></div>
             </div>
           </div>
-          <p class="guard">We keep the model, token counts, cost, timing and status of each job — never the prompt or the reply. Routing to your own provider keys is free; only the house fallback and Pro draw on credit.</p>
+        </div>
+
+        <div class="cxpanel" id="cx2-credits" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Credit only comes from burning the token. There is no card, no plan, no subscription — and using our compute is based on your stake of the assigned token.</p>
+          <div class="mod">
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Credit</span><span class="val">$312.50</span></div>
+              <div class="srow"><span class="lab">Burned to date</span><span class="val">5,000</span></div>
+              <div class="srow"><span class="lab">Staked for access</span><span class="val">Held · stake active</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>How it works</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0;font-size:14.5px;line-height:1.55">Burning is the only way to buy credit. The token goes to a burn address on Solana, where it is permanently destroyed; the burn is read back from the chain and bound to your account before credit lands. A burn usually takes a few minutes to show up. Your balance never expires.</p>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Burn for credit</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Solana wallet<small>7xKp…9fQz · connected</small></span><span class="val">Connected</span></div>
+              <div class="srow"><span class="lab">Amount to burn</span><span class="val">1,000,000</span></div>
+              <div class="srow"><span class="lab">You will get<small>Credit at the posted rate, shown before you sign</small></span><span class="val">Credit</span></div>
+              <div class="srow"><span class="lab">☐ I understand the burn is permanent</span><span class="val"></span></div>
+              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Burn flow (mock) — your wallet signs the burn')">Burn for credit</button>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Burn history</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Nov 24 · 2,500 burned<small>Confirmed on Solana</small></span><span class="val">Credited</span></div>
+              <div class="srow"><span class="lab">Nov 22 · 2,500 burned<small>Confirmed on Solana</small></span><span class="val">Credited</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx2-upgrades" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Paid upgrades that make the ladder faster and stronger. Charged from your credit, by the day or the hour, and only while they are on.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Pro</h2><button onclick="toast('Pro stake (mock)')">Hold the stake</button></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0;font-size:14.5px;line-height:1.55">Pro is <b>stake-held, never spent</b>: a stake dynamically adjusted to stay equivalent to <b>$20.00</b>, so its real cost cannot drift. Pro raises the top-model budget from $20.00 a day to $500.00 a day, and unlocks the Swarm and Warm upgrades.</p>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Swarm</h2><button onclick="toast('Turn on Pro first (mock)')">Turn on</button></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>$2.00 per hour</b><small>One job to several models at once; keep the best answer</small></span><span class="val">Pro first</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Swarm Pro</h2><button onclick="toast('Turn on Pro first (mock)')">Turn on</button></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>$4.00 per hour</b><small>Swarm with the top model included</small></span><span class="val">Pro first</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Warm</h2><button onclick="toast('Turn on Pro first (mock)')">Turn on</button></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>$2.00 per hour</b><small>Keeps a worker warm — the first answer starts in seconds, not minutes</small></span><span class="val">1h · 6h · 24h</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Warm Pro</h2><button onclick="toast('Turn on Pro first (mock)')">Turn on</button></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>$4.00 per hour</b><small>Warms the house model and the top of your ladder</small></span><span class="val">1h · 6h · 24h</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx2-keys" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Your UZE keys and your provider keys. Provider keys are validated with the provider, stored encrypted, and used only to call that provider.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Your UZE keys</h2><button onclick="toast('Make a key (mock) — name it first')">New key</button></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0 0 10px;font-size:14px;line-height:1.5">These are the keys that spend your credit. Keep them secret — anyone with one can spend it.</p>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">uz_k…••••<small>Created Nov 25 · last used today</small></span><span class="val">Copy · Revoke</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Provider keys</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">xAI<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Anthropic<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">OpenAI<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Google<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">OpenRouter<small>No key added</small></span><span class="val">Add key ›</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx2-connect" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">One key, one base URL. Point any tool here and the ladder picks the model for every job.</p>
+          <div class="mod">
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Your API key</span><span class="val">uz_k…•••• · Show · Copy</span></div>
+              <div class="srow"><span class="lab">Base URL</span><span class="val">api.uzemarkets.com</span></div>
+              <div class="srow"><span class="lab">OpenAI base URL</span><span class="val">api.uzemarkets.com/v1</span></div>
+              <div class="srow"><span class="lab">MCP server</span><span class="val">api.uzemarkets.com/mcp</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Set up a tool</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="chips" style="margin:0 0 12px"><button class="chip on">Claude Code</button><button class="chip" onclick="toast('Setup tab (mock)')">OpenAI Python</button><button class="chip" onclick="toast('Setup tab (mock)')">OpenAI JavaScript</button><button class="chip" onclick="toast('Setup tab (mock)')">Anthropic Python</button><button class="chip" onclick="toast('Setup tab (mock)')">curl</button></div>
+              <p style="margin:0;font-family:ui-monospace,monospace;font-size:12.5px;line-height:1.7">export ANTHROPIC_BASE_URL=https://api.uzemarkets.com<br>export ANTHROPIC_AUTH_TOKEN=uz_k…••••<br>export ANTHROPIC_API_KEY=<br>claude</p>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Or give an agent the MCP server</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0;font-size:14.5px;line-height:1.55">Tools to ask a model, run a swarm, check credit and list the ladder — the same surface your own MCP works against for market research.</p>
+              <div class="srow"><span class="lab"><small>Every reply names the model that wrote it, and the rung it came from</small></span><span class="val">On</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx2-playground" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Send one real job through your ladder with your keys — it costs what the model charges. Each prompt starts its own conversation. This is where underwriting runs and market research are posed.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Prompt</h2></div>
+            <div class="card" style="padding:16px">
+              <div style="border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14.5px;color:var(--muted)">Ask anything</div>
+              <div style="margin-top:12px;display:grid;gap:8px">
+                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Price the surge risk on a marina parcel in Miami-Dade, against base flood elevation</button>
+                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Research Q-FEAS-001: what does the attested record say on the rezoning?</button>
+                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Value a 24-key hospitality property from its P&amp;L and the micro-region benchmark</button>
+              </div>
+              <button class="setbtn" style="margin:12px 0 0" onclick="toast('Send (mock) — needs a prompt')">Send</button>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Result</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0;font-size:14.5px;color:var(--muted)">The answer, and the model that wrote it, show here.</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -886,6 +992,8 @@
 
   /* UZE Compute surface — panel switching inside the view */
   function cxTab(btn,id){ $$('#v-uzecompute .cxpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-uzecompute .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
+  function toggleCompute(){ $('#computeRow').classList.toggle('open'); $('#computeSub').classList.toggle('on'); }
+  function cxGo(id){ toggleMenu(false); go('uzecompute'); const b=document.querySelector('#v-uzecompute .chip[data-p="'+id+'"]'); if(b) cxTab(b,id); }
 
   /* views — paged by the bottom icons */
   function go(view, anchor){
