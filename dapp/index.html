@@ -442,13 +442,6 @@
       <!-- HOME -->
       <section class="view on" id="v-home">
         <div class="atmo"></div>
-        <div class="hero">
-          <div class="lbl">Net position · <span id="heroAcct">H. Dugan</span></div>
-          <div class="val" id="heroVal">$12,480.22</div>
-          <div class="delta" id="heroDelta"><b>▲ $212.40 (+1.7%)</b> today · 18.42 SOL · 1,250 UZE</div>
-          <div class="spark" aria-hidden="true"><svg viewBox="0 0 358 64" preserveAspectRatio="none"><polyline points="0,40 30,38 60,42 90,37 120,41 150,48 180,51 210,36 240,25 270,29 300,17 330,11 358,7"/></svg></div>
-          <div class="ranges"><button class="on">1D</button><button>1W</button><button>1M</button><button>1Y</button><button>All</button></div>
-        </div>
         <div class="pillrow">
           <button class="pillbtn primary" onclick="go('bid')"><svg viewBox="0 0 24 24"><path d="M7 8h13l-3-3M17 16H4l3 3"/></svg>Bid</button>
           <button class="pillbtn" onclick="go('pim')"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-4 4 3 7-6"/></svg>PIM</button>
@@ -893,8 +886,6 @@
     $('#walletLbl').textContent=a.addr;
     $('#acctAv').textContent=a.ini; $('#acctName').textContent=a.name; $('#acctAddr').textContent=a.addr;
     $('#acctStat').textContent = a.type.indexOf('Entity')===0 ? 'KYB verified · Entity account' : 'Identity verdict · Pass';
-    $('#heroAcct').textContent=a.name; $('#heroVal').textContent=money(a.bal);
-    $('#heroDelta').innerHTML='<b>Acting account</b> · '+a.sol+' SOL · '+a.uze+' UZE';
     $('#wsAddr').textContent=a.addr; $('#wsName').textContent=a.name+' · Phantom · Solana';
     $('#wsSol').textContent=a.sol; $('#wsUsdc').textContent=a.usdc; $('#wsUze').textContent=a.uze+' · compute credit';
     renderAccounts(); closeSheets();
