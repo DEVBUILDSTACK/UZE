@@ -628,7 +628,7 @@
         </div>
 
         <div class="cxpanel" id="cx2-ladder" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">The models a job climbs, cheapest first. The top model is the ceiling — the ladder never climbs past it. Add a provider key to put your own models on the ladder.</p>
+          <p class="guard" style="margin:0 2px 12px">Your order of preference, top first. The ladder works down from the top — and the house model is the floor: it answers when every route above it is spent. Add a provider key to put your own models on the ladder.</p>
           <div class="mod">
             <div class="modhead"><h2>Swarm mode</h2></div>
             <div class="card" style="padding:16px">
@@ -640,23 +640,36 @@
           <div class="mod">
             <div class="modhead"><h2>The ladder</h2><button onclick="toast('Saved (mock)')">Save changes</button></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>1 · House model</b><small>Ours · $0.10 / $0.40 per 1M tokens, in / out · the bottom rung of every ladder</small></span><span class="val">⋮⋮</span></div>
-              <div class="srow"><span class="lab"><b>2 · DeepSeek V4.1 Flash</b><small>$0.09 / $0.35 per 1M</small></span><span class="val">⋮⋮</span></div>
-              <div class="srow"><span class="lab"><b>3 · Gemini 3.1 Pro</b><small>$2.00 / $12.00 per 1M</small></span><span class="val">⋮⋮</span></div>
-              <div class="srow"><span class="lab"><b>4 · Claude Sonnet 5.5</b><small>$3.00 / $15.00 per 1M</small></span><span class="val">⋮⋮</span></div>
-              <div class="srow"><span class="lab"><b>5 · xAI | Grokbot</b><small>$3.00 / $12.00 per 1M · <b>Top model — the ceiling</b></small></span><span class="val">⋮⋮</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Top plane — Meta · the dual plane</b><small>Main partner (objective) · the two routes at the head of every ladder</small></span><span class="val"></span></div>
+              <div class="srow"><span class="lab"><b>Muse Wonder</b><small>Meta · default route</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Muse Spark</b><small>Meta · second of the dual plane</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>xAI | Grokbot</b><small>$3.00 / $12.00 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Vercel</b></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Perplexity</b></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Venice AI</b></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>OpenAI</b></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Anthropic</b><small>$3.00 / $15.00 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Google</b><small>$2.00 / $12.00 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Microsoft — Copilot</b></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Kimi</b><small>$0.80 / $3.20 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>DeepSeek</b><small>$0.09 / $0.35 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>Qwen</b><small>$0.18 / $0.90 per 1M</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>OpenRouter</b><small>The reach — hundreds more models behind one key</small></span><span class="val">⋮⋮</span></div>
+              <div class="srow"><span class="lab"><b>House model — the floor</b><small>Ours · $0.10 / $0.40 per 1M, in / out · answers from your credit when every route is spent</small></span><span class="val">⋮⋮</span></div>
             </div>
           </div>
-          <div class="mod">
+                    <div class="mod">
             <div class="modhead"><h2>Add a model</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">OpenRouter<small>Add a key first</small></span><span class="val">Add ›</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Meta<small>Muse Wonder · Muse Spark</small></span><span class="val">Add ›</span></div>
+              <div class="srow"><span class="lab">xAI<small>Add a key first</small></span><span class="val">Add ›</span></div>
+              <div class="srow"><span class="lab">OpenRouter<small>Add a key first</small></span><span class="val">Add ›</span></div>
               <div class="srow"><span class="lab">Anthropic<small>Add a key first</small></span><span class="val">Add ›</span></div>
               <div class="srow"><span class="lab">OpenAI<small>Add a key first</small></span><span class="val">Add ›</span></div>
               <div class="srow"><span class="lab">Google<small>Add a key first</small></span><span class="val">Add ›</span></div>
             </div>
           </div>
-          <div class="mod">
+                    <div class="mod">
             <div class="modhead"><h2>Routing controls</h2></div>
             <div class="card" style="padding:16px">
               <div class="srow" style="border:none;padding-top:0"><span class="lab">Daily top-model budget</span><span class="val">$20.00</span></div>
@@ -747,63 +760,29 @@
           <div class="mod">
             <div class="modhead"><h2>Provider keys</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">xAI<small>No key added</small></span><span class="val">Add key ›</span></div>
-              <div class="srow"><span class="lab">Anthropic<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Meta<small>Muse Wonder · Muse Spark · main partner (objective)</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">xAI<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Vercel<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Perplexity<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Venice AI<small>No key added</small></span><span class="val">Add key ›</span></div>
               <div class="srow"><span class="lab">OpenAI<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Anthropic<small>No key added</small></span><span class="val">Add key ›</span></div>
               <div class="srow"><span class="lab">Google<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Microsoft — Copilot<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Kimi<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">DeepSeek<small>No key added</small></span><span class="val">Add key ›</span></div>
+              <div class="srow"><span class="lab">Qwen<small>No key added</small></span><span class="val">Add key ›</span></div>
               <div class="srow"><span class="lab">OpenRouter<small>No key added</small></span><span class="val">Add key ›</span></div>
             </div>
           </div>
-        </div>
-
-        <div class="cxpanel" id="cx2-connect" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">One key, one base URL. Point any tool here and the ladder picks the model for every job.</p>
           <div class="mod">
+            <div class="modhead"><h2>Your MCP servers</h2><button onclick="toast('Add an MCP server (mock)')">Add MCP</button></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Your API key</span><span class="val">uz_k…•••• · Show · Copy</span></div>
-              <div class="srow"><span class="lab">Base URL</span><span class="val">api.uzemarkets.com</span></div>
-              <div class="srow"><span class="lab">OpenAI base URL</span><span class="val">api.uzemarkets.com/v1</span></div>
-              <div class="srow"><span class="lab">MCP server</span><span class="val">api.uzemarkets.com/mcp</span></div>
+              <p style="margin:0 0 10px;font-size:14px;line-height:1.5">Bring your own MCP. Your server works against the attested record — it is how market research is driven with your own tooling, and when your own inference runs out, ours continues the job on your stake.</p>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Your MCP server<small>None connected yet</small></span><span class="val">Connect ›</span></div>
             </div>
           </div>
-          <div class="mod">
-            <div class="modhead"><h2>Set up a tool</h2></div>
-            <div class="card" style="padding:16px">
-              <div class="chips" style="margin:0 0 12px"><button class="chip on">Claude Code</button><button class="chip" onclick="toast('Setup tab (mock)')">OpenAI Python</button><button class="chip" onclick="toast('Setup tab (mock)')">OpenAI JavaScript</button><button class="chip" onclick="toast('Setup tab (mock)')">Anthropic Python</button><button class="chip" onclick="toast('Setup tab (mock)')">curl</button></div>
-              <p style="margin:0;font-family:ui-monospace,monospace;font-size:12.5px;line-height:1.7">export ANTHROPIC_BASE_URL=https://api.uzemarkets.com<br>export ANTHROPIC_AUTH_TOKEN=uz_k…••••<br>export ANTHROPIC_API_KEY=<br>claude</p>
-            </div>
-          </div>
-          <div class="mod">
-            <div class="modhead"><h2>Or give an agent the MCP server</h2></div>
-            <div class="card" style="padding:16px">
-              <p style="margin:0;font-size:14.5px;line-height:1.55">Tools to ask a model, run a swarm, check credit and list the ladder — the same surface your own MCP works against for market research.</p>
-              <div class="srow"><span class="lab"><small>Every reply names the model that wrote it, and the rung it came from</small></span><span class="val">On</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="cxpanel" id="cx2-playground" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">Send one real job through your ladder with your keys — it costs what the model charges. Each prompt starts its own conversation. This is where underwriting runs and market research are posed.</p>
-          <div class="mod">
-            <div class="modhead"><h2>Prompt</h2></div>
-            <div class="card" style="padding:16px">
-              <div style="border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14.5px;color:var(--muted)">Ask anything</div>
-              <div style="margin-top:12px;display:grid;gap:8px">
-                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Price the surge risk on a marina parcel in Miami-Dade, against base flood elevation</button>
-                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Research Q-FEAS-001: what does the attested record say on the rezoning?</button>
-                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Value a 24-key hospitality property from its P&amp;L and the micro-region benchmark</button>
-              </div>
-              <button class="setbtn" style="margin:12px 0 0" onclick="toast('Send (mock) — needs a prompt')">Send</button>
-            </div>
-          </div>
-          <div class="mod">
-            <div class="modhead"><h2>Result</h2></div>
-            <div class="card" style="padding:16px">
-              <p style="margin:0;font-size:14.5px;color:var(--muted)">The answer, and the model that wrote it, show here.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
 
       <!-- MORE -->
       <section class="view" id="v-explore">
