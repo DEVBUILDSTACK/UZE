@@ -844,7 +844,7 @@
     const v=$('#popAppVal'); if(v) v.textContent = pref==='light'?'Day':pref==='dark'?'Night':'Auto';
     if(window.apiSave) window.apiSave({appearance:pref});
   }
-  setTheme('auto');
+  setTheme('dark');
 
   /* configuration popover */
   function togglePop(e){ if(e) e.stopPropagation(); $('#cfgPop').classList.toggle('open'); $('#popScrim').classList.toggle('on'); }
