@@ -627,6 +627,7 @@
   <div class="srow"><span class="lab">SOL</span><span class="val" id="wsSol">18.42</span></div>
   <div class="srow"><span class="lab">USDC</span><span class="val" id="wsUsdc">9,840.00</span></div>
   <div class="srow"><span class="lab">UZE</span><span class="val" id="wsUze">1,250 · compute credit</span></div>
+  <div class="srow"><span class="lab">Balance privacy<small>Mask the balances in this wallet</small></span><button class="balToggle" onclick="toggleBal()" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:7px 13px;font-weight:600;font-size:13px">Hide balances</button></div>
   <div class="srow"><span class="lab">Settlement cascade<small>USDC Solana → USDC Base → USDG → CASH</small></span><span class="val">USDC · SOL</span></div>
   <div class="srow"><span class="lab">Recent activity</span><span class="val"></span></div>
   <div class="srow"><span class="lab">Sealed bid placed<small>Reef Rd seawall · 2h ago</small></span><span class="val">−250.00 USDC</span></div>
@@ -743,6 +744,7 @@
       const c=await (await fetch(API+'/api/config?wallet='+WALLET)).json();
       apiLive=true;
       if(c.appearance) setTheme(c.appearance);
+      if(c.hideBal!==undefined){ hideBal=!!c.hideBal; paintWallet(); renderAccounts(); }
       if(c.currency) setCur(c.currency,true);
       setSel('selRoute',c.aggregation_route); setSel('selPearl',c.pearl_route); setSel('selPay',c.pay_method); setSel('selBudget',c.budget_cap); setSel('selSettle',c.settlement_default);
       supChannels();
@@ -855,11 +857,14 @@
     {id:1,name:'Coastal GC LLC',ini:'CG',addr:'3fRw…8sLd',type:'Entity · KYB verified',bal:8914.33,sol:'6.10',usdc:'7,205.50',uze:'400'},
     {id:2,name:'Marina Holdings LLC',ini:'MH',addr:'9qAz…2mNb',type:'Entity · KYB verified',bal:510.00,sol:'0.72',usdc:'498.00',uze:'0'}
   ];
-  let activeAcct=0, sortMode='Type';
+  let activeAcct=0, sortMode='Type', hideBal=false;
   const money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const bm=v=>hideBal?'XXXXXX':money(v);
+  function paintWallet(){ const a=ACCTS.find(x=>x.id===activeAcct)||ACCTS[0]; if(!a) return; $('#wsSol').textContent=hideBal?'XXXXXX':a.sol; $('#wsUsdc').textContent=hideBal?'XXXXXX':a.usdc; $('#wsUze').textContent=hideBal?'XXXXXX':(a.uze+' · compute credit'); $$('.balToggle').forEach(b=>b.textContent=hideBal?'Show balances':'Hide balances'); }
+  function toggleBal(){ hideBal=!hideBal; paintWallet(); renderAccounts(); if(window.apiSave) window.apiSave({hideBal:hideBal?1:0}); }
   function renderAccounts(){
     const agg=ACCTS.reduce((s,a)=>s+a.bal,0);
-    $('#aggBal').textContent=money(agg);
+    $('#aggBal').textContent=bm(agg);
     $('#acctCount').textContent=ACCTS.length+(ACCTS.length===1?' Account':' Accounts');
     let groups={};
     if(sortMode==='Type'){ ACCTS.forEach(a=>{(groups[a.type]=groups[a.type]||[]).push(a)}); }
@@ -870,7 +875,7 @@
       '<div class="acctcard'+(a.id===activeAcct?' active':'')+'"><div class="top">'+
       '<span class="aav" style="width:42px;height:42px;font-size:14px">'+a.ini+'</span>'+
       '<div><div class="nm">'+a.name+'</div><div class="ad">'+a.addr+' ⧉</div></div>'+
-      '<span class="bl">'+money(a.bal)+'</span>'+
+      '<span class="bl">'+bm(a.bal)+'</span>'+
       '<button class="dots" onclick="toggleActs('+a.id+')">⋮</button></div>'+
       '<div class="cardacts" id="acts-'+a.id+'">'+
       (a.id===activeAcct?'<button disabled style="opacity:.55">Active</button>':'<button onclick="setActive('+a.id+')">Make active</button>')+
@@ -887,7 +892,7 @@
     $('#acctAv').textContent=a.ini; $('#acctName').textContent=a.name; $('#acctAddr').textContent=a.addr;
     $('#acctStat').textContent = a.type.indexOf('Entity')===0 ? 'KYB verified · Entity account' : 'Identity verdict · Pass';
     $('#wsAddr').textContent=a.addr; $('#wsName').textContent=a.name+' · Phantom · Solana';
-    $('#wsSol').textContent=a.sol; $('#wsUsdc').textContent=a.usdc; $('#wsUze').textContent=a.uze+' · compute credit';
+    paintWallet();
     renderAccounts(); closeSheets();
     toast('Switched to '+a.name+' — bids and positions act as this account (mock)');
   }
