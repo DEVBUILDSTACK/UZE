@@ -228,6 +228,11 @@
   /* compute */
   .usagebar{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:8px}
   .usagebar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+    .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .tile{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+    .tile .tl{font-size:12.5px;color:var(--muted);font-weight:600}
+    .tile .tv{font-family:Georgia,serif;font-size:30px;margin:6px 0 4px}
+    .tile .ts{font-size:12.5px;color:var(--muted);line-height:1.45}
   .setbtn{display:block;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;font-size:15px;font-weight:600;margin-top:14px;text-align:center}
 
   /* more list */
@@ -573,19 +578,18 @@
             <div class="card" style="padding:16px">
               <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>1 · Your key</b><small>uz_k…•••••••••••• · use it anywhere a tool asks for an OpenAI or Anthropic key, and for the MCP server</small></span><span class="val">Show · Copy</span></div>
               <div class="srow"><span class="lab"><b>2 · Burn for credit</b><small>The work only runs with credit, and credit comes from burning the token from a Solana wallet</small></span><span class="val">Credits ›</span></div>
-              <div class="srow"><span class="lab"><b>3 · Run a first job</b><small>The house model answers it from your credit, no provider key needed</small></span><span class="val">Playground ›</span></div>
+              <div class="srow"><span class="lab"><b>3 · Run a first job</b><small>The house model answers it from your credit, no provider key needed — if it has been quiet, the first answer can take a few minutes while it warms</small></span><span class="val">Playground ›</span></div>
               <div class="srow"><span class="lab"><b>4 · Point your tool or agent here</b><small>One key, one base URL — the ladder picks the model, so the name you send doesn't matter</small></span><span class="val">Connect ›</span></div>
               <div class="srow"><span class="lab"><b>5 · Add your own models (optional)</b><small>Add a provider key, then put your models in order on the Ladder</small></span><span class="val">Add a key ›</span></div>
             </div>
           </div>
           <div class="mod">
             <div class="modhead"><h2>Today</h2></div>
-            <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Jobs today<small>2.1M tokens</small></span><span class="val">37</span></div>
-              <div class="srow"><span class="lab">Spend today<small>$61.40 if all on the top model</small></span><span class="val">$22.50</span></div>
-              <div class="srow"><span class="lab">Saved today<small>By routing down the ladder</small></span><span class="val">$38.90</span></div>
-              <div class="srow"><span class="lab">Top-model budget left<small>$7.60 of $20.00 today</small></span><span class="val">62%</span></div>
-              <div class="usagebar"><i style="width:38%"></i></div>
+            <div class="tiles">
+              <div class="tile"><div class="tl">Jobs today</div><div class="tv">37</div><div class="ts">2.1M tokens</div></div>
+              <div class="tile"><div class="tl">Spend today</div><div class="tv">$22.50</div><div class="ts">$6.10 if all on the house model</div></div>
+              <div class="tile"><div class="tl">Saved today</div><div class="tv">$38.90</div><div class="ts">By routing down the ladder</div></div>
+              <div class="tile"><div class="tl">Top-model budget left</div><div class="tv">62%</div><div class="ts">$7.60 of $20.00 today</div><div class="usagebar" style="margin-top:8px"><i style="width:38%"></i></div></div>
             </div>
           </div>
           <div class="mod">
