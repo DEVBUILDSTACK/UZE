@@ -853,7 +853,7 @@
   function setCur(c, silent){ const v=$('#popCurVal'); if(v) v.textContent=c; ['USD','EUR','BRL'].forEach(k=>{ const el=document.getElementById('cu'+k); if(el){ const ck=el.querySelector('.pck'); if(ck) ck.textContent = k===c?'✓':''; el.style.color = k===c?'var(--ink)':'var(--muted)'; } }); if(!silent) toast('Display currency '+c); if(window.apiSave) window.apiSave({currency:c}); }
 
   /* startup splash — Tri-Swoop only, then the app */
-  setTimeout(()=>{ const sp=$('#splash'); if(sp) sp.classList.add('gone'); }, location.hash.includes('hold') ? 60000 : 1300);
+  setTimeout(()=>{ const sp=$('#splash'); if(sp) sp.classList.add('gone'); }, location.hash.includes('hold') ? 60000 : 2000);
 
   /* accounts — Switch + Account Center (entities hold their own wallets) */
   let ACCTS=[
