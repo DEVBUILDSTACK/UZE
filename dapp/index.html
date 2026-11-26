@@ -782,7 +782,54 @@
               <div class="srow" style="border:none;padding-top:0"><span class="lab">Your MCP server<small>None connected yet</small></span><span class="val">Connect ›</span></div>
             </div>
           </div>
-        </section>
+                <div class="cxpanel" id="cx2-connect" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">One key, one base URL. Point any tool here and the ladder picks the model for every job.</p>
+          <div class="mod">
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Your API key</span><span class="val">uz_k…•••• · Show · Copy</span></div>
+              <div class="srow"><span class="lab">Base URL</span><span class="val">api.uzemarkets.com</span></div>
+              <div class="srow"><span class="lab">OpenAI base URL</span><span class="val">api.uzemarkets.com/v1</span></div>
+              <div class="srow"><span class="lab">MCP server</span><span class="val">api.uzemarkets.com/mcp</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Set up a tool</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="chips" style="margin:0 0 12px"><button class="chip on">Claude Code</button><button class="chip" onclick="toast('Setup tab (mock)')">OpenAI Python</button><button class="chip" onclick="toast('Setup tab (mock)')">OpenAI JavaScript</button><button class="chip" onclick="toast('Setup tab (mock)')">Anthropic Python</button><button class="chip" onclick="toast('Setup tab (mock)')">curl</button></div>
+              <p style="margin:0;font-family:ui-monospace,monospace;font-size:12.5px;line-height:1.7">export ANTHROPIC_BASE_URL=https://api.uzemarkets.com<br>export ANTHROPIC_AUTH_TOKEN=uz_k…••••<br>export ANTHROPIC_API_KEY=<br>claude</p>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Or give an agent the MCP server</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0;font-size:14.5px;line-height:1.55">Tools to ask a model, run a swarm, check credit and list the ladder — the same surface your own MCP works against for market research.</p>
+              <div class="srow"><span class="lab"><small>Every reply names the model that wrote it, and the rung it came from</small></span><span class="val">On</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx2-playground" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Send one real job through your ladder with your keys — it costs what the model charges. Each prompt starts its own conversation. This is where underwriting runs and market research are posed.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Prompt</h2></div>
+            <div class="card" style="padding:16px">
+              <div style="border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14.5px;color:var(--muted)">Ask anything</div>
+              <div style="margin-top:12px;display:grid;gap:8px">
+                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Price the surge risk on a marina parcel in Miami-Dade, against base flood elevation</button>
+                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Research Q-FEAS-001: what does the attested record say on the rezoning?</button>
+                <button class="setbtn" style="margin:0;text-align:left" onclick="toast('Prompt filled (mock)')">Value a 24-key hospitality property from its P&amp;L and the micro-region benchmark</button>
+              </div>
+              <button class="setbtn" style="margin:12px 0 0" onclick="toast('Send (mock) — needs a prompt')">Send</button>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Result</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0;font-size:14.5px;color:var(--muted)">The answer, and the model that wrote it, show here.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- MORE -->
       <section class="view" id="v-explore">
