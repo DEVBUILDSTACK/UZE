@@ -564,8 +564,9 @@
             <div class="modhead"><h2>What compute does here</h2></div>
             <div class="card" style="padding:16px">
               <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Financial underwriting</b><small>The money plane — P&amp;L, NOI and debt vectors, computed per property</small></span><span class="val">Run ›</span></div>
+              <div class="srow"><span class="lab"><b>Valuation</b><small>The value plane — what the property is worth, benchmarked and priced</small></span><span class="val">Run ›</span></div>
               <div class="srow"><span class="lab"><b>Risk underwriting</b><small>The risk plane — hazard × vulnerability × exposure, priced per parcel</small></span><span class="val">Run ›</span></div>
-              <div class="srow"><span class="lab"><b>Market research</b><small>GSIML &amp; BEIML questions researched in-app, against the attested record</small></span><span class="val">Run ›</span></div>
+              <div class="srow"><span class="lab"><b>Market research</b><small>Your own MCP, your own model — and when your own free runs out, ours takes over, on your stake</small></span><span class="val">Run ›</span></div>
             </div>
           </div>
           <div class="mod">
@@ -588,13 +589,21 @@
         </div>
 
         <div class="cxpanel" id="cx-underwrite" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">UZE Underwrite reads two planes at once. Compute runs both — the verdict lands under Solutions, in Underwriting. Scope: Hospitality, Income, Commercial Real Estate — marinas and aviation first.</p>
+          <p class="guard" style="margin:0 2px 12px">UZE Underwrite reads three planes at once — financials, valuation, and risk. Compute runs all three — the verdict lands under Solutions, in Underwriting. Scope: Hospitality, Income, Commercial Real Estate — marinas and aviation first.</p>
           <div class="mod">
             <div class="modhead"><h2>Financial plane</h2></div>
             <div class="card" style="padding:16px">
               <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">The money vectors: verified P&amp;L, NOI, rent rolls and debt — parsed, benchmarked against the micro-region, and priced. This is the compute the underwrite engine runs on every property.</p>
               <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run</span><span class="val">40 credit · $10.00</span></div>
               <button class="setbtn" style="margin:10px 0 0" onclick="toast('Financial underwrite (mock) — pick a property')">Run a financial underwrite</button>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Valuation plane</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">What the property is worth: micro-region benchmarks, cost observations and the information layer's own priced record, computed against the parcel and its market — the value the financials are tested against.</p>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Cost per run</span><span class="val">40 credit · $10.00</span></div>
+              <button class="setbtn" style="margin:10px 0 0" onclick="toast('Valuation (mock) — pick a property')">Run a valuation</button>
             </div>
           </div>
           <div class="mod">
@@ -608,7 +617,15 @@
         </div>
 
         <div class="cxpanel" id="cx-research" style="display:none">
-          <p class="guard" style="margin:0 2px 12px">Research a predictive information market without leaving the app. GIRA INFERENCE assembles the priced record behind the question — contributors are rewarded only for information that is new, provable and verifiable.</p>
+          <p class="guard" style="margin:0 2px 12px">Research a predictive information market without leaving the app — with your own MCP, or your own choice of model and inference, working against the attested record. And like the routing it is modeled on: when your own free runs out, ours takes over — the same research continues on UZE compute, on your stake. Contributors are rewarded only for information that is new, provable and verifiable.</p>
+          <div class="mod">
+            <div class="modhead"><h2>Your tools</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Your MCP server<small>Bring your own — it works against the priced record</small></span><span class="val">Connect ›</span></div>
+              <div class="srow"><span class="lab">Your choice of model<small>Any route on the ladder — your keys, your limits</small></span><span class="val">Choose ›</span></div>
+              <div class="srow"><span class="lab">When yours runs out<small>Our compute continues the job — on your stake</small></span><span class="val">Automatic</span></div>
+            </div>
+          </div>
           <div class="mod">
             <div class="modhead"><h2>Markets you can research</h2></div>
             <div class="card" style="padding:16px">
@@ -632,7 +649,7 @@
             <div class="val">$312.50</div>
             <div class="delta"><b>1,250</b> in credit · 5,000 burned to date · 4 burns</div>
           </div>
-          <p class="guard" style="margin:0 2px 12px">The token is how the platform's work is bought. Hold it, burn it to credit, and the underwriting, the risk pricing and the research run. That loop — useful work, priced in the token — is what brings users to adopt it.</p>
+          <p class="guard" style="margin:0 2px 12px">Using our compute is based on your stake of the assigned token. Stake it, and the platform's compute is yours — for the underwriting planes and for market research, including the moment your own model's free runs out and ours takes over. Credit, bought by the burn, pays per job. That loop — useful work, gated by the stake and priced in the token — is what brings users to adopt it.</p>
           <div class="mod">
             <div class="modhead"><h2>Burn to credit</h2></div>
             <div class="card" style="padding:16px">
