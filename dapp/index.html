@@ -85,9 +85,7 @@
   .bigbtn .btnSwoop{height:34px;width:auto;display:block}
   .ghostbtn{display:block;width:100%;max-width:320px;margin:10px auto 0;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:14px;font-size:15px;font-weight:600}
   .mocknote{margin-top:20px;font-size:12px;color:var(--muted)}
-  #walletOpts{display:none;max-width:320px;margin:10px auto 0}
-  #walletOpts.open{display:block}
-  #walletOpts .ghostbtn{width:100%}
+  
 
   /* ============ views ============ */
   #views{flex:1;padding:6px 14px 10px}
@@ -439,16 +437,13 @@
     <!-- ======= connect gate ======= -->
     <section id="gate">
       <span class="wm"><span class="swoop"><img src="swoop.png" alt="">U</span><span class="uze">ZE</span><span class="co">markets</span></span>
-      <p>You opened <span class="uze">UZE</span><span class="co">markets</span> inside your wallet's browser. Just stay connected to predictive information markets — <span class="uze">UZE</span><span class="co">markets</span> is your connection to them.</p>
+      <h1>Be first to know what a property is worth.</h1>
       <div class="steps">
         <div><i>1</i><span>Connect your Solana wallet — no password, no new account.</span></div>
         <div><i>2</i><span>Identity verdict returns pass or fail. The record never leaves its vault.</span></div>
         <div><i>3</i><span>Every action ends in a signature you approve in the wallet.</span></div>
       </div>
-      <button class="bigbtn" onclick="document.getElementById('walletOpts').classList.toggle('open')"><img class="btnSwoop" src="swoop.png" alt="">Solana wallet</button>
-      <div id="walletOpts">
-        <button class="ghostbtn" onclick="connectWallet()">Phantom</button>
-      </div>
+      <button class="bigbtn" id="gateConnect" onclick="connectWallet()"><img class="btnSwoop" src="swoop.png" alt="">Solana wallet</button>
       <p class="mocknote">MOCK app data — connecting uses your real Phantom wallet. Nothing is signed or sent.</p>
     </section>
 
@@ -497,7 +492,7 @@
         <div class="seg">
           <button class="on">Florida</button><button>Mid-Atlantic · soon</button><button>Costa Rica</button>
         </div>
-        <div class="carousel">
+        <div class="carousel" id="pimCards">
           <div class="pcard"><div class="cat">GSIML · COASTAL</div><h3>Storm-surge band rises above 9 ft in Miami-Dade before Nov 2027?</h3><div class="meta">$84.2K priced · ends 31 Oct 2027</div><div class="yn"><button class="yes" onclick="toast('Position ticket (mock)')">Yes <b>41¢</b></button><button class="no" onclick="toast('Position ticket (mock)')">No <b>59¢</b></button></div></div>
           <div class="pcard"><div class="cat">GSIML · WIND</div><h3>Named-storm landfall, Broward or Palm Beach, 2027 season?</h3><div class="meta">$61.7K priced · ends 30 Nov 2027</div><div class="yn"><button class="yes" onclick="toast('Position ticket (mock)')">Yes <b>62¢</b></button><button class="no" onclick="toast('Position ticket (mock)')">No <b>38¢</b></button></div></div>
         </div>
@@ -677,14 +672,21 @@
             <div class="modhead"><h2>Add a model</h2></div>
             <div class="card" style="padding:16px">
               <div class="srow" style="border:none;padding-top:0"><span class="lab">Meta<small>Muse Wonder · Muse Spark</small></span><span class="val">Add ›</span></div>
-              <div class="srow"><span class="lab">xAI<small>Add a key first</small></span><span class="val">Add ›</span></div>
-              <div class="srow"><span class="lab">OpenRouter<small>Add a key first</small></span><span class="val">Add ›</span></div>
-              <div class="srow"><span class="lab">Anthropic<small>Add a key first</small></span><span class="val">Add ›</span></div>
-              <div class="srow"><span class="lab">OpenAI<small>Add a key first</small></span><span class="val">Add ›</span></div>
-              <div class="srow"><span class="lab">Google<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">xAI<small>Grokbot</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Vercel<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Perplexity<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Venice AI<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">OpenAI<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Anthropic<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Google<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Microsoft — Copilot<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Kimi<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">DeepSeek<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">Qwen<small>Add a key first</small></span><span class="val">Add ›</span></div>
+<div class="srow"><span class="lab">OpenRouter<small>Add a key first</small></span><span class="val">Add ›</span></div>
             </div>
           </div>
-                    <div class="mod">
+<div class="mod">
             <div class="modhead"><h2>Routing controls</h2></div>
             <div class="card" style="padding:16px">
               <div class="srow" style="border:none;padding-top:0"><span class="lab">Daily top-model budget</span><span class="val">$20.00</span></div>
@@ -1129,11 +1131,15 @@
     <div class="rowitem"><span class="ic">Pm</span><div class="mid"><div class="t1">Permits</div><div class="t2">Building activity, Very South FL</div></div><div class="r"><div class="v">5</div><div class="d">mock set</div></div></div>
     <div class="rowitem"><span class="ic">C</span><div class="mid"><div class="t1">Construction costs</div><div class="t2">Cleaning band $0.14 – $0.17</div></div><div class="r"><div class="v">6</div><div class="d">observations</div></div></div>`;
   const gsimlRows = $('#pimList').innerHTML;
+const gsimlCards = $('#pimCards').innerHTML;
+const beimlCards = '<div class="pcard"><div class="cat">BEIML · REZONING</div><h3>Reef Rd rezoning appeal succeeds before Mar 2027?</h3><div class="meta">$47.9K priced · ends 28 Feb 2027</div><div class="yn"><button class="yes" onclick="toast(\'Position ticket (mock)\')">Yes <b>34¢</b></button><button class="no" onclick="toast(\'Position ticket (mock)\')">No <b>66¢</b></button></div></div>'
++ '<div class="pcard"><div class="cat">BEIML · ZONING</div><h3>Miami-Dade short-term-rental ordinance passes in 2027?</h3><div class="meta">$38.4K priced · ends 31 Dec 2027</div><div class="yn"><button class="yes" onclick="toast(\'Position ticket (mock)\')">Yes <b>57¢</b></button><button class="no" onclick="toast(\'Position ticket (mock)\')">No <b>43¢</b></button></div></div>';
   function pimTab(which){
     $('#tt-gsiml').classList.toggle('on', which==='gsiml');
     $('#tt-beiml').classList.toggle('on', which==='beiml');
     $('#pimListTitle').textContent = which==='gsiml' ? 'Risk vectors — priced' : 'Built environment — the record';
     $('#pimList').innerHTML = which==='gsiml' ? gsimlRows : beimlRows;
+    $('#pimCards').innerHTML = which==='gsiml' ? gsimlCards : beimlCards;
   }
 
   /* bid keypad */
