@@ -433,7 +433,7 @@
       <div id="walletOpts">
         <button class="ghostbtn" onclick="connectWallet()">Phantom</button>
       </div>
-      <p class="mocknote">MOCK — no wallet is contacted and no chain is touched.</p>
+      <p class="mocknote">MOCK app data — connecting uses your real Phantom wallet. Nothing is signed or sent.</p>
     </section>
 
     <!-- ======= views ======= -->
@@ -700,7 +700,29 @@
   function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),2600); }
 
   /* wallet / Phantom access */
-  function connectWallet(){ document.body.classList.add('connected'); $('#walletLbl').textContent='7xKp…9fQz'; toast('Phantom connected — identity verdict: pass (mock)'); }
+  let realPk=null;
+  function shortPk(pk){ return pk.slice(0,4)+'…'+pk.slice(-4); }
+  function applyConnected(pk){
+    document.body.classList.add('connected');
+    if(pk){ realPk=pk; $('#walletLbl').textContent=shortPk(pk); const wa=$('#wsAddr'); if(wa) wa.textContent=shortPk(pk); const wn=$('#wsName'); if(wn) wn.textContent='Phantom · Solana'; }
+    else { $('#walletLbl').textContent='7xKp…9fQz'; }
+  }
+  async function connectWallet(){
+    const provider=(window.phantom&&window.phantom.solana)||(window.solana&&window.solana.isPhantom?window.solana:null);
+    if(provider){
+      try{ const resp=await provider.connect(); const pk=resp.publicKey.toString(); applyConnected(pk); toast('Phantom connected — '+shortPk(pk)+' · app data remains mock'); }
+      catch(e){ toast('Phantom connection declined in the wallet'); }
+      return;
+    }
+    if(/iphone|ipad|ipod|android/i.test(navigator.userAgent)){
+      toast('Opening inside Phantom…');
+      const target=encodeURIComponent(location.href.split('?')[0].split('#')[0]);
+      const ref=encodeURIComponent(location.origin);
+      setTimeout(()=>{ location.href='https://phantom.app/ul/browse/'+target+'?ref='+ref; },450);
+      return;
+    }
+    applyConnected(null); toast('Phantom connected — identity verdict: pass (mock)');
+  }
   function disconnect(){ document.body.classList.remove('connected'); $('#walletLbl').textContent='Connect'; closeSheets(); window.scrollTo(0,0); toast('Wallet disconnected'); }
   function walletTap(){ if(document.body.classList.contains('connected')) openSheet('walletSheet'); else connectWallet(); }
 
