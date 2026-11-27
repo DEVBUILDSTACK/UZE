@@ -361,6 +361,7 @@
       <button onclick="cxGo('cx2-upgrades')">Upgrades</button>
       <button onclick="cxGo('cx2-keys')">Keys</button>
       <button onclick="cxGo('cx2-connect')">Connect</button>
+      <button onclick="cxGo('cx2-mcp')">MCP</button>
       <button onclick="cxGo('cx2-playground')">Playground</button>
     </div>
     <button class="mrow" onclick="toast('Stay · Venue · Play opens the leisure app (mock)')"><span class="mi">▣</span>Stay · Venue · Play<span class="chev">›</span></button>
@@ -558,7 +559,7 @@
         <p class="guard">UZE is a compute aggregator: inference and compute are aggregated and routed for you. UZE does not train models. The choices live in Settings — compute is a setting, not a business.</p>
       </section>
 
-      <!-- UZE COMPUTE — the compute surface off the left nav: the eight pages, UZE-branded -->
+      <!-- UZE COMPUTE — the compute surface off the left nav: the nine pages, UZE-branded -->
       <section class="view" id="v-uzecompute">
         <div class="dirhead"><h1>UZE Compute</h1><span class="val" style="font-weight:700">Credit $312.50</span></div>
         <p class="guard" style="margin:0 2px 12px">The engine inside UZEmarkets. Every job — an underwriting plane, a valuation, a market research run — is graded and routed down the ladder by SURA INFERENCE. When every route is spent, the house model answers from your credit, so the work never stops.</p>
@@ -570,6 +571,7 @@
           <button class="chip" data-p="cx2-upgrades" onclick="cxTab(this,'cx2-upgrades')">Upgrades</button>
           <button class="chip" data-p="cx2-keys" onclick="cxTab(this,'cx2-keys')">Keys</button>
           <button class="chip" data-p="cx2-connect" onclick="cxTab(this,'cx2-connect')">Connect</button>
+          <button class="chip" data-p="cx2-mcp" onclick="cxTab(this,'cx2-mcp')">MCP</button>
           <button class="chip" data-p="cx2-playground" onclick="cxTab(this,'cx2-playground')">Playground</button>
         </div>
 
@@ -833,6 +835,55 @@
             <div class="card" style="padding:16px">
               <p style="margin:0;font-size:14.5px;line-height:1.55">Tools to ask a model, run a swarm, check credit and list the ladder — the same surface your own MCP works against for market research.</p>
               <div class="srow"><span class="lab"><small>Every reply names the model that wrote it, and the rung it came from</small></span><span class="val">On</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cxpanel" id="cx2-mcp" style="display:none">
+          <p class="guard" style="margin:0 2px 12px">Our MCP, separated out inside your intelligence settings — beside your API key, and open to your own MCP if you'd rather use it.</p>
+          <div class="mod">
+            <div class="modhead"><h2>The UZE MCP</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Agent access to UZEmarkets</b><small>The markets, the data layer, underwriting reads — the same surface your own MCP works against</small></span></div>
+              <div class="srow"><span class="lab">MCP server</span><span class="val">api.uzemarkets.com/mcp</span></div>
+              <div class="srow"><span class="lab">Status</span><span class="val">Early access · before Jan 2, 2027</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Your settings</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>API</b><small>Your key and base URL — on the Connect page</small></span><span class="val">Set</span></div>
+              <div class="srow"><span class="lab"><b>MCP — ours</b><small>The UZE MCP above, on by default for early adopters</small></span><span class="val">On</span></div>
+              <div class="srow"><span class="lab"><b>MCP — your own</b><small>Have an MCP you'd like to use instead? Point UZE at it</small></span></div>
+              <input id="ownMcp" type="text" placeholder="Your MCP server URL" style="width:100%;box-sizing:border-box;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14.5px">
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Listed where your agents live</h2></div>
+            <div class="card" style="padding:16px">
+              <p style="margin:0 0 6px;font-size:14.5px;line-height:1.55">The UZE MCP is listed in the proprietary directories — <b>OpenAI · Anthropic, for Fable and Claude · Kimi · DeepSeek · Wonder</b> — the proprietary directories, not the aggregators.</p>
+              <div class="srow"><span class="lab"><small>Listings open as early access opens, directory by directory</small></span><span class="val">Soon</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>MCP early adopter waitlist</h2></div>
+            <div class="card" style="padding:16px">
+              <div id="mcpForm">
+                <p style="margin:0 0 12px;font-size:14.5px;line-height:1.55">Not the KYC/KYB on-ramp — a company email signup, a few questions, so we can write to you as early access opens. Partners and early adopters alike.</p>
+                <input id="wlName" type="text" placeholder="Your name" style="width:100%;box-sizing:border-box;margin:0 0 8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14.5px">
+                <input id="wlCompany" type="text" placeholder="Company" style="width:100%;box-sizing:border-box;margin:0 0 8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14.5px">
+                <input id="wlEmail" type="email" placeholder="Company email" style="width:100%;box-sizing:border-box;margin:0 0 8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14.5px">
+                <div class="srow"><span class="lab"><b>Joining as</b></span></div>
+                <div class="chips" style="margin:0 0 4px"><button class="chip on" id="wlRoleP" onclick="wlRole('P')">Partner</button><button class="chip" id="wlRoleE" onclick="wlRole('E')">Early adopter</button><button class="chip" id="wlRoleU" onclick="wlRole('U')">User</button></div>
+                <input id="wlFirst" type="text" placeholder="What will you point at the MCP first?" style="width:100%;box-sizing:border-box;margin:8px 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14.5px">
+                <div class="srow"><span class="lab"><b>Would you like to be added to our MCP early user adopter list?</b></span></div>
+                <div class="chips" style="margin:0 0 4px"><button class="chip on" id="wlYes" onclick="wlOpt(true)">Yes, add me</button><button class="chip" id="wlNo" onclick="wlOpt(false)">Not yet</button></div>
+                <button class="setbtn" style="margin:12px 0 0" onclick="mcpJoin()">Join the waitlist</button>
+                <p style="margin:10px 0 0;font-size:12.5px;color:var(--muted)">Demonstration build — the production list opens with early access.</p>
+              </div>
+              <div id="mcpDone" style="display:none">
+                <p style="margin:0;font-size:14.5px;line-height:1.55"><b>You're on the list.</b> We'll write to your company email as MCP early access opens — before January 2, 2027.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1154,6 +1205,10 @@
   function cxTab(btn,id){ $$('#v-uzecompute .cxpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-uzecompute .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
   function dfTab(btn,id){ $$('#v-dealfi .dfpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-dealfi .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
   function toggleCompute(){ $('#computeRow').classList.toggle('open'); $('#computeSub').classList.toggle('on'); }
+  let wlRoleVal='Partner', wlOptVal=true;
+  function wlRole(r){ wlRoleVal = r==='P'?'Partner':(r==='E'?'Early adopter':'User'); ['P','E','U'].forEach(function(k){ document.getElementById('wlRole'+k).classList.toggle('on', (k===r)); }); }
+  function wlOpt(v){ wlOptVal=v; document.getElementById('wlYes').classList.toggle('on', v); document.getElementById('wlNo').classList.toggle('on', !v); }
+  function mcpJoin(){ const e=document.getElementById('wlEmail').value.trim(); if(!e || e.indexOf('@')<1){ toast('Add your company email to join the list'); return; } document.getElementById('mcpForm').style.display='none'; document.getElementById('mcpDone').style.display='block'; }
   function cxGo(id){ toggleMenu(false); go('uzecompute'); const b=document.querySelector('#v-uzecompute .chip[data-p="'+id+'"]'); if(b) cxTab(b,id); }
 
   /* views — paged by the bottom icons */
