@@ -379,7 +379,7 @@
       <div class="hsect">Help &amp; Support</div>
       <button class="hrow2" onclick="toggleMenu(false);openSheet('settingsSheet')"><span class="mi">⚙</span>Settings</button>
       <button class="hrow2" onclick="toggleMenu(false);openFaq()"><span class="mi">?</span>FAQ</button>
-      <button class="hrow2" onclick="toggleMenu(false);openSupport()"><span class="mi">✦</span>Support — ask GIRA</button>
+      <button class="hrow2" onclick="toggleMenu(false);openSupport()"><span class="mi">✦</span>Support — ask SURA</button>
     </div>
   </nav>
 
@@ -389,7 +389,7 @@
       <div class="hrow">
         <button class="iconbtn" onclick="toggleMenu(true)" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <span class="wm hbrand"><span class="swoop"><img src="swoop.png" alt="">U</span><span class="uze">ZE</span><span class="co">markets</span></span>
-        <button class="girapill" onclick="toast('GIRA: try “marina bids near me” (mock)')"><span class="star">✦</span><span>Ask GIRA…</span></button>
+        <button class="girapill" onclick="toast('SURA: try “marina bids near me” (mock)')"><span class="star">✦</span><span>Ask SURA…</span></button>
         <button class="iconbtn" onclick="togglePop(event)" aria-label="Configuration"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1"/></svg></button>
         <button class="walletpill" id="walletBtn" onclick="walletTap()"><span class="av"></span><span id="walletLbl">Connect</span><span class="chev">▾</span></button>
       </div>
@@ -477,9 +477,9 @@
         </div>
 
         <div class="gira-card">
-          <div class="g1">✦ GIRA</div>
+          <div class="g1">✦ SURA</div>
           <div class="g2">Two bid windows close at 4:59:59 PM ET. The seawall book moved 4¢ on the surge vector this morning — want the walk-through?</div>
-          <button onclick="toast('GIRA walk-through (mock)')">Walk me through it</button>
+          <button onclick="toast('SURA walk-through (mock)')">Walk me through it</button>
         </div>
       </section>
 
@@ -541,7 +541,7 @@
         <div class="mod">
           <div class="modhead"><h2>This period</h2><button>›</button></div>
           <div class="card" style="padding:16px">
-            <div class="srow" style="border:none;padding-top:0"><span class="lab">Inference served<small>via GIRA INFERENCE</small></span><span class="val">8.4M tok</span></div>
+            <div class="srow" style="border:none;padding-top:0"><span class="lab">Inference served<small>via SURA INFERENCE</small></span><span class="val">8.4M tok</span></div>
             <div class="usagebar"><i style="width:62%"></i></div>
             <div class="srow"><span class="lab">Active route</span><span class="val">Balanced</span></div>
             <div class="srow"><span class="lab">Pearl route</span><span class="val">Auto — per request class</span></div>
@@ -555,7 +555,7 @@
       <!-- UZE COMPUTE — the compute surface off the left nav: the eight pages, UZE-branded -->
       <section class="view" id="v-uzecompute">
         <div class="dirhead"><h1>UZE Compute</h1><span class="val" style="font-weight:700">Credit $312.50</span></div>
-        <p class="guard" style="margin:0 2px 12px">The engine inside UZEmarkets. Every job — an underwriting plane, a valuation, a market research run — is graded and routed down the ladder by GIRA INFERENCE. When every route is spent, the house model answers from your credit, so the work never stops.</p>
+        <p class="guard" style="margin:0 2px 12px">The engine inside UZEmarkets. Every job — an underwriting plane, a valuation, a market research run — is graded and routed down the ladder by SURA INFERENCE. When every route is spent, the house model answers from your credit, so the work never stops.</p>
         <div class="chips" style="margin:0 0 14px">
           <button class="chip on" data-p="cx2-overview" onclick="cxTab(this,'cx2-overview')">Overview</button>
           <button class="chip" data-p="cx2-requests" onclick="cxTab(this,'cx2-requests')">Requests</button>
@@ -877,7 +877,7 @@
           <div class="rowitem" data-cat="tools" onclick="openSheet('settingsSheet')"><span class="ic">S</span><div class="mid"><div class="t1">Settings</div><div class="t2">Compute aggregation · settlement · wallet</div></div><span class="chev">›</span></div>
           <div class="rowitem" data-cat="tools" onclick="openSheet('walletSheet')"><span class="ic">W</span><div class="mid"><div class="t1">Wallet</div><div class="t2">Balances · settlement cascade · disconnect</div></div><span class="chev">›</span></div>
         </div>
-        <p class="guard">One directory for everything beyond the core three — browse by category, search, or ask GIRA. Underwriting reads three planes: financials, valuation, and risk.</p>
+        <p class="guard">One directory for everything beyond the core three — browse by category, search, or ask SURA. Underwriting reads three planes: financials, valuation, and risk.</p>
       </section>
 
       <!-- DEALFI UNDERWRITING -->
@@ -1059,7 +1059,7 @@
       <button id="thNight" onclick="setTheme('dark')" style="border-radius:999px;padding:7px 14px;font-weight:600;font-size:13.5px">Night</button>
       <button id="thAuto" onclick="setTheme('auto')" style="border-radius:999px;padding:7px 14px;font-weight:600;font-size:13.5px">Auto</button>
     </span></div>
-  <div class="srow"><span class="lab">Model route<small>GIRA INFERENCE</small></span><select id="selRoute" onchange="setPref('aggregation_route',this.value)"><option>Balanced</option><option>Fastest</option><option>Cheapest</option><option>Quality first</option></select></div>
+  <div class="srow"><span class="lab">Model route<small>SURA INFERENCE</small></span><select id="selRoute" onchange="setPref('aggregation_route',this.value)"><option>Balanced</option><option>Fastest</option><option>Cheapest</option><option>Quality first</option></select></div>
   <div class="srow"><span class="lab">Pearl route<small>per request class, when it wins</small></span><select id="selPearl" onchange="setPref('pearl_route',this.value)"><option>Auto</option><option>Prefer Pearl</option><option>Off</option></select></div>
   <div class="srow"><span class="lab">Pay method</span><select id="selPay" onchange="setPref('pay_method',this.value)"><option>UZE balance</option><option>USDC</option><option>Card on file</option></select></div>
   <div class="srow"><span class="lab">Monthly budget cap</span><select id="selBudget" onchange="setPref('budget_cap',this.value)"><option>$250</option><option>$100</option><option>$500</option><option>No cap</option></select></div>
@@ -1092,7 +1092,7 @@
 <!-- ======= support sheet (wired: messaging + Grok Voice via LiveKit) ======= -->
 <div class="sheet" id="supportSheet">
   <div class="grab"></div>
-  <h3>Support — ask GIRA</h3>
+  <h3>Support — ask SURA</h3>
   <div class="sub" id="supStat">Connecting…</div>
   <div id="supLog" class="suplog"></div>
   <div class="suprow">
