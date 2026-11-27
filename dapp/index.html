@@ -418,9 +418,13 @@
       <div class="pview" id="popV-cur">
         <button class="prow pback" onclick="popView('main')"><span class="chev">‹</span><span class="lb">Currency</span></button>
         <div class="psep"></div>
-        <button class="prow" id="cuUSD" onclick="setCur('USD')"><span class="lb">USD — US dollar</span><span class="pck">✓</span></button>
-        <button class="prow" id="cuEUR" onclick="setCur('EUR')"><span class="lb">EUR — euro</span><span class="pck"></span></button>
-        <button class="prow" id="cuBRL" onclick="setCur('BRL')"><span class="lb">BRL — Brazilian real</span><span class="pck"></span></button>
+        <button class="prow" id="cuUSD" onclick="setCur('USD')"><span class="lb">USD — US dollar (USDC) · $</span><span class="pck">✓</span></button>
+        <button class="prow" id="cuBRL" onclick="setCur('BRL')"><span class="lb">BRL — Brazilian real · R$</span><span class="pck"></span></button>
+        <button class="prow" id="cuCRC" onclick="setCur('CRC')"><span class="lb">CRC — Costa Rican colón · ₡</span><span class="pck"></span></button>
+        <button class="prow" id="cuPAB" onclick="setCur('PAB')"><span class="lb">PAB — Panamanian balboa · B/. · display only — pegged 1:1, balances execute as USDC</span><span class="pck"></span></button>
+        <button class="prow" id="cuDOP" onclick="setCur('DOP')"><span class="lb">DOP — Dominican peso · RD$</span><span class="pck"></span></button>
+        <button class="prow" id="cuINR" onclick="setCur('INR')"><span class="lb">INR — Indian rupee · ₹</span><span class="pck"></span></button>
+        <button class="prow" id="cuEUR" onclick="setCur('EUR')"><span class="lb">EUR — euro · €</span><span class="pck"></span></button>
       </div>
     </div>
 
@@ -1077,6 +1081,8 @@
     <button class="flipbtn" onclick="toast('Flip (mock)')">⇅</button>
   </div>
   <div class="swapin" style="margin-top:8px"><div class="il"><span>Buy</span><span>Balance 18.42</span></div><div class="amt">0.0</div><div class="sub">SOL ▾</div></div>
+  <div class="sub" id="swapEq" style="margin-top:10px">All amounts settle in USDC.</div>
+  <div class="sub" style="margin-top:2px"><b>Non-custodial swap. Signed in your wallet.</b> The DApp never holds your funds.</div>
   <button class="cta" onclick="toast('Enter an amount first (mock)')">Enter an amount</button>
 </div>
 
@@ -1288,7 +1294,7 @@ const beimlCards = '<div class="pcard"><div class="cat">BEIML · REZONING</div><
   function togglePop(e){ if(e) e.stopPropagation(); $('#cfgPop').classList.toggle('open'); $('#popScrim').classList.toggle('on'); }
   function closePop(){ const p=$('#cfgPop'); if(p) p.classList.remove('open'); const s=$('#popScrim'); if(s) s.classList.remove('on'); popView('main'); }
   function popView(v){ ['main','app','cur'].forEach(k=>{ const el=document.getElementById('popV-'+k); if(el) el.classList.toggle('on', k===v); }); }
-  function setCur(c, silent){ const v=$('#popCurVal'); if(v) v.textContent=c; ['USD','EUR','BRL'].forEach(k=>{ const el=document.getElementById('cu'+k); if(el){ const ck=el.querySelector('.pck'); if(ck) ck.textContent = k===c?'✓':''; el.style.color = k===c?'var(--ink)':'var(--muted)'; } }); if(!silent) toast('Display currency '+c); if(window.apiSave) window.apiSave({currency:c}); }
+  function setCur(c, silent){ const v=$('#popCurVal'); if(v) v.textContent=c; ['USD','BRL','CRC','PAB','DOP','INR','EUR'].forEach(k=>{ const el=document.getElementById('cu'+k); if(el){ const ck=el.querySelector('.pck'); if(ck) ck.textContent = k===c?'✓':''; el.style.color = k===c?'var(--ink)':'var(--muted)'; } }); const R={'USD':['$',1],'BRL':['R$',5.54],'CRC':['₡',505],'PAB':['B/.',1],'DOP':['RD$',59.5],'INR':['₹',88.5],'EUR':['€',0.92]}; const eq=$('#swapEq'); if(eq){ const r=R[c]||R['USD']; eq.textContent = c==='USD' ? 'All amounts settle in USDC.' : ('Display in '+c+': '+r[0]+'1 ≈ $'+(1/r[1]).toFixed(4)+' · balances execute as USDC · reference rate (mock)'); } if(!silent) toast('Display currency '+c); if(window.apiSave) window.apiSave({currency:c}); }
 
   /* startup splash — Tri-Swoop only, then the app */
   setTimeout(()=>{ const sp=$('#splash'); if(sp) sp.classList.add('gone'); }, location.hash.includes('hold') ? 60000 : 2000);
