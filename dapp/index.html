@@ -115,7 +115,7 @@
   .modhead{display:flex;align-items:center;justify-content:space-between;padding:0 2px 10px}
   #df-hub .modhead{position:sticky;top:52px;background:var(--bg);z-index:30;padding:10px 2px}
   @keyframes hubspin{to{transform:rotate(360deg)}}
-  .hubspinner{width:15px;height:15px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:hubspin .8s linear infinite;display:inline-block;vertical-align:-2px;margin-right:8px}
+  .hubspinner{width:17px;height:17px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:hubspin .8s linear infinite;display:inline-block;vertical-align:-2px;margin-right:8px}
   @keyframes hubflash{0%{background:#FDEEE2}100%{background:transparent}}
   .hubflash{animation:hubflash 1.1s ease-out 2;border-radius:6px;padding:2px 6px}
   .modhead h2{font-size:19px;font-weight:700}
@@ -1069,7 +1069,7 @@
                 <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">The verification address is shown as a placeholder until the address of record is set.</p>
               </div>
               <div id="hubChecking" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 8px;max-width:88%">
-                <p style="margin:0;font-size:14.5px;line-height:1.55"><span class="hubspinner"></span>Checking email bridge for ZK-Proof-7F3A…</p>
+                <p style="margin:0;font-size:15.5px;line-height:1.55;font-weight:600"><span class="hubspinner"></span>Checking email bridge for ZK-Proof-7F3A…</p>
               </div>
               <div id="hubOcr" style="display:none;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:12px;margin:0 0 8px;max-width:88%">
                 <p style="margin:0 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--muted)">▤ DOCUMENT — EMAIL BRIDGE</p>
@@ -1290,9 +1290,9 @@
   function copyHash(){ const h='0x8f3a9d44b7c21e'; if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(h).then(function(){ toast('Document hash copied (mock)'); }).catch(function(){ toast(h); }); } else { toast(h); } }
   function ownMcpCheck(el){ const v=el.value.trim(); const ok=document.getElementById('ownMcpOk'), hint=document.getElementById('ownMcpHint'); if(!v){ ok.style.display='none'; hint.style.display='none'; return; } if(/^https?:\/\/[^\s]+\.[^\s]+$/.test(v)){ ok.style.display='inline'; hint.style.display='none'; } else { ok.style.display='none'; hint.style.display='block'; } }
   let hubRan=false;
-  function hubDoc(){ if(hubRan) return; hubRan=true; const c=document.getElementById('hubChecking'); c.style.display='block'; c.scrollIntoView({block:'center',behavior:'smooth'});
+  function hubDoc(){ if(hubRan) return; hubRan=true; const pb=[...document.querySelectorAll('#df-hub button')].find(x=>x.textContent.includes('Pull Document')); if(pb){ pb.disabled=true; pb.style.opacity=.45; pb.style.pointerEvents='none'; } const c=document.getElementById('hubChecking'); c.style.display='block'; c.scrollIntoView({block:'center',behavior:'smooth'});
     setTimeout(function(){ c.style.display='none'; document.getElementById('hubOcr').style.display='block'; toast('Document arrived via the email bridge (mock)');
-      ['mRowNew','mRowVer','mRowEst'].forEach(function(id,i){ setTimeout(function(){ const r=document.getElementById(id); if(!r) return; r.style.transition='background .35s'; r.style.background='#FDEEE2'; setTimeout(function(){ r.style.background='transparent'; },500); }, 240*(i+1)); });
+      ['mRowNew','mRowVer','mRowEst'].forEach(function(id,i){ setTimeout(function(){ const r=document.getElementById(id); if(!r) return; r.style.transition='background .35s'; r.style.background='#FDEEE2'; setTimeout(function(){ r.style.background='transparent'; },800); }, 240*(i+1)); });
       setTimeout(function(){ const rc=document.getElementById('hubReceipt'); rc.style.display='block'; const v=document.getElementById('hubVerVal'); if(v){ v.classList.remove('hubflash'); void v.offsetWidth; v.classList.add('hubflash'); } rc.scrollIntoView({block:'center',behavior:'smooth'}); }, 2000);
     }, 1800);
   }
