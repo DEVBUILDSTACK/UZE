@@ -366,7 +366,7 @@
     <button class="mrow" onclick="toast('Stay · Venue · Play opens the leisure app (mock)')"><span class="mi">▣</span>Stay · Venue · Play<span class="chev">›</span></button>
     <button class="mrow" id="moreRow" onclick="toggleMore()"><span class="mi">•••</span>More<span class="chev">›</span></button>
     <div class="msub" id="moreSub">
-      <button onclick="go('explore','uw')">Underwriting — Solutions</button>
+      <button onclick="go('dealfi')">Underwriting — DEALFi</button>
       <button onclick="go('uzecompute')">Compute</button>
       <button onclick="openSheet('settingsSheet')">Settings</button>
       <button onclick="go('explore','deck')">Agent Deck</button>
@@ -867,7 +867,7 @@
           <div class="rowitem" data-cat="talent" onclick="go('home')"><span class="ic">T</span><div class="mid"><div class="t1">Talent</div><div class="t2">Verified contractors &amp; professionals near you</div></div><span class="chev">›</span></div>
           <div class="rowitem" data-cat="contracts" onclick="go('bid')"><span class="ic">B</span><div class="mid"><div class="t1">Contract Origination and Bidding</div><div class="t2">Sealed + open bids · escrow 117.75%</div></div><span class="chev">›</span></div>
           <div class="rowitem" data-cat="markets" onclick="go('pim')"><span class="ic">P</span><div class="mid"><div class="t1">PIM — Predictive Information Markets</div><div class="t2">GSIML &amp; BEIML · every layer priced</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="solutions" id="uw" onclick="toast('Underwriting — under Solutions (mock)')"><span class="ic">U</span><div class="mid"><div class="t1">Underwriting</div><div class="t2">Solutions · Hospitality, Income, Commercial Real Estate</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="solutions" id="uw" onclick="go('dealfi')"><span class="ic">U</span><div class="mid"><div class="t1">Underwriting</div><div class="t2">DEALFi · Hospitality, Income, Commercial Real Estate</div></div><span class="chev">›</span></div>
           <div class="rowitem" data-cat="tools" onclick="go('compute')"><span class="ic">C</span><div class="mid"><div class="t1">Compute</div><div class="t2">UZE balance · routes · burn-to-credit</div></div><span class="chev">›</span></div>
           <div class="rowitem" data-cat="tools" id="deck" onclick="toast('Agent Deck — the agentic header (mock)')"><span class="ic">A</span><div class="mid"><div class="t1">Agent Deck</div><div class="t2">The agentic header — API · MCP · inference</div></div><span class="chev">›</span></div>
           <div class="rowitem" data-cat="leisure" onclick="toast('Stay — through the World.xyz door (mock)')"><span class="ic">S</span><div class="mid"><div class="t1">Stay</div><div class="t2">Stays, priced like everything else</div></div><span class="chev">›</span></div>
@@ -877,7 +877,108 @@
           <div class="rowitem" data-cat="tools" onclick="openSheet('settingsSheet')"><span class="ic">S</span><div class="mid"><div class="t1">Settings</div><div class="t2">Compute aggregation · settlement · wallet</div></div><span class="chev">›</span></div>
           <div class="rowitem" data-cat="tools" onclick="openSheet('walletSheet')"><span class="ic">W</span><div class="mid"><div class="t1">Wallet</div><div class="t2">Balances · settlement cascade · disconnect</div></div><span class="chev">›</span></div>
         </div>
-        <p class="guard">One directory for everything beyond the core three — browse by category, search, or ask GIRA. Underwriting reads two planes: financial vectors and risk vectors.</p>
+        <p class="guard">One directory for everything beyond the core three — browse by category, search, or ask GIRA. Underwriting reads three planes: financials, valuation, and risk.</p>
+      </section>
+
+      <!-- DEALFI UNDERWRITING -->
+      <section class="view" id="v-dealfi">
+        <div class="dirhead"><h1>DEALFi Underwriting</h1><span class="val" style="font-weight:700">Solutions</span></div>
+        <p class="guard" style="margin:0 2px 12px">Valuation, extended. UZE Underwriting began with the P&amp;L of hospitality and income properties. Under DEALFi it reads any income-generating operating company or project — the business and the real estate under it — on three planes: financials, valuation, and risk. DFI builds the marketplace technology; lending and brokerage belong to affiliates.</p>
+        <div class="chips" style="margin:0 0 14px">
+          <button class="chip on" onclick="dfTab(this,'df-valuation')">Valuation &amp; P&amp;L</button>
+          <button class="chip" onclick="dfTab(this,'df-smb')">SMB Acquisition</button>
+          <button class="chip" onclick="dfTab(this,'df-risk')">Risk Vectors</button>
+        </div>
+
+        <div class="dfpanel" id="df-valuation">
+          <div class="mod">
+            <div class="modhead"><h2>P&amp;L read — worked example</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Graham Hill Multifamily</b><small>152 units · Mechanicsburg, PA · proforma as filed</small></span><span class="val">NOI</span></div>
+              <div class="srow"><span class="lab">Year 1</span><span class="val">$1,947,714</span></div>
+              <div class="srow"><span class="lab">Year 2</span><span class="val">$2,030,528</span></div>
+              <div class="srow"><span class="lab">Year 3</span><span class="val">$2,084,984</span></div>
+              <div class="srow"><span class="lab">Year 4</span><span class="val">$2,141,301</span></div>
+              <div class="srow"><span class="lab">Year 5</span><span class="val">$2,199,536</span></div>
+              <div class="srow"><span class="lab"><small>Taxes and insurance read as separate buckets; replacement reserve sits above NOI.</small></span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Valuation read</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Micro-region benchmark</b><small>Worth against the layer's priced record for the territory</small></span><span class="val">Plane 2</span></div>
+              <div class="srow"><span class="lab"><b>Income value</b><small>The property's own P&amp;L, capitalized</small></span><span class="val">Plane 2</span></div>
+              <div class="srow"><span class="lab"><b>Reconciliation</b><small>Where the two disagree, the disagreement is shown — never averaged away</small></span><span class="val">Verdict</span></div>
+            </div>
+          </div>
+          <p class="guard">Hospitality, Income, Commercial Real Estate. Certified priority classes first: marinas and aviation.</p>
+        </div>
+
+        <div class="dfpanel" id="df-smb" style="display:none">
+          <div class="mod">
+            <div class="modhead"><h2>Worked example — fuel &amp; convenience</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Gas station acquisition</b><small>An operating business and the real estate under it, bought together</small></span><span class="val">SMB class</span></div>
+              <div class="srow"><span class="lab">Revenue<small>Promoter's figure · unverified</small></span><span class="val">$4.83M</span></div>
+              <div class="srow"><span class="lab">Cash flow<small>Promoter's figure · unverified</small></span><span class="val">$825K / yr</span></div>
+              <div class="srow"><span class="lab">Land</span><span class="val">3.5 acres</span></div>
+              <div class="srow"><span class="lab">Entitlement<small>Permit in hand — a BEIML record: new, provable, verifiable</small></span><span class="val">Larger store + car wash</span></div>
+              <div class="srow"><span class="lab">Financing on offer</span><span class="val">10% down</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Value, split three ways</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Business value</b><small>A multiple of verified cash flow</small></span></div>
+              <div class="srow"><span class="lab"><b>Real-estate value</b><small>Land and improvements at the micro-region benchmark</small></span></div>
+              <div class="srow"><span class="lab"><b>Entitlement option value</b><small>The permitted expansion, priced as the layer prices any permit</small></span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>The class rules — no verdict without</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>— Asking price</b></span><span class="val" style="font-weight:700">Required · missing</span></div>
+              <div class="srow"><span class="lab"><b>Trailing-twelve financials</b></span><span class="val">Required</span></div>
+              <div class="srow"><span class="lab"><b>Environmental position — the tanks</b></span><span class="val">Required</span></div>
+              <div class="srow"><span class="lab"><b>The permit documents themselves</b></span><span class="val">Required</span></div>
+              <div class="srow"><span class="lab"><small>Verdict on this example: <b>Incomplete.</b> A deal missing a class requirement is returned incomplete — never estimated around.</small></span></div>
+            </div>
+          </div>
+          <p class="guard">Affiliates originate in one intake shape; the surface underwrites. The breakdown is the same read, every time.</p>
+        </div>
+
+        <div class="dfpanel" id="df-risk" style="display:none">
+          <div class="mod">
+            <div class="modhead"><h2>The read — hazard × vulnerability × exposure</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Hazard</b><small>Wind · storm surge · flooding — riverine, coastal, pluvial · coastal erosion · geologic · sea-level rise · environmental</small></span><span class="val">GSIML</span></div>
+              <div class="srow"><span class="lab"><b>Vulnerability</b><small>COPE — construction, occupancy, protection, exposure — plus mitigation and elevation against base flood elevation</small></span><span class="val">GSIML</span></div>
+              <div class="srow"><span class="lab"><b>Exposure</b><small>Replacement cost · claims history · permit history</small></span><span class="val">GSIML</span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Use case — commercial</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Reef Rd parcel — Miami-Dade</b><small>The same parcel the seawall bid prices</small></span></div>
+              <div class="srow"><span class="lab">Storm surge</span><span class="val">Priced</span></div>
+              <div class="srow"><span class="lab">Coastal flooding</span><span class="val">Priced</span></div>
+              <div class="srow"><span class="lab">Wind</span><span class="val">Priced</span></div>
+              <div class="srow"><span class="lab"><small>Every Valuation &amp; P&amp;L and SMB read carries this plane — a verdict never issues on two planes when the third is priced.</small></span></div>
+            </div>
+          </div>
+          <div class="mod">
+            <div class="modhead"><h2>Use case — coastal residential luxury</h2></div>
+            <div class="card" style="padding:16px">
+              <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Coastal luxury residence — Southeastern coast</b><small>Risk priced on the coastal envelope</small></span></div>
+              <div class="srow"><span class="lab">Storm surge</span><span class="val">Priced</span></div>
+              <div class="srow"><span class="lab">Coastal erosion</span><span class="val">Priced</span></div>
+              <div class="srow"><span class="lab">Sea-level rise</span><span class="val">Priced</span></div>
+              <div class="srow"><span class="lab">Wind</span><span class="val">Priced</span></div>
+              <div class="srow"><span class="lab"><small>The vulnerability read weights construction class and elevation — a luxury build is read as it was built, not as its zone assumes.</small></span></div>
+            </div>
+          </div>
+          <p class="guard">The shape of FEMA Risk Rating 2.0. The vectors price any land the layer covers; every read runs as a priced job on UZE Compute.</p>
+        </div>
       </section>
     </main>
 
@@ -1037,6 +1138,7 @@
 
   /* UZE Compute surface — panel switching inside the view */
   function cxTab(btn,id){ $$('#v-uzecompute .cxpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-uzecompute .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
+  function dfTab(btn,id){ $$('#v-dealfi .dfpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-dealfi .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
   function toggleCompute(){ $('#computeRow').classList.toggle('open'); $('#computeSub').classList.toggle('on'); }
   function cxGo(id){ toggleMenu(false); go('uzecompute'); const b=document.querySelector('#v-uzecompute .chip[data-p="'+id+'"]'); if(b) cxTab(b,id); }
 
