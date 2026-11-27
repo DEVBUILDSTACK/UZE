@@ -1074,13 +1074,15 @@
 <div class="sheet" id="swapSheet">
   <div class="grab"></div>
   <h3>Swap</h3>
-  <div class="sub">Supported — aggregated routing, best route shown before you sign.</div>
+  <div class="sub">Digital token swaps only — aggregated routing via Jupiter and Matcha, best route shown before you sign.</div>
   <div class="segpill"><button class="on">Market</button><button>Limit</button><button>Recurring</button></div>
+  <div class="sub" style="margin-top:10px">Pairs — digital tokens only</div>
+  <div class="segpill" id="pairRow"><button class="on" onclick="setPair('USDC','SOL',this)">USDC ⇄ SOL</button><button onclick="setPair('USDC','USDG',this)">USDC ⇄ USDG</button><button onclick="setPair('SOL','USDG',this)">SOL ⇄ USDG</button></div>
   <div class="swapwrap">
-    <div class="swapin"><div class="il"><span>Sell</span><span>Balance 9,840.00 · MAX</span></div><div class="amt">0.0</div><div class="sub">USDC ▾</div></div>
+    <div class="swapin"><div class="il"><span>Sell</span><span>Balance 9,840.00 · MAX</span></div><div class="amt">0.0</div><div class="sub" id="swapSellTok">USDC ▾</div></div>
     <button class="flipbtn" onclick="toast('Flip (mock)')">⇅</button>
   </div>
-  <div class="swapin" style="margin-top:8px"><div class="il"><span>Buy</span><span>Balance 18.42</span></div><div class="amt">0.0</div><div class="sub">SOL ▾</div></div>
+  <div class="swapin" style="margin-top:8px"><div class="il"><span>Buy</span><span>Balance 18.42</span></div><div class="amt">0.0</div><div class="sub" id="swapBuyTok">SOL ▾</div></div>
   <div class="sub" id="swapEq" style="margin-top:10px">All amounts settle in USDC.</div>
   <div class="sub" style="margin-top:2px"><b>Non-custodial swap. Signed in your wallet.</b> The DApp never holds your funds.</div>
   <button class="cta" onclick="toast('Enter an amount first (mock)')">Enter an amount</button>
@@ -1295,6 +1297,7 @@ const beimlCards = '<div class="pcard"><div class="cat">BEIML · REZONING</div><
   function closePop(){ const p=$('#cfgPop'); if(p) p.classList.remove('open'); const s=$('#popScrim'); if(s) s.classList.remove('on'); popView('main'); }
   function popView(v){ ['main','app','cur'].forEach(k=>{ const el=document.getElementById('popV-'+k); if(el) el.classList.toggle('on', k===v); }); }
   function setCur(c, silent){ const v=$('#popCurVal'); if(v) v.textContent=c; ['USD','BRL','CRC','PAB','DOP','INR','EUR'].forEach(k=>{ const el=document.getElementById('cu'+k); if(el){ const ck=el.querySelector('.pck'); if(ck) ck.textContent = k===c?'✓':''; el.style.color = k===c?'var(--ink)':'var(--muted)'; } }); const R={'USD':['$',1],'BRL':['R$',5.54],'CRC':['₡',505],'PAB':['B/.',1],'DOP':['RD$',59.5],'INR':['₹',88.5],'EUR':['€',0.92]}; const eq=$('#swapEq'); if(eq){ const r=R[c]||R['USD']; eq.textContent = c==='USD' ? 'All amounts settle in USDC.' : ('Display in '+c+': '+r[0]+'1 ≈ $'+(1/r[1]).toFixed(4)+' · balances execute as USDC · reference rate (mock)'); } if(!silent) toast('Display currency '+c); if(window.apiSave) window.apiSave({currency:c}); }
+  function setPair(a,b,el){ const s=$('#swapSellTok'), t=$('#swapBuyTok'); if(s) s.textContent=a+' ▾'; if(t) t.textContent=b+' ▾'; const row=$('#pairRow'); if(row) row.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===el)); toast('Pair '+a+' ⇄ '+b+' (mock)'); }
 
   /* startup splash — Tri-Swoop only, then the app */
   setTimeout(()=>{ const sp=$('#splash'); if(sp) sp.classList.add('gone'); }, location.hash.includes('hold') ? 60000 : 2000);
