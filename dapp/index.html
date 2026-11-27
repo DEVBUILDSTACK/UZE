@@ -421,10 +421,11 @@
         <button class="prow" id="cuUSD" onclick="setCur('USD')"><span class="lb">USD — US dollar (USDC) · $</span><span class="pck">✓</span></button>
         <button class="prow" id="cuBRL" onclick="setCur('BRL')"><span class="lb">BRL — Brazilian real · R$</span><span class="pck"></span></button>
         <button class="prow" id="cuCRC" onclick="setCur('CRC')"><span class="lb">CRC — Costa Rican colón · ₡</span><span class="pck"></span></button>
-        <button class="prow" id="cuPAB" onclick="setCur('PAB')"><span class="lb">PAB — Panamanian balboa · B/. · display only — pegged 1:1, balances execute as USDC</span><span class="pck"></span></button>
+        <button class="prow" id="cuPAB" onclick="setCur('PAB')"><span class="lb">PAB — Panamanian balboa · B/. · Panama circulates US dollars — display only, balances execute as USDC</span><span class="pck"></span></button>
         <button class="prow" id="cuDOP" onclick="setCur('DOP')"><span class="lb">DOP — Dominican peso · RD$</span><span class="pck"></span></button>
         <button class="prow" id="cuINR" onclick="setCur('INR')"><span class="lb">INR — Indian rupee · ₹</span><span class="pck"></span></button>
         <button class="prow" id="cuEUR" onclick="setCur('EUR')"><span class="lb">EUR — euro · €</span><span class="pck"></span></button>
+        <button class="prow" id="cuSAR" onclick="setCur('SAR')"><span class="lb">SAR — Saudi riyal · ﷼</span><span class="pck"></span></button>
       </div>
     </div>
 
@@ -1296,7 +1297,7 @@ const beimlCards = '<div class="pcard"><div class="cat">BEIML · REZONING</div><
   function togglePop(e){ if(e) e.stopPropagation(); $('#cfgPop').classList.toggle('open'); $('#popScrim').classList.toggle('on'); }
   function closePop(){ const p=$('#cfgPop'); if(p) p.classList.remove('open'); const s=$('#popScrim'); if(s) s.classList.remove('on'); popView('main'); }
   function popView(v){ ['main','app','cur'].forEach(k=>{ const el=document.getElementById('popV-'+k); if(el) el.classList.toggle('on', k===v); }); }
-  function setCur(c, silent){ const v=$('#popCurVal'); if(v) v.textContent=c; ['USD','BRL','CRC','PAB','DOP','INR','EUR'].forEach(k=>{ const el=document.getElementById('cu'+k); if(el){ const ck=el.querySelector('.pck'); if(ck) ck.textContent = k===c?'✓':''; el.style.color = k===c?'var(--ink)':'var(--muted)'; } }); const R={'USD':['$',1],'BRL':['R$',5.54],'CRC':['₡',505],'PAB':['B/.',1],'DOP':['RD$',59.5],'INR':['₹',88.5],'EUR':['€',0.92]}; const eq=$('#swapEq'); if(eq){ const r=R[c]||R['USD']; eq.textContent = c==='USD' ? 'All amounts settle in USDC.' : ('Display in '+c+': '+r[0]+'1 ≈ $'+(1/r[1]).toFixed(4)+' · balances execute as USDC · reference rate (mock)'); } if(!silent) toast('Display currency '+c); if(window.apiSave) window.apiSave({currency:c}); }
+  function setCur(c, silent){ const v=$('#popCurVal'); if(v) v.textContent=c; ['USD','BRL','CRC','PAB','DOP','INR','EUR','SAR'].forEach(k=>{ const el=document.getElementById('cu'+k); if(el){ const ck=el.querySelector('.pck'); if(ck) ck.textContent = k===c?'✓':''; el.style.color = k===c?'var(--ink)':'var(--muted)'; } }); const R={'USD':['$',1],'BRL':['R$',5.54],'CRC':['₡',505],'PAB':['B/.',1],'DOP':['RD$',59.5],'INR':['₹',88.5],'EUR':['€',0.92],'SAR':['﷼',3.75]}; const eq=$('#swapEq'); if(eq){ const r=R[c]||R['USD']; eq.textContent = c==='USD' ? 'All amounts settle in USDC.' : ('Display in '+c+': '+r[0]+'1 ≈ $'+(1/r[1]).toFixed(4)+' · balances execute as USDC · reference rate (mock)'); } if(!silent) toast('Display currency '+c); if(window.apiSave) window.apiSave({currency:c}); }
   function setPair(a,b,el){ const s=$('#swapSellTok'), t=$('#swapBuyTok'); if(s) s.textContent=a+' ▾'; if(t) t.textContent=b+' ▾'; const row=$('#pairRow'); if(row) row.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===el)); toast('Pair '+a+' ⇄ '+b+' (mock)'); }
 
   /* startup splash — Tri-Swoop only, then the app */
