@@ -1059,12 +1059,13 @@
                 <p style="margin:0;font-size:14.5px;line-height:1.55">Send the document to the DEALFi verification address with this subject line: <b>ZK-Proof-7F3A</b>. The moment it lands, you will see here exactly what we read from it — before anything is priced.</p>
                 <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">The verification address is shown as a placeholder until the address of record is set.</p>
               </div>
-              <div id="hubOcr" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 8px;max-width:88%">
+              <div id="hubOcr" style="display:none;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:12px;margin:0 0 8px;max-width:88%">
+                <p style="margin:0 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--muted)">▤ DOCUMENT — EMAIL BRIDGE</p>
                 <p style="margin:0;font-size:14.5px;line-height:1.55"><b>Document received</b> — tax filing, by the email bridge.</p>
                 <p style="margin:6px 0 0;font-size:14.5px;line-height:1.55">Extracted: Year 1 NOI $1,947,714 · Tax year 2026 · Parcel: Miami-Dade · sensitive fields stay redacted.</p>
                 <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">Pending Verification — a labelled claim until the identity and document checks pass. Arrival alone proves nothing.</p>
               </div>
-              <button class="setbtn" style="margin:4px 0 0" onclick="hubDoc()">Simulate the document arriving</button>
+              <button style="margin:4px 0 0;padding:10px 16px;border-radius:999px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer" onclick="hubDoc()">Pull Document via ZK-Proof-7F3A</button>
               <p style="margin:10px 0 0;font-size:12.5px;color:var(--muted)">Prefer email? Use our verified relay — the same checks apply.</p>
             </div>
           </div>
@@ -1074,7 +1075,8 @@
               <div class="srow" style="border:none;padding-top:0"><span class="lab"><b>Newness</b><small>New to the layer — no record for this parcel and year</small></span><span class="val">2.0×</span></div>
               <div class="srow"><span class="lab"><b>Verifiability</b><small>OCR confidence 99% · hashable source: yes</small></span><span class="val">1.5×</span></div>
               <div class="srow"><span class="lab"><b>Estimated credit</b><small>Counted in usefulness to your record — an estimate, before attestation</small></span><span class="val">450</span></div>
-              <div class="srow"><span class="lab"><small>Usefulness is counted, never paid out as a token. When settlement is ruled, money moves in USDC; rewards accrue as UZD.</small></span></div>
+              <div class="srow"><span class="lab"><small>Base 150 × 2.0 newness × 1.5 verifiability = 450.</small></span></div>
+              <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><p style="margin:0;font-size:13px;font-weight:600;line-height:1.5">Usefulness is counted, never paid out as a token. When settlement is ruled, money moves in USDC; rewards accrue as UZD.</p></div>
               <div class="srow"><span class="lab"><b>Already in the layer?</b><small>A 2025 filing for this parcel is on file — duplicates are refused at the gate, not discounted. The layer credits only what is new.</small></span><span class="val">Refused</span></div>
               <div id="hubReceipt" style="display:none">
                 <div class="srow"><span class="lab"><b>Attestation passed</b><small>Document hashed to Solana · lineage stamped — source, timestamp, confidence · usefulness credited to your record</small></span><span class="val">Verified</span></div>
@@ -1084,11 +1086,11 @@
           <div class="mod">
             <div class="modhead"><h2>Your trust record</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Verified Email</span><span class="val">✓</span></div>
-              <div class="srow"><span class="lab">Tax Docs Verified — Q4 2026</span><span class="val">✓</span></div>
-              <div class="srow"><span class="lab">Adjudicated Document — Licensed Professional</span><span class="val">✓</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Verified Email<small>ZK email proof — DEALFi email verification</small></span><span class="val">✓</span></div>
+              <div class="srow"><span class="lab">Tax Docs Verified — Q4 2026<small>ZK-Proof via the DEALFi gateway</small></span><span class="val">✓</span></div>
+              <div class="srow"><span class="lab">Adjudicated Document — Licensed Professional<small>Signed by a licensed professional · license # on file, redacted</small></span><span class="val">✓</span></div>
               <div class="srow"><span class="lab"><b>Milestones</b><small>15 verified submissions · 98% acceptance</small></span></div>
-              <div class="srow"><span class="lab"><b>Document hash</b><small>0x8f3a…c21e — the hash sits on chain; the document itself never shows</small></span></div>
+              <div class="srow" style="cursor:pointer" onclick="copyHash()"><span class="lab"><b>Document hash</b><small>0x8f3a…c21e — the hash sits on chain; the document itself never shows · tap to copy</small></span><span class="val">Copy</span></div>
               <div class="srow"><span class="lab"><b>Standing</b><small>A trusted party — standing earned by record, across email, chat, and social</small></span><span class="val">Trusted</span></div>
               <div class="srow"><span class="lab"><small>Never shown: the raw documents · names, SSNs, addresses · the proprietary financials — only the attestation that they verified against the standard.</small></span></div>
             </div>
@@ -1096,15 +1098,16 @@
           <div class="mod">
             <div class="modhead"><h2>Usefulness ledger</h2></div>
             <div class="card" style="padding:16px">
-              <div class="srow" style="border:none;padding-top:0"><span class="lab">Q4 tax attestation — Miami-Dade parcel</span><span class="val">+380</span></div>
-              <div class="srow"><span class="lab">Rezoning attestation — accepted</span><span class="val">+210</span></div>
-              <div class="srow"><span class="lab">Duplicate filing — refused at the gate</span><span class="val">0</span></div>
+              <div class="srow" style="border:none;padding-top:0"><span class="lab">Q4 tax attestation — Miami-Dade parcel<small>Newness 2.0× · Verifiability 1.5×</small></span><span class="val">+380</span></div>
+              <div class="srow"><span class="lab">Rezoning attestation — accepted<small>Newness 1.5× · Verifiability 1.2×</small></span><span class="val">+210</span></div>
+              <div class="srow" style="opacity:.55"><span class="lab">Duplicate filing — refused at the gate<small>Newness 0× — already in the layer</small></span><span style="border:1.5px solid var(--accent);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--ink);transform:rotate(-4deg);display:inline-block">REFUSED · 0</span></div>
             </div>
           </div>
           <div class="mod">
             <div class="modhead"><h2>OCR playground</h2></div>
             <div class="card" style="padding:16px">
-              <p style="margin:0 0 10px;font-size:14.5px;line-height:1.55">Test a document before you submit it — see what the reader extracts. A test is priced at nothing and enters nothing.</p>
+              <p style="margin:0 0 6px;font-size:14.5px;line-height:1.55"><b>OCR Playground — test parsing and confidence scores. No rewards, no on-chain records.</b></p>
+              <p style="margin:0 0 10px;font-size:14.5px;line-height:1.55">Test a document before you submit it — see what the reader extracts. Nothing dropped here enters the data layer or earns credit.</p>
               <button class="setbtn" style="margin:0" onclick="toast('Document reader (mock)')">Try a document</button>
             </div>
           </div>
@@ -1272,6 +1275,7 @@
 
   /* UZE Compute surface — panel switching inside the view */
   function cxTab(btn,id){ $$('#v-uzecompute .cxpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-uzecompute .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
+  function copyHash(){ const h='0x8f3a9d44b7c21e'; if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(h).then(function(){ toast('Document hash copied (mock)'); }).catch(function(){ toast(h); }); } else { toast(h); } }
   function hubDoc(){ document.getElementById('hubOcr').style.display='block'; document.getElementById('hubReceipt').style.display='block'; toast('Document arrived via the email bridge (mock)'); }
   function dfTab(btn,id){ $$('#v-dealfi .dfpanel').forEach(p=>p.style.display='none'); const el=document.getElementById(id); if(el) el.style.display='block'; $$('#v-dealfi .chip').forEach(c=>c.classList.toggle('on', c===btn)); window.scrollTo(0,0); }
   function toggleCompute(){ $('#computeRow').classList.toggle('open'); $('#computeSub').classList.toggle('on'); }
