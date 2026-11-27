@@ -128,7 +128,7 @@
   .rowitem .r .v{font-weight:600}
   .rowitem .r .d{font-size:12.5px;color:var(--muted)}
   .count{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
-  :root[data-theme="dark"] .count{color:#ff8500;font-weight:800;text-shadow:0 0 14px rgba(255,133,0,.45)}
+  :root[data-theme="dark"] .count{color:#ff6b00;font-weight:800;text-shadow:0 0 14px rgba(255,107,0,.45)}
   .gira-card{background:linear-gradient(150deg,var(--accent-soft),var(--bg) 150%);border-radius:20px;padding:16px;margin-top:22px}
 
   /* configuration popover — the exploding app configuration bar (Matcha pattern) */
@@ -864,18 +864,18 @@
           <button class="chip" data-cat="tools" onclick="dirChip(this)">Tools</button>
         </div>
         <div class="menulist" id="dirList">
-          <div class="rowitem" data-cat="talent" onclick="go('home')"><span class="ic">T</span><div class="mid"><div class="t1">Talent</div><div class="t2">Verified contractors &amp; professionals near you</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="contracts" onclick="go('bid')"><span class="ic">B</span><div class="mid"><div class="t1">Contract Origination and Bidding</div><div class="t2">Sealed + open bids · escrow 117.75%</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="markets" onclick="go('pim')"><span class="ic">P</span><div class="mid"><div class="t1">PIM — Predictive Information Markets</div><div class="t2">GSIML &amp; BEIML · every layer priced</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="solutions" id="uw" onclick="go('dealfi')"><span class="ic">U</span><div class="mid"><div class="t1">Underwriting</div><div class="t2">DEALFi · Hospitality, Income, Commercial Real Estate</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="tools" onclick="go('compute')"><span class="ic">C</span><div class="mid"><div class="t1">Compute</div><div class="t2">UZE balance · routes · burn-to-credit</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="tools" id="deck" onclick="toast('Agent Deck — the agentic header (mock)')"><span class="ic">A</span><div class="mid"><div class="t1">Agent Deck</div><div class="t2">The agentic header — API · MCP · inference</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="leisure" onclick="toast('Stay — through the World.xyz door (mock)')"><span class="ic">S</span><div class="mid"><div class="t1">Stay</div><div class="t2">Stays, priced like everything else</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="leisure" onclick="toast('Venue — through the World.xyz door (mock)')"><span class="ic">V</span><div class="mid"><div class="t1">Venue</div><div class="t2">Tickets · primary + resale</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="leisure" onclick="toast('Play — through the World.xyz door (mock)')"><span class="ic">P</span><div class="mid"><div class="t1">Play</div><div class="t2">Leisure markets on World.xyz</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="tools" id="c3" onclick="toast('C3 Hub — its own surface (mock)')"><span class="ic">C3</span><div class="mid"><div class="t1">C3 Hub · Admin</div><div class="t2">Command console — its own surface</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="tools" onclick="openSheet('settingsSheet')"><span class="ic">S</span><div class="mid"><div class="t1">Settings</div><div class="t2">Compute aggregation · settlement · wallet</div></div><span class="chev">›</span></div>
-          <div class="rowitem" data-cat="tools" onclick="openSheet('walletSheet')"><span class="ic">W</span><div class="mid"><div class="t1">Wallet</div><div class="t2">Balances · settlement cascade · disconnect</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="talent" data-div="gira" onclick="go('home')"><span class="ic">T</span><div class="mid"><div class="t1">Talent</div><div class="t2">Verified contractors &amp; professionals near you</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="contracts" data-div="sura" onclick="go('bid')"><span class="ic">B</span><div class="mid"><div class="t1">Contract Origination and Bidding</div><div class="t2">Sealed + open bids · escrow 117.75%</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="markets" data-div="sura" onclick="go('pim')"><span class="ic">P</span><div class="mid"><div class="t1">PIM — Predictive Information Markets</div><div class="t2">GSIML &amp; BEIML · every layer priced</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="solutions" data-div="sura" id="uw" onclick="go('dealfi')"><span class="ic">U</span><div class="mid"><div class="t1">Underwriting</div><div class="t2">DEALFi · Hospitality, Income, Commercial Real Estate</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="tools" data-div="sura" onclick="go('compute')"><span class="ic">C</span><div class="mid"><div class="t1">Compute</div><div class="t2">UZE balance · routes · burn-to-credit</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="tools" data-div="sura" id="deck" onclick="toast('Agent Deck — the agentic header (mock)')"><span class="ic">A</span><div class="mid"><div class="t1">Agent Deck</div><div class="t2">The agentic header — API · MCP · inference</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="leisure" data-div="gira" onclick="toast('Stay — through the World.xyz door (mock)')"><span class="ic">S</span><div class="mid"><div class="t1">Stay</div><div class="t2">Stays, priced like everything else</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="leisure" data-div="gira" onclick="toast('Venue — through the World.xyz door (mock)')"><span class="ic">V</span><div class="mid"><div class="t1">Venue</div><div class="t2">Tickets · primary + resale</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="leisure" data-div="gira" onclick="toast('Play — through the World.xyz door (mock)')"><span class="ic">P</span><div class="mid"><div class="t1">Play</div><div class="t2">Leisure markets on World.xyz</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="tools" data-div="sura" id="c3" onclick="toast('C3 Hub — its own surface (mock)')"><span class="ic">C3</span><div class="mid"><div class="t1">C3 Hub · Admin</div><div class="t2">Command console — its own surface</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="tools" data-div="sura" onclick="openSheet('settingsSheet')"><span class="ic">S</span><div class="mid"><div class="t1">Settings</div><div class="t2">Compute aggregation · settlement · wallet</div></div><span class="chev">›</span></div>
+          <div class="rowitem" data-cat="tools" data-div="sura" onclick="openSheet('walletSheet')"><span class="ic">W</span><div class="mid"><div class="t1">Wallet</div><div class="t2">Balances · settlement cascade · disconnect</div></div><span class="chev">›</span></div>
         </div>
         <p class="guard">One directory for everything beyond the core three — browse by category, search, or ask SURA. Underwriting reads three planes: financials, valuation, and risk.</p>
       </section>
@@ -993,7 +993,7 @@
 <nav class="tabbar" id="tabbar">
   <button class="tab on" data-v="home" onclick="go('home')"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg><span>Home</span></button>
   <button class="tab" data-v="pim" onclick="go('pim')"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-4 4 3 7-6"/></svg><span>PIM</span></button>
-  <button class="tab center" data-v="bid" onclick="go('bid')"><svg viewBox="0 0 24 24"><path d="M7 8h13l-3-3M17 16H4l3 3"/></svg><span>Bid</span></button>
+  <button class="tab center" onclick="openSheet('swapSheet')"><svg viewBox="0 0 24 24"><path d="M7 8h13l-3-3M17 16H4l3 3"/></svg><span>Swap</span></button>
   <button class="tab" data-v="explore" onclick="go('explore')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.6-3.8-9S9.5 5.5 12 3Z"/></svg><span>Explore</span></button>
 </nav>
 
