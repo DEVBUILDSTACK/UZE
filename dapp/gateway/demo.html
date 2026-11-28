@@ -58,6 +58,20 @@
   footer .wm{font-size:21px}
   footer a{color:var(--white);text-decoration:none}
   footer .uze-f{color:var(--accent)}
+  .steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .step{flex:1;min-width:150px;border:1px solid var(--hairline);border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.55}
+  .step b{display:block;font-size:14px;margin:0 0 2px}
+  .dist{margin:10px 0 4px}
+  .dist .row{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+  .dist .name{width:104px;font-weight:700;font-size:14px}
+  .dist .track{flex:1;background:var(--cream);border:1px solid var(--hairline);border-radius:999px;height:14px;overflow:hidden}
+  .dist .fill{display:block;height:100%;background:var(--ink)}
+  .dist .fill.top{background:var(--accent)}
+  .dist .pct{width:46px;text-align:right;font-weight:700;font-size:14px}
+  .pool{border:1px solid var(--hairline);border-radius:12px;padding:16px 20px;margin:0 0 14px}
+  .pool h3{font-family:Georgia,'Times New Roman',serif;font-size:17px;margin:0 0 8px}
+  .chip{display:inline-block;border:1px solid var(--ink);border-radius:999px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:1px;margin:0 6px 10px 0}
+  .chip.dim{border-color:var(--hairline);color:var(--muted)}
   @media (max-width:620px){
     .wm{font-size:23px}
     .band h1{font-size:23px}
@@ -78,6 +92,53 @@
 
   <main>
   <section class="card">
+    <h2>For the evaluator — one pass tells the whole story</h2>
+    <p>Run the full sequence and every panel below fills in order: where verification comes from, an ordinary Gateway call, a TEE-classified session verified before use, the attestation evidence, the model catalogue, and the refusals. The ledger counts the session as it runs.</p>
+    <button id="runAll" type="button">Run the full sequence</button>
+    <pre class="log" id="ledger">Session — calls: 0 · verified: 0 · refused: 0</pre>
+  </section>
+
+  <section class="card">
+    <h2>Where verification comes from — the validation channels</h2>
+    <p>Data-layer evidence is submitted through two channels: email, and the NEAR Gateway's encrypted chat. Email is channel #1 today. We always prompt for the encrypted chat first — it is the channel being moved to #1 as adoption grows over the coming years, with email settling to #2.</p>
+    <div class="dist">
+      <div class="row"><span class="name">Email</span><span class="track"><span class="fill top" style="width:35%"></span></span><span class="pct">35%</span></div>
+      <div class="row"><span class="name">Identity</span><span class="track"><span class="fill" style="width:25%"></span></span><span class="pct">25%</span></div>
+      <div class="row"><span class="name">Social</span><span class="track"><span class="fill" style="width:20%"></span></span><span class="pct">20%</span></div>
+      <div class="row"><span class="name">Financial</span><span class="track"><span class="fill" style="width:15%"></span></span><span class="pct">15%</span></div>
+      <div class="row"><span class="name">Other</span><span class="track"><span class="fill" style="width:5%"></span></span><span class="pct">5%</span></div>
+    </div>
+    <p class="meta">Data distribution across the validation pools, as filed.</p>
+    <div class="steps">
+      <div class="step"><b>#1 today — Email</b>Supporting documents arrive by email; identity is proven without exposing the address. A document carries no assumption of truth: its weight comes from the source's standing and the document's own verifiability, read by OCR where needed.</div>
+      <div class="step"><b>#1 in the making — Encrypted chat</b>The Gateway's E2EE v3 chat, attested inside a TEE — the Class B session below is this channel at work. Voice and chat together, phonetic transcription tied to the written language with the correct spelling held against the spoken word, are the adoption path; the Grok Voice plane is the working example.</div>
+    </div>
+    <p>What enters is both new and factual, and verifiably trusted; contribution is credited by how new and how factually verifiable it is. The position: replace media with factual, verified information that did not exist before — truth instead of propaganda or influencing.</p>
+  </section>
+
+  <section class="card">
+    <h2>DEALFi email verification — the evidence pools</h2>
+    <p>A component of the DEALFi surface in our dashboard, part of the DFI organizational build. The pool pattern, in four steps:</p>
+    <div class="steps">
+      <div class="step"><b>01 · Create pool</b>A buyer opens a pool naming the evidence needed and sets the budget.</div>
+      <div class="step"><b>02 · Submit proof</b>A contributor submits a zero-knowledge proof of the evidence — the underlying data is never exposed.</div>
+      <div class="step"><b>03 · Verify on-chain</b>The proof validates on-chain without revealing the actual data.</div>
+      <div class="step"><b>04 · Credited</b>The contributor is credited for usefulness — counted, never a payment in itself; standing is earned by milestones, agentic and human alike.</div>
+    </div>
+    <div class="pool">
+      <h3>DEALFi Email Verification</h3>
+      <span class="chip">IDENTITY</span><span class="chip dim">0 PROOFS</span><span class="chip dim">TEST SCALE</span>
+      <div class="dist"><div class="row"><span class="name">Budget used</span><span class="track"><span class="fill" style="width:10%"></span></span><span class="pct">10%</span></div></div>
+      <p class="meta">Per-proof credit at test scale, as displayed in the reference pattern; budgets deplete as proofs verify. Mock values.</p>
+    </div>
+    <div class="pool">
+      <h3>Verify DEALFi Email — Milestone 1</h3>
+      <span class="chip">IDENTITY</span><span class="chip dim">0 PROOFS</span><span class="chip dim">MILESTONE</span>
+      <div class="dist"><div class="row"><span class="name">Budget used</span><span class="track"><span class="fill" style="width:10%"></span></span><span class="pct">10%</span></div></div>
+      <p class="meta">A source becomes a trusted party through its record: identification first, then verified contributions, milestone by milestone. Mock values.</p>
+    </div>
+  </section>
+  <section class="card">
     <h2>Class A — ordinary intelligence call</h2>
     <p>A Gateway chat completion with no TEE requirement. The mock answer comes back clearly labelled, so a simulated answer can never be mistaken for a real one.</p>
     <button id="runA" type="button">Run Class A</button>
@@ -87,6 +148,11 @@
   <section class="card">
     <h2>Class B — TEE-classified session (E2EE v3 discipline)</h2>
     <p>Attestation is fetched before the request; the reply is used only after its receipt verifies with signatureKind: provider_tee. The request log under the result shows the order.</p>
+    <div class="steps">
+      <div class="step"><b>1 · Attestation first</b>The enclave's evidence is fetched before any request is sent.</div>
+      <div class="step"><b>2 · Request on the attested path</b>The call runs only where the attestation points.</div>
+      <div class="step"><b>3 · Verified, then used</b>The reply is used only when its receipt reads signatureKind: provider_tee.</div>
+    </div>
     <button id="runB" type="button">Run Class B</button>
     <pre class="log" id="outB" aria-live="polite">Not run yet.</pre>
   </section>
@@ -143,10 +209,23 @@
   var MODEL = 'mock/gateway-model';
   var MESSAGES = [{ role: 'user', content: 'Reply with the single word: ready' }];
 
+  var counts = { calls: 0, verified: 0, refused: 0 };
+  function renderLedger() {
+    document.getElementById('ledger').textContent =
+      'Session — calls: ' + counts.calls + ' · verified: ' + counts.verified + ' · refused: ' + counts.refused;
+  }
+  function bump(kind) {
+    if (kind === 'call') counts.calls += 1;
+    if (kind === 'verified') counts.verified += 1;
+    if (kind === 'refused') counts.refused += 1;
+    renderLedger();
+  }
+
   function show(id, lines) {
     document.getElementById(id).textContent = lines.join('\n');
   }
   function showErr(id, err) {
+    bump('refused');
     var el = document.getElementById(id);
     el.innerHTML = '';
     var marker = document.createElement('span');
@@ -159,10 +238,12 @@
     el.appendChild(span);
   }
 
-  document.getElementById('runA').addEventListener('click', function () {
+  function flowA() {
+    bump('call');
     var client = window.UzeGateway.createGatewayClient({ mock: true });
-    client.chatCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
+    return client.chatCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
       .then(function (res) {
+        bump('verified');
         show('outA', [
           'mock: ' + res.mock,
           'model: ' + res.model,
@@ -171,12 +252,15 @@
         ]);
       })
       .catch(function (err) { showErr('outA', err); });
-  });
+  }
+  document.getElementById('runA').addEventListener('click', flowA);
 
-  document.getElementById('runB').addEventListener('click', function () {
+  function flowB() {
+    bump('call');
     var client = window.UzeGateway.createGatewayClient({ mock: true });
-    client.teeCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
+    return client.teeCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
       .then(function (res) {
+        bump('verified');
         show('outB', [
           'mock: ' + res.mock,
           'signatureKind: ' + res.signatureKind + ' (verified before use)',
@@ -186,13 +270,16 @@
         ]);
       })
       .catch(function (err) { showErr('outB', err); });
-  });
+  }
+  document.getElementById('runB').addEventListener('click', flowB);
 
   function runAttFlow(opts) {
+    bump('call');
     var client = window.UzeGateway.createGatewayClient({ mock: true, mockOpts: opts });
-    client.fetchAttestation()
+    return client.fetchAttestation()
       .then(function (att) {
         return client.fetchItaToken().then(function (ita) {
+          bump('verified');
           show('outAtt', [
             'label: MOCK — simulated values only; no hardware attestation was performed.',
             'mock: ' + att.mock,
@@ -216,8 +303,9 @@
   });
 
   function runModelsFlow(opts) {
+    bump('call');
     var client = window.UzeGateway.createGatewayClient({ mock: true, mockOpts: opts });
-    client.listModels()
+    return client.listModels()
       .then(function (res) {
         var lines = [
           'label: MOCK — simulated catalogue only; no real Gateway was asked.',
@@ -246,8 +334,9 @@
   });
 
   function bad(id, opts) {
+    bump('call');
     var client = window.UzeGateway.createGatewayClient({ mock: true, mockOpts: opts });
-    client.teeCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
+    return client.teeCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
       .then(function () {
         show('outBad', ['UNEXPECTED: the reply was accepted. Fail-closed did not hold.']);
       })
@@ -261,6 +350,16 @@
   });
   document.getElementById('runBad3').addEventListener('click', function () {
     bad('outBad', { refuseClassB: true });
+  });
+
+  document.getElementById('runAll').addEventListener('click', function () {
+    flowA()
+      .then(function () { return flowB(); })
+      .then(function () { return runAttFlow({}); })
+      .then(function () { return runModelsFlow({}); })
+      .then(function () { return bad('outBad', { signatureKind: 'unverified_source' }); })
+      .then(function () { return bad('outBad', { signatureKind: null }); })
+      .then(function () { return bad('outBad', { refuseClassB: true }); });
   });
 })();
 </script>

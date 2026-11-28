@@ -301,6 +301,77 @@ function ok(name) {
     ok('rendered refusals: all 5 new-section failure modes render REFUSED with the tangerine marker, labelled mock/simulated, in their own section output');
   }
 
+  // Validation channels: the filed distribution + the channel-order
+  // doctrine, rendered on the page — email #1 today at 35%, the encrypted
+  // chat prompted first and being moved to #1.
+  assert.ok(html.includes('Where verification comes from — the validation channels'),
+    'channels section must exist');
+  for (const frag of ['35%', '25%', '20%', '15%', '5%']) {
+    assert.ok(html.includes(frag), 'distribution must carry ' + frag);
+  }
+  assert.ok(html.includes('Email is channel #1 today'),
+    'email must be marked channel #1 today');
+  assert.ok(html.includes('We always prompt for the encrypted chat first'),
+    'the channel-order doctrine must be stated: encrypted chat prompted first');
+  assert.ok(html.includes('E2EE v3'), 'the encrypted chat channel must name E2EE v3');
+  ok('validation channels: distribution rendered (35/25/20/15/5), email #1 today, encrypted chat prompted first toward #1');
+
+  // DEALFi evidence pools: the filed pool pattern + the milestone card,
+  // under DEALFi naming — and the struck term nowhere on the page.
+  assert.ok(html.includes('DEALFi email verification — the evidence pools'),
+    'pools section must exist under DEALFi naming');
+  assert.ok(html.includes('DEALFi Email Verification'), 'pool card must exist');
+  assert.ok(html.includes('Verify DEALFi Email — Milestone 1'), 'milestone card must exist');
+  for (const step of ['Create pool', 'Submit proof', 'Verify on-chain', 'Credited']) {
+    assert.ok(html.includes(step), 'pool pattern must carry the step: ' + step);
+  }
+  assert.ok(!/access\s?fi/i.test(html),
+    'the page must never carry the struck term');
+  ok('DEALFi evidence pools: pool + milestone cards, four-step pattern, struck term absent');
+
+  // Run-all + session ledger wiring.
+  assert.ok(html.includes('id="runAll"') && html.includes('id="ledger"'),
+    'run-all button and session ledger must exist');
+  assert.ok(html.includes("getElementById('runAll')"), 'run-all must be wired');
+  ok('run-all + ledger wiring: button, ledger element, handler');
+
+  // Rendered run-all: one click runs the whole sequence; the ledger
+  // counts 7 calls, 3 verified, 3 refused; the last refusal stands.
+  {
+    const vm = require('node:vm');
+    const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+    const elements = {};
+    function makeEl(id) {
+      return {
+        id, textContent: '', innerHTML: '', children: [], handlers: {},
+        addEventListener(ev, fn) { this.handlers[ev] = fn; },
+        appendChild(c) { this.children.push(c); this.textContent += c.textContent; }
+      };
+    }
+    const documentStub = {
+      getElementById(id) { return elements[id] || (elements[id] = makeEl(id)); },
+      createElement() { return makeEl('anon'); }
+    };
+    const sandbox = {
+      window: { UzeGateway: require('./gateway-client.js') },
+      document: documentStub,
+      console
+    };
+    vm.createContext(sandbox);
+    vm.runInContext(blocks[0], sandbox);
+    const tick = () => new Promise((r) => setImmediate(r));
+    assert.ok(elements.runAll && elements.runAll.handlers.click, 'run-all button must be wired');
+    elements.runAll.handlers.click();
+    for (let i = 0; i < 40; i += 1) await tick();
+    const ledger = elements.ledger.textContent;
+    assert.ok(ledger.includes('calls: 7'), 'ledger must count 7 calls, got: ' + ledger);
+    assert.ok(ledger.includes('verified: 3'), 'ledger must count 3 verified, got: ' + ledger);
+    assert.ok(ledger.includes('refused: 3'), 'ledger must count 3 refused, got: ' + ledger);
+    assert.ok(elements.outBad.textContent.includes('REFUSED (GATEWAY_HTTP)'),
+      'run-all must end on the Gateway refusal, got: ' + elements.outBad.textContent);
+    ok('rendered run-all: full sequence in one click — ledger 7 calls / 3 verified / 3 refused');
+  }
+
   console.log('\nAll ' + passed + ' checks passed.');
 })().catch((err) => {
   console.error('FAIL — ' + (err && err.stack ? err.stack : err));
