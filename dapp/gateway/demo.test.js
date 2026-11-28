@@ -314,6 +314,8 @@ function ok(name) {
   assert.ok(html.includes('We always prompt for the encrypted chat first'),
     'the channel-order doctrine must be stated: encrypted chat prompted first');
   assert.ok(html.includes('E2EE v3'), 'the encrypted chat channel must name E2EE v3');
+  assert.ok(html.includes('Gateway encrypted chat') && html.includes('0%'),
+    'the gauge must list Gateway encrypted chat at 0%, above Other');
   ok('validation channels: distribution rendered (35/25/20/15/5), email #1 today, encrypted chat prompted first toward #1');
 
   // DEALFi evidence pools: the filed pool pattern + the milestone card,
