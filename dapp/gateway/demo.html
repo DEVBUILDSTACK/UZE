@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UZE Gateway — Mock Harness</title>
+<style>
+  :root{
+    --ink:#1a1a1a;
+    --cream:#f5f2ee;
+    --accent:#ff6b00;
+    --creamsicle:#FDEEE2;
+    --hairline:#ddd5c9;
+    --muted:#6b655e;
+    --band-muted:#b8b0a4;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);
+    font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px;line-height:1.65}
+  .frame{max-width:880px;margin:0 auto;padding:24px 20px 40px}
+  .band{background:var(--ink);border-radius:14px;padding:20px 34px;color:var(--white)}
+  .band .eyebrow{color:var(--band-muted);font-size:12px;font-weight:700;
+    letter-spacing:2px;margin:0 0 6px}
+  .wm{white-space:nowrap;font-family:Georgia,'Times New Roman',serif;
+    font-weight:700;font-size:29px;line-height:1.2}
+  .wm .swoop{position:relative;display:inline-block;color:var(--accent)}
+  .wm .swoop img{position:absolute;height:.55em;left:-.437em;top:-.185em}
+  .wm .uze{color:var(--accent)}
+  .wm .co{color:var(--white)}
+  .band h1{font-family:Georgia,'Times New Roman',serif;font-size:29px;
+    line-height:1.2;margin:10px 0 4px}
+  .band p{margin:0;color:var(--white)}
+  .card{background:var(--white);border:1px solid var(--hairline);
+    border-radius:14px;padding:28px 34px;margin-top:24px}
+  .card h2{font-family:Georgia,'Times New Roman',serif;font-size:21px;
+    line-height:1.25;margin:0 0 8px}
+  .card p{margin:0 0 14px}
+  .soft{background:var(--creamsicle);border-radius:12px;padding:26px 24px;
+    margin-top:24px;text-align:center}
+  .soft h2{font-family:Georgia,'Times New Roman',serif;font-size:21px;margin:0 0 6px}
+  .soft p{margin:0}
+  button{background:var(--ink);color:var(--white);border:1px solid var(--ink);
+    border-radius:999px;padding:11px 22px;font:inherit;font-weight:700;
+    font-size:14px;cursor:pointer;margin:0 8px 8px 0}
+  button.secondary{background:var(--white);color:var(--ink)}
+  button:disabled{color:var(--muted);border-color:var(--hairline);cursor:default}
+  .log{background:var(--cream);border:1px solid var(--hairline);border-radius:14px;
+    padding:16px 20px;font-size:14px;line-height:1.6;white-space:pre-wrap;
+    word-break:break-word;min-height:60px;margin:0}
+  .err{color:var(--ink);font-weight:700}
+  .marker{color:var(--accent);font-weight:800}
+  .meta{color:var(--muted);font-size:13px}
+  hr{border:none;border-top:1px solid var(--hairline);margin:20px 0}
+  footer{margin-top:32px}
+  footer .band{text-align:center;padding:20px 34px}
+  footer .wm{font-size:21px}
+  footer a{color:var(--white);text-decoration:none}
+  footer .uze-f{color:var(--accent)}
+  @media (max-width:620px){
+    .wm{font-size:23px}
+    .band h1{font-size:23px}
+    .card{padding:24px 20px}
+    .band{padding:20px 20px}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="band">
+    <p class="eyebrow">GATEWAY HARNESS · MOCK MODE</p>
+    <span class="wm"><span class="swoop"><img src="../swoop.png" alt="">U</span><span class="uze">ZE</span><span class="co">markets</span></span>
+    <h1>The Gateway, exercised end to end — in mock mode.</h1>
+    <p>One door only: every call below runs through the staged Gateway client with its simulated transport. No network call is made, no key is used, and every answer is labelled mock.</p>
+  </header>
+
+  <main>
+  <section class="card">
+    <h2>Class A — ordinary intelligence call</h2>
+    <p>A Gateway chat completion with no TEE requirement. The mock answer comes back clearly labelled, so a simulated answer can never be mistaken for a real one.</p>
+    <button id="runA" type="button">Run Class A</button>
+    <pre class="log" id="outA" aria-live="polite">Not run yet.</pre>
+  </section>
+
+  <section class="card">
+    <h2>Class B — TEE-classified session (E2EE v3 discipline)</h2>
+    <p>Attestation is fetched before the request; the reply is used only after its receipt verifies with signatureKind: provider_tee. The request log under the result shows the order.</p>
+    <button id="runB" type="button">Run Class B</button>
+    <pre class="log" id="outB" aria-live="polite">Not run yet.</pre>
+  </section>
+
+  <section class="card">
+    <h2>Fail-closed — the refusals are the feature</h2>
+    <p>Three ways a Class B exchange must refuse: a receipt with the wrong signatureKind, a receipt with no signatureKind, and a Gateway refusal with no compatible serving path. Each one surfaces as an honest error — never a fabricated answer, never a reroute.</p>
+    <button id="runBad1" type="button" class="secondary">Wrong signatureKind</button>
+    <button id="runBad2" type="button" class="secondary">No signatureKind</button>
+    <button id="runBad3" type="button" class="secondary">Gateway refusal</button>
+    <pre class="log" id="outBad" aria-live="polite">Not run yet.</pre>
+  </section>
+
+  <div class="soft">
+    <h2>Staged, not wired in.</h2>
+    <p>This page is a local harness for the staged client module. It is not part of the live DApp, and nothing here reaches a real Gateway until the principal's initiation gate opens.</p>
+  </div>
+  </main>
+
+  <footer>
+    <div class="band">
+      <span class="wm"><span class="swoop"><img src="../swoop.png" alt="">U</span><span class="uze">ZE</span><span class="co">markets</span></span>
+      <p class="meta" style="color:var(--band-muted);margin:8px 0 0">© 2026 <a href="https://uzemarkets.com"><span class="uze-f">UZE</span>markets</a> · Gateway mock harness</p>
+    </div>
+  </footer>
+
+</div>
+
+<script src="./gateway-client.js"></script>
+<script>
+(function () {
+  'use strict';
+  var MODEL = 'mock/gateway-model';
+  var MESSAGES = [{ role: 'user', content: 'Reply with the single word: ready' }];
+
+  function show(id, lines) {
+    document.getElementById(id).textContent = lines.join('\n');
+  }
+  function showErr(id, err) {
+    var el = document.getElementById(id);
+    el.innerHTML = '';
+    var marker = document.createElement('span');
+    marker.className = 'marker';
+    marker.textContent = '— ';
+    var span = document.createElement('span');
+    span.className = 'err';
+    span.textContent = 'REFUSED (' + (err.code || 'ERROR') + '): ' + err.message;
+    el.appendChild(marker);
+    el.appendChild(span);
+  }
+
+  document.getElementById('runA').addEventListener('click', function () {
+    var client = window.UzeGateway.createGatewayClient({ mock: true });
+    client.chatCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
+      .then(function (res) {
+        show('outA', [
+          'mock: ' + res.mock,
+          'model: ' + res.model,
+          'answer: ' + res.content,
+          'requests: ' + client._transport.log.join(' · ')
+        ]);
+      })
+      .catch(function (err) { showErr('outA', err); });
+  });
+
+  document.getElementById('runB').addEventListener('click', function () {
+    var client = window.UzeGateway.createGatewayClient({ mock: true });
+    client.teeCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
+      .then(function (res) {
+        show('outB', [
+          'mock: ' + res.mock,
+          'signatureKind: ' + res.signatureKind + ' (verified before use)',
+          'attestation carried: ' + (res.attestation ? 'yes' : 'no'),
+          'answer: ' + res.content,
+          'request order: ' + client._transport.log.join(' · ')
+        ]);
+      })
+      .catch(function (err) { showErr('outB', err); });
+  });
+
+  function bad(id, opts) {
+    var client = window.UzeGateway.createGatewayClient({ mock: true, mockOpts: opts });
+    client.teeCompletion({ model: MODEL, messages: MESSAGES, maxTokens: 8 })
+      .then(function () {
+        show('outBad', ['UNEXPECTED: the reply was accepted. Fail-closed did not hold.']);
+      })
+      .catch(function (err) { showErr('outBad', err); });
+  }
+  document.getElementById('runBad1').addEventListener('click', function () {
+    bad('outBad', { signatureKind: 'unverified_source' });
+  });
+  document.getElementById('runBad2').addEventListener('click', function () {
+    bad('outBad', { signatureKind: null });
+  });
+  document.getElementById('runBad3').addEventListener('click', function () {
+    bad('outBad', { refuseClassB: true });
+  });
+})();
+</script>
+</body>
+</html>
