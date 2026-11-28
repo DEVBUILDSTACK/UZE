@@ -291,6 +291,24 @@
         });
     }
 
+    /* Models list — the Gateway's model catalogue (GET /v1/models). */
+    function listModels() {
+      if (!mock) requireKey();
+      return request('/models', { method: 'GET' })
+        .then(function (body) {
+          return { models: body.data || [], mock: !!body.mock, raw: body };
+        });
+    }
+
+    /* ITA token fetch — the attestation companion credential. */
+    function fetchItaToken() {
+      if (!mock) requireKey();
+      return request('/attestation/ita-token', { method: 'GET' })
+        .then(function (body) {
+          return { token: body.token, mock: !!body.mock, raw: body };
+        });
+    }
+
     /*
      * Class B — TEE-classified session (E2EE v3 discipline).
      * Order of operations is the design: attestation BEFORE the request;
@@ -347,6 +365,8 @@
       chatCompletion: chatCompletion,
       teeCompletion: teeCompletion,
       fetchAttestation: fetchAttestation,
+      listModels: listModels,
+      fetchItaToken: fetchItaToken,
       _transport: transport // exposed for tests (mock request log)
     };
   }
