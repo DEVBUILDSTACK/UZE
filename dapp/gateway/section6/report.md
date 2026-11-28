@@ -44,8 +44,11 @@ token and models list — following the harness's existing fail-closed pattern
     is refused as `EMPTY_CATALOGUE` rather than presented as a working list.
   - `fetchItaToken()` fails closed: a payload with no usable token string is
     refused as `MALFORMED_RESPONSE` — a missing token is never handed on.
-  - No existing behavior changed: the happy-path payloads and codes are
-    untouched, and the client self-test still passes 7/7 unmodified.
+  - No happy-path behavior changed: the happy-path payloads and codes are
+    untouched, and the client self-test still passes 7/7 unmodified. Note:
+    the `request()` TRANSPORT_ERROR normalization touches all paths — it
+    changes how transport/network rejections surface on every path, not
+    only the happy path.
 - `demo.html` — the two sections each gained simulate buttons (white
   secondary pills, existing classes only) that run the same flow functions
   as the section's primary button with the failure `mockOpts`, so a refusal
