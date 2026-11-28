@@ -95,8 +95,13 @@
    * mock Class B receipt carries (default 'provider_tee'); set it to
    * anything else — or null to omit it — to exercise the fail-closed path.
    * mockOpts.refuseClassB simulates the Gateway refusing a Class B request
-   * (no compatible NEAR-serving path). The mock records a request log so
-   * tests can assert ordering (attestation before the completion call).
+   * (no compatible NEAR-serving path). mockOpts.modelsFailure simulates a
+   * broken /models answer: 'transport' (network failure), 'malformed'
+   * (payload whose data is not an array), or 'empty' (an empty catalogue).
+   * mockOpts.itaFailure simulates a broken ITA-token answer: 'transport'
+   * (network failure) or 'malformed' (a payload carrying no token). The
+   * mock records a request log so tests can assert ordering (attestation
+   * before the completion call).
    */
   function createMockTransport(mockOpts) {
     var opts = mockOpts || {};
@@ -119,6 +124,24 @@
       log.push(method + ' ' + url);
 
       if (url === GATEWAY_BASE + '/models') {
+        if (opts.modelsFailure === 'transport') {
+          return Promise.reject(new Error(
+            'simulated network failure — the /models request never arrived'));
+        }
+        if (opts.modelsFailure === 'malformed') {
+          return Promise.resolve(jsonResponse(200, {
+            object: 'list',
+            mock: true,
+            data: { unexpected: 'shape — not a model array' }
+          }));
+        }
+        if (opts.modelsFailure === 'empty') {
+          return Promise.resolve(jsonResponse(200, {
+            object: 'list',
+            mock: true,
+            data: []
+          }));
+        }
         return Promise.resolve(jsonResponse(200, {
           object: 'list',
           mock: true,
@@ -135,6 +158,16 @@
       }
 
       if (url === GATEWAY_BASE + '/attestation/ita-token') {
+        if (opts.itaFailure === 'transport') {
+          return Promise.reject(new Error(
+            'simulated network failure — the ITA-token request never arrived'));
+        }
+        if (opts.itaFailure === 'malformed') {
+          return Promise.resolve(jsonResponse(200, {
+            mock: true
+            /* no token field — a malformed answer */
+          }));
+        }
         return Promise.resolve(jsonResponse(200, {
           mock: true,
           token: '[MOCK] simulated ITA token'
@@ -210,7 +243,8 @@
    *   apiKey,          // injected key (or NEARAI_API_KEY env under Node)
    *   fetchImpl,       // injected fetch (defaults to global fetch)
    *   mock,            // true → simulated Gateway, no network calls
-   *   mockOpts         // { signatureKind, refuseClassB } — mock mode only
+   *   mockOpts         // { signatureKind, refuseClassB, modelsFailure,
+                        //   itaFailure } — mock mode only
    * })
    */
   function createGatewayClient(config) {
@@ -242,6 +276,15 @@
       if (!mock) headers['Authorization'] = 'Bearer ' + key;
       else headers['Authorization'] = 'Bearer [MOCK]';
       return transport(GATEWAY_BASE + path, Object.assign({}, init, { headers: headers }))
+        .then(null, function (err) {
+          /* A transport/network failure is a refusal, not a TypeError the
+           * caller has to decode: normalize it, fail-closed. */
+          throw GatewayError(
+            'TRANSPORT_ERROR',
+            (mock ? '[MOCK] simulated transport failure: '
+                  : 'Gateway transport failure: ') +
+              (err && err.message ? err.message : 'network error'));
+        })
         .then(function (res) {
           return res.json().catch(function () { return {}; }).then(function (body) {
             if (!res.ok) {
@@ -291,20 +334,43 @@
         });
     }
 
-    /* Models list — the Gateway's model catalogue (GET /v1/models). */
+    /* Models list — the Gateway's model catalogue (GET /v1/models).
+     * Fail-closed: a payload whose data is not an array of identified
+     * models is malformed and refused, and an empty catalogue is refused
+     * rather than presented as a working list — a caller must never build
+     * on a catalogue that is not there. */
     function listModels() {
       if (!mock) requireKey();
       return request('/models', { method: 'GET' })
         .then(function (body) {
-          return { models: body.data || [], mock: !!body.mock, raw: body };
+          var label = mock ? '[MOCK] simulated models response' : 'Gateway models response';
+          if (!Array.isArray(body.data) ||
+              body.data.some(function (m) { return !m || typeof m.id !== 'string' || !m.id; })) {
+            throw GatewayError('MALFORMED_RESPONSE',
+              label + ' was malformed: expected a data array of models ' +
+              'with IDs. Refused — no catalogue was used.');
+          }
+          if (body.data.length === 0) {
+            throw GatewayError('EMPTY_CATALOGUE',
+              label + ' carried an empty catalogue: no models were ' +
+              'returned. Refused — an empty list is not a working catalogue.');
+          }
+          return { models: body.data, mock: !!body.mock, raw: body };
         });
     }
 
-    /* ITA token fetch — the attestation companion credential. */
+    /* ITA token fetch — the attestation companion credential.
+     * Fail-closed: a payload with no usable token string is malformed
+     * and refused — a missing token is never handed on as a credential. */
     function fetchItaToken() {
       if (!mock) requireKey();
       return request('/attestation/ita-token', { method: 'GET' })
         .then(function (body) {
+          if (typeof body.token !== 'string' || !body.token) {
+            throw GatewayError('MALFORMED_RESPONSE',
+              (mock ? '[MOCK] simulated ITA-token response' : 'Gateway ITA-token response') +
+              ' was malformed: no token was carried. Refused — no token was used.');
+          }
           return { token: body.token, mock: !!body.mock, raw: body };
         });
     }

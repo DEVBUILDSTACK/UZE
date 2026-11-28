@@ -94,14 +94,21 @@
   <section class="card">
     <h2>Attestation &amp; ITA token — simulated evidence</h2>
     <p>The mock attestation report and the mock ITA token, fetched through the client exactly as a Class B session fetches its evidence. Both values are simulated: no hardware attestation was performed and no real token exists.</p>
+    <p>The two simulate buttons exercise this section's refusals: a transport failure on the ITA-token call, and an answer that carries no token. Each refusal renders here as an honest error — never a fabricated token.</p>
     <button id="runAtt" type="button">Fetch mock attestation &amp; ITA token</button>
+    <button id="runAttBadTransport" type="button" class="secondary">Simulate ITA transport failure</button>
+    <button id="runAttBadToken" type="button" class="secondary">Simulate missing ITA token</button>
     <pre class="log" id="outAtt" aria-live="polite">Not run yet.</pre>
   </section>
 
   <section class="card">
     <h2>Models — the mock catalogue</h2>
     <p>The models the mock Gateway reports on its /models path. This is a simulated catalogue for the harness — every entry is labelled mock, and no real Gateway was asked.</p>
+    <p>The three simulate buttons exercise this section's refusals: a transport failure, a malformed catalogue payload, and an empty catalogue. Each refusal renders here as an honest error — never a fabricated list.</p>
     <button id="runModels" type="button">List mock models</button>
+    <button id="runModelsBadTransport" type="button" class="secondary">Simulate transport failure</button>
+    <button id="runModelsBadMalformed" type="button" class="secondary">Simulate malformed catalogue</button>
+    <button id="runModelsBadEmpty" type="button" class="secondary">Simulate empty catalogue</button>
     <pre class="log" id="outModels" aria-live="polite">Not run yet.</pre>
   </section>
 
@@ -181,8 +188,8 @@
       .catch(function (err) { showErr('outB', err); });
   });
 
-  document.getElementById('runAtt').addEventListener('click', function () {
-    var client = window.UzeGateway.createGatewayClient({ mock: true });
+  function runAttFlow(opts) {
+    var client = window.UzeGateway.createGatewayClient({ mock: true, mockOpts: opts });
     client.fetchAttestation()
       .then(function (att) {
         return client.fetchItaToken().then(function (ita) {
@@ -197,10 +204,19 @@
         });
       })
       .catch(function (err) { showErr('outAtt', err); });
+  }
+  document.getElementById('runAtt').addEventListener('click', function () {
+    runAttFlow({});
+  });
+  document.getElementById('runAttBadTransport').addEventListener('click', function () {
+    runAttFlow({ itaFailure: 'transport' });
+  });
+  document.getElementById('runAttBadToken').addEventListener('click', function () {
+    runAttFlow({ itaFailure: 'malformed' });
   });
 
-  document.getElementById('runModels').addEventListener('click', function () {
-    var client = window.UzeGateway.createGatewayClient({ mock: true });
+  function runModelsFlow(opts) {
+    var client = window.UzeGateway.createGatewayClient({ mock: true, mockOpts: opts });
     client.listModels()
       .then(function (res) {
         var lines = [
@@ -215,6 +231,18 @@
         show('outModels', lines);
       })
       .catch(function (err) { showErr('outModels', err); });
+  }
+  document.getElementById('runModels').addEventListener('click', function () {
+    runModelsFlow({});
+  });
+  document.getElementById('runModelsBadTransport').addEventListener('click', function () {
+    runModelsFlow({ modelsFailure: 'transport' });
+  });
+  document.getElementById('runModelsBadMalformed').addEventListener('click', function () {
+    runModelsFlow({ modelsFailure: 'malformed' });
+  });
+  document.getElementById('runModelsBadEmpty').addEventListener('click', function () {
+    runModelsFlow({ modelsFailure: 'empty' });
   });
 
   function bad(id, opts) {
